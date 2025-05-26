@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <packaging>pom</packaging>
+    <modules>
+        <module>bytelogs-core</module>
+        <module>bytelogs-api</module>
+    </modules>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.2.3</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+    <groupId>top.harrylei.forum</groupId>
+    <artifactId>bytelogs-forum</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>bytelogs-forum</name>
+    <description>simple forum by java &amp; spring</description>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <guava.version>31.1-jre</guava.version>
+        <mybaits-plus.version>3.5.2</mybaits-plus.version>
+        <commons-lang3.version>3.12.0</commons-lang3.version>
+        <knife4j.version>4.5.0</knife4j.version>
+        <mapstruct.version>1.5.5.Final</mapstruct.version>
+        <flexmark.version>0.62.2</flexmark.version>
+        <springdoc.version>2.3.0</springdoc.version>
+        <transmittable.version>2.14.4</transmittable.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- 当前项目自定义的 API 模块，包含 VO/DTO/异常等通用结构 -->
+            <dependency>
+                <groupId>top.harrylei.forum</groupId>
+                <artifactId>bytelogs-api</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+
+            <!-- 当前项目自定义的核心模块，包含工具类、JWT、配置封装等 -->
+            <dependency>
+                <groupId>top.harrylei.forum</groupId>
+                <artifactId>bytelogs-core</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+
+            <!-- Google 提供的工具包，包含集合、缓存、字符串处理等扩展工具 -->
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
+            </dependency>
+
+            <!-- MyBatis-Plus 持久层框架，简化 MyBatis 操作，增强 CRUD 支持 -->
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-boot-starter</artifactId>
+                <version>${mybaits-plus.version}</version>
+            </dependency>
+
+            <!-- Apache Commons Lang 扩展包，提供 StringUtils、ObjectUtils 等通用工具类 -->
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons-lang3.version}</version>
+            </dependency>
+
+            <!-- Knife4j 接口文档增强组件，基于 Swagger 打造，支持 UI 美化与分组 -->
+            <dependency>
+                <groupId>com.github.xiaoymin</groupId>
+                <artifactId>knife4j-openapi3-spring-boot-starter</artifactId>
+                <version>${knife4j.version}</version>
+            </dependency>
+
+            <!-- MapStruct 是编译期 Bean 映射工具，用于 DTO 和 Entity 间字段转换 -->
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct</artifactId>
+                <version>${mapstruct.version}</version>
+            </dependency>
+            <!-- MapStruct 是编译期 Bean 映射工具，用于 DTO 和 Entity 间字段转换 -->
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct-processor</artifactId>
+                <version>${mapstruct.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>com.vladsch.flexmark</groupId>
+                <artifactId>flexmark-all</artifactId>
+                <version>${flexmark.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-common</artifactId>
+                <version>${springdoc.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>transmittable-thread-local</artifactId>
+                <version>${transmittable.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <profiles>
+        <!-- 本地开发 -->
+        <profile>
+            <id>dev</id>
+            <properties>
+                <env>dev</env>
+            </properties>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
+        <!-- 生产 -->
+        <profile>
+            <id>prod</id>
+            <properties>
+                <env>prod</env>
+            </properties>
+        </profile>
+    </profiles>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>src/main/resources-env/${env}</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
+    <repositories>
+        <repository>
+            <id>spring-milestones</id>
+            <name>Spring Milestones</name>
+            <url>https://repo.spring.io/milestone</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>aliyun-maven</id>
+            <name>aliyun-maven</name>
+            <url>https://maven.aliyun.com/nexus/content/groups/public/</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>spring-milestones</id>
+            <name>Spring Milestones</name>
+            <url>https://repo.spring.io/milestone</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+
+</project>
