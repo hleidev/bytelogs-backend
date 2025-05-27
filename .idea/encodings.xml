@@ -3,6 +3,8 @@
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/bytelogs-api/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/bytelogs-core/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/bytelogs-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/bytelogs-web/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/resources-env/dev" charset="UTF-8" />

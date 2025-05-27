@@ -6,11 +6,13 @@
     <modules>
         <module>bytelogs-core</module>
         <module>bytelogs-api</module>
+        <module>bytelogs-web</module>
+        <module>bytelogs-service</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.3</version>
+        <version>3.5.0</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>top.harrylei.forum</groupId>
@@ -20,8 +22,8 @@
     <description>simple forum by java &amp; spring</description>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <guava.version>31.1-jre</guava.version>
         <mybaits-plus.version>3.5.2</mybaits-plus.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
@@ -45,6 +47,18 @@
             <dependency>
                 <groupId>top.harrylei.forum</groupId>
                 <artifactId>bytelogs-core</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+
+            <dependency>
+                <groupId>top.harrylei.forum</groupId>
+                <artifactId>bytelogs-web</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+
+            <dependency>
+                <groupId>top.harrylei.forum</groupId>
+                <artifactId>bytelogs-service</artifactId>
                 <version>0.0.1-SNAPSHOT</version>
             </dependency>
 
