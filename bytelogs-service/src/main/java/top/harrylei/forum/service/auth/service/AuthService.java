@@ -22,4 +22,11 @@ public interface AuthService {
      * @return JWT token
      */
     String login(String username, String password);
+
+    /**
+     * 用户注销
+     * 
+     * @param token JWT令牌
+     */
+    void logout(String token);
 }

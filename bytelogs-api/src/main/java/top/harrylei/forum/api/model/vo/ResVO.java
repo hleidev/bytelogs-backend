@@ -11,7 +11,7 @@ import java.io.Serializable;
  * @date 2022/7/6
  */
 @Data
-public class ResVo<T> implements Serializable {
+public class ResVO<T> implements Serializable {
     private static final long serialVersionUID = -510306209659393854L;
     @Schema(description = "返回结果说明", requiredMode = Schema.RequiredMode.REQUIRED)
     private Status status;
@@ -20,33 +20,33 @@ public class ResVo<T> implements Serializable {
     private T result;
 
 
-    public ResVo() {
+    public ResVO() {
     }
 
-    public ResVo(Status status) {
+    public ResVO(Status status) {
         this.status = status;
     }
 
-    public ResVo(T t) {
+    public ResVO(T t) {
         status = Status.newStatus(StatusEnum.SUCCESS);
         this.result = t;
     }
 
-    public static <T> ResVo<T> ok(T t) {
-        return new ResVo<>(t);
+    public static <T> ResVO<T> ok(T t) {
+        return new ResVO<>(t);
     }
 
     private static final String OK_DEFAULT_MESSAGE = "ok";
 
-    public static ResVo<String> ok() {
+    public static ResVO<String> ok() {
         return ok(OK_DEFAULT_MESSAGE);
     }
 
-    public static <T> ResVo<T> fail(StatusEnum status, Object... args) {
-        return new ResVo<>(Status.newStatus(status, args));
+    public static <T> ResVO<T> fail(StatusEnum status, Object... args) {
+        return new ResVO<>(Status.newStatus(status, args));
     }
 
-    public static <T> ResVo<T> fail(Status status) {
-        return new ResVo<>(status);
+    public static <T> ResVO<T> fail(Status status) {
+        return new ResVO<>(status);
     }
 }

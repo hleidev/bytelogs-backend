@@ -8,7 +8,7 @@ import lombok.Data;
  * 认证请求
  */
 @Data
-public class LoginReq {
+public class AuthReq {
     
     /**
      * 用户名

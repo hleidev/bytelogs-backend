@@ -42,31 +42,31 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // 检查用户名是否已存在
-        UserDO existingUser = userDAO.getUserByUserName(username);
-        if (existingUser != null) {
+        UserDO user = userDAO.getUserByUserName(username);
+        if (user != null) {
             throw ExceptionUtil.of(StatusEnum.USER_LOGIN_NAME_REPEAT, username);
         }
 
         // 创建新用户
-        UserDO user = new UserDO();
-        user.setUserName(username);
-        user.setPassword(BCryptUtil.hash(password));
-        user.setThirdAccountId("");
-        user.setLoginType(LoginTypeEnum.USER_PWD.getCode());
-        userDAO.saveUser(user);
+        UserDO newUser = new UserDO();
+        newUser.setUserName(username);
+        newUser.setPassword(BCryptUtil.hash(password));
+        newUser.setThirdAccountId("");
+        newUser.setLoginType(LoginTypeEnum.USER_PWD.getCode());
+        userDAO.saveUser(newUser);
 
         // 创建用户信息
-        UserInfoDO userInfo = new UserInfoDO();
-        userInfo.setUserId(user.getId());
-        userInfo.setUserName(username);
-        userInfo.setPhoto("");
-        userDAO.save(userInfo);
+        UserInfoDO newUserInfo = new UserInfoDO();
+        newUserInfo.setUserId(newUser.getId());
+        newUserInfo.setUserName(username);
+        newUserInfo.setPhoto("");
+        userDAO.save(newUserInfo);
 
         // 更新上下文并返回token
-        Long userId = user.getId();
+        Long userId = newUser.getId();
         // TODO 用户上下文保存 userId
-        log.info("用户注册成功: {}", username);
-        
+        log.info("用户注册成功: userId={}，username={}", userId, username);
+
         return true;
     }
 
@@ -74,13 +74,13 @@ public class AuthServiceImpl implements AuthService {
     public String login(String username, String password) {
         // 参数校验
         if (StringUtils.isBlank(username) || StringUtils.isBlank(password)) {
-            throw ExceptionUtil.of(StatusEnum.ILLEGAL_ARGUMENTS_MIXED, "用户名或密码不能为空");
+            throw ExceptionUtil.of(StatusEnum.USER_NAME_OR_PASSWORD_EMPTY);
         }
 
         // 查找用户
         UserDO user = userDAO.getUserByUserName(username);
         if (user == null) {
-            throw ExceptionUtil.of(StatusEnum.USER_NOT_EXISTS, "用户不存在: " + username);
+            throw ExceptionUtil.of(StatusEnum.USER_NOT_EXISTS, "username=" + username);
         }
 
         // 校验密码
@@ -93,7 +93,31 @@ public class AuthServiceImpl implements AuthService {
         Long userId = user.getId();
         // TODO 用户上下文保存 userId
         log.info("用户登录成功: {}", username);
-        
+
+        // TODO 将 token 保存到 Redis 中
+
         return jwtUtil.generateToken(userId);
+    }
+
+    @Override
+    public void logout(String token) {
+        if (StringUtils.isBlank(token)) {
+            log.warn("注销失败: token为空");
+            return;
+        }
+
+        try {
+            // 解析token获取用户ID
+            Long userId = jwtUtil.parseToken(token);
+            if (userId == null) {
+                log.warn("注销失败: 无效的token");
+                return;
+            }
+
+            // TODO 后期删除 Redis 中的 Token
+            log.info("用户[{}]注销成功", userId);
+        } catch (Exception e) {
+            log.error("注销过程发生异常", e);
+        }
     }
 }

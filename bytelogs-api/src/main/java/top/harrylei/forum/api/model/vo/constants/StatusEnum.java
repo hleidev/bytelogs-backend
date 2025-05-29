@@ -69,6 +69,7 @@ public enum StatusEnum {
     LOGIN_FAILED_MIXED(400_403_001, "登录失败:%s"),
     USER_NOT_EXISTS(400_404_001, "用户不存在:%s"),
     USER_EXISTS(400_404_002, "用户已存在:%s"),
+    USER_NAME_OR_PASSWORD_EMPTY(400_400_001, "用户名或密码不能为空"),
     // 用户登录名重复
     USER_LOGIN_NAME_REPEAT(400_404_003, "用户登录名重复:%s"),
     // 密码不符合标准
@@ -79,7 +80,7 @@ public enum StatusEnum {
     USER_STAR_NOT_EXISTS(400_404_002, "星球编号不存在:%s"),
     // 星球编号重复
     USER_STAR_REPEAT(400_404_002, "星球编号重复:%s，你已经绑定过了，直接用户名密码/扫码登录吧"),
-    USER_PWD_ERROR(400_500_002, "用户名or密码错误");
+    USER_PWD_ERROR(400_500_002, "用户名或密码错误");
 
     private int code;
 

@@ -1,11 +1,11 @@
 package top.harrylei.forum.service.user.repository.dao;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
+import lombok.RequiredArgsConstructor;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.service.user.repository.entity.UserDO;
 import top.harrylei.forum.service.user.repository.entity.UserInfoDO;
@@ -13,10 +13,10 @@ import top.harrylei.forum.service.user.repository.mapper.UserInfoMapper;
 import top.harrylei.forum.service.user.repository.mapper.UserMapper;
 
 @Repository
+@RequiredArgsConstructor
 public class UserDAO extends ServiceImpl<UserInfoMapper, UserInfoDO> {
 
-    @Autowired
-    private UserMapper userMapper;
+    private final UserMapper userMapper;
 
     public UserDO getUserByUserName(String username) {
         LambdaQueryWrapper<UserDO> queryWrapper = new LambdaQueryWrapper<UserDO>()

@@ -7,10 +7,23 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 
+/**
+ * Spring Security 安全配置类
+ * 
+ * 当前配置为开发阶段的临时配置，允许所有请求通过。
+ * 在生产环境中，应根据实际业务需求配置适当的安全策略。
+ */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
+    /**
+     * 配置安全过滤链
+     * 
+     * @param http HTTP安全配置对象
+     * @return 配置完成的安全过滤链
+     * @throws Exception 配置过程中可能抛出的异常
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         // 禁用CSRF保护
