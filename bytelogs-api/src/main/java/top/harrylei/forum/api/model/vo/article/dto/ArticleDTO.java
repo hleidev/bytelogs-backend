@@ -2,11 +2,11 @@ package top.harrylei.forum.api.model.vo.article.dto;
 
 import top.harrylei.forum.api.model.enums.ArticleReadTypeEnum;
 import top.harrylei.forum.api.model.enums.SourceTypeEnum;
-import top.harrylei.forum.api.model.enums.pay.ThirdPayWayEnum;
 import top.harrylei.forum.api.model.vo.user.dto.ArticleFootCountDTO;
 import top.harrylei.forum.api.model.vo.user.dto.SimpleUserInfoDTO;
 import lombok.Data;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
 
@@ -20,6 +20,7 @@ import java.util.List;
  */
 @Data
 public class ArticleDTO implements Serializable {
+    @Serial
     private static final long serialVersionUID = -793906904770296838L;
 
     private Long articleId;
@@ -157,16 +158,4 @@ public class ArticleDTO implements Serializable {
      * 点赞用户信息
      */
     private List<SimpleUserInfoDTO> praisedUsers;
-
-    /**
-     * 支付金额，单位（元）, 为了防止精度问题，返回String格式
-     */
-    private String payAmount;
-
-    /**
-     * 付款方式
-     *
-     * @see ThirdPayWayEnum#wxPay()
-     */
-    private String payWay;
 }

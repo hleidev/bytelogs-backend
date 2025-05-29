@@ -24,7 +24,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
-        <guava.version>31.1-jre</guava.version>
+        <guava.version>32.0.1-android</guava.version>
         <mybatis-plus.version>3.5.12</mybatis-plus.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <knife4j.version>4.5.0</knife4j.version>

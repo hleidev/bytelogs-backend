@@ -21,12 +21,6 @@
             <artifactId>bytelogs-service</artifactId>
         </dependency>
 
-        <!-- Spring Boot 基础依赖 -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
-        </dependency>
-
         <!-- Spring Web 支持，提供REST API等Web功能 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -34,35 +28,15 @@
         </dependency>
 
         <!-- API文档支持 -->
-        <!-- Knife4j OpenAPI 3 文档支持 -->
         <dependency>
             <groupId>com.github.xiaoymin</groupId>
             <artifactId>knife4j-openapi3-spring-boot-starter</artifactId>
         </dependency>
 
-        <!-- 工具类依赖 -->
-        <!-- Lombok注解处理器 -->
+        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <!-- Commons-Lang3工具类 -->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-        </dependency>
-
-        <!-- MapStruct对象映射工具 -->
-        <dependency>
-            <groupId>org.mapstruct</groupId>
-            <artifactId>mapstruct</artifactId>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.mapstruct</groupId>
-            <artifactId>mapstruct-processor</artifactId>
             <scope>provided</scope>
         </dependency>
 

@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.vo.ResVo;
 import top.harrylei.forum.api.model.vo.constants.StatusEnum;
-import top.harrylei.forum.api.model.vo.user.dto.LoginDTO;
+import top.harrylei.forum.api.model.vo.auth.LoginReq;
 import top.harrylei.forum.service.auth.service.AuthService;
 
 /**
@@ -32,7 +32,7 @@ public class AuthController {
      * 用户注册
      */
     @PostMapping("/register")
-    public ResVo<Boolean> register(@Valid @RequestBody LoginDTO logReq, HttpServletResponse response) {
+    public ResVo<Boolean> register(@Valid @RequestBody LoginReq logReq, HttpServletResponse response) {
         String username = logReq.getUsername();
         String password = logReq.getPassword();
         
@@ -53,7 +53,7 @@ public class AuthController {
      * 用户登录
      */
     @PostMapping("/login")
-    public ResVo<Boolean> login(@Valid @RequestBody LoginDTO request, HttpServletResponse response) {
+    public ResVo<Boolean> login(@Valid @RequestBody LoginReq request, HttpServletResponse response) {
         String username = request.getUsername();
         String password = request.getPassword();
         
