@@ -13,11 +13,11 @@ public enum LoginTypeEnum {
     /**
      * 微信登录
      */
-    WECHAT(0),
+    WECHAT(1),
     /**
      * 用户名+密码登录
      */
-    USER_PWD(1),
+    USER_PWD(0),
     ;
-    private int type;
+    private int code;
 }

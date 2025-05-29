@@ -25,13 +25,14 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <guava.version>31.1-jre</guava.version>
-        <mybaits-plus.version>3.5.2</mybaits-plus.version>
+        <mybatis-plus.version>3.5.12</mybatis-plus.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <knife4j.version>4.5.0</knife4j.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <flexmark.version>0.62.2</flexmark.version>
         <springdoc.version>2.3.0</springdoc.version>
         <transmittable.version>2.14.4</transmittable.version>
+        <jetbrains-annotations.version>24.1.0</jetbrains-annotations.version>
     </properties>
 
     <dependencyManagement>
@@ -72,8 +73,8 @@
             <!-- MyBatis-Plus 持久层框架，简化 MyBatis 操作，增强 CRUD 支持 -->
             <dependency>
                 <groupId>com.baomidou</groupId>
-                <artifactId>mybatis-plus-boot-starter</artifactId>
-                <version>${mybaits-plus.version}</version>
+                <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+                <version>${mybatis-plus.version}</version>
             </dependency>
 
             <!-- Apache Commons Lang 扩展包，提供 StringUtils、ObjectUtils 等通用工具类 -->
@@ -120,6 +121,13 @@
                 <groupId>com.alibaba</groupId>
                 <artifactId>transmittable-thread-local</artifactId>
                 <version>${transmittable.version}</version>
+            </dependency>
+
+            <!-- JetBrains Annotations，提供@NotNull等注解 -->
+            <dependency>
+                <groupId>org.jetbrains</groupId>
+                <artifactId>annotations</artifactId>
+                <version>${jetbrains-annotations.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

@@ -1,0 +1,26 @@
+server:
+  port: 8080 # 应用启动端口号
+  servlet:
+    session:
+      timeout: 5m # 会话超时时间，设置为 5 分钟
+  compression:
+    enabled: true # 启用响应压缩，提高传输效率
+    min-response-size: 2KB # 压缩的最小响应体大小，超过该值才压缩
+
+spring:
+  application:
+    name: bytelogs # 应用名称，用于服务发现或日志标识
+  config:
+    import: application-dal.yml # 引入数据库相关配置文件
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true # 数据库字段下划线命名自动映射为 Java 驼峰命名
+
+database:
+  name: byte_logs # 自定义字段，数据库名称（可用于多数据源识别）
+
+jwt:
+  issuer: bytelogs # JWT 令牌发布者标识
+  secret: your-very-secure-and-long-secret-key-by-bytelogs # JWT 加密用的密钥，必须保密
+  expire: 604800 # JWT 有效时间，单位为秒（此处为 7 天，单位 s）
