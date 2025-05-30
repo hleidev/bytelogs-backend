@@ -10,5 +10,5 @@ import org.springframework.context.annotation.Configuration;
         "top.harrylei.forum.service.user.repository.mapper",
         "top.harrylei.forum.service.auth.repository.mapper"
 })
-public class ServiceAutoConfig {
+public class ForumServiceAutoConfig {
 }

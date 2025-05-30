@@ -1,4 +1,4 @@
-package top.harrylei.forum.core.filter;
+package top.harrylei.forum.core.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -14,8 +14,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
 import top.harrylei.forum.core.context.ReqInfoContext;
-import top.harrylei.forum.core.security.JwtUtil;
-import top.harrylei.forum.core.security.UserInfoService;
 
 import java.io.IOException;
 import java.util.ArrayList;

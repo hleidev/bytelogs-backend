@@ -2,32 +2,27 @@ package top.harrylei.forum.api.model.enums;
 
 import lombok.Getter;
 
-import java.util.Objects;
-
 /**
- * @author YiHui
- * @date 2023/1/31
+ * 用户角色枚举类
  */
+@Getter
 public enum RoleEnum {
-    NORMAL(0, "普通用户"),
-    ADMIN(1, "超级用户"),
-    ;
+    NORMAL(0, "普通用户"), ADMIN(1, "超级用户");
 
-    @Getter
-    private int role;
-    @Getter
-    private String desc;
+    private final int code;
+    private final String desc;
 
     RoleEnum(int role, String desc) {
-        this.role = role;
+        this.code = role;
         this.desc = desc;
     }
 
-    public static String role(Integer roleId) {
-        if (Objects.equals(roleId, 1)) {
-            return ADMIN.name();
-        } else {
-            return NORMAL.name();
+    public static String of(Integer code) {
+        for (RoleEnum role : values()) {
+            if (role.getCode() == code) {
+                return role.name();
+            }
         }
+        return NORMAL.name();
     }
 }

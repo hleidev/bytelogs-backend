@@ -1,15 +1,18 @@
 package top.harrylei.forum.service.user.repository.entity;
 
+import java.io.Serial;
+
 import com.baomidou.mybatisplus.annotation.TableName;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 import top.harrylei.forum.api.model.entity.BaseDO;
-
-import java.io.Serial;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @TableName("user_account")
+@Accessors(chain = true)
 public class UserDO extends BaseDO {
 
     @Serial

@@ -50,18 +50,18 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // 创建新用户
-        UserDO newUser = new UserDO();
-        newUser.setUserName(username);
-        newUser.setPassword(BCryptUtil.hash(password));
-        newUser.setThirdAccountId("");
-        newUser.setLoginType(LoginTypeEnum.USER_PWD.getCode());
+        UserDO newUser = new UserDO()
+                .setUserName(username)
+                .setPassword(BCryptUtil.hash(password))
+                .setThirdAccountId("")
+                .setLoginType(LoginTypeEnum.USER_PWD.getCode());
         userDAO.saveUser(newUser);
 
         // 创建用户信息
-        UserInfoDO newUserInfo = new UserInfoDO();
-        newUserInfo.setUserId(newUser.getId());
-        newUserInfo.setUserName(username);
-        newUserInfo.setPhoto("");
+        UserInfoDO newUserInfo = new UserInfoDO()
+                .setUserId(newUser.getId())
+                .setUserName(username)
+                .setPhoto("");
         userDAO.save(newUserInfo);
 
         // 更新上下文并返回token

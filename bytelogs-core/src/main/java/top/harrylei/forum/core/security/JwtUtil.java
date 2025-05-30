@@ -16,6 +16,7 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import top.harrylei.forum.api.model.enums.RoleEnum;
 import top.harrylei.forum.core.config.JwtProperties;
 
 /**
@@ -42,15 +43,20 @@ public class JwtUtil {
      * 生成 Token
      *
      * @param userId 用户ID
-     * @param role
+     * @param role   用户角色
      * @return JWT令牌字符串
      */
     public String generateToken(Long userId, Integer role) {
         long now = System.currentTimeMillis();
         Date expiryDate = new Date(now + jwtProperties.getExpire() * 1000);
-        return Jwts.builder().setSubject(String.valueOf(userId)).claim("role", String.valueOf(role))
-            .setIssuer(jwtProperties.getIssuer()).setIssuedAt(new Date(now)).setExpiration(expiryDate)
-            .signWith(secretKey, SignatureAlgorithm.HS256).compact();
+        return Jwts.builder()
+                .setSubject(String.valueOf(userId))
+                .claim("role", RoleEnum.of(role))
+                .setIssuer(jwtProperties.getIssuer())
+                .setIssuedAt(new Date(now))
+                .setExpiration(expiryDate)
+                .signWith(secretKey, SignatureAlgorithm.HS256)
+                .compact();
     }
 
     public Long parseUserId(String token) {
@@ -64,7 +70,7 @@ public class JwtUtil {
     public String parseRole(String token) {
         return Optional.ofNullable(parseAllClaims(token)).map(claims -> claims.get("role", String.class)).orElse(null);
     }
-    
+
     public boolean isTokenExpired(String token) {
         return getExpiration(token).before(new Date());
     }
@@ -72,7 +78,7 @@ public class JwtUtil {
     public Date getExpiration(String token) {
         return Optional.ofNullable(parseAllClaims(token)).map(Claims::getExpiration).orElse(new Date(0));
     }
-    
+
     private Claims parseAllClaims(String token) {
         try {
             return Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token).getBody();

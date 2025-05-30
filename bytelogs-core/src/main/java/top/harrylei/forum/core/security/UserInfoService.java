@@ -5,8 +5,7 @@ import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
 import java.util.function.Consumer;
 
 /**
- * 用户信息服务接口，用于获取用户详细信息
- * 设计为接口以解耦实现，避免循环依赖
+ * 用户信息服务接口，用于获取用户详细信息 设计为接口以解耦实现，避免循环依赖
  */
 public interface UserInfoService {
 
