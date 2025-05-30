@@ -1,4 +1,4 @@
-package top.harrylei.forum.service.config;
+package top.harrylei.forum.core.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

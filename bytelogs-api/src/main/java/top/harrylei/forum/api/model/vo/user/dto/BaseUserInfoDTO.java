@@ -5,11 +5,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 import top.harrylei.forum.api.model.entity.BaseDTO;
-import top.harrylei.forum.api.model.enums.user.UserAIStatEnum;
 
 /**
- * @author YiHui
- * @date 2022/8/15
+ * 用户基础实体对象
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -69,25 +67,8 @@ public class BaseUserInfoDTO extends BaseDTO {
     private Integer deleted;
 
     /**
-     * 用户最后登录区域
-     */
-    @Schema(description = "用户最后登录的地理位置", example = "湖北·武汉")
-    private String region;
-
-    /**
-     * 星球状态
-     */
-    private UserAIStatEnum starStatus;
-
-    /**
      * 用户的邮箱
      */
-    @Schema(description = "用户邮箱", example = "paicoding@126.com")
+    @Schema(description = "用户邮箱", example = "bytelogs@gmail.com")
     private String email;
-
-    /**
-     * 收款码信息
-     */
-    @Schema(description = "用户的收款码", example = "{\"wx\":\"wxp://f2f0YUXuGn6X2dI6FS2GrMjuG0Lw2plZqwjO4keoZaRr320\"}")
-    private String payCode;
 }

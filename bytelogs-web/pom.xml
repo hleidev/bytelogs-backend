@@ -21,12 +21,6 @@
             <artifactId>bytelogs-service</artifactId>
         </dependency>
 
-        <!-- Spring Web 支持，提供REST API等Web功能 -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-
         <!-- API文档支持 -->
         <dependency>
             <groupId>com.github.xiaoymin</groupId>

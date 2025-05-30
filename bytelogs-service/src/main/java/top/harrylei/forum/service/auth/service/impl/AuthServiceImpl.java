@@ -9,13 +9,15 @@ import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.enums.user.LoginTypeEnum;
 import top.harrylei.forum.api.model.exception.ExceptionUtil;
 import top.harrylei.forum.api.model.vo.constants.StatusEnum;
+import top.harrylei.forum.core.context.ReqInfoContext;
+import top.harrylei.forum.core.security.JwtUtil;
 import top.harrylei.forum.core.util.BCryptUtil;
 import top.harrylei.forum.core.util.PasswordUtil;
 import top.harrylei.forum.service.auth.service.AuthService;
+import top.harrylei.forum.service.user.converted.UserInfoConverter;
 import top.harrylei.forum.service.user.repository.dao.UserDAO;
 import top.harrylei.forum.service.user.repository.entity.UserDO;
 import top.harrylei.forum.service.user.repository.entity.UserInfoDO;
-import top.harrylei.forum.service.util.JwtUtil;
 
 /**
  * 登录和注册服务实现类
@@ -64,7 +66,6 @@ public class AuthServiceImpl implements AuthService {
 
         // 更新上下文并返回token
         Long userId = newUser.getId();
-        // TODO 用户上下文保存 userId
         log.info("用户注册成功: userId={}，username={}", userId, username);
 
         return true;
@@ -91,12 +92,14 @@ public class AuthServiceImpl implements AuthService {
 
         // 更新上下文并返回token
         Long userId = user.getId();
-        // TODO 用户上下文保存 userId
+        UserInfoDO userInfo = userDAO.getById(user.getId());
+
+        ReqInfoContext.getContext().setUserId(userId).setUser(UserInfoConverter.toDTO(userInfo));
         log.info("用户登录成功: {}", username);
 
         // TODO 将 token 保存到 Redis 中
 
-        return jwtUtil.generateToken(userId);
+        return jwtUtil.generateToken(userId, userInfo.getUserRole());
     }
 
     @Override
@@ -108,7 +111,7 @@ public class AuthServiceImpl implements AuthService {
 
         try {
             // 解析token获取用户ID
-            Long userId = jwtUtil.parseToken(token);
+            Long userId = jwtUtil.parseUserId(token);
             if (userId == null) {
                 log.warn("注销失败: 无效的token");
                 return;

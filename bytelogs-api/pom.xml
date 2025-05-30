@@ -59,12 +59,6 @@
             <scope>provided</scope>
         </dependency>
         
-        <!-- Transmittable ThreadLocal 支持 -->
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>transmittable-thread-local</artifactId>
-        </dependency>
-        
         <!-- MapStruct 是编译期 Bean 映射工具，用于 DTO 和 Entity 间字段转换 -->
         <dependency>
             <groupId>org.mapstruct</groupId>

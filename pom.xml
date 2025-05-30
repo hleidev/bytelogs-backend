@@ -31,7 +31,7 @@
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <flexmark.version>0.62.2</flexmark.version>
         <springdoc.version>2.3.0</springdoc.version>
-        <transmittable.version>2.14.4</transmittable.version>
+        <transmittable.version>2.14.5</transmittable.version>
         <jetbrains-annotations.version>24.1.0</jetbrains-annotations.version>
     </properties>
 
