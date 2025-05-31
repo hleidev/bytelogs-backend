@@ -39,13 +39,13 @@ public class AuthController {
 
         try {
             if (authService.register(username, password)) {
-                log.info("用户注册成功: {}", username);
+                log.info("用户注册成功: username={}", username);
                 return ResVO.ok(true);
             } else {
                 return ResVO.fail(StatusEnum.LOGIN_FAILED_MIXED, "注册失败，请稍后重试");
             }
         } catch (Exception e) {
-            log.error("用户注册异常: {}, 原因: {}", username, e.getMessage(), e);
+            log.error("用户注册异常: username={}, 原因: {}", username, e.getMessage(), e);
             return ResVO.fail(StatusEnum.LOGIN_FAILED_MIXED, e.getMessage());
         }
     }
@@ -64,13 +64,13 @@ public class AuthController {
                 // 将JWT令牌添加到响应头
                 response.setHeader("Authorization", "Bearer " + token);
                 response.setHeader("Access-Control-Expose-Headers", "Authorization");
-                log.info("用户登录成功: {}", username);
+                log.info("用户登录成功: username={}", username);
                 return ResVO.ok(true);
             } else {
                 return ResVO.fail(StatusEnum.LOGIN_FAILED_MIXED, "用户名或密码登录错误，请稍后重试");
             }
         } catch (Exception e) {
-            log.error("用户登录异常: {}, 原因: {}", username, e.getMessage(), e);
+            log.error("用户登录异常: username={}, 原因: {}", username, e.getMessage(), e);
             return ResVO.fail(StatusEnum.LOGIN_FAILED_MIXED, e.getMessage());
         }
     }

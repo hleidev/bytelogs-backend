@@ -85,7 +85,7 @@ public class AuthServiceImpl implements AuthService {
 
         // 校验密码
         if (!BCryptUtil.matches(password, user.getPassword())) {
-            log.warn("用户密码错误: {}", username);
+            log.warn("用户密码错误: username={}", username);
             throw ExceptionUtil.of(StatusEnum.USER_PWD_ERROR);
         }
 
@@ -94,7 +94,7 @@ public class AuthServiceImpl implements AuthService {
         UserInfoDO userInfo = userInfoDAO.getByUserId(userId);
 
         ReqInfoContext.getContext().setUserId(userId).setUser(UserInfoConverter.toDTO(userInfo));
-        log.info("用户登录成功: {}", username);
+        log.info("用户登录成功: userId={}, username={}", userId, username);
 
         // 生成token
         String token = jwtUtil.generateToken(userId, userInfo.getUserRole());
