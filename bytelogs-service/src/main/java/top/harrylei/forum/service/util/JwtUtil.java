@@ -1,4 +1,4 @@
-package top.harrylei.forum.core.util;
+package top.harrylei.forum.service.util;
 
 import java.util.Date;
 import java.util.Optional;
@@ -17,7 +17,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.enums.RoleEnum;
-import top.harrylei.forum.core.config.JwtProperties;
+import top.harrylei.forum.service.config.JwtProperties;
 
 /**
  * JWT 工具类，负责生成与解析 Token

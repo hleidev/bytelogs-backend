@@ -12,7 +12,7 @@ import top.harrylei.forum.api.model.vo.constants.StatusEnum;
 import top.harrylei.forum.core.common.RedisKeyConstants;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.util.BCryptUtil;
-import top.harrylei.forum.core.util.JwtUtil;
+import top.harrylei.forum.service.util.JwtUtil;
 import top.harrylei.forum.core.util.PasswordUtil;
 import top.harrylei.forum.core.util.RedisUtil;
 import top.harrylei.forum.service.auth.service.AuthService;

@@ -20,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
 import top.harrylei.forum.core.common.RedisKeyConstants;
 import top.harrylei.forum.core.context.ReqInfoContext;
-import top.harrylei.forum.core.util.JwtUtil;
+import top.harrylei.forum.service.util.JwtUtil;
 import top.harrylei.forum.core.util.RedisUtil;
 import top.harrylei.forum.service.user.service.UserService;
 
