@@ -18,11 +18,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
-import top.harrylei.forum.service.infra.redis.RedisKeyConstants;
 import top.harrylei.forum.core.context.ReqInfoContext;
-import top.harrylei.forum.service.util.JwtUtil;
+import top.harrylei.forum.service.infra.redis.RedisKeyConstants;
 import top.harrylei.forum.service.infra.redis.RedisService;
 import top.harrylei.forum.service.user.service.UserService;
+import top.harrylei.forum.service.util.JwtUtil;
 
 /**
  * JWT认证过滤器
@@ -42,7 +42,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     /**
      * 过滤器核心处理方法
      * <p>
-     * 处理每个HTTP请求，提取JWT令牌并进行认证。 认证成功后，会设置Spring Security上下文和请求上下文。
+     * 处理每个HTTP请求，提取JWT令牌并进行认证。 
+     * 认证成功后，会设置Spring Security上下文和请求上下文，同步获取完整用户信息。
      * </p>
      *
      * @param request 当前HTTP请求
@@ -68,22 +69,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     // 设置用户认证信息到Spring Security上下文
                     setAuthentication(userId, isAdmin);
 
-                    // 创建简单用户上下文（基本信息）
-                    BaseUserInfoDTO basicUserInfo = new BaseUserInfoDTO().setUserId(userId).setRole(role);
+                    // 获取完整用户信息
+                    BaseUserInfoDTO userInfo = userService.getUserInfoById(userId);
+                    
+                    // 如果获取失败，创建基本用户信息
+                    if (userInfo == null) {
+                        userInfo = new BaseUserInfoDTO().setUserId(userId).setRole(role);
+                    }
 
-                    // 设置基本用户信息到上下文
-                    setUserContext(userId, basicUserInfo, isAdmin);
-
-                    // 异步获取用户详细信息并设置上下文（需要查询数据库）
-                    userService.getUserInfoAsync(userId, userInfo -> {
-                        if (userInfo != null) {
-                            try {
-                                setUserContext(userId, userInfo, isAdmin);
-                            } catch (Exception e) {
-                                log.error("设置详细用户上下文异常: userId={}", userId, e);
-                            }
-                        }
-                    });
+                    // 设置用户信息到上下文
+                    setUserContext(userId, userInfo, isAdmin);
 
                     log.debug("用户认证成功: userId={}, role={}", userId, role);
                 }
@@ -180,9 +175,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     /**
-     * 设置用户上下文到TransmittableThreadLocal
+     * 设置用户上下文到ThreadLocal
      * <p>
-     * 将用户信息设置到请求上下文中，使业务代码能够访问用户信息。 使用TransmittableThreadLocal确保异步线程也能获取到用户上下文。
+     * 将用户信息设置到请求上下文中，使业务代码能够访问用户信息。
+     * 使用TransmittableThreadLocal确保在线程池等环境中也能获取到上下文。
      * </p>
      *
      * @param userId 用户ID

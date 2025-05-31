@@ -1,8 +1,5 @@
 package top.harrylei.forum.service.user.service.impl;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
-
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -36,22 +33,5 @@ public class UserServiceImpl implements UserService {
             log.error("获取用户信息异常: userId={}", userId, e);
             return null;
         }
-    }
-
-    @Override
-    public void getUserInfoAsync(Long userId, Consumer<BaseUserInfoDTO> callback) {
-        if (callback == null) {
-            return;
-        }
-        
-        CompletableFuture.runAsync(() -> {
-            try {
-                BaseUserInfoDTO userInfo = getUserInfoById(userId);
-                callback.accept(userInfo);
-            } catch (Exception e) {
-                log.error("异步获取用户信息异常: userId={}", userId, e);
-                callback.accept(null);
-            }
-        });
     }
 }
