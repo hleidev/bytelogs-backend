@@ -62,8 +62,6 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/auth/**").permitAll().requestMatchers("/api/v1/public/**").permitAll()
                 .requestMatchers("/api/v1/test/**").permitAll().requestMatchers("/error").permitAll()
                 .requestMatchers("/favicon.ico").permitAll().requestMatchers("/actuator/**").permitAll()
-                // Swagger/OpenAPI相关接口
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 // 静态资源
                 .requestMatchers("/static/**").permitAll()
                 // OPTIONS请求放行

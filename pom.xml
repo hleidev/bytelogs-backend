@@ -27,7 +27,6 @@
         <guava.version>32.0.1-android</guava.version>
         <mybatis-plus.version>3.5.12</mybatis-plus.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
-        <knife4j.version>4.5.0</knife4j.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <jjwt.version>0.11.5</jjwt.version>
         <flexmark.version>0.62.2</flexmark.version>
@@ -85,19 +84,13 @@
                 <version>${commons-lang3.version}</version>
             </dependency>
 
-            <!-- Knife4j 接口文档增强组件，基于 Swagger 打造，支持 UI 美化与分组 -->
-            <dependency>
-                <groupId>com.github.xiaoymin</groupId>
-                <artifactId>knife4j-openapi3-spring-boot-starter</artifactId>
-                <version>${knife4j.version}</version>
-            </dependency>
-
             <!-- MapStruct 是编译期 Bean 映射工具，用于 DTO 和 Entity 间字段转换 -->
             <dependency>
                 <groupId>org.mapstruct</groupId>
                 <artifactId>mapstruct</artifactId>
                 <version>${mapstruct.version}</version>
             </dependency>
+            
             <!-- MapStruct 是编译期 Bean 映射工具，用于 DTO 和 Entity 间字段转换 -->
             <dependency>
                 <groupId>org.mapstruct</groupId>
@@ -129,6 +122,7 @@
                 <version>${flexmark.version}</version>
             </dependency>
 
+            <!-- SpringDoc OpenAPI -->
             <dependency>
                 <groupId>org.springdoc</groupId>
                 <artifactId>springdoc-openapi-starter-common</artifactId>

@@ -43,7 +43,6 @@
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-common</artifactId>
-            <scope>provided</scope>
         </dependency>
         
         <!-- JetBrains Annotations，提供@NotNull等注解 -->
