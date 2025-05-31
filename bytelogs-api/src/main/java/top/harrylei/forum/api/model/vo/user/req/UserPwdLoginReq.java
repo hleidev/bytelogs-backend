@@ -1,4 +1,4 @@
-package top.harrylei.forum.api.model.vo.user;
+package top.harrylei.forum.api.model.vo.user.req;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
