@@ -1,4 +1,4 @@
-package top.harrylei.forum.service.forum.web.auth;
+package top.harrylei.forum.web.auth;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;

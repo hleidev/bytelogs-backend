@@ -2,35 +2,47 @@ package top.harrylei.forum.service.user.repository.dao;
 
 import org.springframework.stereotype.Repository;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
-import lombok.RequiredArgsConstructor;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.service.user.repository.entity.UserDO;
-import top.harrylei.forum.service.user.repository.entity.UserInfoDO;
-import top.harrylei.forum.service.user.repository.mapper.UserInfoMapper;
 import top.harrylei.forum.service.user.repository.mapper.UserMapper;
 
+/**
+ * 用户账号数据访问对象
+ * 负责操作user_account表
+ */
 @Repository
-@RequiredArgsConstructor
-public class UserDAO extends ServiceImpl<UserInfoMapper, UserInfoDO> {
+public class UserDAO extends ServiceImpl<UserMapper, UserDO> {
 
-    private final UserMapper userMapper;
-
+    /**
+     * 根据用户名查询用户账号信息
+     *
+     * @param username 用户名
+     * @return 用户账号信息，不存在则返回null
+     */
     public UserDO getUserByUserName(String username) {
-        LambdaQueryWrapper<UserDO> queryWrapper = new LambdaQueryWrapper<UserDO>()
+        if (username == null) {
+            return null;
+        }
+
+        return lambdaQuery()
                 .eq(UserDO::getUserName, username)
                 .eq(UserDO::getDeleted, YesOrNoEnum.NO.getCode())
-                .last("limit 1");
-        return userMapper.selectOne(queryWrapper);
+                .last("limit 1")
+                .one();
     }
 
+    /**
+     * 保存或更新用户账号信息
+     *
+     * @param user 用户账号信息
+     */
     public void saveUser(UserDO user) {
-        if (user != null) {
-            userMapper.insert(user);
+        if (user.getId() == null) {
+            baseMapper.insert(user);
         } else {
-            userMapper.updateById(user);
+            baseMapper.updateById(user);
         }
     }
-}
+} 

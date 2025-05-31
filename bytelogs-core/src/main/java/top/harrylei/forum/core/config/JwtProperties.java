@@ -25,4 +25,4 @@ public class JwtProperties {
      * JWT令牌有效时间，单位：秒
      */
     private Long expire;
-}
+} 

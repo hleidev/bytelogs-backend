@@ -1,4 +1,4 @@
-package top.harrylei.forum.core.config;
+package top.harrylei.forum.web.config;
 
 import java.util.List;
 
@@ -17,7 +17,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import lombok.RequiredArgsConstructor;
-import top.harrylei.forum.core.security.JwtAuthenticationFilter;
+import top.harrylei.forum.web.security.JwtAuthenticationFilter;
 
 /**
  * Spring Security 安全配置类
@@ -104,4 +104,4 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-}
+} 

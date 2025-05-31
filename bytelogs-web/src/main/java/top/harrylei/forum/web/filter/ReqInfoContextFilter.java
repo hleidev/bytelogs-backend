@@ -1,4 +1,4 @@
-package top.harrylei.forum.core.filter;
+package top.harrylei.forum.web.filter;
 
 import java.io.IOException;
 
@@ -104,4 +104,4 @@ public class ReqInfoContextFilter extends OncePerRequestFilter {
         }
         return ip;
     }
-}
+} 

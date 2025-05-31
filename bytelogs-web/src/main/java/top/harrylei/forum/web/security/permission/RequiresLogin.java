@@ -1,4 +1,4 @@
-package top.harrylei.forum.core.security.permission;
+package top.harrylei.forum.web.security.permission;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 
@@ -30,4 +30,4 @@ import java.lang.annotation.*;
 @Documented
 @PreAuthorize("isAuthenticated()")
 public @interface RequiresLogin {
-}
+} 

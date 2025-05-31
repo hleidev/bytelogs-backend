@@ -1,4 +1,15 @@
-package top.harrylei.forum.core.security;
+package top.harrylei.forum.web.security;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -6,20 +17,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
 import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
 import top.harrylei.forum.core.common.RedisKeyConstants;
 import top.harrylei.forum.core.context.ReqInfoContext;
+import top.harrylei.forum.core.util.JwtUtil;
 import top.harrylei.forum.core.util.RedisUtil;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import top.harrylei.forum.service.user.service.UserService;
 
 /**
  * JWT认证过滤器
@@ -34,7 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final RedisUtil redisUtil;
-    private final UserInfoService userInfoService;
+    private final UserService userService;
 
     /**
      * 过滤器核心处理方法
@@ -72,9 +75,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     setUserContext(userId, basicUserInfo, isAdmin);
 
                     // 异步获取用户详细信息并设置上下文（需要查询数据库）
-                    userInfoService.loadUserInfo(userId, userInfo -> {
+                    userService.getUserInfoAsync(userId, userInfo -> {
                         if (userInfo != null) {
-                            // 创建用户上下文信息
                             try {
                                 setUserContext(userId, userInfo, isAdmin);
                             } catch (Exception e) {
@@ -207,4 +209,4 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 重新设置上下文（为了保持链式调用的兼容性）
         ReqInfoContext.setContext(context);
     }
-}
+} 

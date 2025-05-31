@@ -1,4 +1,4 @@
-package top.harrylei.forum.core.security;
+package top.harrylei.forum.core.util;
 
 import java.util.Date;
 import java.util.Optional;
@@ -91,4 +91,4 @@ public class JwtUtil {
             return null;
         }
     }
-}
+} 

@@ -11,13 +11,14 @@ import top.harrylei.forum.api.model.exception.ExceptionUtil;
 import top.harrylei.forum.api.model.vo.constants.StatusEnum;
 import top.harrylei.forum.core.common.RedisKeyConstants;
 import top.harrylei.forum.core.context.ReqInfoContext;
-import top.harrylei.forum.core.security.JwtUtil;
 import top.harrylei.forum.core.util.BCryptUtil;
+import top.harrylei.forum.core.util.JwtUtil;
 import top.harrylei.forum.core.util.PasswordUtil;
 import top.harrylei.forum.core.util.RedisUtil;
 import top.harrylei.forum.service.auth.service.AuthService;
 import top.harrylei.forum.service.user.converted.UserInfoConverter;
 import top.harrylei.forum.service.user.repository.dao.UserDAO;
+import top.harrylei.forum.service.user.repository.dao.UserInfoDAO;
 import top.harrylei.forum.service.user.repository.entity.UserDO;
 import top.harrylei.forum.service.user.repository.entity.UserInfoDO;
 
@@ -29,7 +30,8 @@ import top.harrylei.forum.service.user.repository.entity.UserInfoDO;
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
-    private final UserDAO userDAO;
+    private final UserDAO userAccountDAO;
+    private final UserInfoDAO userInfoDAO;
     private final JwtUtil jwtUtil;
     private final RedisUtil redisUtil;
 
@@ -47,7 +49,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // 检查用户名是否已存在
-        UserDO user = userDAO.getUserByUserName(username);
+        UserDO user = userAccountDAO.getUserByUserName(username);
         if (user != null) {
             throw ExceptionUtil.of(StatusEnum.USER_LOGIN_NAME_REPEAT, username);
         }
@@ -55,11 +57,11 @@ public class AuthServiceImpl implements AuthService {
         // 创建新用户
         UserDO newUser = new UserDO().setUserName(username).setPassword(BCryptUtil.hash(password)).setThirdAccountId("")
             .setLoginType(LoginTypeEnum.USER_PWD.getCode());
-        userDAO.saveUser(newUser);
+        userAccountDAO.saveUser(newUser);
 
         // 创建用户信息
         UserInfoDO newUserInfo = new UserInfoDO().setUserId(newUser.getId()).setUserName(username).setPhoto("");
-        userDAO.save(newUserInfo);
+        userInfoDAO.save(newUserInfo);
 
         // 更新上下文并返回token
         Long userId = newUser.getId();
@@ -76,7 +78,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // 查找用户
-        UserDO user = userDAO.getUserByUserName(username);
+        UserDO user = userAccountDAO.getUserByUserName(username);
         if (user == null) {
             throw ExceptionUtil.of(StatusEnum.USER_NOT_EXISTS, "username=" + username);
         }
@@ -89,7 +91,7 @@ public class AuthServiceImpl implements AuthService {
 
         // 更新上下文并返回token
         Long userId = user.getId();
-        UserInfoDO userInfo = userDAO.getById(user.getId());
+        UserInfoDO userInfo = userInfoDAO.getByUserId(userId);
 
         ReqInfoContext.getContext().setUserId(userId).setUser(UserInfoConverter.toDTO(userInfo));
         log.info("用户登录成功: {}", username);

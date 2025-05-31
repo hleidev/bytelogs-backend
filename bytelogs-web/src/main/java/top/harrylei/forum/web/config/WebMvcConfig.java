@@ -1,4 +1,4 @@
-package top.harrylei.forum.service.forum.web.config;
+package top.harrylei.forum.web.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
