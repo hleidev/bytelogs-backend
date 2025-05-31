@@ -21,6 +21,12 @@
             <artifactId>bytelogs-service</artifactId>
         </dependency>
 
+        <!-- Spring Security -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
         <!-- API文档支持 -->
         <dependency>
             <groupId>com.github.xiaoymin</groupId>
