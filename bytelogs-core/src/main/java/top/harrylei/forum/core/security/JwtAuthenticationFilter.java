@@ -13,7 +13,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
+import top.harrylei.forum.core.common.RedisKeyConstants;
 import top.harrylei.forum.core.context.ReqInfoContext;
+import top.harrylei.forum.core.util.RedisUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,8 +24,7 @@ import java.util.List;
 /**
  * JWT认证过滤器
  * <p>
- * 负责解析请求中的JWT令牌，验证其有效性，并设置用户认证信息和上下文。
- * 这是安全框架的核心组件，确保每个受保护的接口都能正确识别用户身份。
+ * 负责解析请求中的JWT令牌，验证其有效性，并设置用户认证信息和上下文。 这是安全框架的核心组件，确保每个受保护的接口都能正确识别用户身份。
  * </p>
  */
 @Slf4j
@@ -32,13 +33,13 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final RedisUtil redisUtil;
     private final UserInfoService userInfoService;
 
     /**
      * 过滤器核心处理方法
      * <p>
-     * 处理每个HTTP请求，提取JWT令牌并进行认证。
-     * 认证成功后，会设置Spring Security上下文和请求上下文。
+     * 处理每个HTTP请求，提取JWT令牌并进行认证。 认证成功后，会设置Spring Security上下文和请求上下文。
      * </p>
      *
      * @param request 当前HTTP请求
@@ -54,7 +55,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (StringUtils.isNotBlank(token) && !jwtUtil.isTokenExpired(token)) {
                 // 解析JWT令牌获取用户ID
-                Long userId = jwtUtil.parseUserId(token);
+                Long userId = checkRedisToken(token);
 
                 if (userId != null) {
                     // 获取用户角色
@@ -81,7 +82,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             }
                         }
                     });
-                    
+
                     log.debug("用户认证成功: userId={}, role={}", userId, role);
                 }
             }
@@ -92,6 +93,43 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // 继续执行过滤器链
         filterChain.doFilter(request, response);
+    }
+
+    /**
+     * 验证Token是否有效
+     *
+     * @param token JWT令牌
+     * @return 如果有效返回用户ID，否则返回null
+     */
+    private Long checkRedisToken(String token) {
+        if (StringUtils.isBlank(token)) {
+            return null;
+        }
+
+        try {
+            // 解析JWT获取用户ID
+            Long userId = jwtUtil.parseUserId(token);
+            if (userId == null) {
+                return null;
+            }
+
+            // 从Redis获取存储的token
+            String redisToken = redisUtil.getObj(RedisKeyConstants.BYTE_LOGS_PREFIX + userId, String.class);
+
+            // 验证token是否匹配
+            if (StringUtils.isBlank(redisToken) || !token.equals(redisToken)) {
+                log.debug("Token验证失败: userId={}, token不匹配或已过期", userId);
+                return null;
+            }
+
+            // 刷新token过期时间
+            redisUtil.expire(RedisKeyConstants.BYTE_LOGS_PREFIX + userId, jwtUtil.getExpireSeconds());
+
+            return userId;
+        } catch (Exception e) {
+            log.error("Token验证异常", e);
+            return null;
+        }
     }
 
     /**
@@ -142,8 +180,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     /**
      * 设置用户上下文到TransmittableThreadLocal
      * <p>
-     * 将用户信息设置到请求上下文中，使业务代码能够访问用户信息。
-     * 使用TransmittableThreadLocal确保异步线程也能获取到用户上下文。
+     * 将用户信息设置到请求上下文中，使业务代码能够访问用户信息。 使用TransmittableThreadLocal确保异步线程也能获取到用户上下文。
      * </p>
      *
      * @param userId 用户ID
@@ -161,12 +198,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // 获取当前上下文（已在ReqInfoContext中确保不为null）
         ReqInfoContext.ReqInfo context = ReqInfoContext.getContext();
-        
+
         // 设置用户信息
         context.setUserId(userId);
         context.setUser(userInfo);
         context.setAuthorities(authorities);
-        
+
         // 重新设置上下文（为了保持链式调用的兼容性）
         ReqInfoContext.setContext(context);
     }

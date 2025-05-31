@@ -3,3 +3,17 @@ spring:
     url: jdbc:mysql://localhost:3306/${database.name}?useUnicode=true&allowPublicKeyRetrieval=true&autoReconnect=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai
     username: root
     password: Lyhswbba
+
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      database: 12
+      password: Lyhswbba
+      timeout: 10s
+      lettuce:
+        pool:
+          max-active: 8
+          max-wait: -1ms
+          max-idle: 8
+          min-idle: 0

@@ -9,10 +9,12 @@ import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.enums.user.LoginTypeEnum;
 import top.harrylei.forum.api.model.exception.ExceptionUtil;
 import top.harrylei.forum.api.model.vo.constants.StatusEnum;
+import top.harrylei.forum.core.common.RedisKeyConstants;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.security.JwtUtil;
 import top.harrylei.forum.core.util.BCryptUtil;
 import top.harrylei.forum.core.util.PasswordUtil;
+import top.harrylei.forum.core.util.RedisUtil;
 import top.harrylei.forum.service.auth.service.AuthService;
 import top.harrylei.forum.service.user.converted.UserInfoConverter;
 import top.harrylei.forum.service.user.repository.dao.UserDAO;
@@ -29,6 +31,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserDAO userDAO;
     private final JwtUtil jwtUtil;
+    private final RedisUtil redisUtil;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -50,18 +53,12 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // 创建新用户
-        UserDO newUser = new UserDO()
-                .setUserName(username)
-                .setPassword(BCryptUtil.hash(password))
-                .setThirdAccountId("")
-                .setLoginType(LoginTypeEnum.USER_PWD.getCode());
+        UserDO newUser = new UserDO().setUserName(username).setPassword(BCryptUtil.hash(password)).setThirdAccountId("")
+            .setLoginType(LoginTypeEnum.USER_PWD.getCode());
         userDAO.saveUser(newUser);
 
         // 创建用户信息
-        UserInfoDO newUserInfo = new UserInfoDO()
-                .setUserId(newUser.getId())
-                .setUserName(username)
-                .setPhoto("");
+        UserInfoDO newUserInfo = new UserInfoDO().setUserId(newUser.getId()).setUserName(username).setPhoto("");
         userDAO.save(newUserInfo);
 
         // 更新上下文并返回token
@@ -97,9 +94,13 @@ public class AuthServiceImpl implements AuthService {
         ReqInfoContext.getContext().setUserId(userId).setUser(UserInfoConverter.toDTO(userInfo));
         log.info("用户登录成功: {}", username);
 
-        // TODO 将 token 保存到 Redis 中
+        // 生成token
+        String token = jwtUtil.generateToken(userId, userInfo.getUserRole());
 
-        return jwtUtil.generateToken(userId, userInfo.getUserRole());
+        // 将token存储到Redis，过期时间与JWT一致
+        redisUtil.setObj(RedisKeyConstants.TOKEN_PREFIX + userId, token, jwtUtil.getExpireSeconds());
+
+        return token;
     }
 
     @Override
@@ -117,8 +118,13 @@ public class AuthServiceImpl implements AuthService {
                 return;
             }
 
-            // TODO 后期删除 Redis 中的 Token
-            log.info("用户[{}]注销成功", userId);
+            // 从Redis中删除token
+            boolean result = redisUtil.del(RedisKeyConstants.TOKEN_PREFIX + userId);
+            if (result) {
+                log.info("用户 userId={} 注销成功", userId);
+            } else {
+                log.warn("用户 userId={} 注销失败: Redis中不存在token", userId);
+            }
         } catch (Exception e) {
             log.error("注销过程发生异常", e);
         }

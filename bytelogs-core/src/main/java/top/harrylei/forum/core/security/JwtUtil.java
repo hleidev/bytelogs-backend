@@ -75,6 +75,10 @@ public class JwtUtil {
         return getExpiration(token).before(new Date());
     }
 
+    public Long getExpireSeconds() {
+        return jwtProperties.getExpire();
+    }
+
     public Date getExpiration(String token) {
         return Optional.ofNullable(parseAllClaims(token)).map(Claims::getExpiration).orElse(new Date(0));
     }
