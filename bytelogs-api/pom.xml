@@ -18,7 +18,7 @@
     </properties>
 
     <dependencies>
-        <!-- Lombok 编译时注解工具，简化实体类代码，如 @Getter/@Setter/@Builder -->
+        <!-- Lombok 编译时注解工具，简化实体类代码 -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -32,17 +32,18 @@
             <scope>provided</scope>
         </dependency>
         
-        <!-- Jackson 数据绑定库，用于 JSON 序列化与反序列化（如 VO、DTO） -->
+        <!-- Jackson 数据绑定库，用于 JSON 序列化与反序列化 -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <scope>provided</scope>
         </dependency>
         
-        <!-- SpringDoc OpenAPI 3 支持 (用于API文档注解) -->
+        <!-- API文档注解支持 -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-common</artifactId>
+            <scope>provided</scope>
         </dependency>
         
         <!-- JetBrains Annotations，提供@NotNull等注解 -->
@@ -51,17 +52,18 @@
             <artifactId>annotations</artifactId>
         </dependency>
         
-        <!-- MyBatis-Plus 启动器，用于支持实体类中的注解配置 -->
+        <!-- MyBatis-Plus 实体类注解支持 -->
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
             <scope>provided</scope>
         </dependency>
         
-        <!-- MapStruct 是编译期 Bean 映射工具，用于 DTO 和 Entity 间字段转换 -->
+        <!-- MapStruct 对象映射工具 -->
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
+            <scope>provided</scope>
         </dependency>
         
         <dependency>

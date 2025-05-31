@@ -9,12 +9,12 @@ import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.enums.user.LoginTypeEnum;
 import top.harrylei.forum.api.model.exception.ExceptionUtil;
 import top.harrylei.forum.api.model.vo.constants.StatusEnum;
-import top.harrylei.forum.core.common.RedisKeyConstants;
+import top.harrylei.forum.service.infra.redis.RedisKeyConstants;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.util.BCryptUtil;
 import top.harrylei.forum.service.util.JwtUtil;
 import top.harrylei.forum.core.util.PasswordUtil;
-import top.harrylei.forum.core.util.RedisUtil;
+import top.harrylei.forum.service.infra.redis.RedisService;
 import top.harrylei.forum.service.auth.service.AuthService;
 import top.harrylei.forum.service.user.converted.UserInfoConverter;
 import top.harrylei.forum.service.user.repository.dao.UserDAO;
@@ -33,7 +33,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserDAO userAccountDAO;
     private final UserInfoDAO userInfoDAO;
     private final JwtUtil jwtUtil;
-    private final RedisUtil redisUtil;
+    private final RedisService redisService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -100,7 +100,7 @@ public class AuthServiceImpl implements AuthService {
         String token = jwtUtil.generateToken(userId, userInfo.getUserRole());
 
         // 将token存储到Redis，过期时间与JWT一致
-        redisUtil.setObj(RedisKeyConstants.TOKEN_PREFIX + userId, token, jwtUtil.getExpireSeconds());
+        redisService.setObj(RedisKeyConstants.TOKEN_PREFIX + userId, token, jwtUtil.getExpireSeconds());
 
         return token;
     }
@@ -121,7 +121,7 @@ public class AuthServiceImpl implements AuthService {
             }
 
             // 从Redis中删除token
-            boolean result = redisUtil.del(RedisKeyConstants.TOKEN_PREFIX + userId);
+            boolean result = redisService.del(RedisKeyConstants.TOKEN_PREFIX + userId);
             if (result) {
                 log.info("用户 userId={} 注销成功", userId);
             } else {

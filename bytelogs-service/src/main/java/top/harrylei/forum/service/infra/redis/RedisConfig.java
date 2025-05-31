@@ -1,4 +1,4 @@
-package top.harrylei.forum.core.config;
+package top.harrylei.forum.service.infra.redis;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;

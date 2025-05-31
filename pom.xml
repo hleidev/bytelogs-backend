@@ -4,10 +4,10 @@
     <modelVersion>4.0.0</modelVersion>
     <packaging>pom</packaging>
     <modules>
-        <module>bytelogs-core</module>
         <module>bytelogs-api</module>
-        <module>bytelogs-web</module>
+        <module>bytelogs-core</module>
         <module>bytelogs-service</module>
+        <module>bytelogs-web</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -19,11 +19,14 @@
     <artifactId>bytelogs-forum</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>bytelogs-forum</name>
-    <description>simple forum by java &amp; spring</description>
+    <description>简洁的技术论坛，基于Java和Spring框架</description>
+    
+    <!-- 统一管理版本号 -->
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
+        <!-- 三方依赖版本 -->
         <guava.version>32.0.1-android</guava.version>
         <mybatis-plus.version>3.5.12</mybatis-plus.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
@@ -35,63 +38,66 @@
         <jetbrains-annotations.version>24.1.0</jetbrains-annotations.version>
     </properties>
 
+    <!-- 依赖管理，统一控制版本 -->
     <dependencyManagement>
         <dependencies>
-            <!-- 当前项目自定义的 API 模块，包含 VO/DTO/异常等通用结构 -->
+            <!-- 内部模块依赖 -->
+            <!-- API模块：包含DTO/VO/异常定义等 -->
             <dependency>
                 <groupId>top.harrylei.forum</groupId>
                 <artifactId>bytelogs-api</artifactId>
-                <version>0.0.1-SNAPSHOT</version>
+                <version>${project.version}</version>
             </dependency>
 
-            <!-- 当前项目自定义的核心模块，包含工具类、JWT、配置封装等 -->
+            <!-- 核心模块：包含工具类、配置、上下文等 -->
             <dependency>
                 <groupId>top.harrylei.forum</groupId>
                 <artifactId>bytelogs-core</artifactId>
-                <version>0.0.1-SNAPSHOT</version>
+                <version>${project.version}</version>
             </dependency>
 
-            <dependency>
-                <groupId>top.harrylei.forum</groupId>
-                <artifactId>bytelogs-web</artifactId>
-                <version>0.0.1-SNAPSHOT</version>
-            </dependency>
-
+            <!-- 服务模块：包含业务逻辑实现 -->
             <dependency>
                 <groupId>top.harrylei.forum</groupId>
                 <artifactId>bytelogs-service</artifactId>
-                <version>0.0.1-SNAPSHOT</version>
+                <version>${project.version}</version>
             </dependency>
 
-            <!-- Google 提供的工具包，包含集合、缓存、字符串处理等扩展工具 -->
+            <!-- Web模块：包含控制器、过滤器等 -->
+            <dependency>
+                <groupId>top.harrylei.forum</groupId>
+                <artifactId>bytelogs-web</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- 通用工具依赖 -->
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>${guava.version}</version>
             </dependency>
 
-            <!-- MyBatis-Plus 持久层框架，简化 MyBatis 操作，增强 CRUD 支持 -->
+            <!-- 持久层框架 -->
             <dependency>
                 <groupId>com.baomidou</groupId>
                 <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
                 <version>${mybatis-plus.version}</version>
             </dependency>
 
-            <!-- Apache Commons Lang 扩展包，提供 StringUtils、ObjectUtils 等通用工具类 -->
+            <!-- 通用工具类 -->
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
                 <version>${commons-lang3.version}</version>
             </dependency>
 
-            <!-- MapStruct 是编译期 Bean 映射工具，用于 DTO 和 Entity 间字段转换 -->
+            <!-- 对象映射工具 -->
             <dependency>
                 <groupId>org.mapstruct</groupId>
                 <artifactId>mapstruct</artifactId>
                 <version>${mapstruct.version}</version>
             </dependency>
             
-            <!-- MapStruct 是编译期 Bean 映射工具，用于 DTO 和 Entity 间字段转换 -->
             <dependency>
                 <groupId>org.mapstruct</groupId>
                 <artifactId>mapstruct-processor</artifactId>
@@ -109,20 +115,23 @@
                 <groupId>io.jsonwebtoken</groupId>
                 <artifactId>jjwt-impl</artifactId>
                 <version>${jjwt.version}</version>
+                <scope>runtime</scope>
             </dependency>
             <dependency>
                 <groupId>io.jsonwebtoken</groupId>
                 <artifactId>jjwt-jackson</artifactId>
                 <version>${jjwt.version}</version>
+                <scope>runtime</scope>
             </dependency>
 
+            <!-- Markdown处理 -->
             <dependency>
                 <groupId>com.vladsch.flexmark</groupId>
                 <artifactId>flexmark-all</artifactId>
                 <version>${flexmark.version}</version>
             </dependency>
 
-            <!-- SpringDoc OpenAPI -->
+            <!-- API文档 -->
             <dependency>
                 <groupId>org.springdoc</groupId>
                 <artifactId>springdoc-openapi-starter-common</artifactId>
@@ -130,12 +139,19 @@
             </dependency>
 
             <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <version>${springdoc.version}</version>
+            </dependency>
+
+            <!-- 线程变量传递 -->
+            <dependency>
                 <groupId>com.alibaba</groupId>
                 <artifactId>transmittable-thread-local</artifactId>
                 <version>${transmittable.version}</version>
             </dependency>
 
-            <!-- JetBrains Annotations，提供@NotNull等注解 -->
+            <!-- 代码注解增强 -->
             <dependency>
                 <groupId>org.jetbrains</groupId>
                 <artifactId>annotations</artifactId>
@@ -145,7 +161,7 @@
     </dependencyManagement>
 
     <profiles>
-        <!-- 本地开发 -->
+        <!-- 本地开发环境 -->
         <profile>
             <id>dev</id>
             <properties>
@@ -155,7 +171,7 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
         </profile>
-        <!-- 生产 -->
+        <!-- 生产环境 -->
         <profile>
             <id>prod</id>
             <properties>
@@ -175,7 +191,16 @@
             </resource>
         </resources>
     </build>
+    
     <repositories>
+        <repository>
+            <id>aliyun-maven</id>
+            <name>阿里云Maven仓库</name>
+            <url>https://maven.aliyun.com/nexus/content/groups/public/</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
         <repository>
             <id>spring-milestones</id>
             <name>Spring Milestones</name>
@@ -184,16 +209,16 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
-        <repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
             <id>aliyun-maven</id>
-            <name>aliyun-maven</name>
+            <name>阿里云Maven仓库</name>
             <url>https://maven.aliyun.com/nexus/content/groups/public/</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
-        </repository>
-    </repositories>
-    <pluginRepositories>
+        </pluginRepository>
         <pluginRepository>
             <id>spring-milestones</id>
             <name>Spring Milestones</name>

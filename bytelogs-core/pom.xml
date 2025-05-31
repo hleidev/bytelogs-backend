@@ -18,81 +18,66 @@
     </properties>
 
     <dependencies>
-        <!-- 当前项目自定义的 API 模块，提供 VO、DTO、异常定义等结构 -->
+        <!-- 依赖 API 模块，提供基础数据结构 -->
         <dependency>
             <groupId>top.harrylei.forum</groupId>
             <artifactId>bytelogs-api</artifactId>
         </dependency>
 
-        <!-- Spring 核心上下文支持 -->
+        <!-- Spring 核心依赖 -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
         </dependency>
         
-        <!-- Spring Web 框架 -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
         </dependency>
-
-        <!-- Spring Web 支持，提供REST API等Web功能 -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
         
-        <!-- Spring Boot 基础依赖 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot</artifactId>
         </dependency>
 
-        <!-- Spring Security Core -->
+        <!-- Spring Security 核心 -->
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-core</artifactId>
         </dependency>
 
-        <!-- Jakarta Servlet API -->
+        <!-- Servlet API -->
         <dependency>
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
+            <scope>provided</scope>
         </dependency>
 
-        <!-- 数据库相关依赖 -->
-        <!-- Spring JDBC 支持 -->
+        <!-- 数据库相关 -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-jdbc</artifactId>
         </dependency>
         
-        <!-- MyBatis-Plus 启动器 -->
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
         </dependency>
 
-        <!-- Redis缓存支持 -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-redis</artifactId>
-        </dependency>
-
-        <!-- 日志依赖 -->
+        <!-- 日志 -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
         
-        <!-- Lombok 注解处理工具 -->
+        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
         
-        <!-- 工具库 -->
+        <!-- 工具类库 -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
@@ -102,36 +87,26 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
         </dependency>
-
-        <!-- JWT依赖 -->
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-impl</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-jackson</artifactId>
-            <scope>runtime</scope>
-        </dependency>
         
-        <!-- Jackson 序列化/反序列化库 -->
+        <!-- JSON处理 -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
 
-        <!-- AOP 依赖 -->
+        <!-- API文档 -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+        </dependency>
+
+        <!-- AOP -->
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
         </dependency>
 
-        <!-- Transmittable ThreadLocal 支持 -->
+        <!-- 线程变量传递 -->
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>transmittable-thread-local</artifactId>

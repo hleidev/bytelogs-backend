@@ -18,10 +18,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
-import top.harrylei.forum.core.common.RedisKeyConstants;
+import top.harrylei.forum.service.infra.redis.RedisKeyConstants;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.service.util.JwtUtil;
-import top.harrylei.forum.core.util.RedisUtil;
+import top.harrylei.forum.service.infra.redis.RedisService;
 import top.harrylei.forum.service.user.service.UserService;
 
 /**
@@ -36,7 +36,7 @@ import top.harrylei.forum.service.user.service.UserService;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    private final RedisUtil redisUtil;
+    private final RedisService redisService;
     private final UserService userService;
 
     /**
@@ -116,7 +116,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             // 从Redis获取存储的token
-            String redisToken = redisUtil.getObj(RedisKeyConstants.BYTE_LOGS_PREFIX + userId, String.class);
+            String redisToken = redisService.getObj(RedisKeyConstants.BYTE_LOGS_PREFIX + userId, String.class);
 
             // 验证token是否匹配
             if (StringUtils.isBlank(redisToken) || !token.equals(redisToken)) {
@@ -125,7 +125,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             // 刷新token过期时间
-            redisUtil.expire(RedisKeyConstants.BYTE_LOGS_PREFIX + userId, jwtUtil.getExpireSeconds());
+            redisService.expire(RedisKeyConstants.BYTE_LOGS_PREFIX + userId, jwtUtil.getExpireSeconds());
 
             return userId;
         } catch (Exception e) {
