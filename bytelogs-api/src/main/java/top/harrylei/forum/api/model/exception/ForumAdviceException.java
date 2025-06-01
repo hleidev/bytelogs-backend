@@ -2,28 +2,27 @@ package top.harrylei.forum.api.model.exception;
 
 import top.harrylei.forum.api.model.vo.Status;
 import top.harrylei.forum.api.model.vo.constants.StatusEnum;
-import lombok.Getter;
+
+import java.io.Serial;
 
 /**
- * 业务异常
- *
- * @author YiHui
- * @date 2022/9/2
+ * 业务通知异常
+ * <p>
+ * 用于表示需要通知前端的业务状态，不记录错误日志 与 ForumException 的区别在于处理方式不同，但共享相同的数据结构
  */
-public class ForumAdviceException extends RuntimeException {
-    @Getter
-    private Status status;
+public class ForumAdviceException extends ForumException {
+    @Serial
+    private static final long serialVersionUID = -3654231078945766767L;
 
     public ForumAdviceException(Status status) {
-        this.status = status;
+        super(status);
     }
 
     public ForumAdviceException(int code, String msg) {
-        this.status = Status.newStatus(code, msg);
+        super(code, msg);
     }
 
     public ForumAdviceException(StatusEnum statusEnum, Object... args) {
-        this.status = Status.newStatus(statusEnum, args);
+        super(statusEnum, args);
     }
-
 }
