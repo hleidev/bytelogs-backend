@@ -1,6 +1,7 @@
 package top.harrylei.forum.service.auth.service.impl;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -98,13 +99,13 @@ public class AuthServiceImpl implements AuthService {
 
         // 更新请求上下文
         ReqInfoContext.getContext().setUserId(userId).setUser(UserInfoConverter.toDTO(userInfo));
-        
+
         // 生成token
         String token = jwtUtil.generateToken(userId, userInfo.getUserRole());
 
         // 将token存储到Redis，过期时间与JWT一致
-        redisService.setObj(RedisKeyConstants.TOKEN_PREFIX + userId, token, jwtUtil.getExpireSeconds());
-        
+        redisService.setObj(getKey(userId), token, jwtUtil.getExpireSeconds());
+
         log.info("用户登录成功: userId={}, username={}", userId, username);
         return token;
     }
@@ -125,7 +126,7 @@ public class AuthServiceImpl implements AuthService {
             }
 
             // 从Redis中删除token
-            boolean result = redisService.del(RedisKeyConstants.TOKEN_PREFIX + userId);
+            boolean result = redisService.del(getKey(userId));
             if (result) {
                 log.info("用户 userId={} 注销成功", userId);
             } else {
@@ -134,5 +135,9 @@ public class AuthServiceImpl implements AuthService {
         } catch (Exception e) {
             log.error("注销过程发生异常", e);
         }
+    }
+
+    private static @NotNull String getKey(Long userId) {
+        return RedisKeyConstants.TOKEN_PREFIX + userId;
     }
 }
