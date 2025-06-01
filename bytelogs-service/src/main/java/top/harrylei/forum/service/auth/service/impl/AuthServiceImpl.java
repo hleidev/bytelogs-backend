@@ -8,8 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.enums.user.LoginTypeEnum;
-import top.harrylei.forum.api.model.exception.ExceptionUtil;
-import top.harrylei.forum.api.model.vo.constants.StatusEnum;
+import top.harrylei.forum.core.exception.ExceptionUtil;
+import top.harrylei.forum.api.model.enums.StatusEnum;
 import top.harrylei.forum.service.infra.redis.RedisKeyConstants;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.util.BCryptUtil;
@@ -40,7 +40,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean register(String username, String password) {
+    public void register(String username, String password) {
         // 参数校验
         ExceptionUtil.requireNonEmpty(username, StatusEnum.PARAM_MISSING, "用户名");
         ExceptionUtil.requireNonEmpty(password, StatusEnum.PARAM_MISSING, "密码");
@@ -73,7 +73,6 @@ public class AuthServiceImpl implements AuthService {
         Long userId = newUser.getId();
         log.info("用户注册成功: userId={}, username={}", userId, username);
 
-        return true;
     }
 
     @Override

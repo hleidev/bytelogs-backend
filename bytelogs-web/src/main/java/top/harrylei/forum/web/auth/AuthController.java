@@ -14,10 +14,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import top.harrylei.forum.api.model.exception.ExceptionUtil;
+import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.auth.AuthReq;
-import top.harrylei.forum.api.model.vo.constants.StatusEnum;
+import top.harrylei.forum.api.model.enums.StatusEnum;
 import top.harrylei.forum.service.auth.service.AuthService;
 
 /**
@@ -43,10 +43,10 @@ public class AuthController {
      */
     @Operation(summary = "用户注册", description = "通过用户名和密码进行注册")
     @PostMapping("/register")
-    public ResVO<Boolean> register(@Valid @RequestBody AuthReq authReq) {
+    public ResVO<Void> register(@Valid @RequestBody AuthReq authReq) {
         // 直接调用服务，让全局异常处理器处理可能的异常
-        Boolean result = authService.register(authReq.getUsername(), authReq.getPassword());
-        return ResVO.ok(result);
+        authService.register(authReq.getUsername(), authReq.getPassword());
+        return ResVO.ok();
     }
 
     /**
@@ -58,7 +58,7 @@ public class AuthController {
      */
     @Operation(summary = "用户登录", description = "校验用户名密码，成功后返回JWT令牌")
     @PostMapping("/login")
-    public ResVO<Boolean> login(@Valid @RequestBody AuthReq authReq, HttpServletResponse response) {
+    public ResVO<Void> login(@Valid @RequestBody AuthReq authReq, HttpServletResponse response) {
         // 调用登录服务
         String token = authService.login(authReq.getUsername(), authReq.getPassword());
         
@@ -66,7 +66,7 @@ public class AuthController {
         if (StringUtils.isNotBlank(token)) {
             response.setHeader("Authorization", "Bearer " + token);
             response.setHeader("Access-Control-Expose-Headers", "Authorization");
-            return ResVO.ok(true);
+            return ResVO.ok();
         }
         
         // 登录失败但未抛出异常的情况
@@ -82,7 +82,7 @@ public class AuthController {
      */
     @Operation(summary = "用户注销", description = "通过JWT令牌注销当前登录状态")
     @PostMapping("/logout")
-    public ResVO<Boolean> logout(HttpServletRequest request) {
+    public ResVO<Void> logout(HttpServletRequest request) {
         String token = request.getHeader("Authorization");
         
         // 处理Bearer前缀
@@ -96,6 +96,6 @@ public class AuthController {
             log.warn("注销请求缺少有效的Authorization头");
         }
         
-        return ResVO.ok(true);
+        return ResVO.ok();
     }
 }

@@ -2,7 +2,7 @@ package top.harrylei.forum.api.model.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import top.harrylei.forum.api.model.vo.constants.StatusEnum;
+import top.harrylei.forum.api.model.enums.StatusEnum;
 
 import java.io.Serial;
 import java.io.Serializable;

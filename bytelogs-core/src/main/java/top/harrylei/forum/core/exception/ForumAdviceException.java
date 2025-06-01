@@ -1,6 +1,6 @@
-package top.harrylei.forum.api.model.exception;
+package top.harrylei.forum.core.exception;
 
-import top.harrylei.forum.api.model.vo.constants.StatusEnum;
+import top.harrylei.forum.api.model.enums.StatusEnum;
 
 import java.io.Serial;
 

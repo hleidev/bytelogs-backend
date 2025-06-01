@@ -1,4 +1,4 @@
-package top.harrylei.forum.api.model.vo.constants;
+package top.harrylei.forum.api.model.enums;
 
 import lombok.Getter;
 

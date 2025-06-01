@@ -22,10 +22,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
-import top.harrylei.forum.api.model.exception.ForumAdviceException;
-import top.harrylei.forum.api.model.exception.ForumException;
+import top.harrylei.forum.api.model.enums.StatusEnum;
 import top.harrylei.forum.api.model.vo.ResVO;
-import top.harrylei.forum.api.model.vo.constants.StatusEnum;
+import top.harrylei.forum.core.exception.ForumAdviceException;
+import top.harrylei.forum.core.exception.ForumException;
 
 /**
  * 全局异常处理器

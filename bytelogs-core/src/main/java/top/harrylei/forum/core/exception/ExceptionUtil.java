@@ -1,7 +1,7 @@
-package top.harrylei.forum.api.model.exception;
+package top.harrylei.forum.core.exception;
 
 import org.springframework.lang.NonNull;
-import top.harrylei.forum.api.model.vo.constants.StatusEnum;
+import top.harrylei.forum.api.model.enums.StatusEnum;
 
 /**
  * 异常工具类

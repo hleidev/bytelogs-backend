@@ -10,9 +10,8 @@ public interface AuthService {
      *
      * @param username 用户名
      * @param password 密码
-     * @return 注册是否成功
      */
-    Boolean register(String username, String password);
+    void register(String username, String password);
 
     /**
      * 用户登录
