@@ -18,7 +18,7 @@ import top.harrylei.forum.service.util.JwtUtil;
 import top.harrylei.forum.core.util.PasswordUtil;
 import top.harrylei.forum.service.infra.redis.RedisService;
 import top.harrylei.forum.service.auth.service.AuthService;
-import top.harrylei.forum.service.user.converted.UserInfoConverter;
+import top.harrylei.forum.service.user.converted.UserInfoStructMapper;
 import top.harrylei.forum.service.user.repository.dao.UserDAO;
 import top.harrylei.forum.service.user.repository.dao.UserInfoDAO;
 import top.harrylei.forum.service.user.repository.entity.UserDO;
@@ -40,6 +40,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserInfoDAO userInfoDAO;
     private final JwtUtil jwtUtil;
     private final RedisService redisService;
+    private final UserInfoStructMapper userInfoStructMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -103,7 +104,7 @@ public class AuthServiceImpl implements AuthService {
         ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_NOT_EXISTS, "userId=" + userId);
 
         // 更新请求上下文
-        ReqInfoContext.getContext().setUserId(userId).setUser(UserInfoConverter.toDTO(userInfo));
+        ReqInfoContext.getContext().setUserId(userId).setUser(userInfoStructMapper.toDTO(userInfo));
 
         // 生成token
         String token = jwtUtil.generateToken(userId, userInfo.getUserRole());

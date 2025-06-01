@@ -71,7 +71,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     // 获取完整用户信息
                     BaseUserInfoDTO userInfo = userService.getUserInfoById(userId);
-                    
+
                     // 如果获取失败，创建基本用户信息
                     if (userInfo == null) {
                         userInfo = new BaseUserInfoDTO().setUserId(userId).setRole(role);
@@ -111,7 +111,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             // 从Redis获取存储的token
-            String redisToken = redisService.getObj(RedisKeyConstants.BYTE_LOGS_PREFIX + userId, String.class);
+            String redisToken = redisService.getObj(RedisKeyConstants.TOKEN_PREFIX + userId, String.class);
 
             // 验证token是否匹配
             if (StringUtils.isBlank(redisToken) || !token.equals(redisToken)) {
@@ -181,9 +181,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * 使用TransmittableThreadLocal确保在线程池等环境中也能获取到上下文。
      * </p>
      *
-     * @param userId 用户ID
-     * @param userInfo 用户信息对象
-     * @param isAdmin 是否为管理员
+     * @param userId   用户ID
+     * @param userInfo
+     * @param isAdmin  是否为管理员
      */
     private void setUserContext(Long userId, BaseUserInfoDTO userInfo, boolean isAdmin) {
         // 构建用户上下文信息

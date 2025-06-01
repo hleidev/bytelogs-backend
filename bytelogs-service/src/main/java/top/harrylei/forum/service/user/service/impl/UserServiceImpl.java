@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
-import top.harrylei.forum.service.user.converted.UserInfoConverter;
+import top.harrylei.forum.service.user.converted.UserInfoStructMapper;
 import top.harrylei.forum.service.user.repository.dao.UserInfoDAO;
 import top.harrylei.forum.service.user.repository.entity.UserInfoDO;
 import top.harrylei.forum.service.user.service.UserService;
@@ -16,6 +16,7 @@ import top.harrylei.forum.service.user.service.UserService;
 public class UserServiceImpl implements UserService {
 
     private final UserInfoDAO userInfoDAO;
+    private final UserInfoStructMapper userInfoStructMapper;
 
     @Override
     public BaseUserInfoDTO getUserInfoById(Long userId) {
@@ -28,7 +29,7 @@ public class UserServiceImpl implements UserService {
             if (userInfo == null) {
                 return null;
             }
-            return UserInfoConverter.toDTO(userInfo);
+            return userInfoStructMapper.toDTO(userInfo);
         } catch (Exception e) {
             log.error("获取用户信息异常: userId={}", userId, e);
             return null;
