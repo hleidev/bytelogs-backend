@@ -70,7 +70,7 @@ public class AuthController {
         }
         
         // 登录失败但未抛出异常的情况
-        ExceptionUtil.error(StatusEnum.LOGIN_FAILED_MIXED, "登录失败，请稍后重试");
+        ExceptionUtil.error(StatusEnum.USER_LOGIN_FAILED, "登录失败，请稍后重试");
         return null; // 不会执行到这里，因为上面会抛出异常
     }
 

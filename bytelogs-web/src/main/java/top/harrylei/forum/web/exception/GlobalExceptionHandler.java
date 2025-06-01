@@ -25,7 +25,6 @@ import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.exception.ForumAdviceException;
 import top.harrylei.forum.api.model.exception.ForumException;
 import top.harrylei.forum.api.model.vo.ResVO;
-import top.harrylei.forum.api.model.vo.Status;
 import top.harrylei.forum.api.model.vo.constants.StatusEnum;
 
 /**
@@ -45,8 +44,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ForumException.class)
     @ResponseStatus(HttpStatus.OK)
     public ResVO<Void> handleForumException(ForumException e, HttpServletRequest request) {
-        log.warn("业务异常：{}, 请求路径：{}", e.getStatus().getMsg(), request.getRequestURI());
-        return ResVO.fail(e.getStatus());
+        log.warn("业务异常：{}, 请求路径：{}", e.getMessage(), request.getRequestURI());
+        return ResVO.fail(e.getStatusEnum());
     }
 
     /**
@@ -57,7 +56,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ForumAdviceException.class)
     @ResponseStatus(HttpStatus.OK)
     public ResVO<Void> handleForumAdviceException(ForumAdviceException e) {
-        return ResVO.fail(e.getStatus());
+        return ResVO.fail(e.getStatusEnum());
     }
 
     /**
@@ -68,9 +67,8 @@ public class GlobalExceptionHandler {
     public ResVO<Void> handleMethodArgumentNotValidException(MethodArgumentNotValidException e,
         HttpServletRequest request) {
         String message = buildBindingResultErrorMessage(e.getBindingResult());
-        Status status = Status.newStatus(StatusEnum.ILLEGAL_ARGUMENTS_MIXED, message);
         log.warn("参数校验失败：{}, 请求路径：{}", message, request.getRequestURI());
-        return ResVO.fail(status);
+        return ResVO.fail(StatusEnum.PARAM_VALIDATE_FAILED, message);
     }
 
     /**
@@ -80,9 +78,8 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResVO<Void> handleBindException(BindException e, HttpServletRequest request) {
         String message = buildBindingResultErrorMessage(e.getBindingResult());
-        Status status = Status.newStatus(StatusEnum.ILLEGAL_ARGUMENTS_MIXED, message);
         log.warn("参数绑定失败：{}, 请求路径：{}", message, request.getRequestURI());
-        return ResVO.fail(status);
+        return ResVO.fail(StatusEnum.PARAM_ERROR, message);
     }
 
     /**
@@ -93,9 +90,8 @@ public class GlobalExceptionHandler {
     public ResVO<Void> handleConstraintViolationException(ConstraintViolationException e, HttpServletRequest request) {
         Set<ConstraintViolation<?>> violations = e.getConstraintViolations();
         String message = violations.stream().map(ConstraintViolation::getMessage).collect(Collectors.joining("; "));
-        Status status = Status.newStatus(StatusEnum.ILLEGAL_ARGUMENTS_MIXED, message);
         log.warn("约束校验失败：{}, 请求路径：{}", message, request.getRequestURI());
-        return ResVO.fail(status);
+        return ResVO.fail(StatusEnum.PARAM_VALIDATE_FAILED, message);
     }
 
     /**
@@ -106,9 +102,8 @@ public class GlobalExceptionHandler {
     public ResVO<Void> handleMissingServletRequestParameterException(MissingServletRequestParameterException e,
         HttpServletRequest request) {
         String message = String.format("缺少必需的请求参数: %s", e.getParameterName());
-        Status status = Status.newStatus(StatusEnum.ILLEGAL_ARGUMENTS_MIXED, message);
         log.warn("缺少请求参数：{}, 请求路径：{}", message, request.getRequestURI());
-        return ResVO.fail(status);
+        return ResVO.fail(StatusEnum.PARAM_MISSING, e.getParameterName());
     }
 
     /**
@@ -119,9 +114,8 @@ public class GlobalExceptionHandler {
     public ResVO<Void> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e,
         HttpServletRequest request) {
         String message = String.format("不支持的请求方法: %s", e.getMethod());
-        Status status = Status.newStatus(StatusEnum.ILLEGAL_ARGUMENTS_MIXED, message);
         log.warn("请求方法不支持：{}, 请求路径：{}", message, request.getRequestURI());
-        return ResVO.fail(status);
+        return ResVO.fail(StatusEnum.METHOD_NOT_ALLOWED);
     }
 
     /**
@@ -131,10 +125,8 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResVO<Void> handleHttpMessageNotReadableException(HttpMessageNotReadableException e,
         HttpServletRequest request) {
-        String message = "请求体格式错误或解析失败";
-        Status status = Status.newStatus(StatusEnum.ILLEGAL_ARGUMENTS_MIXED, message);
         log.warn("请求体解析失败：{}, 请求路径：{}", e.getMessage(), request.getRequestURI());
-        return ResVO.fail(status);
+        return ResVO.fail(StatusEnum.PARAM_ERROR, "请求体格式错误或解析失败");
     }
 
     /**
@@ -144,11 +136,10 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResVO<Void> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e,
         HttpServletRequest request) {
-        String message = String.format("参数类型不匹配, 参数 '%s' 应为 %s 类型", e.getName(),
-            e.getRequiredType() == null ? "未知" : e.getRequiredType().getSimpleName());
-        Status status = Status.newStatus(StatusEnum.ILLEGAL_ARGUMENTS_MIXED, message);
+        String type = e.getRequiredType() == null ? "未知" : e.getRequiredType().getSimpleName();
+        String message = String.format("参数类型不匹配, 参数 '%s' 应为 %s 类型", e.getName(), type);
         log.warn("参数类型不匹配：{}, 请求路径：{}", message, request.getRequestURI());
-        return ResVO.fail(status);
+        return ResVO.fail(StatusEnum.PARAM_TYPE_ERROR, message);
     }
 
     /**
@@ -157,9 +148,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DataAccessException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResVO<Void> handleDataAccessException(DataAccessException e, HttpServletRequest request) {
-        String message = "数据库操作异常";
         log.error("数据库访问异常, 请求路径: {}", request.getRequestURI(), e);
-        return ResVO.fail(StatusEnum.UNEXPECT_ERROR, message);
+        return ResVO.fail(StatusEnum.SYSTEM_ERROR, "数据库操作异常");
     }
 
     /**
@@ -168,9 +158,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResVO<Void> handleException(Exception e, HttpServletRequest request) {
-        String message = "服务器内部错误";
         log.error("未处理的异常, 请求路径: {}", request.getRequestURI(), e);
-        return ResVO.fail(StatusEnum.UNEXPECT_ERROR, message);
+        return ResVO.fail(StatusEnum.SYSTEM_ERROR, "服务器内部错误");
     }
 
     /**
@@ -182,7 +171,8 @@ public class GlobalExceptionHandler {
             return "参数错误";
         }
 
-        return fieldErrors.stream().map(error -> String.format("%s: %s", error.getField(), error.getDefaultMessage()))
-            .collect(Collectors.joining("; "));
+        return fieldErrors.stream()
+                .map(error -> String.format("%s: %s", error.getField(), error.getDefaultMessage()))
+                .collect(Collectors.joining("; "));
     }
 }

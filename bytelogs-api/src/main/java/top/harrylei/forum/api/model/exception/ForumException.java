@@ -1,8 +1,7 @@
 package top.harrylei.forum.api.model.exception;
 
-import top.harrylei.forum.api.model.vo.Status;
-import top.harrylei.forum.api.model.vo.constants.StatusEnum;
 import lombok.Getter;
+import top.harrylei.forum.api.model.vo.constants.StatusEnum;
 
 import java.io.Serial;
 
@@ -16,19 +15,29 @@ public class ForumException extends RuntimeException {
     @Serial
     private static final long serialVersionUID = -7034897190745766929L;
 
-    private final Status status;
-
-    public ForumException(Status status) {
-        super(status.getMsg());
-        this.status = status;
-    }
-
-    public ForumException(int code, String msg) {
-        super(msg);
-        this.status = Status.newStatus(code, msg);
-    }
+    /**
+     * 状态枚举
+     */
+    private final StatusEnum statusEnum;
+    
+    /**
+     * 错误消息格式化参数
+     */
+    private final Object[] args;
 
     public ForumException(StatusEnum statusEnum, Object... args) {
-        this.status = Status.newStatus(statusEnum, args);
+        super(formatMessage(statusEnum.getMessage(), args));
+        this.statusEnum = statusEnum;
+        this.args = args;
+    }
+    
+    /**
+     * 格式化错误消息
+     */
+    private static String formatMessage(String message, Object... args) {
+        if (args != null && args.length > 0) {
+            return String.format(message, args);
+        }
+        return message;
     }
 }

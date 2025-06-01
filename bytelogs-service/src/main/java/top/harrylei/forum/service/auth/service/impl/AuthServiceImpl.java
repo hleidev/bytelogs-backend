@@ -52,7 +52,7 @@ public class AuthServiceImpl implements AuthService {
 
         // 检查用户名是否已存在
         UserDO user = userDAO.getUserByUserName(username);
-        ExceptionUtil.errorIf(user != null, StatusEnum.USER_LOGIN_NAME_REPEAT, username);
+        ExceptionUtil.errorIf(user != null, StatusEnum.USER_EXISTS, username);
 
         // 创建新用户
         UserDO newUser = new UserDO()
@@ -89,7 +89,7 @@ public class AuthServiceImpl implements AuthService {
         // 校验密码
         if (!BCryptUtil.matches(password, user.getPassword())) {
             log.warn("用户密码错误: username={}", username);
-            ExceptionUtil.error(StatusEnum.USER_PWD_ERROR);
+            ExceptionUtil.error(StatusEnum.USER_PASSWORD_ERROR);
         }
 
         // 获取用户信息

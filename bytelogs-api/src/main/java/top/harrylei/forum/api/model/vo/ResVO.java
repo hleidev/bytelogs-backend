@@ -1,102 +1,116 @@
 package top.harrylei.forum.api.model.vo;
 
-import top.harrylei.forum.api.model.vo.constants.StatusEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import top.harrylei.forum.api.model.vo.constants.StatusEnum;
 
 import java.io.Serial;
 import java.io.Serializable;
 
 /**
- * 通用响应封装类，用于 Controller 层统一返回结构
+ * 通用响应封装类
  *
- * @param <T> 返回结果的数据类型 结构包含：状态信息 {@link Status} 与返回实体 {@code result} 通过静态工厂方法 {@code ok} 和 {@code fail} 进行快速构造
+ * @param <T> 返回结果的数据类型
  */
 @Data
+@Schema(description = "统一响应结构")
 public class ResVO<T> implements Serializable {
     @Serial
     private static final long serialVersionUID = -510306209659393854L;
+    
     /**
-     * 返回状态信息，包括状态码与提示信息
+     * 业务状态码
      */
-    @Schema(description = "返回结果说明", requiredMode = Schema.RequiredMode.REQUIRED)
-    private Status status;
+    @Schema(description = "业务状态码，0表示成功，其他表示异常", requiredMode = Schema.RequiredMode.REQUIRED, example = "0")
+    private int code;
 
     /**
-     * 实际返回的数据实体，类型由调用方指定
+     * 响应消息
      */
-    @Schema(description = "返回的实体结果", requiredMode = Schema.RequiredMode.REQUIRED)
-    private T result;
+    @Schema(description = "响应消息，成功时为'OK'，失败时为具体错误信息", requiredMode = Schema.RequiredMode.REQUIRED, example = "OK")
+    private String message;
 
     /**
-     * 默认构造函数，通常用于反序列化或框架调用
+     * 业务数据
+     */
+    @Schema(description = "业务数据，失败时可能为null")
+    private T data;
+
+    /**
+     * 默认构造函数
      */
     public ResVO() {}
 
     /**
-     * 使用指定状态创建响应对象
-     *
-     * @param status 返回状态
+     * 完整构造函数
      */
-    public ResVO(Status status) {
-        this.status = status;
+    public ResVO(int code, String message, T data) {
+        this.code = code;
+        this.message = message;
+        this.data = data;
     }
 
     /**
-     * 构造成功状态的响应对象，并设置返回结果
-     *
-     * @param t 返回的业务数据
+     * 构造成功响应，仅包含数据
      */
-    public ResVO(T t) {
-        status = Status.newStatus(StatusEnum.SUCCESS);
-        this.result = t;
+    public ResVO(T data) {
+        this.code = 0;
+        this.message = "OK";
+        this.data = data;
     }
 
     /**
-     * 快速构建成功响应
+     * 构造成功响应
      *
-     * @param t 返回数据
+     * @param data 业务数据
      * @param <T> 数据类型
-     * @return 成功响应对象
+     * @return 成功响应
      */
-    public static <T> ResVO<T> ok(T t) {
-        return new ResVO<>(t);
+    public static <T> ResVO<T> ok(T data) {
+        return new ResVO<>(data);
     }
 
     /**
-     * 默认成功响应的返回信息
-     */
-    private static final String OK_DEFAULT_MESSAGE = "ok";
-
-    /**
-     * 构建默认成功响应，返回 "ok"
+     * 构建默认成功响应
      *
-     * @return 成功响应对象，返回值为字符串 "ok"
+     * @return 成功响应，无数据
      */
-    public static ResVO<String> ok() {
-        return ok(OK_DEFAULT_MESSAGE);
+    public static ResVO<Void> ok() {
+        return new ResVO<>(0, "OK", null);
     }
 
     /**
-     * 构建失败响应，可传入参数进行状态信息格式化
+     * 构建失败响应
+     *
+     * @param code 错误码
+     * @param message 错误消息
+     * @param <T> 数据类型
+     * @return 失败响应
+     */
+    public static <T> ResVO<T> fail(int code, String message) {
+        return new ResVO<>(code, message, null);
+    }
+
+    /**
+     * 使用状态枚举构建失败响应
      *
      * @param status 状态枚举
-     * @param args 状态提示信息的参数
-     * @param <T> 返回数据类型（通常为 null）
-     * @return 失败响应对象
+     * @param args 消息格式化参数
+     * @param <T> 数据类型
+     * @return 失败响应
      */
     public static <T> ResVO<T> fail(StatusEnum status, Object... args) {
-        return new ResVO<>(Status.newStatus(status, args));
+        String message = formatMessage(status.getMessage(), args);
+        return fail(status.getCode(), message);
     }
-
+    
     /**
-     * 使用指定状态信息构造失败响应
-     *
-     * @param status 状态信息
-     * @param <T> 返回数据类型（通常为 null）
-     * @return 失败响应对象
+     * 格式化错误消息
      */
-    public static <T> ResVO<T> fail(Status status) {
-        return new ResVO<>(status);
+    private static String formatMessage(String message, Object... args) {
+        if (args != null && args.length > 0) {
+            return String.format(message, args);
+        }
+        return message;
     }
 }

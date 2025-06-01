@@ -63,9 +63,10 @@ public class ExceptionUtil {
      * @param statusEnum 状态枚举
      * @param args       状态消息格式化参数
      */
-    public static <T> void requireNonNull(T obj, @NonNull StatusEnum statusEnum, Object... args) {
+    public static <T> T requireNonNull(T obj, @NonNull StatusEnum statusEnum, Object... args) {
         if (obj == null) {
             error(statusEnum, args);
         }
+        return obj;
     }
 }
