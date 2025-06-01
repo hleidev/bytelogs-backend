@@ -33,7 +33,7 @@ import top.harrylei.forum.service.user.repository.entity.UserInfoDO;
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
-    private final UserDAO userAccountDAO;
+    private final UserDAO userDAO;
     private final UserInfoDAO userInfoDAO;
     private final JwtUtil jwtUtil;
     private final RedisService redisService;
@@ -51,7 +51,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // 检查用户名是否已存在
-        UserDO user = userAccountDAO.getUserByUserName(username);
+        UserDO user = userDAO.getUserByUserName(username);
         ExceptionUtil.errorIf(user != null, StatusEnum.USER_LOGIN_NAME_REPEAT, username);
 
         // 创建新用户
@@ -60,7 +60,7 @@ public class AuthServiceImpl implements AuthService {
                 .setPassword(BCryptUtil.hash(password))
                 .setThirdAccountId("")
                 .setLoginType(LoginTypeEnum.USER_PWD.getCode());
-        userAccountDAO.saveUser(newUser);
+        userDAO.saveUser(newUser);
 
         // 创建用户信息
         UserInfoDO newUserInfo = new UserInfoDO()
@@ -83,7 +83,7 @@ public class AuthServiceImpl implements AuthService {
         ExceptionUtil.requireNonEmpty(password, StatusEnum.USER_NAME_OR_PASSWORD_EMPTY);
 
         // 查找并验证用户
-        UserDO user = userAccountDAO.getUserByUserName(username);
+        UserDO user = userDAO.getUserByUserName(username);
         ExceptionUtil.requireNonNull(user, StatusEnum.USER_NOT_EXISTS, "username=" + username);
 
         // 校验密码
