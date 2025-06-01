@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.enums.user.LoginTypeEnum;
+import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
 import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.api.model.enums.StatusEnum;
 import top.harrylei.forum.service.infra.redis.RedisKeyConstants;
@@ -22,6 +23,8 @@ import top.harrylei.forum.service.user.repository.dao.UserDAO;
 import top.harrylei.forum.service.user.repository.dao.UserInfoDAO;
 import top.harrylei.forum.service.user.repository.entity.UserDO;
 import top.harrylei.forum.service.user.repository.entity.UserInfoDO;
+
+import java.util.Objects;
 
 /**
  * 登录和注册服务实现类
@@ -84,6 +87,9 @@ public class AuthServiceImpl implements AuthService {
         // 查找并验证用户
         UserDO user = userDAO.getUserByUserName(username);
         ExceptionUtil.requireNonNull(user, StatusEnum.USER_NOT_EXISTS, username);
+
+        // 校验账号是否启用
+        ExceptionUtil.errorIf(!Objects.equals(user.getStatus(), UserStatusEnum.ENABLE.getCode()), StatusEnum.USER_DISABLED);
 
         // 校验密码
         if (!BCryptUtil.matches(password, user.getPassword())) {

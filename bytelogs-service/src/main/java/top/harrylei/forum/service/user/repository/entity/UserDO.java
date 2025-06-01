@@ -47,4 +47,9 @@ public class UserDO extends BaseDO {
      * 邮箱
      */
     private String email;
+
+    /**
+     * 启动标识
+     */
+    private Integer status;
 }
