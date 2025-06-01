@@ -59,15 +59,13 @@ public class ExceptionUtil {
     /**
      * 对象为空时抛出业务异常
      *
-     * @param obj 要检查的对象
+     * @param obj        要检查的对象
      * @param statusEnum 状态枚举
-     * @param args 状态消息格式化参数
-     * @return 非空对象
+     * @param args       状态消息格式化参数
      */
-    public static <T> T requireNonNull(T obj, @NonNull StatusEnum statusEnum, Object... args) {
+    public static <T> void requireNonNull(T obj, @NonNull StatusEnum statusEnum, Object... args) {
         if (obj == null) {
             error(statusEnum, args);
         }
-        return obj;
     }
 }
