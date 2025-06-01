@@ -52,9 +52,9 @@ public class Status {
     public static Status newStatus(StatusEnum status, Object... msgs) {
         String msg;
         if (msgs.length > 0) {
-            msg = String.format(status.getMsg(), msgs);
+            msg = String.format(status.getMessage(), msgs);
         } else {
-            msg = status.getMsg();
+            msg = status.getMessage();
         }
         return newStatus(status.getCode(), msg);
     }

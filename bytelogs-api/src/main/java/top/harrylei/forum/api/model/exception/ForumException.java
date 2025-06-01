@@ -35,8 +35,12 @@ public class ForumException extends RuntimeException {
      * 格式化错误消息
      */
     private static String formatMessage(String message, Object... args) {
-        if (args != null && args.length > 0) {
-            return String.format(message, args);
+        if (args != null && args.length > 0 && message.contains("%")) {
+            try {
+                return String.format(message, args);
+            } catch (Exception e) {
+                return message;
+            }
         }
         return message;
     }

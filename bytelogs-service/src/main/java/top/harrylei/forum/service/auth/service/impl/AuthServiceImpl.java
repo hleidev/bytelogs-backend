@@ -84,7 +84,7 @@ public class AuthServiceImpl implements AuthService {
 
         // 查找并验证用户
         UserDO user = userDAO.getUserByUserName(username);
-        ExceptionUtil.requireNonNull(user, StatusEnum.USER_NOT_EXISTS, "username=" + username);
+        ExceptionUtil.requireNonNull(user, StatusEnum.USER_NOT_EXISTS, username);
 
         // 校验密码
         if (!BCryptUtil.matches(password, user.getPassword())) {
@@ -128,9 +128,9 @@ public class AuthServiceImpl implements AuthService {
             // 从Redis中删除token
             boolean result = redisService.del(getKey(userId));
             if (result) {
-                log.info("用户 userId={} 注销成功", userId);
+                log.info("用户注销成功：userId={}", userId);
             } else {
-                log.warn("用户 userId={} 注销失败: Redis中不存在token", userId);
+                log.warn("用户注销失败：userId={}，Redis中不存在token", userId);
             }
         } catch (Exception e) {
             log.error("注销过程发生异常", e);

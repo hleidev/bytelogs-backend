@@ -45,7 +45,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.OK)
     public ResVO<Void> handleForumException(ForumException e, HttpServletRequest request) {
         log.warn("业务异常：{}, 请求路径：{}", e.getMessage(), request.getRequestURI());
-        return ResVO.fail(e.getStatusEnum());
+        return ResVO.fail(e.getStatusEnum().getCode(), e.getMessage());
     }
 
     /**
@@ -56,7 +56,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ForumAdviceException.class)
     @ResponseStatus(HttpStatus.OK)
     public ResVO<Void> handleForumAdviceException(ForumAdviceException e) {
-        return ResVO.fail(e.getStatusEnum());
+        return ResVO.fail(e.getStatusEnum().getCode(), e.getMessage());
     }
 
     /**
