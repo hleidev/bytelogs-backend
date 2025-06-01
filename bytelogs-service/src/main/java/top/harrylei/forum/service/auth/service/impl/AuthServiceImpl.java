@@ -24,6 +24,8 @@ import top.harrylei.forum.service.user.repository.entity.UserInfoDO;
 
 /**
  * 登录和注册服务实现类
+ * <p>
+ * 提供用户注册、登录和注销功能，处理身份验证和令牌管理
  */
 @Slf4j
 @Service
@@ -39,33 +41,36 @@ public class AuthServiceImpl implements AuthService {
     @Transactional(rollbackFor = Exception.class)
     public Boolean register(String username, String password) {
         // 参数校验
-        if (StringUtils.isBlank(username) || StringUtils.isBlank(password)) {
-            throw ExceptionUtil.of(StatusEnum.ILLEGAL_ARGUMENTS_MIXED, "用户名或密码不能为空");
-        }
+        ExceptionUtil.requireNonEmpty(username, StatusEnum.PARAM_MISSING, "用户名");
+        ExceptionUtil.requireNonEmpty(password, StatusEnum.PARAM_MISSING, "密码");
 
         // 密码格式校验
         if (!PasswordUtil.isValid(password)) {
-            throw ExceptionUtil.of(StatusEnum.USER_PASSWORD_INVALID);
+            ExceptionUtil.error(StatusEnum.USER_PASSWORD_INVALID);
         }
 
         // 检查用户名是否已存在
         UserDO user = userAccountDAO.getUserByUserName(username);
-        if (user != null) {
-            throw ExceptionUtil.of(StatusEnum.USER_LOGIN_NAME_REPEAT, username);
-        }
+        ExceptionUtil.errorIf(user != null, StatusEnum.USER_LOGIN_NAME_REPEAT, username);
 
         // 创建新用户
-        UserDO newUser = new UserDO().setUserName(username).setPassword(BCryptUtil.hash(password)).setThirdAccountId("")
-            .setLoginType(LoginTypeEnum.USER_PWD.getCode());
+        UserDO newUser = new UserDO()
+                .setUserName(username)
+                .setPassword(BCryptUtil.hash(password))
+                .setThirdAccountId("")
+                .setLoginType(LoginTypeEnum.USER_PWD.getCode());
         userAccountDAO.saveUser(newUser);
 
         // 创建用户信息
-        UserInfoDO newUserInfo = new UserInfoDO().setUserId(newUser.getId()).setUserName(username).setPhoto("");
+        UserInfoDO newUserInfo = new UserInfoDO()
+                .setUserId(newUser.getId())
+                .setUserName(username)
+                .setPhoto("");
         userInfoDAO.save(newUserInfo);
 
-        // 更新上下文并返回token
+        // 记录成功日志
         Long userId = newUser.getId();
-        log.info("用户注册成功: userId={}，username={}", userId, username);
+        log.info("用户注册成功: userId={}, username={}", userId, username);
 
         return true;
     }
@@ -73,35 +78,34 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public String login(String username, String password) {
         // 参数校验
-        if (StringUtils.isBlank(username) || StringUtils.isBlank(password)) {
-            throw ExceptionUtil.of(StatusEnum.USER_NAME_OR_PASSWORD_EMPTY);
-        }
+        ExceptionUtil.requireNonEmpty(username, StatusEnum.USER_NAME_OR_PASSWORD_EMPTY);
+        ExceptionUtil.requireNonEmpty(password, StatusEnum.USER_NAME_OR_PASSWORD_EMPTY);
 
-        // 查找用户
+        // 查找并验证用户
         UserDO user = userAccountDAO.getUserByUserName(username);
-        if (user == null) {
-            throw ExceptionUtil.of(StatusEnum.USER_NOT_EXISTS, "username=" + username);
-        }
+        ExceptionUtil.requireNonNull(user, StatusEnum.USER_NOT_EXISTS, "username=" + username);
 
         // 校验密码
         if (!BCryptUtil.matches(password, user.getPassword())) {
             log.warn("用户密码错误: username={}", username);
-            throw ExceptionUtil.of(StatusEnum.USER_PWD_ERROR);
+            ExceptionUtil.error(StatusEnum.USER_PWD_ERROR);
         }
 
-        // 更新上下文并返回token
+        // 获取用户信息
         Long userId = user.getId();
         UserInfoDO userInfo = userInfoDAO.getByUserId(userId);
+        ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_NOT_EXISTS, "userId=" + userId);
 
+        // 更新请求上下文
         ReqInfoContext.getContext().setUserId(userId).setUser(UserInfoConverter.toDTO(userInfo));
-        log.info("用户登录成功: userId={}, username={}", userId, username);
-
+        
         // 生成token
         String token = jwtUtil.generateToken(userId, userInfo.getUserRole());
 
         // 将token存储到Redis，过期时间与JWT一致
         redisService.setObj(RedisKeyConstants.TOKEN_PREFIX + userId, token, jwtUtil.getExpireSeconds());
-
+        
+        log.info("用户登录成功: userId={}, username={}", userId, username);
         return token;
     }
 

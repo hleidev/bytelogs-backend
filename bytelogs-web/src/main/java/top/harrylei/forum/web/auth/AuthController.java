@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import top.harrylei.forum.api.model.exception.ExceptionUtil;
 import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.auth.AuthReq;
 import top.harrylei.forum.api.model.vo.constants.StatusEnum;
@@ -43,20 +44,9 @@ public class AuthController {
     @Operation(summary = "用户注册", description = "通过用户名和密码进行注册")
     @PostMapping("/register")
     public ResVO<Boolean> register(@Valid @RequestBody AuthReq authReq) {
-        String username = authReq.getUsername();
-        String password = authReq.getPassword();
-
-        try {
-            if (authService.register(username, password)) {
-                log.info("用户注册成功: username={}", username);
-                return ResVO.ok(true);
-            } else {
-                return ResVO.fail(StatusEnum.LOGIN_FAILED_MIXED, "注册失败，请稍后重试");
-            }
-        } catch (Exception e) {
-            log.error("用户注册异常: username={}, 原因: {}", username, e.getMessage(), e);
-            return ResVO.fail(StatusEnum.LOGIN_FAILED_MIXED, e.getMessage());
-        }
+        // 直接调用服务，让全局异常处理器处理可能的异常
+        Boolean result = authService.register(authReq.getUsername(), authReq.getPassword());
+        return ResVO.ok(result);
     }
 
     /**
@@ -69,24 +59,19 @@ public class AuthController {
     @Operation(summary = "用户登录", description = "校验用户名密码，成功后返回JWT令牌")
     @PostMapping("/login")
     public ResVO<Boolean> login(@Valid @RequestBody AuthReq authReq, HttpServletResponse response) {
-        String username = authReq.getUsername();
-        String password = authReq.getPassword();
-
-        try {
-            String token = authService.login(username, password);
-            if (StringUtils.isNotBlank(token)) {
-                // 将JWT令牌添加到响应头
-                response.setHeader("Authorization", "Bearer " + token);
-                response.setHeader("Access-Control-Expose-Headers", "Authorization");
-                log.info("用户登录成功: username={}", username);
-                return ResVO.ok(true);
-            } else {
-                return ResVO.fail(StatusEnum.LOGIN_FAILED_MIXED, "用户名或密码登录错误，请稍后重试");
-            }
-        } catch (Exception e) {
-            log.error("用户登录异常: username={}, 原因: {}", username, e.getMessage(), e);
-            return ResVO.fail(StatusEnum.LOGIN_FAILED_MIXED, e.getMessage());
+        // 调用登录服务
+        String token = authService.login(authReq.getUsername(), authReq.getPassword());
+        
+        // 将JWT令牌添加到响应头
+        if (StringUtils.isNotBlank(token)) {
+            response.setHeader("Authorization", "Bearer " + token);
+            response.setHeader("Access-Control-Expose-Headers", "Authorization");
+            return ResVO.ok(true);
         }
+        
+        // 登录失败但未抛出异常的情况
+        ExceptionUtil.error(StatusEnum.LOGIN_FAILED_MIXED, "登录失败，请稍后重试");
+        return null; // 不会执行到这里，因为上面会抛出异常
     }
 
     /**
@@ -98,18 +83,19 @@ public class AuthController {
     @Operation(summary = "用户注销", description = "通过JWT令牌注销当前登录状态")
     @PostMapping("/logout")
     public ResVO<Boolean> logout(HttpServletRequest request) {
-        try {
-            String token = request.getHeader("Authorization");
-            // 处理Bearer前缀
-            if (StringUtils.isNotBlank(token) && token.startsWith("Bearer ")) {
-                token = token.substring(7);
-                authService.logout(token);
-                log.info("用户注销成功");
-            }
-            return ResVO.ok(true);
-        } catch (Exception e) {
-            log.error("用户注销异常, 原因: {}", e.getMessage(), e);
-            return ResVO.fail(StatusEnum.FORBID_NOTLOGIN, e.getMessage());
+        String token = request.getHeader("Authorization");
+        
+        // 处理Bearer前缀
+        if (StringUtils.isNotBlank(token) && token.startsWith("Bearer ")) {
+            token = token.substring(7);
+            authService.logout(token);
+        } else if (StringUtils.isNotBlank(token)) {
+            // 直接使用token
+            authService.logout(token);
+        } else {
+            log.warn("注销请求缺少有效的Authorization头");
         }
+        
+        return ResVO.ok(true);
     }
 }
