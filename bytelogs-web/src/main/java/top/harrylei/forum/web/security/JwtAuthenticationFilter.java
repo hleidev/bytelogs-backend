@@ -55,7 +55,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         throws ServletException, IOException {
         try {
             // 从请求头中获取JWT令牌
-            String token = parseToken(request);
+            String authHeader = request.getHeader("Authorization");
+            String token = jwtUtil.extractTokenFromAuthorizationHeader(authHeader);
 
             if (StringUtils.isNotBlank(token) && !jwtUtil.isTokenExpired(token)) {
                 // 解析JWT令牌获取用户ID
@@ -130,27 +131,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     /**
-     * 从请求头中提取JWT令牌
-     * <p>
-     * 从Authorization头中提取Bearer令牌，格式为"Bearer xxxxx"
-     * </p>
-     *
-     * @param request HTTP请求
-     * @return JWT令牌，如果不存在则返回null
-     */
-    private String parseToken(HttpServletRequest request) {
-        String token = request.getHeader("Authorization");
-        if (StringUtils.isNotBlank(token) && token.startsWith("Bearer ")) {
-            return token.substring(7);
-        }
-        return null;
-    }
-
-    /**
      * 设置用户认证信息到Spring Security上下文
-     * <p>
-     * 创建认证对象并设置到Spring Security上下文中，使后续的安全检查能够识别用户身份
-     * </p>
      *
      * @param userId 用户ID
      * @param isAdmin 是否为管理员
@@ -176,13 +157,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     /**
      * 设置用户上下文到ThreadLocal
-     * <p>
-     * 将用户信息设置到请求上下文中，使业务代码能够访问用户信息。
-     * 使用TransmittableThreadLocal确保在线程池等环境中也能获取到上下文。
-     * </p>
      *
      * @param userId   用户ID
-     * @param userInfo
+     * @param userInfo 用户信息
      * @param isAdmin  是否为管理员
      */
     private void setUserContext(Long userId, BaseUserInfoDTO userInfo, boolean isAdmin) {

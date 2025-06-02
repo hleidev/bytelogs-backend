@@ -31,6 +31,11 @@ public class JwtUtil {
     private SecretKey secretKey;
 
     /**
+     * JWT Bearer认证前缀
+     */
+    private static final String BEARER_PREFIX = "Bearer ";
+
+    /**
      * 初始化JWT密钥
      */
     @PostConstruct
@@ -59,6 +64,12 @@ public class JwtUtil {
                 .compact();
     }
 
+    /**
+     * 从JWT令牌中解析用户ID
+     *
+     * @param token JWT令牌
+     * @return 用户ID，无效令牌返回null
+     */
     public Long parseUserId(String token) {
         String subject = Optional.ofNullable(parseAllClaims(token)).map(Claims::getSubject).orElse(null);
         if (StringUtils.isBlank(subject)) {
@@ -67,22 +78,64 @@ public class JwtUtil {
         return Long.valueOf(subject);
     }
 
+    /**
+     * 从JWT令牌中解析用户角色
+     *
+     * @param token JWT令牌
+     * @return 用户角色，无效令牌返回null
+     */
     public String parseRole(String token) {
         return Optional.ofNullable(parseAllClaims(token)).map(claims -> claims.get("role", String.class)).orElse(null);
     }
 
+    /**
+     * 检查JWT令牌是否已过期
+     *
+     * @param token JWT令牌
+     * @return 是否已过期
+     */
     public boolean isTokenExpired(String token) {
         return getExpiration(token).before(new Date());
     }
 
-    public Long getExpireSeconds() {
-        return jwtProperties.getExpire();
-    }
-
+    /**
+     * 获取JWT令牌的过期时间
+     *
+     * @param token JWT令牌
+     * @return 过期时间
+     */
     public Date getExpiration(String token) {
         return Optional.ofNullable(parseAllClaims(token)).map(Claims::getExpiration).orElse(new Date(0));
     }
 
+    /**
+     * 获取令牌过期秒数
+     *
+     * @return 过期秒数
+     */
+    public Long getExpireSeconds() {
+        return jwtProperties.getExpire();
+    }
+
+    /**
+     * 从HTTP Authorization头中提取JWT令牌
+     *
+     * @param authorizationHeader HTTP Authorization头的值
+     * @return JWT令牌，无效格式返回null
+     */
+    public String extractTokenFromAuthorizationHeader(String authorizationHeader) {
+        if (StringUtils.isNotBlank(authorizationHeader) && authorizationHeader.startsWith(BEARER_PREFIX)) {
+            return authorizationHeader.substring(BEARER_PREFIX.length());
+        }
+        return null;
+    }
+
+    /**
+     * 解析JWT令牌中的所有声明
+     *
+     * @param token JWT令牌
+     * @return 声明内容，解析失败返回null
+     */
     private Claims parseAllClaims(String token) {
         try {
             return Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token).getBody();
