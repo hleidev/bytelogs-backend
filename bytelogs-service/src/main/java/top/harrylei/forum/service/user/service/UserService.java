@@ -14,4 +14,12 @@ public interface UserService {
      * @return 用户信息DTO，不存在则返回null
      */
     BaseUserInfoDTO getUserInfoById(Long userId);
+
+    /**
+     * 更新用户信息
+     *
+     * @param userInfo 需要更新的用户信息DTO
+     * @throws RuntimeException 更新失败时抛出异常
+     */
+    void updateUserInfo(BaseUserInfoDTO userInfo);
 }
