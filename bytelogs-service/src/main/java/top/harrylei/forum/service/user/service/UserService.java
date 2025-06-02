@@ -6,7 +6,7 @@ import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
  * 用户服务接口
  */
 public interface UserService {
-    
+
     /**
      * 根据用户ID获取用户信息
      *
@@ -22,4 +22,13 @@ public interface UserService {
      * @throws RuntimeException 更新失败时抛出异常
      */
     void updateUserInfo(BaseUserInfoDTO userInfo);
+
+    /**
+     * 更新用户密码
+     * 
+     * @param token token
+     * @param oldPassword 新密码
+     * @param newPassword 旧密码
+     */
+    void updatePassword(String token, String oldPassword, String newPassword);
 }

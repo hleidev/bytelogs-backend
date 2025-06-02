@@ -1,21 +1,21 @@
 package top.harrylei.forum.web.user;
 
-import jakarta.validation.Valid;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import top.harrylei.forum.api.model.enums.StatusEnum;
 import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
+import top.harrylei.forum.api.model.vo.user.req.PasswordUpdateReq;
 import top.harrylei.forum.api.model.vo.user.req.UserInfoReq;
 import top.harrylei.forum.api.model.vo.user.vo.UserInfoVO;
 import top.harrylei.forum.core.context.ReqInfoContext;
-import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.service.user.converted.UserInfoStructMapper;
 import top.harrylei.forum.service.user.service.UserService;
 import top.harrylei.forum.web.security.permission.RequiresLogin;
@@ -58,9 +58,6 @@ public class UserController {
     @Operation(summary = "修改个人信息", description = "更新当前登录用户的个人基本信息")
     @PostMapping("/update")
     public ResVO<Void> updateUserInfo(@Valid @RequestBody UserInfoReq userInfoReq) {
-        // 基本参数校验，确保请求对象不为空
-        ExceptionUtil.requireNonNull(userInfoReq, StatusEnum.PARAM_MISSING, "请求参数不能为空");
-
         // 获取当前用户信息并更新
         BaseUserInfoDTO oldUserInfo = ReqInfoContext.getContext().getUser();
         BaseUserInfoDTO newUserInfo = new BaseUserInfoDTO();
@@ -69,6 +66,28 @@ public class UserController {
 
         // 调用服务层处理更新逻辑
         userService.updateUserInfo(newUserInfo);
+        return ResVO.ok();
+    }
+
+    /**
+     * 更新当前登录用户的个人密码
+     *
+     * @param passwordUpdateReq 用户密码更新请求
+     * @return 操作成功响应
+     */
+    @Operation(summary = "修改用户密码", description = "更新当前登录用户的个人密码")
+    @PostMapping("/password/update")
+    public ResVO<Void> updatePassword(@RequestHeader(name = "Authorization", required = false) String token,
+        @Valid @RequestBody PasswordUpdateReq passwordUpdateReq) {
+
+        if (StringUtils.isNotBlank(token) && token.startsWith("Bearer ")) {
+            token = token.substring(7);
+            userService.updatePassword(token, passwordUpdateReq.getOldPassword(), passwordUpdateReq.getNewPassword());
+
+        } else {
+            log.warn("注销请求缺少有效的Authorization头");
+        }
+
         return ResVO.ok();
     }
 }

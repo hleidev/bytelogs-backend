@@ -56,12 +56,13 @@ public enum StatusEnum {
     USER_LOGIN_NAME_DUPLICATE(40003, "用户登录名重复: %s"),
     USER_PASSWORD_INVALID(40004, "密码不符合规范，需包含字母、数字、特殊字符，长度为 8-20 位"),
     USER_LOGIN_FAILED(40005, "登录失败: %s"),
-    USER_PASSWORD_ERROR(40006, "用户名或密码错误"),
+    USER_USERNAME_OR_PASSWORD_ERROR(40006, "用户名或密码错误"),
     USER_NAME_OR_PASSWORD_EMPTY(40007, "用户名或密码不能为空"),
     USER_LOCKED(40008, "用户已被锁定"),
     USER_DISABLED(40009, "账号已被禁用"),
     USER_NOT_ACTIVATED(40010, "账号未激活"),
-    USER_UPDATE_FAILED(40011, "更新失败"),
+    USER_UPDATE_FAILED(40011, "更新失败: %s"),
+    USER_PASSWORD_ERROR(400012, "密码错误"),
 
     // ========== 文章相关 50000-59999 ==========
     ARTICLE_NOT_EXISTS(50001, "文章不存在: %s"),

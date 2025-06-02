@@ -95,7 +95,7 @@ public class AuthServiceImpl implements AuthService {
         // 校验密码
         if (!BCryptUtil.matches(password, user.getPassword())) {
             log.warn("用户密码错误: username={}", username);
-            ExceptionUtil.error(StatusEnum.USER_PASSWORD_ERROR);
+            ExceptionUtil.error(StatusEnum.USER_USERNAME_OR_PASSWORD_ERROR);
         }
 
         // 获取用户信息
