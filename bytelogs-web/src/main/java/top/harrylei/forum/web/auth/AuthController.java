@@ -13,9 +13,12 @@ import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.enums.StatusEnum;
 import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.auth.AuthReq;
+import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
+import top.harrylei.forum.api.model.vo.user.vo.UserInfoVO;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.service.auth.service.AuthService;
+import top.harrylei.forum.service.user.converted.UserInfoStructMapper;
 import top.harrylei.forum.service.util.JwtUtil;
 
 /**
@@ -33,6 +36,7 @@ public class AuthController {
 
     private final AuthService authService;
     private final JwtUtil jwtUtil;
+    private final UserInfoStructMapper userInfoStructMapper;
 
     /**
      * 用户注册接口
@@ -56,13 +60,17 @@ public class AuthController {
      */
     @Operation(summary = "用户登录", description = "校验用户名密码，成功后返回JWT令牌")
     @PostMapping("/login")
-    public ResVO<Void> login(@Valid @RequestBody AuthReq authReq, HttpServletResponse response) {
+    public ResVO<UserInfoVO> login(@Valid @RequestBody AuthReq authReq, HttpServletResponse response) {
         String token = authService.login(authReq.getUsername(), authReq.getPassword());
         ExceptionUtil.requireNonEmpty(token, StatusEnum.USER_LOGIN_FAILED, "token 为空");
         
         response.setHeader("Authorization", "Bearer " + token);
         response.setHeader("Access-Control-Expose-Headers", "Authorization");
-        return ResVO.ok();
+
+        BaseUserInfoDTO userInfo = ReqInfoContext.getContext().getUser();
+        ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_INFO_NOT_EXISTS);
+
+        return ResVO.ok(userInfoStructMapper.toVO(userInfo));
     }
 
     /**
