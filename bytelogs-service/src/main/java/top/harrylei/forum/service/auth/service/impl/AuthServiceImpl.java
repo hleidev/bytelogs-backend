@@ -50,58 +50,49 @@ public class AuthServiceImpl implements AuthService {
         ExceptionUtil.requireNonEmpty(password, StatusEnum.PARAM_MISSING, "密码");
 
         // 密码格式校验
-        if (!PasswordUtil.isValid(password)) {
-            ExceptionUtil.error(StatusEnum.USER_PASSWORD_INVALID);
-        }
+        ExceptionUtil.errorIf(!PasswordUtil.isValid(password), StatusEnum.USER_PASSWORD_INVALID);
 
         // 检查用户名是否已存在
         UserDO user = userDAO.getUserByUserName(username);
         ExceptionUtil.errorIf(user != null, StatusEnum.USER_EXISTS, username);
 
         // 创建新用户
-        UserDO newUser = new UserDO()
-                .setUserName(username)
-                .setPassword(BCryptUtil.hash(password))
-                .setThirdAccountId("")
-                .setLoginType(LoginTypeEnum.USER_PWD.getCode());
-        userDAO.saveUser(newUser);
+        UserDO newUser = new UserDO().setUserName(username).setPassword(BCryptUtil.hash(password)).setThirdAccountId("")
+            .setLoginType(LoginTypeEnum.USER_PWD.getCode());
+        userDAO.save(newUser);
 
         // 创建用户信息
-        UserInfoDO newUserInfo = new UserInfoDO()
-                .setUserId(newUser.getId())
-                .setUserName(username)
-                .setPhoto("");
+        UserInfoDO newUserInfo = new UserInfoDO().setUserId(newUser.getId()).setUserName(username).setAvatar("");
         userInfoDAO.save(newUserInfo);
 
         // 记录成功日志
         Long userId = newUser.getId();
-        log.info("用户注册成功: userId={}, username={}", userId, username);
-
+        log.info("action=register | status=success | service=AuthServiceImpl | userId={} | username={}", userId,
+            username);
     }
 
     @Override
     public String login(String username, String password) {
         // 参数校验
-        ExceptionUtil.requireNonEmpty(username, StatusEnum.USER_NAME_OR_PASSWORD_EMPTY);
-        ExceptionUtil.requireNonEmpty(password, StatusEnum.USER_NAME_OR_PASSWORD_EMPTY);
+        ExceptionUtil.requireNonEmpty(username, StatusEnum.PARAM_MISSING, "用户名");
+        ExceptionUtil.requireNonEmpty(password, StatusEnum.PARAM_MISSING, "密码");
 
         // 查找并验证用户
         UserDO user = userDAO.getUserByUserName(username);
         ExceptionUtil.requireNonNull(user, StatusEnum.USER_NOT_EXISTS, username);
 
         // 校验账号是否启用
-        ExceptionUtil.errorIf(!Objects.equals(user.getStatus(), UserStatusEnum.ENABLE.getCode()), StatusEnum.USER_DISABLED);
+        ExceptionUtil.errorIf(!Objects.equals(user.getStatus(), UserStatusEnum.ENABLE.getCode()),
+            StatusEnum.USER_DISABLED);
 
         // 校验密码
-        if (!BCryptUtil.matches(password, user.getPassword())) {
-            log.warn("用户密码错误: username={}", username);
-            ExceptionUtil.error(StatusEnum.USER_USERNAME_OR_PASSWORD_ERROR);
-        }
+        ExceptionUtil.errorIf(!BCryptUtil.matches(password, user.getPassword()),
+            StatusEnum.USER_USERNAME_OR_PASSWORD_ERROR);
 
         // 获取用户信息
         Long userId = user.getId();
         UserInfoDO userInfo = userInfoDAO.getByUserId(userId);
-        ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_NOT_EXISTS, "userId=" + userId);
+        ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_NOT_EXISTS, user.getUserName());
 
         // 更新请求上下文
         ReqInfoContext.getContext().setUserId(userId).setUser(userInfoStructMapper.toDTO(userInfo));
@@ -112,34 +103,38 @@ public class AuthServiceImpl implements AuthService {
         // 将token存储到Redis，过期时间与JWT一致
         redisService.setObj(getKey(userId), token, jwtUtil.getExpireSeconds());
 
-        log.info("用户登录成功: userId={}, username={}", userId, username);
+        log.info("action=login | status=success | service=AuthServiceImpl | userId={} | username={}", userId, username);
         return token;
     }
 
     @Override
     public void logout(String token) {
+        Long userId = ReqInfoContext.getContext().getUserId();
         if (StringUtils.isBlank(token)) {
-            log.warn("注销失败: token为空");
+            log.warn("action=logout | status=fail | service=AuthServiceImpl | userId={} | reason=token为空", userId);
             return;
         }
 
         try {
             // 解析token获取用户ID
-            Long userId = jwtUtil.parseUserId(token);
-            if (userId == null) {
-                log.warn("注销失败: 无效的token");
+            Long userIdFromToken = jwtUtil.parseUserId(token);
+            if (userIdFromToken == null) {
+                log.warn("action=logout | status=fail | service=AuthServiceImpl | userId={} | reason=token解析失败",
+                    userId);
                 return;
             }
 
             // 从Redis中删除token
-            boolean result = redisService.del(getKey(userId));
+            boolean result = redisService.del(getKey(userIdFromToken));
             if (result) {
-                log.info("用户注销成功：userId={}", userId);
+                log.info("action=logout | status=success | service=AuthServiceImpl | userId={}", userId);
             } else {
-                log.warn("用户注销失败：userId={}，Redis中不存在token", userId);
+                log.warn("action=logout | status=fail | service=AuthServiceImpl | userId={} | reason=token解析失败",
+                    userId);
             }
         } catch (Exception e) {
-            log.error("注销过程发生异常", e);
+            log.error("action=logout | status=fail | service=AuthServiceImpl | userId={} | reason={}", userId,
+                e.getMessage(), e);
         }
     }
 

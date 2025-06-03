@@ -45,6 +45,7 @@ public class AuthController {
     public ResVO<Void> register(@Valid @RequestBody AuthReq authReq) {
         // 直接调用服务，让全局异常处理器处理可能的异常
         authService.register(authReq.getUsername(), authReq.getPassword());
+        log.info("action=register | status=success | controller=AuthController | username={}", authReq.getUsername());
         return ResVO.ok();
     }
 
@@ -61,16 +62,14 @@ public class AuthController {
         // 调用登录服务
         String token = authService.login(authReq.getUsername(), authReq.getPassword());
 
-        // 将JWT令牌添加到响应头
-        if (StringUtils.isNotBlank(token)) {
-            response.setHeader("Authorization", "Bearer " + token);
-            response.setHeader("Access-Control-Expose-Headers", "Authorization");
-            return ResVO.ok();
-        }
+        ExceptionUtil.requireNonEmpty(token, StatusEnum.USER_LOGIN_FAILED, "token 为空");
 
-        // 登录失败但未抛出异常的情况
-        ExceptionUtil.error(StatusEnum.USER_LOGIN_FAILED, "登录失败，请稍后重试");
-        return null; // 不会执行到这里，因为上面会抛出异常
+        response.setHeader("Authorization", "Bearer " + token);
+        response.setHeader("Access-Control-Expose-Headers", "Authorization");
+        log.info("action=login | status=success | controller=AuthController | userId={} | username={}",
+            ReqInfoContext.getContext().getUserId(), authReq.getUsername());
+
+        return ResVO.ok();
     }
 
     /**
@@ -84,12 +83,12 @@ public class AuthController {
     public ResVO<Void> logout(@RequestHeader(name = "Authorization", required = false) String authHeader) {
         String token = jwtUtil.extractTokenFromAuthorizationHeader(authHeader);
         Long userId = ReqInfoContext.getContext().getUserId();
-
         if (StringUtils.isNotBlank(token)) {
             authService.logout(token);
-            log.info("用户注销成功: userId={}", userId);
+            log.info("action=logout | status=success | controller=AuthController | userId={}", userId);
         } else {
-            log.warn("注销请求缺少有效的Authorization头");
+            log.warn("action=logout | status=fail | controller=AuthController | userId={} | reason=missing_auth_header",
+                userId);
         }
 
         return ResVO.ok();
