@@ -26,7 +26,7 @@ import top.harrylei.forum.service.util.JwtUtil;
 @Tag(name = "用户认证模块", description = "提供注册、登录、注销等接口")
 @Slf4j
 @RestController
-@RequestMapping(path = "api/v1/auth")
+@RequestMapping(path = "/api/v1/auth")
 @RequiredArgsConstructor
 @Validated
 public class AuthController {
