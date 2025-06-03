@@ -51,7 +51,7 @@ public class UserController {
     public ResVO<UserInfoVO> getUserInfo() {
         // 从请求上下文中获取当前用户信息
         BaseUserInfoDTO user = ReqInfoContext.getContext().getUser();
-        log.info("获取个人信息成功: userId={}", user.getUserId());
+        ExceptionUtil.requireNonNull(user, StatusEnum.USER_INFO_NOT_EXISTS);
         // 将用户DTO转换为前端展示所需的VO对象
         return ResVO.ok(userInfoStructMapper.toVO(user));
     }
@@ -63,7 +63,7 @@ public class UserController {
      * @return 操作成功的响应
      */
     @Operation(summary = "修改个人信息", description = "更新当前登录用户的个人基本信息")
-    @PostMapping("/update")
+    @PostMapping("/info/update")
     public ResVO<Void> updateUserInfo(@Valid @RequestBody UserInfoReq userInfoReq) {
         // 获取当前用户信息并更新
         BaseUserInfoDTO oldUserInfo = ReqInfoContext.getContext().getUser();
@@ -73,7 +73,6 @@ public class UserController {
 
         // 调用服务层处理更新逻辑
         userService.updateUserInfo(newUserInfo);
-        log.info("修改个人信息成功: userId={}", oldUserInfo.getUserId());
         return ResVO.ok();
     }
 
@@ -88,13 +87,9 @@ public class UserController {
     public ResVO<Void> updatePassword(@RequestHeader(name = "Authorization", required = false) String authHeader,
         @Valid @RequestBody PasswordUpdateReq passwordUpdateReq) {
         String token = jwtUtil.extractTokenFromAuthorizationHeader(authHeader);
-        ExceptionUtil.requireNonEmpty(token, StatusEnum.USER_UPDATE_FAILED, "注销请求缺少有效的Authorization头");
-
-        Long userId = ReqInfoContext.getContext().getUserId();
+        ExceptionUtil.requireNonEmpty(token, StatusEnum.USER_UPDATE_FAILED, "缺少有效的 Authorization 头");
 
         userService.updatePassword(token, passwordUpdateReq.getOldPassword(), passwordUpdateReq.getNewPassword());
-        log.info("密码修改成功: userId={}", userId);
-
         return ResVO.ok();
     }
 
@@ -108,8 +103,6 @@ public class UserController {
     @PostMapping("/avatar/update")
     public ResVO<Void> updateAvatar(@NotBlank(message = "用户头像不能为空") String avatar) {
         userService.updateAvatar(avatar);
-        log.info("修改头像成功: userId={}", ReqInfoContext.getContext().getUser().getUserId());
-
         return ResVO.ok();
     }
 }

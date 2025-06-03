@@ -52,7 +52,7 @@ public enum StatusEnum {
 
     // ========== 用户相关 40000-49999 ==========
     USER_NOT_EXISTS(40001, "用户不存在: %s"),
-    USER_INFO_NOT_EXISTS(40002, "用户信息不存在: %s"),
+    USER_INFO_NOT_EXISTS(40002, "用户信息不存在"),
     USER_EXISTS(40003, "用户已存在: %s"),
     USER_LOGIN_NAME_DUPLICATE(40004, "用户登录名重复: %s"),
     USER_PASSWORD_INVALID(40005, "密码不符合规范，需包含字母、数字、特殊字符，长度为 8-20 位"),

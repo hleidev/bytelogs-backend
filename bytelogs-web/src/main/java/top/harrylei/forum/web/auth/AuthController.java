@@ -43,9 +43,7 @@ public class AuthController {
     @Operation(summary = "用户注册", description = "通过用户名和密码进行注册")
     @PostMapping("/register")
     public ResVO<Void> register(@Valid @RequestBody AuthReq authReq) {
-        // 直接调用服务，让全局异常处理器处理可能的异常
         authService.register(authReq.getUsername(), authReq.getPassword());
-        log.info("action=register | status=success | controller=AuthController | username={}", authReq.getUsername());
         return ResVO.ok();
     }
 
@@ -59,16 +57,11 @@ public class AuthController {
     @Operation(summary = "用户登录", description = "校验用户名密码，成功后返回JWT令牌")
     @PostMapping("/login")
     public ResVO<Void> login(@Valid @RequestBody AuthReq authReq, HttpServletResponse response) {
-        // 调用登录服务
         String token = authService.login(authReq.getUsername(), authReq.getPassword());
-
         ExceptionUtil.requireNonEmpty(token, StatusEnum.USER_LOGIN_FAILED, "token 为空");
-
+        
         response.setHeader("Authorization", "Bearer " + token);
         response.setHeader("Access-Control-Expose-Headers", "Authorization");
-        log.info("action=login | status=success | controller=AuthController | userId={} | username={}",
-            ReqInfoContext.getContext().getUserId(), authReq.getUsername());
-
         return ResVO.ok();
     }
 
@@ -83,14 +76,12 @@ public class AuthController {
     public ResVO<Void> logout(@RequestHeader(name = "Authorization", required = false) String authHeader) {
         String token = jwtUtil.extractTokenFromAuthorizationHeader(authHeader);
         Long userId = ReqInfoContext.getContext().getUserId();
-        if (StringUtils.isNotBlank(token)) {
-            authService.logout(token);
-            log.info("action=logout | status=success | controller=AuthController | userId={}", userId);
+        
+        if (StringUtils.isBlank(token)) {
+            log.warn("用户注销失败 userId={} reason=缺少有效认证信息", userId);
         } else {
-            log.warn("action=logout | status=fail | controller=AuthController | userId={} | reason=missing_auth_header",
-                userId);
+            authService.logout(token);
         }
-
         return ResVO.ok();
     }
 }

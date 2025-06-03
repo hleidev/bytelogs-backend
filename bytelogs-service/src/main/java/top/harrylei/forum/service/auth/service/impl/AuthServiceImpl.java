@@ -65,10 +65,8 @@ public class AuthServiceImpl implements AuthService {
         UserInfoDO newUserInfo = new UserInfoDO().setUserId(newUser.getId()).setUserName(username).setAvatar("");
         userInfoDAO.save(newUserInfo);
 
-        // 记录成功日志
-        Long userId = newUser.getId();
-        log.info("action=register | status=success | service=AuthServiceImpl | userId={} | username={}", userId,
-            username);
+        // 简洁、标准化的日志
+        log.info("用户注册成功 userId={}", newUser.getId());
     }
 
     @Override
@@ -103,7 +101,8 @@ public class AuthServiceImpl implements AuthService {
         // 将token存储到Redis，过期时间与JWT一致
         redisService.setObj(getKey(userId), token, jwtUtil.getExpireSeconds());
 
-        log.info("action=login | status=success | service=AuthServiceImpl | userId={} | username={}", userId, username);
+        // 安全相关事件保留日志
+        log.info("用户登录成功 userId={}", userId);
         return token;
     }
 
@@ -111,30 +110,26 @@ public class AuthServiceImpl implements AuthService {
     public void logout(String token) {
         Long userId = ReqInfoContext.getContext().getUserId();
         if (StringUtils.isBlank(token)) {
-            log.warn("action=logout | status=fail | service=AuthServiceImpl | userId={} | reason=token为空", userId);
+            log.warn("用户注销失败 userId={} reason=token为空", userId);
             return;
         }
 
         try {
-            // 解析token获取用户ID
             Long userIdFromToken = jwtUtil.parseUserId(token);
             if (userIdFromToken == null) {
-                log.warn("action=logout | status=fail | service=AuthServiceImpl | userId={} | reason=token解析失败",
-                    userId);
+                log.warn("用户注销失败 userId={} reason=token解析失败", userId);
                 return;
             }
 
-            // 从Redis中删除token
             boolean result = redisService.del(getKey(userIdFromToken));
-            if (result) {
-                log.info("action=logout | status=success | service=AuthServiceImpl | userId={}", userId);
-            } else {
-                log.warn("action=logout | status=fail | service=AuthServiceImpl | userId={} | reason=token解析失败",
-                    userId);
+            if (!result) {
+                log.warn("用户注销失败 userId={} reason=Redis删除失败", userId);
+            } else if (log.isDebugEnabled()) {
+                log.debug("用户注销成功 userId={}", userId);
             }
         } catch (Exception e) {
-            log.error("action=logout | status=fail | service=AuthServiceImpl | userId={} | reason={}", userId,
-                e.getMessage(), e);
+            // 简化异常日志，避免冗余
+            log.error("用户注销异常 userId={}", userId, e);
         }
     }
 
