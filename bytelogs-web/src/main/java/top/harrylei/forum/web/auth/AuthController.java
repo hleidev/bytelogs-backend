@@ -26,7 +26,7 @@ import top.harrylei.forum.service.util.JwtUtil;
  * <p>
  * 提供注册、登录、注销等认证相关接口
  */
-@Tag(name = "用户认证模块", description = "提供注册、登录、注销等接口")
+@Tag(name = "用户认证模块", description = "提供注册、登录、退出等接口")
 @Slf4j
 @RestController
 @RequestMapping(path = "/api/v1/auth")
@@ -74,19 +74,19 @@ public class AuthController {
     }
 
     /**
-     * 用户注销接口
+     * 用户退出接口
      *
      * @param authHeader 获取请求中的token
-     * @return 注销结果
+     * @return 退出结果
      */
-    @Operation(summary = "用户注销", description = "通过JWT令牌注销当前登录状态")
+    @Operation(summary = "退出登录", description = "通过JWT令牌注销当前登录状态")
     @PostMapping("/logout")
     public ResVO<Void> logout(@RequestHeader(name = "Authorization", required = false) String authHeader) {
         String token = jwtUtil.extractTokenFromAuthorizationHeader(authHeader);
         Long userId = ReqInfoContext.getContext().getUserId();
         
         if (StringUtils.isBlank(token)) {
-            log.warn("用户注销失败 userId={} reason=缺少有效认证信息", userId);
+            log.warn("退出登录失败 userId={} reason=缺少有效认证信息", userId);
             return ResVO.fail(StatusEnum.REQUEST_BODY_ERROR);
         } else {
             authService.logout(token);

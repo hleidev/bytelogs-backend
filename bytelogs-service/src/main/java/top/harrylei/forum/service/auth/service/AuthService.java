@@ -23,7 +23,7 @@ public interface AuthService {
     String login(String username, String password);
 
     /**
-     * 用户注销
+     * 退出登录
      * 
      * @param token JWT令牌
      */

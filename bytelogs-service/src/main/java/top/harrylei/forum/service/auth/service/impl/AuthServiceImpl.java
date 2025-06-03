@@ -110,26 +110,26 @@ public class AuthServiceImpl implements AuthService {
     public void logout(String token) {
         Long userId = ReqInfoContext.getContext().getUserId();
         if (StringUtils.isBlank(token)) {
-            log.warn("用户注销失败 userId={} reason=token为空", userId);
+            log.warn("退出登录失败 userId={} reason=token为空", userId);
             return;
         }
 
         try {
             Long userIdFromToken = jwtUtil.parseUserId(token);
             if (userIdFromToken == null) {
-                log.warn("用户注销失败 userId={} reason=token解析失败", userId);
+                log.warn("退出登录失败 userId={} reason=token解析失败", userId);
                 return;
             }
 
             boolean result = redisService.del(getKey(userIdFromToken));
             if (!result) {
-                log.warn("用户注销失败 userId={} reason=Redis删除失败", userId);
+                log.warn("退出登录失败 userId={} reason=Redis删除失败", userId);
             } else if (log.isDebugEnabled()) {
-                log.debug("用户注销成功 userId={}", userId);
+                log.debug("退出登录成功 userId={}", userId);
             }
         } catch (Exception e) {
             // 简化异常日志，避免冗余
-            log.error("用户注销异常 userId={}", userId, e);
+            log.error("退出登录异常 userId={}", userId, e);
         }
     }
 
