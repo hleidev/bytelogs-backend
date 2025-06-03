@@ -46,7 +46,7 @@ public class UserController {
      * 
      * @return 包含用户信息的视图对象的响应
      */
-    @Operation(summary = "获取个人信息", description = "获取当前登录用户的个人基本信息")
+    @Operation(summary = "查询用户信息", description = "获取当前登录用户的个人基本信息")
     @GetMapping("/info")
     public ResVO<UserInfoVO> getUserInfo() {
         // 从请求上下文中获取当前用户信息
@@ -62,7 +62,7 @@ public class UserController {
      * @param userInfoReq 用户信息更新请求，包含需要更新的字段
      * @return 操作成功的响应
      */
-    @Operation(summary = "修改个人信息", description = "更新当前登录用户的个人基本信息")
+    @Operation(summary = "更新用户信息", description = "更新当前登录用户的个人基本信息")
     @PostMapping("/info/update")
     public ResVO<Void> updateUserInfo(@Valid @RequestBody UserInfoReq userInfoReq) {
         // 获取当前用户信息并更新
@@ -77,12 +77,12 @@ public class UserController {
     }
 
     /**
-     * 更新当前登录用户的个人密码
+     * 修改当前登录用户的个人密码
      *
      * @param passwordUpdateReq 用户密码更新请求
      * @return 操作成功响应
      */
-    @Operation(summary = "修改用户密码", description = "更新当前登录用户的个人密码")
+    @Operation(summary = "修改用户密码", description = "修改当前登录用户的个人密码")
     @PostMapping("/password/update")
     public ResVO<Void> updatePassword(@RequestHeader(name = "Authorization", required = false) String authHeader,
         @Valid @RequestBody PasswordUpdateReq passwordUpdateReq) {
@@ -94,12 +94,12 @@ public class UserController {
     }
 
     /**
-     * 更新当前登录用户的个人头像
+     * 修改当前登录用户的个人头像
      * 
      * @param avatar 用户头像
      * @return 操作成功
      */
-    @Operation(summary = "修改用户头像", description = "更新当前登录用户的个人头像")
+    @Operation(summary = "修改用户头像", description = "修改当前登录用户的个人头像")
     @PostMapping("/avatar/update")
     public ResVO<Void> updateAvatar(@NotBlank(message = "用户头像不能为空") String avatar) {
         userService.updateAvatar(avatar);

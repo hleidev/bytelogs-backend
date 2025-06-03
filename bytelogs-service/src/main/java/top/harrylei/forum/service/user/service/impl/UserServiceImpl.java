@@ -22,7 +22,9 @@ import top.harrylei.forum.service.user.service.UserService;
 import java.util.Objects;
 
 /**
- * 用户服务实现类 提供用户信息查询和更新功能
+ * 用户服务实现类
+ * <p>
+ * 提供用户信息查询和更新功能
  */
 @Slf4j
 @Service
