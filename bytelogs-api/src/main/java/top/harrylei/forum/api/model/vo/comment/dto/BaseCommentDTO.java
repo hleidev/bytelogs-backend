@@ -25,7 +25,7 @@ public class BaseCommentDTO implements Comparable<BaseCommentDTO> {
     /**
      * 用户图像
      */
-    private String userPhoto;
+    private String userAvatar;
 
     /**
      * 评论时间

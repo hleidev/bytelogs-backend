@@ -58,6 +58,7 @@ public interface UserInfoStructMapper {
      * @param req 用户信息请求对象
      * @param dto 目标用户信息DTO对象
      */
+    @Mapping(target = "avatar", ignore = true)
     @Mapping(target = "role", ignore = true)
     @Mapping(target = "extend", ignore = true)
     @Mapping(target = "email", ignore = true)

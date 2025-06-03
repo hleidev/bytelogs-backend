@@ -36,7 +36,7 @@ public class BaseUserInfoDTO extends BaseDTO {
      * 用户图像
      */
     @Schema(description = "用户头像")
-    private String photo;
+    private String avatar;
     /**
      * 个人简介
      */

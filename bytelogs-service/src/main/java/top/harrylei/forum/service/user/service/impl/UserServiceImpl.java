@@ -83,7 +83,7 @@ public class UserServiceImpl implements UserService {
             log.info("用户信息更新成功: userId={}", userInfoDTO.getUserId());
         } catch (Exception e) {
             log.error("更新用户数据失败: userId={}", ReqInfoContext.getContext().getUserId(), e);
-            ExceptionUtil.error(StatusEnum.USER_UPDATE_FAILED, "用户信息更新失败，请稍后重试");
+            ExceptionUtil.error(StatusEnum.USER_UPDATE_FAILED, "用户信息更新失败，请稍后重试！", e);
         }
     }
 
@@ -126,10 +126,33 @@ public class UserServiceImpl implements UserService {
             userDAO.updateById(user);
             log.info("用户密码更新成功: userId={}", userId);
         } catch (Exception e) {
-            log.warn("数据库更新失败: userId={}", ReqInfoContext.getContext().getUserId(), e);
-            ExceptionUtil.error(StatusEnum.USER_UPDATE_FAILED, "userId=" + ReqInfoContext.getContext().getUserId(), e);
+            log.warn("数据库更新失败: userId={}", userId, e);
+            ExceptionUtil.error(StatusEnum.USER_UPDATE_FAILED, "用户密码更新失败，请稍后重试！", e);
         }
 
         authService.logout(token);
+    }
+
+    /**
+     * 更新用户头像
+     * 
+     * @param avatar 用户头像
+     */
+    @Override
+    public void updateAvatar(String avatar) {
+        ExceptionUtil.requireNonEmpty(avatar, StatusEnum.PARAM_MISSING, "用户头像为空");
+
+        Long userId = ReqInfoContext.getContext().getUserId();
+        UserInfoDO userInfo = userInfoDAO.getByUserId(userId);
+        ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_NOT_EXISTS);
+
+        try {
+            userInfo.setAvatar(avatar);
+            userInfoDAO.updateById(userInfo);
+            log.info("用户头像更新成功: userId={}", userId);
+        } catch (Exception e) {
+            log.warn("数据库更新失败: userId={}", userId, e);
+            ExceptionUtil.error(StatusEnum.USER_UPDATE_FAILED, "用户头像更新失败，请稍候重试！", e);
+        }
     }
 }

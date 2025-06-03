@@ -32,7 +32,7 @@ public class UserInfoVO {
      * 用户头像URL
      */
     @Schema(description = "头像", example = "https://cdn.bytelogs.com/avatar.jpg")
-    private String photo;
+    private String avatar;
 
     /**
      * 简介

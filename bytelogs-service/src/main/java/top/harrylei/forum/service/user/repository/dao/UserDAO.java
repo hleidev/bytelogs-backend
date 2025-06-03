@@ -32,17 +32,4 @@ public class UserDAO extends ServiceImpl<UserMapper, UserDO> {
                 .last("limit 1")
                 .one();
     }
-
-    /**
-     * 保存或更新用户账号信息
-     *
-     * @param user 用户账号信息
-     */
-    public void saveUser(UserDO user) {
-        if (user.getId() == null) {
-            baseMapper.insert(user);
-        } else {
-            baseMapper.updateById(user);
-        }
-    }
 } 

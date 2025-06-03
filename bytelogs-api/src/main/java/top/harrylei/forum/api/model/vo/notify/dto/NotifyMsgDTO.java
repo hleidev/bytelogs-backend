@@ -38,7 +38,7 @@ public class NotifyMsgDTO implements Serializable {
     /**
      * 发起消息的用户头像
      */
-    private String operateUserPhoto;
+    private String operateUserAvatar;
 
     /**
      * 消息类型

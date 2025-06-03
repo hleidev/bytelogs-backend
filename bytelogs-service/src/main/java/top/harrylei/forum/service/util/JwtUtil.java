@@ -127,6 +127,7 @@ public class JwtUtil {
         if (StringUtils.isNotBlank(authorizationHeader) && authorizationHeader.startsWith(BEARER_PREFIX)) {
             return authorizationHeader.substring(BEARER_PREFIX.length());
         }
+        log.debug("Authorization header 无效或格式不正确: {}", authorizationHeader);
         return null;
     }
 

@@ -22,11 +22,6 @@ public class UserInfoReq {
     private String userName;
 
     /**
-     * 用户图像
-     */
-    @Schema(description = "用户头像")
-    private String photo;
-    /**
      * 个人简介
      */
     @Schema(description = "用户简介")

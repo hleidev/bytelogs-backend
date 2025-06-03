@@ -1,5 +1,6 @@
 package top.harrylei.forum.service.user.service;
 
+import jakarta.validation.constraints.NotBlank;
 import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
 
 /**
@@ -31,4 +32,11 @@ public interface UserService {
      * @param newPassword 旧密码
      */
     void updatePassword(String token, String oldPassword, String newPassword);
+
+    /**
+     * 更新用户头像
+     * 
+     * @param avatar 用户头像
+     */
+    void updateAvatar(@NotBlank(message = "用户头像不能为空") String avatar);
 }
