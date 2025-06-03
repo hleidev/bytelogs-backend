@@ -79,9 +79,10 @@ public class AuthController {
         
         if (StringUtils.isBlank(token)) {
             log.warn("用户注销失败 userId={} reason=缺少有效认证信息", userId);
+            return ResVO.fail(StatusEnum.REQUEST_BODY_ERROR);
         } else {
             authService.logout(token);
+            return ResVO.ok();
         }
-        return ResVO.ok();
     }
 }
