@@ -54,7 +54,7 @@ public class ResVO<T> implements Serializable {
      * 构造成功响应，仅包含数据
      */
     public ResVO(T data) {
-        this.code = 0;
+        this.code = 200;
         this.message = "OK";
         this.data = data;
     }
@@ -76,7 +76,7 @@ public class ResVO<T> implements Serializable {
      * @return 成功响应，无数据
      */
     public static ResVO<Void> ok() {
-        return new ResVO<>(0, "OK", null);
+        return new ResVO<>(200, "OK", null);
     }
 
     /**
