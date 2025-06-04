@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -57,6 +58,14 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.OK)
     public ResVO<Void> handleForumAdviceException(ForumAdviceException e) {
         return ResVO.fail(e.getStatusEnum().getCode(), e.getMessage());
+    }
+
+    /**
+     * 当没有管理员权限时返回合适的错误信息
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResVO<Void> handleAccessDeniedException() {
+        return ResVO.fail(StatusEnum.FORBID_ERROR_MIXED, "当前用户无管理员权限");
     }
 
     /**

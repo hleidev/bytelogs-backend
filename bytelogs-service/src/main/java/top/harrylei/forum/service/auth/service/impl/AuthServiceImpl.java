@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.enums.user.LoginTypeEnum;
+import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
 import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.api.model.enums.StatusEnum;
@@ -71,6 +72,11 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public String login(String username, String password) {
+        return login(username, password, null);
+    }
+
+    @Override
+    public String login(String username, String password, UserRoleEnum userRole) {
         // 参数校验
         ExceptionUtil.requireNonEmpty(username, StatusEnum.PARAM_MISSING, "用户名");
         ExceptionUtil.requireNonEmpty(password, StatusEnum.PARAM_MISSING, "密码");
@@ -90,7 +96,12 @@ public class AuthServiceImpl implements AuthService {
         // 获取用户信息
         Long userId = user.getId();
         UserInfoDO userInfo = userInfoDAO.getByUserId(userId);
-        ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_NOT_EXISTS, user.getUserName());
+        ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_INFO_NOT_EXISTS, user.getUserName());
+
+        if (userRole != null) {
+            ExceptionUtil.errorIf(!Objects.equals(userInfo.getUserRole(), userRole.getCode()),
+                StatusEnum.FORBID_ERROR_MIXED, "当前用户无管理员权限");
+        }
 
         // 更新请求上下文
         ReqInfoContext.getContext().setUserId(userId).setUser(userInfoStructMapper.toDTO(userInfo));

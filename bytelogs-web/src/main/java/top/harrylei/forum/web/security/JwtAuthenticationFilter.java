@@ -140,7 +140,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
 
         // 添加基础角色
-        authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+        authorities.add(new SimpleGrantedAuthority("ROLE_NORMAL"));
 
         // 如果是管理员，添加管理员角色
         if (isAdmin) {
@@ -165,7 +165,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private void setUserContext(Long userId, BaseUserInfoDTO userInfo, boolean isAdmin) {
         // 构建用户上下文信息
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+        authorities.add(new SimpleGrantedAuthority("ROLE_NORMAL"));
 
         if (isAdmin) {
             authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
