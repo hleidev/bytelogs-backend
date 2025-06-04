@@ -17,7 +17,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import lombok.RequiredArgsConstructor;
-import top.harrylei.forum.web.security.JwtAuthenticationFilter;
+import top.harrylei.forum.web.filter.JwtAuthenticationFilter;
 
 /**
  * Spring Security 安全配置类

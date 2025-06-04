@@ -2,7 +2,6 @@ package top.harrylei.forum.service.user.converted;
 
 import java.util.Objects;
 
-import org.apache.commons.lang3.StringUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -17,7 +16,7 @@ import top.harrylei.forum.service.user.repository.entity.UserInfoDO;
 /**
  * 用户信息对象转换映射器 负责DO、DTO、VO之间的转换
  */
-@Mapper(componentModel = "spring", imports = {StringUtils.class})
+@Mapper(componentModel = "spring")
 public interface UserInfoStructMapper {
 
     /**
@@ -52,21 +51,20 @@ public interface UserInfoStructMapper {
     UserInfoVO toVO(BaseUserInfoDTO baseUserInfoDTO);
 
     /**
-     * 将请求对象中的数据更新到DTO对象
-     * 只更新非空字段，空字符串也视为空值不更新
+     * 将请求对象中的数据更新到DTO对象 只更新非空字段，空字符串也视为空值不更新
      *
      * @param req 用户信息请求对象
      * @param dto 目标用户信息DTO对象
      */
-    @Mapping(target = "avatar", ignore = true)
+    @Mapping(target = "userId", ignore = true)
+    @Mapping(target = "updateTime", ignore = true)
     @Mapping(target = "role", ignore = true)
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "extend", ignore = true)
     @Mapping(target = "email", ignore = true)
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "userId", ignore = true)
     @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "createTime", ignore = true)
-    @Mapping(target = "updateTime", ignore = true)
+    @Mapping(target = "avatar", ignore = true)
     void updateDTOFromReq(UserInfoReq req, @MappingTarget BaseUserInfoDTO dto);
 
     /**
