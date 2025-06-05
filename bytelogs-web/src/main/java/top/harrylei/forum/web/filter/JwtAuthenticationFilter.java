@@ -36,14 +36,13 @@ import top.harrylei.forum.service.util.JwtUtil;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    private final RedisService redisService;
     private final UserService userService;
+    private final RedisService redisService;
 
     /**
      * 过滤器核心处理方法
      * <p>
-     * 处理每个HTTP请求，提取JWT令牌并进行认证。 
-     * 认证成功后，会设置Spring Security上下文和请求上下文，同步获取完整用户信息。
+     * 处理每个HTTP请求，提取JWT令牌并进行认证。 认证成功后，会设置Spring Security上下文和请求上下文，同步获取完整用户信息。
      * </p>
      *
      * @param request 当前HTTP请求
@@ -112,7 +111,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             // 从Redis获取存储的token
-            String redisToken = redisService.getObj(RedisKeyConstants.TOKEN_PREFIX + userId, String.class);
+            String redisToken = redisService.getObj(RedisKeyConstants.getUserTokenKey(userId), String.class);
 
             // 验证token是否匹配
             if (StringUtils.isBlank(redisToken) || !token.equals(redisToken)) {
@@ -121,7 +120,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             // 刷新token过期时间
-            redisService.expire(RedisKeyConstants.BYTE_LOGS_PREFIX + userId, jwtUtil.getExpireSeconds());
+            redisService.expire(RedisKeyConstants.getUserTokenKey(userId), jwtUtil.getExpireSeconds());
 
             return userId;
         } catch (Exception e) {
@@ -158,9 +157,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     /**
      * 设置用户上下文到ThreadLocal
      *
-     * @param userId   用户ID
+     * @param userId 用户ID
      * @param userInfo 用户信息
-     * @param isAdmin  是否为管理员
+     * @param isAdmin 是否为管理员
      */
     private void setUserContext(Long userId, BaseUserInfoDTO userInfo, boolean isAdmin) {
         // 构建用户上下文信息
@@ -182,4 +181,4 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 重新设置上下文（为了保持链式调用的兼容性）
         ReqInfoContext.setContext(context);
     }
-} 
+}

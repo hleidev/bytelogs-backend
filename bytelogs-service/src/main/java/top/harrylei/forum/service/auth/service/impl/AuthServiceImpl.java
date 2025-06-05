@@ -1,5 +1,7 @@
 package top.harrylei.forum.service.auth.service.impl;
 
+import java.util.Objects;
+
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
@@ -7,25 +9,23 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import top.harrylei.forum.api.model.enums.StatusEnum;
 import top.harrylei.forum.api.model.enums.user.LoginTypeEnum;
 import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
-import top.harrylei.forum.core.exception.ExceptionUtil;
-import top.harrylei.forum.api.model.enums.StatusEnum;
-import top.harrylei.forum.service.infra.redis.RedisKeyConstants;
 import top.harrylei.forum.core.context.ReqInfoContext;
+import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.core.util.BCryptUtil;
-import top.harrylei.forum.service.util.JwtUtil;
 import top.harrylei.forum.core.util.PasswordUtil;
-import top.harrylei.forum.service.infra.redis.RedisService;
 import top.harrylei.forum.service.auth.service.AuthService;
+import top.harrylei.forum.service.infra.redis.RedisKeyConstants;
+import top.harrylei.forum.service.infra.redis.RedisService;
 import top.harrylei.forum.service.user.converted.UserInfoStructMapper;
 import top.harrylei.forum.service.user.repository.dao.UserDAO;
 import top.harrylei.forum.service.user.repository.dao.UserInfoDAO;
 import top.harrylei.forum.service.user.repository.entity.UserDO;
 import top.harrylei.forum.service.user.repository.entity.UserInfoDO;
-
-import java.util.Objects;
+import top.harrylei.forum.service.util.JwtUtil;
 
 /**
  * 登录和注册服务实现类
@@ -145,6 +145,6 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private static @NotNull String getKey(Long userId) {
-        return RedisKeyConstants.TOKEN_PREFIX + userId;
+        return RedisKeyConstants.getUserTokenKey(userId);
     }
 }
