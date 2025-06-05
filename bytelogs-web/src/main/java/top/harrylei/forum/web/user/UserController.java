@@ -65,14 +65,16 @@ public class UserController {
     @Operation(summary = "更新用户信息", description = "更新当前登录用户的个人基本信息")
     @PostMapping("/update-info")
     public ResVO<Void> updateUserInfo(@Valid @RequestBody UserInfoReq userInfoReq) {
-        // 获取当前用户信息并更新
-        BaseUserInfoDTO oldUserInfo = ReqInfoContext.getContext().getUser();
-        BaseUserInfoDTO newUserInfo = new BaseUserInfoDTO();
-        BeanUtils.copyProperties(oldUserInfo, newUserInfo);
-        userInfoStructMapper.updateDTOFromReq(userInfoReq, newUserInfo);
-
+        // 获取当前上下文中的用户信息
+        BaseUserInfoDTO userInfo = ReqInfoContext.getContext().getUser();
+        ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_INFO_NOT_EXISTS);
+        
+        // 直接更新上下文中的用户信息
+        userInfoStructMapper.updateDTOFromReq(userInfoReq, userInfo);
+        
         // 调用服务层处理更新逻辑
-        userService.updateUserInfo(newUserInfo);
+        userService.updateUserInfo(userInfo);
+        
         return ResVO.ok();
     }
 

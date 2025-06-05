@@ -79,9 +79,6 @@ public class UserServiceImpl implements UserService {
             userDO.setId(userInfo.getUserId());
             userDO.setUserName(userInfo.getUserName());
             userDAO.updateById(userDO);
-
-            // 更新请求上下文中的用户信息
-            ReqInfoContext.getContext().setUser(userInfoDTO);
             log.info("用户信息更新成功: userId={}", userInfoDTO.getUserId());
         } catch (Exception e) {
             log.error("更新用户数据失败: userId={}", ReqInfoContext.getContext().getUserId(), e);
@@ -145,12 +142,12 @@ public class UserServiceImpl implements UserService {
         ExceptionUtil.requireNonEmpty(avatar, StatusEnum.PARAM_MISSING, "用户头像为空");
 
         Long userId = ReqInfoContext.getContext().getUserId();
-        UserInfoDO userInfo = userInfoDAO.getByUserId(userId);
-        ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_NOT_EXISTS);
+        BaseUserInfoDTO userInfo = ReqInfoContext.getContext().getUser();
+        ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_INFO_NOT_EXISTS);
 
         try {
             userInfo.setAvatar(avatar);
-            userInfoDAO.updateById(userInfo);
+            userInfoDAO.updateById(userInfoStructMapper.toDO(userInfo));
             log.info("用户头像更新成功: userId={}", userId);
         } catch (Exception e) {
             log.warn("数据库更新失败: userId={}", userId, e);
