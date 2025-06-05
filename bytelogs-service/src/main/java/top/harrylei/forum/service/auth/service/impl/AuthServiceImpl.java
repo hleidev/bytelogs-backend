@@ -3,7 +3,6 @@ package top.harrylei.forum.service.auth.service.impl;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +12,7 @@ import top.harrylei.forum.api.model.enums.StatusEnum;
 import top.harrylei.forum.api.model.enums.user.LoginTypeEnum;
 import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
+import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.core.util.BCryptUtil;
@@ -20,17 +20,15 @@ import top.harrylei.forum.core.util.PasswordUtil;
 import top.harrylei.forum.service.auth.service.AuthService;
 import top.harrylei.forum.service.infra.redis.RedisKeyConstants;
 import top.harrylei.forum.service.infra.redis.RedisService;
-import top.harrylei.forum.service.user.converted.UserInfoStructMapper;
 import top.harrylei.forum.service.user.repository.dao.UserDAO;
 import top.harrylei.forum.service.user.repository.dao.UserInfoDAO;
 import top.harrylei.forum.service.user.repository.entity.UserDO;
 import top.harrylei.forum.service.user.repository.entity.UserInfoDO;
+import top.harrylei.forum.service.user.service.cache.UserCacheService;
 import top.harrylei.forum.service.util.JwtUtil;
 
 /**
- * 登录和注册服务实现类
- * <p>
- * 提供用户注册、登录和注销功能，处理身份验证和令牌管理
+ * 登录注册服务实现类
  */
 @Slf4j
 @Service
@@ -41,8 +39,14 @@ public class AuthServiceImpl implements AuthService {
     private final UserInfoDAO userInfoDAO;
     private final JwtUtil jwtUtil;
     private final RedisService redisService;
-    private final UserInfoStructMapper userInfoStructMapper;
+    private final UserCacheService userCacheService;
 
+    /**
+     * 用户注册
+     *
+     * @param username 用户名
+     * @param password 密码
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void register(String username, String password) {
@@ -70,18 +74,33 @@ public class AuthServiceImpl implements AuthService {
         log.info("用户注册成功 userId={}", newUser.getId());
     }
 
+    /**
+     * 用户登录（普通用户）
+     *
+     * @param username 用户名
+     * @param password 密码
+     * @return 登录成功的 Token
+     */
     @Override
     public String login(String username, String password) {
         return login(username, password, null);
     }
 
+    /**
+     * 用户登录（指定角色）
+     *
+     * @param username 用户名
+     * @param password 密码
+     * @param userRole 角色类型（可选）
+     * @return 登录成功的 Token
+     */
     @Override
     public String login(String username, String password, UserRoleEnum userRole) {
         // 参数校验
         ExceptionUtil.requireNonEmpty(username, StatusEnum.PARAM_MISSING, "用户名");
         ExceptionUtil.requireNonEmpty(password, StatusEnum.PARAM_MISSING, "密码");
 
-        // 查找并验证用户
+        // 查找用户
         UserDO user = userDAO.getUserByUserName(username);
         ExceptionUtil.requireNonNull(user, StatusEnum.USER_NOT_EXISTS, username);
 
@@ -93,30 +112,35 @@ public class AuthServiceImpl implements AuthService {
         ExceptionUtil.errorIf(!BCryptUtil.matches(password, user.getPassword()),
             StatusEnum.USER_USERNAME_OR_PASSWORD_ERROR);
 
-        // 获取用户信息
+        // 获取用户ID和信息
         Long userId = user.getId();
-        UserInfoDO userInfo = userInfoDAO.getByUserId(userId);
-        ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_INFO_NOT_EXISTS, user.getUserName());
+        BaseUserInfoDTO userInfoDTO = userCacheService.getUserInfo(userId);
 
+        // 校验角色权限（如果需要）
         if (userRole != null) {
-            ExceptionUtil.errorIf(!Objects.equals(userInfo.getUserRole(), userRole.getCode()),
-                StatusEnum.FORBID_ERROR_MIXED, "当前用户无管理员权限");
+            ExceptionUtil.errorIf(!Objects.equals(userInfoDTO.getRole(), userRole), StatusEnum.FORBID_ERROR_MIXED,
+                "当前用户无管理员权限");
         }
 
-        // 更新请求上下文
-        ReqInfoContext.getContext().setUserId(userId).setUser(userInfoStructMapper.toDTO(userInfo));
-
         // 生成token
-        String token = jwtUtil.generateToken(userId, userInfo.getUserRole());
+        String token = jwtUtil.generateToken(userId, userInfoDTO.getRole());
 
-        // 将token存储到Redis，过期时间与JWT一致
-        redisService.setObj(getKey(userId), token, jwtUtil.getExpireSeconds());
+        // 更新上下文
+        ReqInfoContext.getContext().setUserId(userId).setUser(userInfoDTO);
+
+        // 缓存token和用户信息
+        redisService.setObj(RedisKeyConstants.getUserTokenKey(userId), token, jwtUtil.getExpireSeconds());
 
         // 安全相关事件保留日志
         log.info("用户登录成功 userId={}", userId);
         return token;
     }
 
+    /**
+     * 用户登出
+     *
+     * @param token 请求传入的 Token
+     */
     @Override
     public void logout(String token) {
         Long userId = ReqInfoContext.getContext().getUserId();
@@ -132,7 +156,9 @@ public class AuthServiceImpl implements AuthService {
                 return;
             }
 
-            boolean result = redisService.del(getKey(userIdFromToken));
+            boolean result = redisService.del(RedisKeyConstants.getUserTokenKey(userIdFromToken));
+            userCacheService.clearUserCache(userIdFromToken);
+
             if (!result) {
                 log.warn("退出登录失败 userId={} reason=Redis删除失败", userId);
             } else if (log.isDebugEnabled()) {
@@ -142,9 +168,5 @@ public class AuthServiceImpl implements AuthService {
             // 简化异常日志，避免冗余
             log.error("退出登录异常 userId={}", userId, e);
         }
-    }
-
-    private static @NotNull String getKey(Long userId) {
-        return RedisKeyConstants.getUserTokenKey(userId);
     }
 }

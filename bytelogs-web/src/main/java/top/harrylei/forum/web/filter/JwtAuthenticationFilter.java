@@ -17,11 +17,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.service.infra.redis.RedisKeyConstants;
 import top.harrylei.forum.service.infra.redis.RedisService;
-import top.harrylei.forum.service.user.service.UserService;
+import top.harrylei.forum.service.user.service.cache.UserCacheService;
 import top.harrylei.forum.service.util.JwtUtil;
 
 /**
@@ -36,7 +37,7 @@ import top.harrylei.forum.service.util.JwtUtil;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    private final UserService userService;
+    private final UserCacheService userCacheService;
     private final RedisService redisService;
 
     /**
@@ -70,11 +71,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     setAuthentication(userId, isAdmin);
 
                     // 获取完整用户信息
-                    BaseUserInfoDTO userInfo = userService.getUserInfoById(userId);
+                    BaseUserInfoDTO userInfo = userCacheService.getUserInfo(userId);
 
                     // 如果获取失败，创建基本用户信息
                     if (userInfo == null) {
-                        userInfo = new BaseUserInfoDTO().setUserId(userId).setRole(role);
+                        userInfo = new BaseUserInfoDTO().setUserId(userId).setRole(UserRoleEnum.fromName(role));
                     }
 
                     // 设置用户信息到上下文
@@ -91,6 +92,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 继续执行过滤器链
         filterChain.doFilter(request, response);
     }
+
+
 
     /**
      * 验证Token是否有效

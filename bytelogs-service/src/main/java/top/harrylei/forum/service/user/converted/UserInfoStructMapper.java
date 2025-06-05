@@ -1,7 +1,5 @@
 package top.harrylei.forum.service.user.converted;
 
-import java.util.Objects;
-
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -31,15 +29,12 @@ public interface UserInfoStructMapper {
     /**
      * 将数字角色代码映射为字符串角色名称
      *
-     * @param role 角色代码（1-管理员，其他-普通用户）
-     * @return 角色名称
+     * @param role 角色代码
+     * @return 角色名称（枚举名称）
      */
     @Named("userRoleMapRole")
     static String userRoleMapRole(Integer role) {
-        if (Objects.equals(role, UserRoleEnum.ADMIN.getCode())) {
-            return "ADMIN";
-        }
-        return "NORMAL";
+        return UserRoleEnum.getNameByCode(role);
     }
 
     /**
@@ -78,9 +73,6 @@ public interface UserInfoStructMapper {
 
     @Named("roleMapUserRole")
     static Integer roleMapUserRole(String role) {
-        if (Objects.equals(role, UserRoleEnum.ADMIN.getDesc())) {
-            return 1;
-        }
-        return 0;
+        return UserRoleEnum.getCodeByName(role);
     }
 }

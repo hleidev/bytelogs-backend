@@ -1,5 +1,7 @@
 package top.harrylei.forum.service.user.service.impl;
 
+import java.util.Objects;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,14 +14,16 @@ import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.core.util.BCryptUtil;
 import top.harrylei.forum.core.util.PasswordUtil;
 import top.harrylei.forum.service.auth.service.AuthService;
+import top.harrylei.forum.service.infra.redis.RedisKeyConstants;
+import top.harrylei.forum.service.infra.redis.RedisService;
 import top.harrylei.forum.service.user.converted.UserInfoStructMapper;
 import top.harrylei.forum.service.user.repository.dao.UserDAO;
 import top.harrylei.forum.service.user.repository.dao.UserInfoDAO;
 import top.harrylei.forum.service.user.repository.entity.UserDO;
 import top.harrylei.forum.service.user.repository.entity.UserInfoDO;
 import top.harrylei.forum.service.user.service.UserService;
-
-import java.util.Objects;
+import top.harrylei.forum.service.user.service.cache.UserCacheService;
+import top.harrylei.forum.service.util.JwtUtil;
 
 /**
  * 用户服务实现类
@@ -34,33 +38,26 @@ public class UserServiceImpl implements UserService {
     private final UserInfoDAO userInfoDAO;
     private final UserInfoStructMapper userInfoStructMapper;
     private final UserDAO userDAO;
+    private final RedisService redisService;
+    private final JwtUtil jwtUtil;
     private final AuthService authService;
+    private final UserCacheService userCacheService;
 
     /**
-     * 根据用户ID获取用户信息
-     * 
-     * @param userId 用户ID
-     * @return 用户信息DTO，不存在则返回null
+     * 获取用户信息，支持缓存优先
+     *
+     * @param userId 用户 ID
+     * @return 用户信息 DTO
      */
-    @Override
     public BaseUserInfoDTO getUserInfoById(Long userId) {
-        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID为空");
+        ExceptionUtil.errorIf(userId == null, StatusEnum.PARAM_MISSING, "用户ID");
 
-        try {
-            UserInfoDO userInfo = userInfoDAO.getByUserId(userId);
-            if (userInfo == null) {
-                return null;
-            }
-            return userInfoStructMapper.toDTO(userInfo);
-        } catch (Exception e) {
-            log.error("获取用户信息异常: userId={}", userId, e);
-            return null;
-        }
+        return userCacheService.getUserInfo(userId);
     }
 
     /**
      * 更新用户信息
-     * 
+     *
      * @param userInfoDTO 需要更新的用户信息DTO
      * @throws RuntimeException 更新失败时抛出异常
      */
@@ -79,6 +76,9 @@ public class UserServiceImpl implements UserService {
             userDO.setId(userInfo.getUserId());
             userDO.setUserName(userInfo.getUserName());
             userDAO.updateById(userDO);
+
+            redisService.del(RedisKeyConstants.getUserInfoKey(userInfo.getUserId()));
+
             log.info("用户信息更新成功: userId={}", userInfoDTO.getUserId());
         } catch (Exception e) {
             log.error("更新用户数据失败: userId={}", ReqInfoContext.getContext().getUserId(), e);
@@ -88,7 +88,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * 更新用户密码
-     * 
+     *
      * @param token token
      * @param oldPassword 旧密码
      * @param newPassword 新密码
@@ -134,7 +134,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * 更新用户头像
-     * 
+     *
      * @param avatar 用户头像
      */
     @Override
@@ -144,6 +144,9 @@ public class UserServiceImpl implements UserService {
         Long userId = ReqInfoContext.getContext().getUserId();
         BaseUserInfoDTO userInfo = ReqInfoContext.getContext().getUser();
         ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_INFO_NOT_EXISTS);
+
+        redisService.del(RedisKeyConstants.getUserInfoKey(userInfo.getUserId()));
+        userCacheService.updateUserCache(userInfo);
 
         try {
             userInfo.setAvatar(avatar);

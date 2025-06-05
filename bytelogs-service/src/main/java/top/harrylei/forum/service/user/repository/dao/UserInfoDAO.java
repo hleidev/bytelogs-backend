@@ -13,21 +13,4 @@ import top.harrylei.forum.service.user.repository.mapper.UserInfoMapper;
  */
 @Repository
 public class UserInfoDAO extends ServiceImpl<UserInfoMapper, UserInfoDO> {
-
-    /**
-     * 根据用户ID获取用户信息
-     *
-     * @param userId 用户ID
-     * @return 用户信息，不存在则返回null
-     */
-    public UserInfoDO getByUserId(Long userId) {
-        if (userId == null) {
-            return null;
-        }
-        
-        return lambdaQuery()
-                .eq(UserInfoDO::getUserId, userId)
-                .last("limit 1")
-                .one();
-    }
 } 

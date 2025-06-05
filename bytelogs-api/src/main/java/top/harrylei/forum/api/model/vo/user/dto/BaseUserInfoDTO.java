@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 import top.harrylei.forum.api.model.entity.BaseDTO;
+import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 
 /**
  * 用户基础实体对象
@@ -30,7 +31,7 @@ public class BaseUserInfoDTO extends BaseDTO {
      * 用户角色 admin, normal
      */
     @Schema(description = "角色", example = "ADMIN|NORMAL")
-    private String role;
+    private UserRoleEnum role;
 
     /**
      * 用户图像

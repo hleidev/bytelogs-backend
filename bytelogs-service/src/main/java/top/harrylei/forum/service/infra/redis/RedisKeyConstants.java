@@ -13,7 +13,6 @@ public class RedisKeyConstants {
     public static final String USER_MODULE = GLOBAL_PREFIX + "user:";
     public static final String USER_TOKEN = USER_MODULE + "token:"; // 用户令牌
     public static final String USER_INFO = USER_MODULE + "info:"; // 用户信息
-    public static final String USER_PERM = USER_MODULE + "perm:"; // 用户权限
 
     // 内容模块
     public static final String CONTENT_MODULE = GLOBAL_PREFIX + "content:";

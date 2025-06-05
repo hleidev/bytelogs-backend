@@ -16,7 +16,7 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import top.harrylei.forum.api.model.enums.RoleEnum;
+import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.service.config.JwtProperties;
 
 /**
@@ -51,12 +51,12 @@ public class JwtUtil {
      * @param role   用户角色
      * @return JWT令牌字符串
      */
-    public String generateToken(Long userId, Integer role) {
+    public String generateToken(Long userId, UserRoleEnum role) {
         long now = System.currentTimeMillis();
         Date expiryDate = new Date(now + jwtProperties.getExpire() * 1000);
         return Jwts.builder()
                 .setSubject(String.valueOf(userId))
-                .claim("role", RoleEnum.of(role))
+                .claim("role", role.name())
                 .setIssuer(jwtProperties.getIssuer())
                 .setIssuedAt(new Date(now))
                 .setExpiration(expiryDate)
