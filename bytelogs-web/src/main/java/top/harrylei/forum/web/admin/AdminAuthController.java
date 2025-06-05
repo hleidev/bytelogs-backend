@@ -22,7 +22,7 @@ import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.service.auth.service.AuthService;
 import top.harrylei.forum.service.user.converted.UserInfoStructMapper;
 import top.harrylei.forum.service.user.service.UserService;
-import top.harrylei.forum.service.util.JwtUtil;
+import top.harrylei.forum.core.util.JwtUtil;
 import top.harrylei.forum.web.security.permission.RequiresAdmin;
 
 @Tag(name = "管理员认证模块", description = "提供登录、退出等接口")
@@ -35,7 +35,6 @@ public class AdminAuthController {
 
     private final AuthService authService;
     private final UserService userService;
-    private final JwtUtil jwtUtil;
     private final UserInfoStructMapper userInfoStructMapper;
 
     /**
@@ -70,7 +69,7 @@ public class AdminAuthController {
     @RequiresAdmin
     @PostMapping("/logout")
     public ResVO<Void> logout(@RequestHeader(name = "Authorization", required = false) String authHeader) {
-        String token = jwtUtil.extractTokenFromAuthorizationHeader(authHeader);
+        String token = JwtUtil.extractTokenFromAuthorizationHeader(authHeader);
         Long userId = ReqInfoContext.getContext().getUserId();
 
         if (StringUtils.isBlank(token)) {
@@ -109,7 +108,7 @@ public class AdminAuthController {
     @PostMapping("/update-password")
     public ResVO<Void> updatePassword(@RequestHeader(name = "Authorization", required = false) String authHeader,
                                       @Valid @RequestBody PasswordUpdateReq passwordUpdateReq) {
-        String token = jwtUtil.extractTokenFromAuthorizationHeader(authHeader);
+        String token = JwtUtil.extractTokenFromAuthorizationHeader(authHeader);
         ExceptionUtil.requireNonEmpty(token, StatusEnum.USER_UPDATE_FAILED, "缺少有效的 Authorization 头");
 
         userService.updatePassword(token, passwordUpdateReq.getOldPassword(), passwordUpdateReq.getNewPassword());

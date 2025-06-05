@@ -15,9 +15,8 @@ import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.auth.AuthReq;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
+import top.harrylei.forum.core.util.JwtUtil;
 import top.harrylei.forum.service.auth.service.AuthService;
-import top.harrylei.forum.service.user.converted.UserInfoStructMapper;
-import top.harrylei.forum.service.util.JwtUtil;
 import top.harrylei.forum.web.security.permission.RequiresLogin;
 
 /**
@@ -34,8 +33,6 @@ import top.harrylei.forum.web.security.permission.RequiresLogin;
 public class AuthController {
 
     private final AuthService authService;
-    private final JwtUtil jwtUtil;
-    private final UserInfoStructMapper userInfoStructMapper;
 
     /**
      * 用户注册接口
@@ -79,7 +76,7 @@ public class AuthController {
     @RequiresLogin
     @PostMapping("/logout")
     public ResVO<Void> logout(@RequestHeader(name = "Authorization", required = false) String authHeader) {
-        String token = jwtUtil.extractTokenFromAuthorizationHeader(authHeader);
+        String token = JwtUtil.extractTokenFromAuthorizationHeader(authHeader);
         Long userId = ReqInfoContext.getContext().getUserId();
         
         if (StringUtils.isBlank(token)) {

@@ -10,7 +10,7 @@ import top.harrylei.forum.service.infra.redis.RedisService;
 import top.harrylei.forum.service.user.converted.UserInfoStructMapper;
 import top.harrylei.forum.service.user.repository.dao.UserInfoDAO;
 import top.harrylei.forum.service.user.repository.entity.UserInfoDO;
-import top.harrylei.forum.service.util.JwtUtil;
+import top.harrylei.forum.core.util.JwtUtil;
 
 /**
  * 用户缓存服务
@@ -25,7 +25,6 @@ public class UserCacheService {
     private final RedisService redisService;
     private final UserInfoDAO userInfoDAO;
     private final UserInfoStructMapper userInfoStructMapper;
-    private final JwtUtil jwtUtil;
 
     /**
      * 获取用户信息，优先从缓存获取
@@ -81,7 +80,7 @@ public class UserCacheService {
         }
 
         try {
-            redisService.setObj(RedisKeyConstants.getUserInfoKey(userId), userInfoDTO, jwtUtil.getExpireSeconds());
+            redisService.setObj(RedisKeyConstants.getUserInfoKey(userId), userInfoDTO, JwtUtil.getExpireSeconds());
             log.debug("用户信息已缓存: userId={}", userId);
         } catch (Exception e) {
             log.error("缓存用户信息失败: userId={}", userId, e);

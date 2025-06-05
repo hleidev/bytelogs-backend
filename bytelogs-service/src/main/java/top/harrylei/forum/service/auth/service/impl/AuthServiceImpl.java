@@ -16,6 +16,7 @@ import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.core.util.BCryptUtil;
+import top.harrylei.forum.core.util.JwtUtil;
 import top.harrylei.forum.core.util.PasswordUtil;
 import top.harrylei.forum.service.auth.service.AuthService;
 import top.harrylei.forum.service.infra.redis.RedisKeyConstants;
@@ -25,7 +26,6 @@ import top.harrylei.forum.service.user.repository.dao.UserInfoDAO;
 import top.harrylei.forum.service.user.repository.entity.UserDO;
 import top.harrylei.forum.service.user.repository.entity.UserInfoDO;
 import top.harrylei.forum.service.user.service.cache.UserCacheService;
-import top.harrylei.forum.service.util.JwtUtil;
 
 /**
  * 登录注册服务实现类
@@ -37,7 +37,6 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserDAO userDAO;
     private final UserInfoDAO userInfoDAO;
-    private final JwtUtil jwtUtil;
     private final RedisService redisService;
     private final UserCacheService userCacheService;
 
@@ -123,13 +122,13 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // 生成token
-        String token = jwtUtil.generateToken(userId, userInfoDTO.getRole());
+        String token = JwtUtil.generateToken(userId, userInfoDTO.getRole());
 
         // 更新上下文
         ReqInfoContext.getContext().setUserId(userId).setUser(userInfoDTO);
 
         // 缓存token和用户信息
-        redisService.setObj(RedisKeyConstants.getUserTokenKey(userId), token, jwtUtil.getExpireSeconds());
+        redisService.setObj(RedisKeyConstants.getUserTokenKey(userId), token, JwtUtil.getExpireSeconds());
 
         // 安全相关事件保留日志
         log.info("用户登录成功 userId={}", userId);
@@ -150,7 +149,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         try {
-            Long userIdFromToken = jwtUtil.parseUserId(token);
+            Long userIdFromToken = JwtUtil.parseUserId(token);
             if (userIdFromToken == null) {
                 log.warn("退出登录失败 userId={} reason=token解析失败", userId);
                 return;

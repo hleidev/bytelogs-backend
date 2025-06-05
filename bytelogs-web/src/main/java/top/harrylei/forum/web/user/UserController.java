@@ -1,7 +1,6 @@
 package top.harrylei.forum.web.user;
 
 import jakarta.validation.constraints.NotBlank;
-import org.springframework.beans.BeanUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +19,7 @@ import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.service.user.converted.UserInfoStructMapper;
 import top.harrylei.forum.service.user.service.UserService;
-import top.harrylei.forum.service.util.JwtUtil;
+import top.harrylei.forum.core.util.JwtUtil;
 import top.harrylei.forum.web.security.permission.RequiresLogin;
 
 /**
@@ -39,7 +38,6 @@ public class UserController {
 
     private final UserService userService;
     private final UserInfoStructMapper userInfoStructMapper;
-    private final JwtUtil jwtUtil;
 
     /**
      * 获取当前登录用户的个人信息
@@ -88,7 +86,7 @@ public class UserController {
     @PostMapping("/update-password")
     public ResVO<Void> updatePassword(@RequestHeader(name = "Authorization", required = false) String authHeader,
         @Valid @RequestBody PasswordUpdateReq passwordUpdateReq) {
-        String token = jwtUtil.extractTokenFromAuthorizationHeader(authHeader);
+        String token = JwtUtil.extractTokenFromAuthorizationHeader(authHeader);
         ExceptionUtil.requireNonEmpty(token, StatusEnum.USER_UPDATE_FAILED, "缺少有效的 Authorization 头");
 
         userService.updatePassword(token, passwordUpdateReq.getOldPassword(), passwordUpdateReq.getNewPassword());

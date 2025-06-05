@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,10 +21,10 @@ import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
 import top.harrylei.forum.core.context.ReqInfoContext;
+import top.harrylei.forum.core.util.JwtUtil;
 import top.harrylei.forum.service.infra.redis.RedisKeyConstants;
 import top.harrylei.forum.service.infra.redis.RedisService;
 import top.harrylei.forum.service.user.service.cache.UserCacheService;
-import top.harrylei.forum.service.util.JwtUtil;
 
 /**
  * JWT认证过滤器
@@ -36,7 +37,6 @@ import top.harrylei.forum.service.util.JwtUtil;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtUtil jwtUtil;
     private final UserCacheService userCacheService;
     private final RedisService redisService;
 
@@ -51,20 +51,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * @param filterChain 过滤器链，用于继续执行后续过滤器
      */
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-        throws ServletException, IOException {
+    protected void doFilterInternal(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response,
+        @NotNull FilterChain filterChain) throws ServletException, IOException {
         try {
             // 从请求头中获取JWT令牌
             String authHeader = request.getHeader("Authorization");
-            String token = jwtUtil.extractTokenFromAuthorizationHeader(authHeader);
+            String token = JwtUtil.extractTokenFromAuthorizationHeader(authHeader);
 
-            if (StringUtils.isNotBlank(token) && !jwtUtil.isTokenExpired(token)) {
+            if (StringUtils.isNotBlank(token) && !JwtUtil.isTokenExpired(token)) {
                 // 解析JWT令牌获取用户ID
                 Long userId = checkRedisToken(token);
 
                 if (userId != null) {
                     // 获取用户角色
-                    String role = jwtUtil.parseRole(token);
+                    String role = JwtUtil.parseRole(token);
                     boolean isAdmin = "ADMIN".equals(role);
 
                     // 设置用户认证信息到Spring Security上下文
@@ -93,8 +93,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-
-
     /**
      * 验证Token是否有效
      *
@@ -108,7 +106,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             // 解析JWT获取用户ID
-            Long userId = jwtUtil.parseUserId(token);
+            Long userId = JwtUtil.parseUserId(token);
             if (userId == null) {
                 return null;
             }
@@ -123,7 +121,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             // 刷新token过期时间
-            redisService.expire(RedisKeyConstants.getUserTokenKey(userId), jwtUtil.getExpireSeconds());
+            redisService.expire(RedisKeyConstants.getUserTokenKey(userId), JwtUtil.getExpireSeconds());
 
             return userId;
         } catch (Exception e) {

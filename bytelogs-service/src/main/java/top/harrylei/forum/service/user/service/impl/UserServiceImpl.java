@@ -23,7 +23,6 @@ import top.harrylei.forum.service.user.repository.entity.UserDO;
 import top.harrylei.forum.service.user.repository.entity.UserInfoDO;
 import top.harrylei.forum.service.user.service.UserService;
 import top.harrylei.forum.service.user.service.cache.UserCacheService;
-import top.harrylei.forum.service.util.JwtUtil;
 
 /**
  * 用户服务实现类
@@ -39,7 +38,6 @@ public class UserServiceImpl implements UserService {
     private final UserInfoStructMapper userInfoStructMapper;
     private final UserDAO userDAO;
     private final RedisService redisService;
-    private final JwtUtil jwtUtil;
     private final AuthService authService;
     private final UserCacheService userCacheService;
 
