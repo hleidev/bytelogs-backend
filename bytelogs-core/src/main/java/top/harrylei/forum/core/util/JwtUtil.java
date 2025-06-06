@@ -8,45 +8,71 @@ import javax.crypto.SecretKey;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
+import lombok.Data;
 import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 
 /**
- * JWT 工具类，负责生成与解析 Token
+ * JWT 工具类
+ * <p>
+ * 用于生成和解析JWT令牌的工具类，支持自动配置和静态方法调用
+ * </p>
  */
+@Configuration
+@ConfigurationProperties(prefix = "jwt")
+@Data
 public class JwtUtil {
     private static final Logger log = LoggerFactory.getLogger(JwtUtil.class);
-    
+
     /**
      * JWT Bearer认证前缀
      */
     private static final String BEARER_PREFIX = "Bearer ";
-    
+
+    /**
+     * JWT颁发者标识
+     */
+    private String issuer;
+
+    /**
+     * JWT加密密钥
+     */
+    private String secret;
+
+    /**
+     * JWT令牌有效时间，单位：秒
+     */
+    private Long expire;
+
+    // 静态变量，用于存储初始化后的值
     private static SecretKey secretKey;
-    private static String issuer;
-    private static Long expireSeconds;
-    
+    private static String issuerStatic;
+    private static Long expireSecondsStatic;
+
     /**
      * 初始化JWT配置
-     * 
-     * @param secret JWT密钥
-     * @param jwtIssuer JWT颁发者
-     * @param expire JWT过期时间（秒）
+     * <p>
+     * Spring容器启动后自动调用，将配置属性设置到静态变量中
+     * </p>
      */
-    public static void init(String secret, String jwtIssuer, Long expire) {
+    @PostConstruct
+    public void init() {
         secretKey = Keys.hmacShaKeyFor(secret.getBytes());
-        issuer = jwtIssuer;
-        expireSeconds = expire;
-        log.info("JWT工具类初始化完成");
+        issuerStatic = issuer;
+        expireSecondsStatic = expire;
+        log.info("JWT工具类初始化完成，issuer={}, expireSeconds={}", issuer, expire);
     }
-    
+
     /**
-     * 生成 Token
+     * 生成JWT令牌
      *
      * @param userId 用户ID
      * @param role 用户角色
@@ -55,17 +81,17 @@ public class JwtUtil {
     public static String generateToken(Long userId, UserRoleEnum role) {
         checkInit();
         long now = System.currentTimeMillis();
-        Date expiryDate = new Date(now + expireSeconds * 1000);
+        Date expiryDate = new Date(now + expireSecondsStatic * 1000);
         return Jwts.builder()
                 .setSubject(String.valueOf(userId))
                 .claim("role", role.name())
-                .setIssuer(issuer)
+                .setIssuer(issuerStatic)
                 .setIssuedAt(new Date(now))
                 .setExpiration(expiryDate)
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }
-    
+
     /**
      * 从JWT令牌中解析用户ID
      *
@@ -80,7 +106,7 @@ public class JwtUtil {
         }
         return Long.valueOf(subject);
     }
-    
+
     /**
      * 从JWT令牌中解析用户角色
      *
@@ -91,7 +117,7 @@ public class JwtUtil {
         checkInit();
         return Optional.ofNullable(parseAllClaims(token)).map(claims -> claims.get("role", String.class)).orElse(null);
     }
-    
+
     /**
      * 检查JWT令牌是否已过期
      *
@@ -102,7 +128,7 @@ public class JwtUtil {
         checkInit();
         return getExpiration(token).before(new Date());
     }
-    
+
     /**
      * 获取JWT令牌的过期时间
      *
@@ -113,7 +139,7 @@ public class JwtUtil {
         checkInit();
         return Optional.ofNullable(parseAllClaims(token)).map(Claims::getExpiration).orElse(new Date(0));
     }
-    
+
     /**
      * 获取令牌过期秒数
      *
@@ -121,9 +147,9 @@ public class JwtUtil {
      */
     public static Long getExpireSeconds() {
         checkInit();
-        return expireSeconds;
+        return expireSecondsStatic;
     }
-    
+
     /**
      * 从HTTP Authorization头中提取JWT令牌
      *
@@ -137,7 +163,7 @@ public class JwtUtil {
         log.debug("Authorization header 无效或格式不正确: {}", authorizationHeader);
         return null;
     }
-    
+
     /**
      * 解析JWT令牌中的所有声明
      *
@@ -152,13 +178,13 @@ public class JwtUtil {
             return null;
         }
     }
-    
+
     /**
      * 检查工具类是否已初始化
      */
     private static void checkInit() {
         if (secretKey == null) {
-            throw new IllegalStateException("JWT工具类未初始化，请先调用init方法");
+            throw new IllegalStateException("JWT工具类未初始化");
         }
     }
-} 
+}
