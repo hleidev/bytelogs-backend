@@ -33,10 +33,10 @@ public class UserManagementController {
     /**
      * 分页查询用户列表
      *
-     * @param queryParam 查询参数，包括页码、页大小及过滤条件
+     * @param queryParam 查询参数，包括页码、页大小、排序字段及过滤条件
      * @return 用户列表的分页响应对象
      */
-    @Operation(summary = "查询用户列表", description = "分页查询用户列表，支持多条件筛选")
+    @Operation(summary = "查询用户列表", description = "分页查询用户列表，支持多条件筛选和多字段排序")
     @GetMapping
     public ResVO<PageVO<UserListItemVO>> list(UserQueryParam queryParam) {
         PageVO<UserListItemVO> pageVO = userManagementService.list(queryParam);

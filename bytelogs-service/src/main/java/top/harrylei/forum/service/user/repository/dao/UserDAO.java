@@ -36,15 +36,23 @@ public class UserDAO extends ServiceImpl<UserMapper, UserDO> {
                 .one();
     }
 
+    /**
+     * 根据查询参数和分页信息查询用户列表
+     *
+     * @param queryParam 查询参数
+     * @param limitSql 分页SQL
+     * @return 用户列表
+     */
     public List<UserDO> listUsers(UserQueryParam queryParam, String limitSql) {
+        String orderBySql = queryParam.getOrderBySql();
+
         return lambdaQuery()
                 .eq(queryParam.getStatus() != null, UserDO::getStatus, queryParam.getStatus())
                 .eq(queryParam.getDeleted() != null, UserDO::getDeleted, queryParam.getDeleted())
                 .ge(queryParam.getStartTime() != null, UserDO::getCreateTime, queryParam.getStartTime())
                 .le(queryParam.getEndTime() != null, UserDO::getCreateTime, queryParam.getEndTime())
                 .like(queryParam.getUserName() != null && !queryParam.getUserName().isEmpty(), UserDO::getUserName, queryParam.getUserName())
-                .orderByDesc(UserDO::getCreateTime)
-                .last(limitSql)
+                .last(orderBySql + " " + limitSql)
                 .list();
     }
 }
