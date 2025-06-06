@@ -17,6 +17,7 @@ import top.harrylei.forum.api.model.vo.page.param.UserQueryParam;
 import top.harrylei.forum.api.model.vo.user.vo.UserListItemVO;
 import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.service.admin.service.UserManagementService;
+import top.harrylei.forum.service.user.converted.UserStructMapper;
 import top.harrylei.forum.service.user.repository.dao.UserDAO;
 import top.harrylei.forum.service.user.repository.dao.UserInfoDAO;
 import top.harrylei.forum.service.user.repository.entity.UserDO;
@@ -32,6 +33,7 @@ public class UserManagementServiceImpl implements UserManagementService {
 
     private final UserDAO userDAO;
     private final UserInfoDAO userInfoDAO;
+    private final UserStructMapper userStructMapper;
 
     /**
      * 分页查询用户列表
@@ -61,18 +63,7 @@ public class UserManagementServiceImpl implements UserManagementService {
             // 合并信息封装为 VO
             List<UserListItemVO> result = users.stream().map(user -> {
                 UserInfoDO userInfo = userInfoMap.get(user.getId());
-                return new UserListItemVO()
-                        .setUserId(user.getId())
-                        .setUserName(user.getUserName())
-                        .setEmail(user.getEmail())
-                        .setStatus(user.getStatus() == 1 ? "启用" : "禁用")
-                        .setDeleted(user.getDeleted() == 1 ? "已删除" : "未删除")
-                        .setCreateTime(user.getCreateTime())
-                        .setUpdateTime(user.getUpdateTime())
-                        .setAvatar(userInfo.getAvatar())
-                        .setCompany(userInfo.getCompany())
-                        .setPosition(userInfo.getPosition())
-                        .setProfile(userInfo.getProfile());
+                return userStructMapper.toUserListItemVO(user, userInfo);
             }).toList();
 
             // 构建分页结果

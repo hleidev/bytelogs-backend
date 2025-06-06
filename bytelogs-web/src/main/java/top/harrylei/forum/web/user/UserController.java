@@ -17,7 +17,7 @@ import top.harrylei.forum.api.model.vo.user.req.UserInfoReq;
 import top.harrylei.forum.api.model.vo.user.vo.UserInfoVO;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
-import top.harrylei.forum.service.user.converted.UserInfoStructMapper;
+import top.harrylei.forum.service.user.converted.UserStructMapper;
 import top.harrylei.forum.service.user.service.UserService;
 import top.harrylei.forum.core.util.JwtUtil;
 import top.harrylei.forum.web.security.permission.RequiresLogin;
@@ -37,7 +37,7 @@ import top.harrylei.forum.web.security.permission.RequiresLogin;
 public class UserController {
 
     private final UserService userService;
-    private final UserInfoStructMapper userInfoStructMapper;
+    private final UserStructMapper userStructMapper;
 
     /**
      * 获取当前登录用户的个人信息
@@ -51,7 +51,7 @@ public class UserController {
         BaseUserInfoDTO user = ReqInfoContext.getContext().getUser();
         ExceptionUtil.requireNonNull(user, StatusEnum.USER_INFO_NOT_EXISTS);
         // 将用户DTO转换为前端展示所需的VO对象
-        return ResVO.ok(userInfoStructMapper.toVO(user));
+        return ResVO.ok(userStructMapper.toVO(user));
     }
 
     /**
@@ -68,7 +68,7 @@ public class UserController {
         ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_INFO_NOT_EXISTS);
         
         // 直接更新上下文中的用户信息
-        userInfoStructMapper.updateDTOFromReq(userInfoReq, userInfo);
+        userStructMapper.updateDTOFromReq(userInfoReq, userInfo);
         
         // 调用服务层处理更新逻辑
         userService.updateUserInfo(userInfo);

@@ -20,7 +20,7 @@ import top.harrylei.forum.api.model.vo.user.vo.UserInfoVO;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.service.auth.service.AuthService;
-import top.harrylei.forum.service.user.converted.UserInfoStructMapper;
+import top.harrylei.forum.service.user.converted.UserStructMapper;
 import top.harrylei.forum.service.user.service.UserService;
 import top.harrylei.forum.core.util.JwtUtil;
 import top.harrylei.forum.web.security.permission.RequiresAdmin;
@@ -35,7 +35,7 @@ public class AdminAuthController {
 
     private final AuthService authService;
     private final UserService userService;
-    private final UserInfoStructMapper userInfoStructMapper;
+    private final UserStructMapper userStructMapper;
 
     /**
      * 管理员登录接口
@@ -56,7 +56,7 @@ public class AdminAuthController {
         BaseUserInfoDTO userInfo = ReqInfoContext.getContext().getUser();
         ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_INFO_NOT_EXISTS);
 
-        return ResVO.ok(userInfoStructMapper.toVO(userInfo));
+        return ResVO.ok(userStructMapper.toVO(userInfo));
     }
 
     /**
@@ -93,7 +93,7 @@ public class AdminAuthController {
         BaseUserInfoDTO userInfo = ReqInfoContext.getContext().getUser();
 
         ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_INFO_NOT_EXISTS);
-        return ResVO.ok(userInfoStructMapper.toVO(userInfo));
+        return ResVO.ok(userStructMapper.toVO(userInfo));
     }
 
 

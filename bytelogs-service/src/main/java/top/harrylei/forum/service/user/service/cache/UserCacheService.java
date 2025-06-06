@@ -7,7 +7,7 @@ import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.service.infra.redis.RedisKeyConstants;
 import top.harrylei.forum.service.infra.redis.RedisService;
-import top.harrylei.forum.service.user.converted.UserInfoStructMapper;
+import top.harrylei.forum.service.user.converted.UserStructMapper;
 import top.harrylei.forum.service.user.repository.dao.UserInfoDAO;
 import top.harrylei.forum.service.user.repository.entity.UserInfoDO;
 import top.harrylei.forum.core.util.JwtUtil;
@@ -24,7 +24,7 @@ public class UserCacheService {
 
     private final RedisService redisService;
     private final UserInfoDAO userInfoDAO;
-    private final UserInfoStructMapper userInfoStructMapper;
+    private final UserStructMapper userStructMapper;
 
     /**
      * 获取用户信息，优先从缓存获取
@@ -62,7 +62,7 @@ public class UserCacheService {
         }
 
         // 4. 转换并缓存
-        userInfoDTO = userInfoStructMapper.toDTO(userInfoDO);
+        userInfoDTO = userStructMapper.toDTO(userInfoDO);
         cacheUserInfo(userId, userInfoDTO);
 
         return userInfoDTO;

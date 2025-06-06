@@ -16,7 +16,7 @@ import top.harrylei.forum.core.util.PasswordUtil;
 import top.harrylei.forum.service.auth.service.AuthService;
 import top.harrylei.forum.service.infra.redis.RedisKeyConstants;
 import top.harrylei.forum.service.infra.redis.RedisService;
-import top.harrylei.forum.service.user.converted.UserInfoStructMapper;
+import top.harrylei.forum.service.user.converted.UserStructMapper;
 import top.harrylei.forum.service.user.repository.dao.UserDAO;
 import top.harrylei.forum.service.user.repository.dao.UserInfoDAO;
 import top.harrylei.forum.service.user.repository.entity.UserDO;
@@ -35,7 +35,7 @@ import top.harrylei.forum.service.user.service.cache.UserCacheService;
 public class UserServiceImpl implements UserService {
 
     private final UserInfoDAO userInfoDAO;
-    private final UserInfoStructMapper userInfoStructMapper;
+    private final UserStructMapper userStructMapper;
     private final UserDAO userDAO;
     private final RedisService redisService;
     private final AuthService authService;
@@ -66,7 +66,7 @@ public class UserServiceImpl implements UserService {
 
         try {
             // 转换为数据库实体并更新用户个人信息
-            UserInfoDO userInfo = userInfoStructMapper.toDO(userInfoDTO);
+            UserInfoDO userInfo = userStructMapper.toDO(userInfoDTO);
             userInfoDAO.updateById(userInfo);
 
             // 更新用户账户信息
@@ -148,7 +148,7 @@ public class UserServiceImpl implements UserService {
 
         try {
             userInfo.setAvatar(avatar);
-            userInfoDAO.updateById(userInfoStructMapper.toDO(userInfo));
+            userInfoDAO.updateById(userStructMapper.toDO(userInfo));
             log.info("用户头像更新成功: userId={}", userId);
         } catch (Exception e) {
             log.warn("数据库更新失败: userId={}", userId, e);
