@@ -42,9 +42,6 @@ public class UserQueryParam extends BasePageQuery {
             "status", "status",
             "createTime", "create_time",
             "updateTime", "update_time",
-            "company", "company",
-            "position", "position",
-            "profile", "profile",
             "deleted", "deleted"
     );
 
