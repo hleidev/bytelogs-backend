@@ -23,7 +23,7 @@ import top.harrylei.forum.service.auth.service.AuthService;
 import top.harrylei.forum.service.user.converted.UserStructMapper;
 import top.harrylei.forum.service.user.service.UserService;
 import top.harrylei.forum.core.util.JwtUtil;
-import top.harrylei.forum.web.security.permission.RequiresAdmin;
+import top.harrylei.forum.core.permission.RequiresAdmin;
 
 @Tag(name = "管理员认证模块", description = "提供登录、退出等接口")
 @Slf4j

@@ -20,7 +20,7 @@ import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.service.user.converted.UserStructMapper;
 import top.harrylei.forum.service.user.service.UserService;
 import top.harrylei.forum.core.util.JwtUtil;
-import top.harrylei.forum.web.security.permission.RequiresLogin;
+import top.harrylei.forum.core.permission.RequiresLogin;
 
 /**
  * 用户控制器
