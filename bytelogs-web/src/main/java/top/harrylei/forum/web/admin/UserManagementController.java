@@ -17,7 +17,6 @@ import top.harrylei.forum.api.model.vo.user.vo.UserListItemVO;
 import top.harrylei.forum.core.security.permission.RequiresAdmin;
 import top.harrylei.forum.service.admin.service.UserManagementService;
 import top.harrylei.forum.service.user.converted.UserStructMapper;
-import top.harrylei.forum.service.user.service.UserService;
 
 /**
  * 用户管理模块
@@ -32,7 +31,6 @@ import top.harrylei.forum.service.user.service.UserService;
 public class UserManagementController {
 
     private final UserManagementService userManagementService;
-    private final UserService userService;
     private final UserStructMapper userStructMapper;
 
     /**
@@ -57,7 +55,7 @@ public class UserManagementController {
     @Operation(summary = "获取用户详情", description = "根据用户ID获取用户详细信息")
     @GetMapping("/{userId}")
     public ResVO<UserDetailVO> getUserDetail(@NotNull(message = "用户ID为空") @PathVariable Long userId) {
-        UserDetailDTO UserDetailDTO = userService.getUserDetail(userId);
+        UserDetailDTO UserDetailDTO = userManagementService.getUserDetail(userId);
         return ResVO.ok(userStructMapper.toUserDetailVO(UserDetailDTO));
     }
 

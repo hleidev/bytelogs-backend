@@ -2,6 +2,7 @@ package top.harrylei.forum.service.admin.service;
 
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.UserQueryParam;
+import top.harrylei.forum.api.model.vo.user.dto.UserDetailDTO;
 import top.harrylei.forum.api.model.vo.user.vo.UserListItemVO;
 
 public interface UserManagementService {
@@ -13,4 +14,12 @@ public interface UserManagementService {
      * @return 用户列表的分页结果
      */
     PageVO<UserListItemVO> list(UserQueryParam queryParam);
+
+    /**
+     * 查询用户详细信息
+     *
+     * @param userId 用户ID
+     * @return 用户详细信息
+     */
+    UserDetailDTO getUserDetail(Long userId);
 }

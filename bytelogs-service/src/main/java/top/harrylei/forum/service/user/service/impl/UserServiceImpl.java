@@ -208,7 +208,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public UserDetailDTO getUserDetail(Long userId) {
-        ExceptionUtil.errorIf(userId == null, StatusEnum.PARAM_MISSING, "用户ID");
+        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID");
 
         try {
             return userDAO.getUserDetail(userId);

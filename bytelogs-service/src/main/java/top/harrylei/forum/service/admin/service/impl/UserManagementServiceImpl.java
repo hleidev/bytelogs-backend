@@ -16,8 +16,6 @@ import top.harrylei.forum.api.model.vo.user.vo.UserListItemVO;
 import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.service.admin.service.UserManagementService;
 import top.harrylei.forum.service.user.converted.UserStructMapper;
-import top.harrylei.forum.service.user.repository.dao.UserDAO;
-import top.harrylei.forum.service.user.repository.dao.UserInfoDAO;
 import top.harrylei.forum.service.user.service.UserService;
 
 /**
@@ -28,9 +26,7 @@ import top.harrylei.forum.service.user.service.UserService;
 @RequiredArgsConstructor
 public class UserManagementServiceImpl implements UserManagementService {
 
-    private final UserDAO userDAO;
     private final UserService userService;
-    private final UserInfoDAO userInfoDAO;
     private final UserStructMapper userStructMapper;
 
     /**
@@ -65,5 +61,17 @@ public class UserManagementServiceImpl implements UserManagementService {
             ExceptionUtil.error(StatusEnum.SYSTEM_ERROR, "查询用户列表失败");
             return null; // 不会执行到这里，因为ExceptionUtil.error会抛出异常
         }
+    }
+
+    /**
+     * 查询用户详细信息
+     *
+     * @param userId 用户ID
+     * @return 用户详细信息
+     */
+    @Override
+    public UserDetailDTO getUserDetail(Long userId) {
+        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID为空");
+        return userService.getUserDetail(userId);
     }
 }
