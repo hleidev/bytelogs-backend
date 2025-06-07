@@ -55,4 +55,15 @@
             <if test="userName != null and userName != ''">and a.user_name like concat('%',#{userName},'%')</if>
         </where>
     </select>
+
+    <!-- 查询用户详细信息 -->
+    <select id="selectUserDetail" resultMap="UserDetailDTOMap">
+        select
+            a.id, a.user_name, a.email, a.status, a.deleted, a.create_time, a.update_time, a.third_account_id,
+            a.login_type, b.avatar, b.position, b.company, b.profile, b.extend, b.user_role
+        from user_account a
+        left join user_info b on a.id = b.user_id
+        where a.id = #{userId}
+    </select>
+
 </mapper>

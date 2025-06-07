@@ -1,24 +1,23 @@
 package top.harrylei.forum.web.admin;
 
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.UserQueryParam;
+import top.harrylei.forum.api.model.vo.user.dto.UserDetailDTO;
+import top.harrylei.forum.api.model.vo.user.vo.UserDetailVO;
 import top.harrylei.forum.api.model.vo.user.vo.UserListItemVO;
-import top.harrylei.forum.service.admin.service.UserManagementService;
 import top.harrylei.forum.core.security.permission.RequiresAdmin;
+import top.harrylei.forum.service.admin.service.UserManagementService;
+import top.harrylei.forum.service.user.converted.UserStructMapper;
+import top.harrylei.forum.service.user.service.UserService;
 
 /**
  * 用户管理模块
@@ -33,6 +32,8 @@ import top.harrylei.forum.core.security.permission.RequiresAdmin;
 public class UserManagementController {
 
     private final UserManagementService userManagementService;
+    private final UserService userService;
+    private final UserStructMapper userStructMapper;
 
     /**
      * 分页查询用户列表
@@ -45,6 +46,19 @@ public class UserManagementController {
     public ResVO<PageVO<UserListItemVO>> list(UserQueryParam queryParam) {
         PageVO<UserListItemVO> pageVO = userManagementService.list(queryParam);
         return ResVO.ok(pageVO);
+    }
+
+    /**
+     * 获取用户详情
+     *
+     * @param userId 用户ID
+     * @return 操作结果
+     */
+    @Operation(summary = "获取用户详情", description = "根据用户ID获取用户详细信息")
+    @GetMapping("/{userId}")
+    public ResVO<UserDetailVO> getUserDetail(@NotNull(message = "用户ID为空") @PathVariable Long userId) {
+        UserDetailDTO UserDetailDTO = userService.getUserDetail(userId);
+        return ResVO.ok(userStructMapper.toUserDetailVO(UserDetailDTO));
     }
 
     /**

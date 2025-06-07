@@ -1,12 +1,12 @@
 package top.harrylei.forum.service.user.service;
 
+import java.util.List;
+
 import jakarta.validation.constraints.NotBlank;
 import top.harrylei.forum.api.model.vo.page.PageReq;
 import top.harrylei.forum.api.model.vo.page.param.UserQueryParam;
 import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
 import top.harrylei.forum.api.model.vo.user.dto.UserDetailDTO;
-
-import java.util.List;
 
 /**
  * 用户服务接口
@@ -61,4 +61,12 @@ public interface UserService {
      * @return 用户数量
      */
     long countUsers(UserQueryParam queryParam);
+
+    /**
+     * 查询用户详细信息
+     * 
+     * @param userId 用户ID
+     * @return 用户详细信息
+     */
+    UserDetailDTO getUserDetail(Long userId);
 }

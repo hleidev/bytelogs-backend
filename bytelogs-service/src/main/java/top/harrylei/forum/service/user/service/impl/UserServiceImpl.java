@@ -176,6 +176,7 @@ public class UserServiceImpl implements UserService {
             return userDAO.listUsers(queryParam, pageRequest.getLimitSql());
         } catch (Exception e) {
             log.error("查询用户列表异常", e);
+            ExceptionUtil.error(StatusEnum.SYSTEM_ERROR, "查询用户列表异常", e);
             return List.of();
         }
     }
@@ -194,7 +195,27 @@ public class UserServiceImpl implements UserService {
             return userDAO.countUsers(queryParam);
         } catch (Exception e) {
             log.error("统计用户数量异常", e);
+            ExceptionUtil.error(StatusEnum.SYSTEM_ERROR, "统计用户数量失败", e);
             return 0;
+        }
+    }
+
+    /**
+     * 查询用户详细信息
+     *
+     * @param userId 用户ID
+     * @return 用户详细信息
+     */
+    @Override
+    public UserDetailDTO getUserDetail(Long userId) {
+        ExceptionUtil.errorIf(userId == null, StatusEnum.PARAM_MISSING, "用户ID");
+
+        try {
+            return userDAO.getUserDetail(userId);
+        } catch (Exception e) {
+            log.error("查询用户详细信息失败 userId={}", userId, e);
+            ExceptionUtil.error(StatusEnum.SYSTEM_ERROR, "查询用户详细信息异常", e);
+            return null;
         }
     }
 

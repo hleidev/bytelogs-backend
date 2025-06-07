@@ -73,4 +73,14 @@ public class UserDAO extends ServiceImpl<UserMapper, UserDO> {
                 queryParam.getEndTime()
         );
     }
+
+    /**
+     * 查询用户详细信息
+     *
+     * @param userId 用户ID
+     * @return 用户详细信息
+     */
+    public UserDetailDTO getUserDetail(Long userId) {
+        return getBaseMapper().selectUserDetail(userId);
     }
+}
