@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.vo.page.param.UserQueryParam;
+import top.harrylei.forum.api.model.vo.user.dto.UserDetailDTO;
 import top.harrylei.forum.service.user.repository.entity.UserDO;
 import top.harrylei.forum.service.user.repository.mapper.UserMapper;
 
@@ -43,16 +44,33 @@ public class UserDAO extends ServiceImpl<UserMapper, UserDO> {
      * @param limitSql 分页SQL
      * @return 用户列表
      */
-    public List<UserDO> listUsers(UserQueryParam queryParam, String limitSql) {
+    public List<UserDetailDTO> listUsers(UserQueryParam queryParam, String limitSql) {
         String orderBySql = queryParam.getOrderBySql();
 
-        return lambdaQuery()
-                .eq(queryParam.getStatus() != null, UserDO::getStatus, queryParam.getStatus())
-                .eq(queryParam.getDeleted() != null, UserDO::getDeleted, queryParam.getDeleted())
-                .ge(queryParam.getStartTime() != null, UserDO::getCreateTime, queryParam.getStartTime())
-                .le(queryParam.getEndTime() != null, UserDO::getCreateTime, queryParam.getEndTime())
-                .like(queryParam.getUserName() != null && !queryParam.getUserName().isEmpty(), UserDO::getUserName, queryParam.getUserName())
-                .last(orderBySql + " " + limitSql)
-                .list();
+        return getBaseMapper().listUsers(
+                queryParam.getUserName(),
+                queryParam.getStatus(),
+                queryParam.getDeleted(),
+                queryParam.getStartTime(),
+                queryParam.getEndTime(),
+                orderBySql,
+                limitSql
+        );
     }
-}
+
+    /**
+     * 统计符合条件的用户数量
+     *
+     * @param queryParam 查询参数
+     * @return 用户数量
+     */
+    public long countUsers(UserQueryParam queryParam) {
+        return getBaseMapper().countUsers(
+                queryParam.getUserName(),
+                queryParam.getStatus(),
+                queryParam.getDeleted(),
+                queryParam.getStartTime(),
+                queryParam.getEndTime()
+        );
+    }
+    }

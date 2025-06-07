@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.harrylei.forum.service.user.repository.mapper.UserMapper">
+
+    <!-- 自定义结果映射 -->
+    <resultMap id="UserDetailDTOMap" type="top.harrylei.forum.api.model.vo.user.dto.UserDetailDTO">
+        <!-- user_account表字段 -->
+        <id column="id" property="userId"/>
+        <result column="user_name" property="userName"/>
+        <result column="email" property="email"/>
+        <result column="status" property="status"/>
+        <result column="deleted" property="deleted"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="third_account_id" property="thirdAccountId"/>
+        <result column="login_type" property="loginType"/>
+
+        <!-- user_info表字段 -->
+        <result column="avatar" property="avatar"/>
+        <result column="position" property="position"/>
+        <result column="company" property="company"/>
+        <result column="profile" property="profile"/>
+        <result column="extend" property="extend"/>
+        <result column="user_role" property="userRole"/>
+    </resultMap>
+
+    <!-- 联表查询用户完整信息的SQL -->
+    <select id="listUsers" resultMap="UserDetailDTOMap">
+        select
+            a.id, a.user_name, a.email, a.status, a.deleted, a.create_time, a.update_time, a.third_account_id,
+            a.login_type, b.avatar, b.position, b.company, b.profile, b.extend, b.user_role
+        from user_account a
+        left join user_info b on a.id = b.user_id
+        <where>
+            <if test="status != null">and a.status = #{status}</if>
+            <if test="deleted != null">and a.deleted = #{deleted}</if>
+            <if test="startTime != null">and a.create_time &gt;= #{startTime}</if>
+            <if test="endTime != null">and a.create_time &lt;= #{endTime}</if>
+            <if test="userName != null and userName != ''">and a.user_name like concat('%',#{userName},'%')</if>
+        </where>
+        ${orderBySql}
+        ${limitSql}
+    </select>
+
+    <!-- 统计符合条件的用户数量 -->
+    <select id="countUsers" resultType="java.lang.Long">
+        select count(*)
+        from user_account a
+        left join user_info b on a.id = b.user_id
+        <where>
+            <if test="status != null">and a.status = #{status}</if>
+            <if test="deleted != null">and a.deleted = #{deleted}</if>
+            <if test="startTime != null">and a.create_time &gt;= #{startTime}</if>
+            <if test="endTime != null">and a.create_time &lt;= #{endTime}</if>
+            <if test="userName != null and userName != ''">and a.user_name like concat('%',#{userName},'%')</if>
+        </where>
+    </select>
+</mapper>

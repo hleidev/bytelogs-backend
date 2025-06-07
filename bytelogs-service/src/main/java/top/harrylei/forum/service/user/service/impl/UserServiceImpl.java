@@ -1,5 +1,6 @@
 package top.harrylei.forum.service.user.service.impl;
 
+import java.util.List;
 import java.util.Objects;
 
 import org.springframework.stereotype.Service;
@@ -8,7 +9,10 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.enums.StatusEnum;
+import top.harrylei.forum.api.model.vo.page.PageReq;
+import top.harrylei.forum.api.model.vo.page.param.UserQueryParam;
 import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
+import top.harrylei.forum.api.model.vo.user.dto.UserDetailDTO;
 import top.harrylei.forum.core.common.constans.RedisKeyConstants;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
@@ -155,4 +159,43 @@ public class UserServiceImpl implements UserService {
             ExceptionUtil.error(StatusEnum.USER_UPDATE_FAILED, "用户头像更新失败，请稍候重试！", e);
         }
     }
+
+    /**
+     * 用户列表查询
+     *
+     * @param queryParam 查询参数
+     * @param pageRequest 分页参数
+     * @return 用户列表
+     */
+    @Override
+    public List<UserDetailDTO> listUsers(UserQueryParam queryParam, PageReq pageRequest) {
+        ExceptionUtil.requireNonNull(queryParam, StatusEnum.PARAM_MISSING, "请求参数");
+        ExceptionUtil.requireNonNull(pageRequest, StatusEnum.PARAM_MISSING, "分页参数");
+
+        try {
+            return userDAO.listUsers(queryParam, pageRequest.getLimitSql());
+        } catch (Exception e) {
+            log.error("查询用户列表异常", e);
+            return List.of();
+        }
+    }
+
+    /**
+     * 统计符合条件的用户数量
+     *
+     * @param queryParam 查询参数
+     * @return 用户数量
+     */
+    @Override
+    public long countUsers(UserQueryParam queryParam) {
+        ExceptionUtil.requireNonNull(queryParam, StatusEnum.PARAM_MISSING, "请求参数");
+
+        try {
+            return userDAO.countUsers(queryParam);
+        } catch (Exception e) {
+            log.error("统计用户数量异常", e);
+            return 0;
+        }
+    }
+
 }

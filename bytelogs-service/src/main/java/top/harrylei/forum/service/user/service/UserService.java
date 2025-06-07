@@ -1,7 +1,12 @@
 package top.harrylei.forum.service.user.service;
 
 import jakarta.validation.constraints.NotBlank;
+import top.harrylei.forum.api.model.vo.page.PageReq;
+import top.harrylei.forum.api.model.vo.page.param.UserQueryParam;
 import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
+import top.harrylei.forum.api.model.vo.user.dto.UserDetailDTO;
+
+import java.util.List;
 
 /**
  * 用户服务接口
@@ -39,4 +44,21 @@ public interface UserService {
      * @param avatar 用户头像
      */
     void updateAvatar(@NotBlank(message = "用户头像不能为空") String avatar);
+
+    /**
+     * 用户列表查询
+     *
+     * @param queryParam 查询参数
+     * @param pageRequest 分页参数
+     * @return 用户列表
+     */
+    List<UserDetailDTO> listUsers(UserQueryParam queryParam, PageReq pageRequest);
+
+    /**
+     * 统计符合条件的用户数量
+     *
+     * @param queryParam 查询参数
+     * @return 用户数量
+     */
+    long countUsers(UserQueryParam queryParam);
 }

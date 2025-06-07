@@ -40,6 +40,7 @@ public class UserQueryParam extends BasePageQuery {
             "userName", "user_name",
             "email", "email",
             "status", "status",
+            "role", "user_role",
             "createTime", "create_time",
             "updateTime", "update_time",
             "deleted", "deleted"

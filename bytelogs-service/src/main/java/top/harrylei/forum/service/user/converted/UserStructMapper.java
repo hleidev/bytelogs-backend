@@ -7,10 +7,11 @@ import org.mapstruct.Named;
 
 import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
+import top.harrylei.forum.api.model.vo.user.dto.UserDetailDTO;
 import top.harrylei.forum.api.model.vo.user.req.UserInfoReq;
+import top.harrylei.forum.api.model.vo.user.vo.UserDetailVO;
 import top.harrylei.forum.api.model.vo.user.vo.UserInfoVO;
 import top.harrylei.forum.api.model.vo.user.vo.UserListItemVO;
-import top.harrylei.forum.service.user.repository.entity.UserDO;
 import top.harrylei.forum.service.user.repository.entity.UserInfoDO;
 
 /**
@@ -69,25 +70,26 @@ public interface UserStructMapper {
     UserInfoDO toDO(BaseUserInfoDTO userInfoDTO);
 
     /**
-     * 将用户账号和用户信息实体转换为用户列表项视图对象
+     * 将完整用户DTO转换为用户列表项视图对象
      *
-     * @param user 用户账号实体
-     * @param userInfo 用户信息实体，可能为null
+     * @param userDetailDTO 完整用户DTO
      * @return 用户列表项视图对象
      */
-    @Mapping(source = "userInfo.userRole", target = "role", qualifiedByName = "codeToRoleText")
-    @Mapping(source = "user.id", target = "userId")
-    @Mapping(source = "user.userName", target = "userName")
-    @Mapping(source = "user.email", target = "email")
-    @Mapping(source = "user.status", target = "status", qualifiedByName = "statusToText")
-    @Mapping(source = "user.deleted", target = "deleted", qualifiedByName = "deletedToText")
-    @Mapping(source = "user.createTime", target = "createTime")
-    @Mapping(source = "user.updateTime", target = "updateTime")
-    @Mapping(source = "userInfo.avatar", target = "avatar")
-    @Mapping(source = "userInfo.company", target = "company")
-    @Mapping(source = "userInfo.position", target = "position")
-    @Mapping(source = "userInfo.profile", target = "profile")
-    UserListItemVO toUserListItemVO(UserDO user, UserInfoDO userInfo);
+    @Mapping(source = "userRole", target = "role", qualifiedByName = "codeToRoleText")
+    @Mapping(source = "status", target = "status", qualifiedByName = "statusToText")
+    @Mapping(source = "deleted", target = "deleted", qualifiedByName = "deletedToText")
+    UserListItemVO toUserListItemVO(UserDetailDTO userDetailDTO);
+
+    /**
+     * 将完整用户DTO转换为用户详情视图对象
+     *
+     * @param userDetailDTO 完整用户DTO
+     * @return 用户详情视图对象
+     */
+    @Mapping(source = "userRole", target = "role", qualifiedByName = "codeToRoleText")
+    @Mapping(source = "status", target = "status", qualifiedByName = "statusToText")
+    @Mapping(source = "deleted", target = "deleted", qualifiedByName = "deletedToText")
+    UserDetailVO toUserDetailVO(UserDetailDTO userDetailDTO);
 
     /**
      * 将角色代码转换为角色名称（枚举名）
