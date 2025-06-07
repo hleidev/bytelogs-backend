@@ -144,7 +144,7 @@ public class UserServiceImpl implements UserService {
         ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_INFO_NOT_EXISTS);
 
         redisUtil.del(RedisKeyConstants.getUserInfoKey(userInfo.getUserId()));
-        userCacheService.updateUserCache(userInfo);
+        userCacheService.updateUserInfoCache(userInfo);
 
         try {
             userInfo.setAvatar(avatar);

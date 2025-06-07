@@ -93,7 +93,7 @@ public class UserCacheService {
      * 
      * @param userInfoDTO 更新后的用户信息
      */
-    public void updateUserCache(BaseUserInfoDTO userInfoDTO) {
+    public void updateUserInfoCache(BaseUserInfoDTO userInfoDTO) {
         if (userInfoDTO == null || userInfoDTO.getUserId() == null) {
             return;
         }
@@ -107,7 +107,7 @@ public class UserCacheService {
      *
      * @param userId 用户ID
      */
-    public void clearUserCache(Long userId) {
+    public void clearUserInfoCache(Long userId) {
         if (userId == null) {
             return;
         }

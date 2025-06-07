@@ -157,7 +157,7 @@ public class AuthServiceImpl implements AuthService {
             }
 
             boolean result = redisUtil.del(RedisKeyConstants.getUserTokenKey(userIdFromToken));
-            userCacheService.clearUserCache(userIdFromToken);
+            userCacheService.clearUserInfoCache(userIdFromToken);
 
             if (!result) {
                 log.warn("退出登录失败 userId={} reason=Redis删除失败", userId);
