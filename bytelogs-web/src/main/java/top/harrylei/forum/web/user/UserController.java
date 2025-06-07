@@ -38,6 +38,7 @@ public class UserController {
 
     private final UserService userService;
     private final UserStructMapper userStructMapper;
+    private final JwtUtil jwtUtil;
 
     /**
      * 获取当前登录用户的个人信息
@@ -86,7 +87,7 @@ public class UserController {
     @PostMapping("/update-password")
     public ResVO<Void> updatePassword(@RequestHeader(name = "Authorization", required = false) String authHeader,
         @Valid @RequestBody PasswordUpdateReq passwordUpdateReq) {
-        String token = JwtUtil.extractTokenFromAuthorizationHeader(authHeader);
+        String token = jwtUtil.extractTokenFromAuthorizationHeader(authHeader);
         ExceptionUtil.requireNonEmpty(token, StatusEnum.USER_UPDATE_FAILED, "缺少有效的 Authorization 头");
 
         userService.updatePassword(token, passwordUpdateReq.getOldPassword(), passwordUpdateReq.getNewPassword());

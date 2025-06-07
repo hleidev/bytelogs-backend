@@ -33,6 +33,7 @@ import top.harrylei.forum.web.security.permission.RequiresLogin;
 public class AuthController {
 
     private final AuthService authService;
+    private final JwtUtil jwtUtil;
 
     /**
      * 用户注册接口
@@ -76,7 +77,7 @@ public class AuthController {
     @RequiresLogin
     @PostMapping("/logout")
     public ResVO<Void> logout(@RequestHeader(name = "Authorization", required = false) String authHeader) {
-        String token = JwtUtil.extractTokenFromAuthorizationHeader(authHeader);
+        String token = jwtUtil.extractTokenFromAuthorizationHeader(authHeader);
         Long userId = ReqInfoContext.getContext().getUserId();
         
         if (StringUtils.isBlank(token)) {

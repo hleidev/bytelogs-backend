@@ -36,6 +36,7 @@ public class AdminAuthController {
     private final AuthService authService;
     private final UserService userService;
     private final UserStructMapper userStructMapper;
+    private final JwtUtil jwtUtil;
 
     /**
      * 管理员登录接口
@@ -69,7 +70,7 @@ public class AdminAuthController {
     @RequiresAdmin
     @PostMapping("/logout")
     public ResVO<Void> logout(@RequestHeader(name = "Authorization", required = false) String authHeader) {
-        String token = JwtUtil.extractTokenFromAuthorizationHeader(authHeader);
+        String token = jwtUtil.extractTokenFromAuthorizationHeader(authHeader);
         Long userId = ReqInfoContext.getContext().getUserId();
 
         if (StringUtils.isBlank(token)) {
@@ -108,7 +109,7 @@ public class AdminAuthController {
     @PostMapping("/update-password")
     public ResVO<Void> updatePassword(@RequestHeader(name = "Authorization", required = false) String authHeader,
                                       @Valid @RequestBody PasswordUpdateReq passwordUpdateReq) {
-        String token = JwtUtil.extractTokenFromAuthorizationHeader(authHeader);
+        String token = jwtUtil.extractTokenFromAuthorizationHeader(authHeader);
         ExceptionUtil.requireNonEmpty(token, StatusEnum.USER_UPDATE_FAILED, "缺少有效的 Authorization 头");
 
         userService.updatePassword(token, passwordUpdateReq.getOldPassword(), passwordUpdateReq.getNewPassword());

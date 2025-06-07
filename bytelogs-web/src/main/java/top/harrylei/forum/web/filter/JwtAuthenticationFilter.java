@@ -20,10 +20,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
+import top.harrylei.forum.core.common.RedisKeyConstants;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.util.JwtUtil;
-import top.harrylei.forum.service.infra.redis.RedisKeyConstants;
-import top.harrylei.forum.service.infra.redis.RedisService;
+import top.harrylei.forum.core.util.RedisUtil;
 import top.harrylei.forum.service.user.service.cache.UserCacheService;
 
 /**
@@ -38,7 +38,8 @@ import top.harrylei.forum.service.user.service.cache.UserCacheService;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final UserCacheService userCacheService;
-    private final RedisService redisService;
+    private final RedisUtil redisUtil;
+    private final JwtUtil jwtUtil;
 
     /**
      * 过滤器核心处理方法
@@ -56,15 +57,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             // 从请求头中获取JWT令牌
             String authHeader = request.getHeader("Authorization");
-            String token = JwtUtil.extractTokenFromAuthorizationHeader(authHeader);
+            String token = jwtUtil.extractTokenFromAuthorizationHeader(authHeader);
 
-            if (StringUtils.isNotBlank(token) && !JwtUtil.isTokenExpired(token)) {
+            if (StringUtils.isNotBlank(token) && !jwtUtil.isTokenExpired(token)) {
                 // 解析JWT令牌获取用户ID
                 Long userId = checkRedisToken(token);
 
                 if (userId != null) {
                     // 获取用户角色
-                    String role = JwtUtil.parseRole(token);
+                    String role = jwtUtil.parseRole(token);
                     boolean isAdmin = "ADMIN".equals(role);
 
                     // 设置用户认证信息到Spring Security上下文
@@ -106,13 +107,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             // 解析JWT获取用户ID
-            Long userId = JwtUtil.parseUserId(token);
+            Long userId = jwtUtil.parseUserId(token);
             if (userId == null) {
                 return null;
             }
 
             // 从Redis获取存储的token
-            String redisToken = redisService.getObj(RedisKeyConstants.getUserTokenKey(userId), String.class);
+            String redisToken = redisUtil.getObj(RedisKeyConstants.getUserTokenKey(userId), String.class);
 
             // 验证token是否匹配
             if (StringUtils.isBlank(redisToken) || !token.equals(redisToken)) {
@@ -121,7 +122,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             // 刷新token过期时间
-            redisService.expire(RedisKeyConstants.getUserTokenKey(userId), JwtUtil.getExpireSeconds());
+            redisUtil.expire(RedisKeyConstants.getUserTokenKey(userId), jwtUtil.getExpireSeconds());
 
             return userId;
         } catch (Exception e) {

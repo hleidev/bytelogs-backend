@@ -9,13 +9,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.enums.StatusEnum;
 import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
+import top.harrylei.forum.core.common.RedisKeyConstants;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.core.util.BCryptUtil;
 import top.harrylei.forum.core.util.PasswordUtil;
+import top.harrylei.forum.core.util.RedisUtil;
 import top.harrylei.forum.service.auth.service.AuthService;
-import top.harrylei.forum.service.infra.redis.RedisKeyConstants;
-import top.harrylei.forum.service.infra.redis.RedisService;
 import top.harrylei.forum.service.user.converted.UserStructMapper;
 import top.harrylei.forum.service.user.repository.dao.UserDAO;
 import top.harrylei.forum.service.user.repository.dao.UserInfoDAO;
@@ -37,7 +37,7 @@ public class UserServiceImpl implements UserService {
     private final UserInfoDAO userInfoDAO;
     private final UserStructMapper userStructMapper;
     private final UserDAO userDAO;
-    private final RedisService redisService;
+    private final RedisUtil redisUtil;
     private final AuthService authService;
     private final UserCacheService userCacheService;
 
@@ -75,7 +75,7 @@ public class UserServiceImpl implements UserService {
             userDO.setUserName(userInfo.getUserName());
             userDAO.updateById(userDO);
 
-            redisService.del(RedisKeyConstants.getUserInfoKey(userInfo.getUserId()));
+            redisUtil.del(RedisKeyConstants.getUserInfoKey(userInfo.getUserId()));
 
             log.info("用户信息更新成功: userId={}", userInfoDTO.getUserId());
         } catch (Exception e) {
@@ -143,7 +143,7 @@ public class UserServiceImpl implements UserService {
         BaseUserInfoDTO userInfo = ReqInfoContext.getContext().getUser();
         ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_INFO_NOT_EXISTS);
 
-        redisService.del(RedisKeyConstants.getUserInfoKey(userInfo.getUserId()));
+        redisUtil.del(RedisKeyConstants.getUserInfoKey(userInfo.getUserId()));
         userCacheService.updateUserCache(userInfo);
 
         try {

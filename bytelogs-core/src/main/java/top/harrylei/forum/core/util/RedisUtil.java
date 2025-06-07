@@ -1,4 +1,4 @@
-package top.harrylei.forum.service.infra.redis.impl;
+package top.harrylei.forum.core.util;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -16,7 +16,6 @@ import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import top.harrylei.forum.service.infra.redis.RedisService;
 
 /**
  * Redis工具类 封装RedisTemplate，提供常用的Redis操作方法，支持底层连接和高级API操作
@@ -24,7 +23,7 @@ import top.harrylei.forum.service.infra.redis.RedisService;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class RedisServiceImpl implements RedisService {
+public class RedisUtil {
 
     private static final Charset CHARSET = StandardCharsets.UTF_8;
     private final RedisTemplate<String, Object> redisTemplate;

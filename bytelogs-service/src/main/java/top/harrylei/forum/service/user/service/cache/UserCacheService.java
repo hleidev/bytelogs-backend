@@ -5,8 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
 import top.harrylei.forum.core.context.ReqInfoContext;
-import top.harrylei.forum.service.infra.redis.RedisKeyConstants;
-import top.harrylei.forum.service.infra.redis.RedisService;
+import top.harrylei.forum.core.common.RedisKeyConstants;
+import top.harrylei.forum.core.util.RedisUtil;
 import top.harrylei.forum.service.user.converted.UserStructMapper;
 import top.harrylei.forum.service.user.repository.dao.UserInfoDAO;
 import top.harrylei.forum.service.user.repository.entity.UserInfoDO;
@@ -22,9 +22,10 @@ import top.harrylei.forum.core.util.JwtUtil;
 @RequiredArgsConstructor
 public class UserCacheService {
 
-    private final RedisService redisService;
+    private final RedisUtil redisUtil;
     private final UserInfoDAO userInfoDAO;
     private final UserStructMapper userStructMapper;
+    private final JwtUtil jwtUtil;
 
     /**
      * 获取用户信息，优先从缓存获取
@@ -45,7 +46,7 @@ public class UserCacheService {
 
         // 2. 尝试从缓存获取
         BaseUserInfoDTO userInfoDTO =
-            redisService.getObj(RedisKeyConstants.getUserInfoKey(userId), BaseUserInfoDTO.class);
+                redisUtil.getObj(RedisKeyConstants.getUserInfoKey(userId), BaseUserInfoDTO.class);
 
         // 缓存命中，直接返回
         if (userInfoDTO != null) {
@@ -80,7 +81,7 @@ public class UserCacheService {
         }
 
         try {
-            redisService.setObj(RedisKeyConstants.getUserInfoKey(userId), userInfoDTO, JwtUtil.getExpireSeconds());
+            redisUtil.setObj(RedisKeyConstants.getUserInfoKey(userId), userInfoDTO, jwtUtil.getExpireSeconds());
             log.debug("用户信息已缓存: userId={}", userId);
         } catch (Exception e) {
             log.error("缓存用户信息失败: userId={}", userId, e);
@@ -112,7 +113,7 @@ public class UserCacheService {
         }
 
         try {
-            redisService.del(RedisKeyConstants.getUserInfoKey(userId));
+            redisUtil.del(RedisKeyConstants.getUserInfoKey(userId));
             log.debug("用户信息缓存已清除: userId={}", userId);
         } catch (Exception e) {
             log.error("清除用户信息缓存失败: userId={}", userId, e);

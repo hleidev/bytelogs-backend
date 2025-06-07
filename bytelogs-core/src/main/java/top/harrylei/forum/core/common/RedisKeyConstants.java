@@ -1,4 +1,4 @@
-package top.harrylei.forum.service.infra.redis;
+package top.harrylei.forum.core.common;
 
 /**
  * Redis键前缀常量类，统一管理所有Redis Key结构

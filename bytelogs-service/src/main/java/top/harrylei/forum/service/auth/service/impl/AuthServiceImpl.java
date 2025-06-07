@@ -13,14 +13,14 @@ import top.harrylei.forum.api.model.enums.user.LoginTypeEnum;
 import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
 import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
+import top.harrylei.forum.core.common.RedisKeyConstants;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.core.util.BCryptUtil;
 import top.harrylei.forum.core.util.JwtUtil;
 import top.harrylei.forum.core.util.PasswordUtil;
+import top.harrylei.forum.core.util.RedisUtil;
 import top.harrylei.forum.service.auth.service.AuthService;
-import top.harrylei.forum.service.infra.redis.RedisKeyConstants;
-import top.harrylei.forum.service.infra.redis.RedisService;
 import top.harrylei.forum.service.user.repository.dao.UserDAO;
 import top.harrylei.forum.service.user.repository.dao.UserInfoDAO;
 import top.harrylei.forum.service.user.repository.entity.UserDO;
@@ -37,8 +37,9 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserDAO userDAO;
     private final UserInfoDAO userInfoDAO;
-    private final RedisService redisService;
+    private final RedisUtil redisUtil;
     private final UserCacheService userCacheService;
+    private final JwtUtil jwtUtil;
 
     /**
      * 用户注册
@@ -122,13 +123,13 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // 生成token
-        String token = JwtUtil.generateToken(userId, userInfoDTO.getRole());
+        String token = jwtUtil.generateToken(userId, userInfoDTO.getRole());
 
         // 更新上下文
         ReqInfoContext.getContext().setUserId(userId).setUser(userInfoDTO);
 
         // 缓存token和用户信息
-        redisService.setObj(RedisKeyConstants.getUserTokenKey(userId), token, JwtUtil.getExpireSeconds());
+        redisUtil.setObj(RedisKeyConstants.getUserTokenKey(userId), token, jwtUtil.getExpireSeconds());
 
         // 安全相关事件保留日志
         log.info("用户登录成功 userId={}", userId);
@@ -149,13 +150,13 @@ public class AuthServiceImpl implements AuthService {
         }
 
         try {
-            Long userIdFromToken = JwtUtil.parseUserId(token);
+            Long userIdFromToken = jwtUtil.parseUserId(token);
             if (userIdFromToken == null) {
                 log.warn("退出登录失败 userId={} reason=token解析失败", userId);
                 return;
             }
 
-            boolean result = redisService.del(RedisKeyConstants.getUserTokenKey(userIdFromToken));
+            boolean result = redisUtil.del(RedisKeyConstants.getUserTokenKey(userIdFromToken));
             userCacheService.clearUserCache(userIdFromToken);
 
             if (!result) {
