@@ -1,4 +1,4 @@
-package top.harrylei.forum.core.permission;
+package top.harrylei.forum.core.security.permission;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 

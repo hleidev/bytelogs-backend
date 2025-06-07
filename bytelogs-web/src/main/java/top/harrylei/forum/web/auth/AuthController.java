@@ -17,7 +17,7 @@ import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.core.util.JwtUtil;
 import top.harrylei.forum.service.auth.service.AuthService;
-import top.harrylei.forum.core.permission.RequiresLogin;
+import top.harrylei.forum.core.security.permission.RequiresLogin;
 
 /**
  * 用户认证控制器
