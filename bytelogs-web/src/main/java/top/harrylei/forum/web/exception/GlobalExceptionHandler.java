@@ -61,14 +61,6 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * 当没有管理员权限时返回合适的错误信息
-     */
-    @ExceptionHandler(AccessDeniedException.class)
-    public ResVO<Void> handleAccessDeniedException() {
-        return ResVO.fail(StatusEnum.FORBID_ERROR_MIXED, "当前用户无管理员权限");
-    }
-
-    /**
      * 处理参数校验异常（Bean Validation 注解校验）
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)

@@ -18,6 +18,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import lombok.RequiredArgsConstructor;
 import top.harrylei.forum.web.filter.JwtAuthenticationFilter;
+import top.harrylei.forum.web.security.CustomAccessDeniedHandler;
+import top.harrylei.forum.web.security.CustomAuthenticationEntryPoint;
 
 /**
  * Spring Security 安全配置类
@@ -35,6 +37,8 @@ import top.harrylei.forum.web.filter.JwtAuthenticationFilter;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CustomAuthenticationEntryPoint authenticationEntryPoint;
+    private final CustomAccessDeniedHandler accessDeniedHandler;
 
     /**
      * 配置Spring Security过滤器链
@@ -71,6 +75,10 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                 // 其他请求需要认证
                 .anyRequest().authenticated())
+            // 配置异常处理
+            .exceptionHandling(exception -> exception
+                .authenticationEntryPoint(authenticationEntryPoint)  // 处理未认证异常
+                .accessDeniedHandler(accessDeniedHandler))           // 处理权限不足异常
             // 添加JWT过滤器，在UsernamePasswordAuthenticationFilter之前执行
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class).build();
     }

@@ -20,7 +20,7 @@ import top.harrylei.forum.core.common.converter.StringToLocalDateTimeConverter;
  * Spring MVC 配置类
  */
 @Configuration
-public class WebConfig implements WebMvcConfigurer {
+public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addFormatters(FormatterRegistry registry) {
