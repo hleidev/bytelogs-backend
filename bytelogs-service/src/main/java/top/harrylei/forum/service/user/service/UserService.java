@@ -77,4 +77,12 @@ public interface UserService {
      * @param status 新状态
      */
     void updateStatus(Long userId, UserStatusEnum status);
+
+    /**
+     * 重置用户密码
+     *
+     * @param userId 用户ID
+     * @param password 新密码
+     */
+    void resetPassword(Long userId, String password);
 }

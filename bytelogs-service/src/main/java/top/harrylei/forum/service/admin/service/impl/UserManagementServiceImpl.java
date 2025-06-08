@@ -2,6 +2,7 @@ package top.harrylei.forum.service.admin.service.impl;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,9 @@ import top.harrylei.forum.service.user.service.UserService;
 @Service
 @RequiredArgsConstructor
 public class UserManagementServiceImpl implements UserManagementService {
+
+    @Value("${user.default-password}")
+    private String defaultPassword;
 
     private final UserService userService;
     private final UserStructMapper userStructMapper;
@@ -87,5 +91,17 @@ public class UserManagementServiceImpl implements UserManagementService {
         ExceptionUtil.requireNonNull(status, StatusEnum.PARAM_MISSING, "用户状态");
 
         userService.updateStatus(userId, status);
+    }
+
+    /**
+     * 重置用户密码
+     *
+     * @param userId 用户ID
+     */
+    @Override
+    public void resetPassword(Long userId) {
+        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID");
+
+        userService.resetPassword(userId, defaultPassword);
     }
 }

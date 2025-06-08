@@ -87,7 +87,7 @@ public class UserManagementController {
     @Operation(summary = "重置用户密码", description = "将用户密码重置为系统默认密码并通知用户")
     @PostMapping("/{userId}/password/reset")
     public ResVO<Void> resetPassword(@PathVariable Long userId) {
-        // 待实现: userManagementService.resetPassword(userId);
+        userManagementService.resetPassword(userId);
         return ResVO.ok();
     }
 

@@ -83,4 +83,16 @@ public class UserDAO extends ServiceImpl<UserMapper, UserDO> {
     public UserDetailDTO getUserDetail(Long userId) {
         return getBaseMapper().selectUserDetail(userId);
     }
+
+    /**
+     * 通过userId获取用户账号信息
+     * @param userId 用户ID
+     * @return 用户账号信息
+     */
+    public UserDO getUserById(Long userId) {
+        return lambdaQuery()
+                .eq(UserDO::getId, userId)
+                .eq(UserDO::getDeleted, YesOrNoEnum.NO.getCode())
+                .one();
+    }
 }

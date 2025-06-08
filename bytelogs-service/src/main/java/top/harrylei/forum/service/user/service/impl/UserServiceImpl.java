@@ -101,31 +101,19 @@ public class UserServiceImpl implements UserService {
         ExceptionUtil.requireNonEmpty(oldPassword, StatusEnum.PARAM_MISSING, "旧密码为空");
         ExceptionUtil.requireNonEmpty(newPassword, StatusEnum.PARAM_MISSING, "新密码为空");
 
-
         if (Objects.equals(oldPassword, newPassword)) {
             ExceptionUtil.error(StatusEnum.USER_UPDATE_FAILED, "新密码与旧密码相同");
         }
 
         // 校验旧密码
-        UserDO user = userDAO.getById(userId);
+        UserDO user = userDAO.getUserById(userId);
         ExceptionUtil.requireNonNull(user, StatusEnum.USER_NOT_EXISTS, "userId=" + userId);
 
         if (!BCryptUtil.matches(oldPassword, user.getPassword())) {
             ExceptionUtil.error(StatusEnum.USER_PASSWORD_ERROR);
         }
 
-        // 校验新密码安全性
-        if (!PasswordUtil.isValid(newPassword)) {
-            ExceptionUtil.error(StatusEnum.USER_PASSWORD_INVALID);
-        }
-
-        try {
-            user.setPassword(BCryptUtil.hash(newPassword));
-            userDAO.updateById(user);
-            log.info("用户密码更新成功: userId={}", userId);
-        } catch (Exception e) {
-            ExceptionUtil.error(StatusEnum.USER_UPDATE_FAILED, "用户密码更新失败，请稍后重试！", e);
-        }
+        resetPassword(userId, newPassword);
 
         authService.logout(userId);
     }
@@ -231,6 +219,32 @@ public class UserServiceImpl implements UserService {
             log.info("修改用户状态成功: userId={}", userId);
         } catch (Exception e) {
             ExceptionUtil.error(StatusEnum.USER_UPDATE_FAILED, "用户状态更新失败，请稍后重试", e);
+        }
+    }
+
+    /**
+     * 重置密码
+     *
+     * @param userId 用户ID
+     * @param password 新密码
+     */
+    @Override
+    public void resetPassword(Long userId, String password) {
+        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID为空");
+        // 校验新密码安全性
+        if (!PasswordUtil.isValid(password)) {
+            ExceptionUtil.error(StatusEnum.USER_PASSWORD_INVALID);
+        }
+
+        UserDO user = userDAO.getUserById(userId);
+        ExceptionUtil.requireNonNull(user, StatusEnum.USER_NOT_EXISTS, "userId=" + userId);
+
+        try {
+            user.setPassword(BCryptUtil.hash(password));
+            userDAO.updateById(user);
+            log.info("用户密码更新成功: userId={}", userId);
+        } catch (Exception e) {
+            ExceptionUtil.error(StatusEnum.USER_UPDATE_FAILED, "用户密码更新失败，请稍后重试！", e);
         }
     }
 
