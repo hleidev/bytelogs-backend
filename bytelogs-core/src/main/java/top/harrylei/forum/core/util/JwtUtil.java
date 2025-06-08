@@ -109,21 +109,6 @@ public class JwtUtil {
     }
 
     /**
-     * 从HTTP Authorization头中提取JWT令牌
-     *
-     * @param authorizationHeader HTTP Authorization头的值
-     * @return JWT令牌，无效格式返回null
-     */
-    public String extractTokenFromAuthorizationHeader(String authorizationHeader) {
-        final String BEARER_PREFIX = "Bearer ";
-        if (StringUtils.isNotBlank(authorizationHeader) && authorizationHeader.startsWith(BEARER_PREFIX)) {
-            return authorizationHeader.substring(BEARER_PREFIX.length());
-        }
-        log.debug("Authorization header 无效或格式不正确: {}", authorizationHeader);
-        return null;
-    }
-
-    /**
      * 解析JWT令牌中的所有声明
      *
      * @param token JWT令牌

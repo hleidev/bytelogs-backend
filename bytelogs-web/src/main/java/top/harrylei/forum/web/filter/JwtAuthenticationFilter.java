@@ -56,8 +56,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         @NotNull FilterChain filterChain) throws ServletException, IOException {
         try {
             // 从请求头中获取JWT令牌
-            String authHeader = request.getHeader("Authorization");
-            String token = jwtUtil.extractTokenFromAuthorizationHeader(authHeader);
+            String token = getTokenFromRequest(request);
 
             if (StringUtils.isNotBlank(token) && !jwtUtil.isTokenExpired(token)) {
                 // 解析JWT令牌获取用户ID
@@ -92,6 +91,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // 继续执行过滤器链
         filterChain.doFilter(request, response);
+    }
+
+    /**
+     * 从请求中获取token
+     * @param request 请求
+     * @return token或null
+     */
+    private String getTokenFromRequest(@NotNull HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        final String BEARER_PREFIX = "Bearer ";
+        if (StringUtils.isNotBlank(authHeader) && authHeader.startsWith(BEARER_PREFIX)) {
+            return authHeader.substring(BEARER_PREFIX.length());
+        }
+        log.debug("Authorization header 无效或格式不正确: {}", authHeader);
+        return null;
     }
 
     /**

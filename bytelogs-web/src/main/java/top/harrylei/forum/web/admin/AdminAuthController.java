@@ -1,6 +1,5 @@
 package top.harrylei.forum.web.admin;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,11 +18,11 @@ import top.harrylei.forum.api.model.vo.user.req.PasswordUpdateReq;
 import top.harrylei.forum.api.model.vo.user.vo.UserInfoVO;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
+import top.harrylei.forum.core.security.permission.RequiresAdmin;
+import top.harrylei.forum.core.util.JwtUtil;
 import top.harrylei.forum.service.auth.service.AuthService;
 import top.harrylei.forum.service.user.converted.UserStructMapper;
 import top.harrylei.forum.service.user.service.UserService;
-import top.harrylei.forum.core.util.JwtUtil;
-import top.harrylei.forum.core.security.permission.RequiresAdmin;
 
 @Tag(name = "管理员认证模块", description = "提供登录、退出等接口")
 @Slf4j
@@ -63,21 +62,16 @@ public class AdminAuthController {
     /**
      * 管理员退出接口
      *
-     * @param authHeader 获取请求中的token
      * @return 退出结果
      */
     @Operation(summary = "退出登录", description = "通过JWT令牌注销当前登录状态")
     @RequiresAdmin
     @PostMapping("/logout")
-    public ResVO<Void> logout(@RequestHeader(name = "Authorization", required = false) String authHeader) {
-        String token = jwtUtil.extractTokenFromAuthorizationHeader(authHeader);
-
-        if (StringUtils.isBlank(token)) {
-            return ResVO.fail(StatusEnum.PARAM_VALIDATE_FAILED, "缺少有效认证信息");
-        } else {
-            authService.logout(token);
-            return ResVO.ok();
-        }
+    public ResVO<Void> logout() {
+        Long userId = ReqInfoContext.getContext().getUserId();
+        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_VALIDATE_FAILED, "用户ID为空");
+        authService.logout(userId);
+        return ResVO.ok();
     }
 
     /**
@@ -105,11 +99,9 @@ public class AdminAuthController {
     @Operation(summary = "修改管理员密码", description = "修改当前管理员的个人密码")
     @RequiresAdmin
     @PostMapping("/update-password")
-    public ResVO<Void> updatePassword(@RequestHeader(name = "Authorization", required = false) String authHeader,
-                                      @Valid @RequestBody PasswordUpdateReq passwordUpdateReq) {
-        String token = jwtUtil.extractTokenFromAuthorizationHeader(authHeader);
-        ExceptionUtil.requireNonEmpty(token, StatusEnum.USER_UPDATE_FAILED, "缺少有效的 Authorization 头");
-
-        userService.updatePassword(token, passwordUpdateReq.getOldPassword(), passwordUpdateReq.getNewPassword());
+    public ResVO<Void> updatePassword(@Valid @RequestBody PasswordUpdateReq passwordUpdateReq) {
+        Long userId = ReqInfoContext.getContext().getUserId();
+        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_VALIDATE_FAILED, "用户ID为空");
+        userService.updatePassword(userId, passwordUpdateReq.getOldPassword(), passwordUpdateReq.getNewPassword());
         return ResVO.ok();
     }}

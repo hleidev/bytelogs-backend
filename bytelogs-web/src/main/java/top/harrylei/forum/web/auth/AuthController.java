@@ -1,8 +1,10 @@
 package top.harrylei.forum.web.auth;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -13,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.enums.StatusEnum;
 import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.auth.AuthReq;
+import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.core.security.permission.RequiresLogin;
 import top.harrylei.forum.core.util.JwtUtil;
@@ -69,20 +72,15 @@ public class AuthController {
     /**
      * 用户退出接口
      *
-     * @param authHeader 获取请求中的token
      * @return 退出结果
      */
-    @Operation(summary = "退出登录", description = "通过JWT令牌注销当前登录状态")
+    @Operation(summary = "退出登录", description = "退出当前登录状态")
     @RequiresLogin
     @PostMapping("/logout")
-    public ResVO<Void> logout(@RequestHeader(name = "Authorization", required = false) String authHeader) {
-        String token = jwtUtil.extractTokenFromAuthorizationHeader(authHeader);
-
-        if (StringUtils.isBlank(token)) {
-            return ResVO.fail(StatusEnum.PARAM_VALIDATE_FAILED, "缺少有效认证信息");
-        } else {
-            authService.logout(token);
-            return ResVO.ok();
-        }
+    public ResVO<Void> logout() {
+        Long userId = ReqInfoContext.getContext().getUserId();
+        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_VALIDATE_FAILED, "用户ID为空");
+        authService.logout(userId);
+        return ResVO.ok();
     }
 }

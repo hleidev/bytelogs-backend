@@ -91,16 +91,16 @@ public class UserServiceImpl implements UserService {
     /**
      * 更新用户密码
      *
-     * @param token token
+     * @param userId 用户ID
      * @param oldPassword 旧密码
      * @param newPassword 新密码
      */
     @Override
-    public void updatePassword(String token, String oldPassword, String newPassword) {
+    public void updatePassword(Long userId, String oldPassword, String newPassword) {
+        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID为空");
         ExceptionUtil.requireNonEmpty(oldPassword, StatusEnum.PARAM_MISSING, "旧密码为空");
         ExceptionUtil.requireNonEmpty(newPassword, StatusEnum.PARAM_MISSING, "新密码为空");
 
-        Long userId = ReqInfoContext.getContext().getUserId();
 
         if (Objects.equals(oldPassword, newPassword)) {
             ExceptionUtil.error(StatusEnum.USER_UPDATE_FAILED, "新密码与旧密码相同");
@@ -127,7 +127,7 @@ public class UserServiceImpl implements UserService {
             ExceptionUtil.error(StatusEnum.USER_UPDATE_FAILED, "用户密码更新失败，请稍后重试！", e);
         }
 
-        authService.logout(token);
+        authService.logout(userId);
     }
 
     /**

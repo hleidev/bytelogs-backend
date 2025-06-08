@@ -2,7 +2,6 @@ package top.harrylei.forum.service.auth.service.impl;
 
 import java.util.Objects;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -139,25 +138,15 @@ public class AuthServiceImpl implements AuthService {
     /**
      * 用户登出
      *
-     * @param token 请求传入的 Token
+     * @param userId 用户ID
      */
     @Override
-    public void logout(String token) {
-        Long userId = ReqInfoContext.getContext().getUserId();
-        if (StringUtils.isBlank(token)) {
-            log.warn("退出登录失败 userId={} reason=token为空", userId);
-            return;
-        }
+    public void logout(Long userId) {
+        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID");
 
         try {
-            Long userIdFromToken = jwtUtil.parseUserId(token);
-            if (userIdFromToken == null) {
-                log.warn("退出登录失败 userId={} reason=token解析失败", userId);
-                return;
-            }
-
-            boolean result = redisUtil.del(RedisKeyConstants.getUserTokenKey(userIdFromToken));
-            userCacheService.clearUserInfoCache(userIdFromToken);
+            boolean result = redisUtil.del(RedisKeyConstants.getUserTokenKey(userId));
+            userCacheService.clearUserInfoCache(userId);
 
             if (!result) {
                 log.warn("退出登录失败 userId={} reason=Redis删除失败", userId);
@@ -165,7 +154,6 @@ public class AuthServiceImpl implements AuthService {
                 log.debug("退出登录成功 userId={}", userId);
             }
         } catch (Exception e) {
-            // 简化异常日志，避免冗余
             log.error("退出登录异常 userId={}", userId, e);
         }
     }

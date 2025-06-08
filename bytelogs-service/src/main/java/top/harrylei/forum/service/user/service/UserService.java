@@ -2,7 +2,6 @@ package top.harrylei.forum.service.user.service;
 
 import java.util.List;
 
-import jakarta.validation.constraints.NotBlank;
 import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
 import top.harrylei.forum.api.model.vo.page.PageReq;
 import top.harrylei.forum.api.model.vo.page.param.UserQueryParam;
@@ -32,19 +31,19 @@ public interface UserService {
 
     /**
      * 更新用户密码
-     * 
-     * @param token token
+     *
+     * @param userId 用户ID
      * @param oldPassword 新密码
      * @param newPassword 旧密码
      */
-    void updatePassword(String token, String oldPassword, String newPassword);
+    void updatePassword(Long userId, String oldPassword, String newPassword);
 
     /**
      * 更新用户头像
      * 
      * @param avatar 用户头像
      */
-    void updateAvatar(@NotBlank(message = "用户头像不能为空") String avatar);
+    void updateAvatar(String avatar);
 
     /**
      * 用户列表查询

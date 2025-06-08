@@ -85,12 +85,10 @@ public class UserController {
      */
     @Operation(summary = "修改用户密码", description = "修改当前登录用户的个人密码")
     @PostMapping("/update-password")
-    public ResVO<Void> updatePassword(@RequestHeader(name = "Authorization", required = false) String authHeader,
-        @Valid @RequestBody PasswordUpdateReq passwordUpdateReq) {
-        String token = jwtUtil.extractTokenFromAuthorizationHeader(authHeader);
-        ExceptionUtil.requireNonEmpty(token, StatusEnum.USER_UPDATE_FAILED, "缺少有效的 Authorization 头");
-
-        userService.updatePassword(token, passwordUpdateReq.getOldPassword(), passwordUpdateReq.getNewPassword());
+    public ResVO<Void> updatePassword(@Valid @RequestBody PasswordUpdateReq passwordUpdateReq) {
+        Long userId = ReqInfoContext.getContext().getUserId();
+        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_VALIDATE_FAILED, "用户ID为空");
+        userService.updatePassword(userId, passwordUpdateReq.getOldPassword(), passwordUpdateReq.getNewPassword());
         return ResVO.ok();
     }
 
