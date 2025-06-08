@@ -278,4 +278,32 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    /**
+     * 恢复用户
+     *
+     * @param userId 用户ID
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void restore(Long userId) {
+        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID为空");
+
+        UserDO user = userDAO.getDeletedUserById(userId);
+        ExceptionUtil.requireNonNull(user, StatusEnum.USER_NOT_EXISTS, "userId=" + userId);
+
+        UserInfoDO userInfo = userInfoDAO.getDeletedUserInfoById(userId);
+        ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_INFO_NOT_EXISTS, "userId=" + userId);
+
+        Long operatorId = ReqInfoContext.getContext().getUserId();
+
+        try {
+            user.setDeleted(YesOrNoEnum.NO.getCode());
+            userDAO.updateById(user);
+            userInfo.setDeleted(YesOrNoEnum.NO.getCode());
+            userInfoDAO.updateById(userInfo);
+            log.info("恢复用户成功: userId={}, operatorId={}", userId, operatorId);
+        } catch (Exception e) {
+            ExceptionUtil.error(StatusEnum.USER_RESTORE_FAILED, e);
+        }
+    }
 }

@@ -46,4 +46,11 @@ public interface UserManagementService {
      * @param userId 用户ID
      */
     void delete(@NotNull(message = "用户ID为空") Long userId);
+
+    /**
+     * 恢复用户
+     *
+     * @param userId 用户ID
+     */
+    void restore(@NotNull(message = "用户ID为空") Long userId);
 }

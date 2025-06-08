@@ -92,4 +92,11 @@ public interface UserService {
      * @param userId 用户ID
      */
     void delete(Long userId);
+
+    /**
+     * 恢复用户
+     *
+     * @param userId 用户ID
+     */
+    void restore(Long userId);
 }

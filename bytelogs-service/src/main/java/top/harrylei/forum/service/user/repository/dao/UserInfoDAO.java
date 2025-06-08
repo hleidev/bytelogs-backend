@@ -22,4 +22,11 @@ public class UserInfoDAO extends ServiceImpl<UserInfoMapper, UserInfoDO> {
                 .eq(UserInfoDO::getDeleted, YesOrNoEnum.NO.getCode())
                 .one();
     }
+
+    public UserInfoDO getDeletedUserInfoById(Long userId) {
+        return lambdaQuery()
+                .eq(UserInfoDO::getUserId, userId)
+                .eq(UserInfoDO::getDeleted, YesOrNoEnum.YES.getCode())
+                .one();
+    }
 }

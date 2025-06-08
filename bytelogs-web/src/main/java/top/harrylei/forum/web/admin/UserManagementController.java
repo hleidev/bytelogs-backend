@@ -118,4 +118,17 @@ public class UserManagementController {
         userManagementService.delete(userId);
         return ResVO.ok();
     }
+
+    /**
+     * 恢复用户
+     *
+     * @param userId 用户ID
+     * @return 操作结果
+     */
+    @Operation(summary = "恢复用户", description = "将用户标记为未删除状态")
+    @PostMapping("/{userId}/restore")
+    public ResVO<Void> restoreUser(@NotNull(message = "用户ID为空") @PathVariable Long userId) {
+        userManagementService.restore(userId);
+        return ResVO.ok();
+    }
 }

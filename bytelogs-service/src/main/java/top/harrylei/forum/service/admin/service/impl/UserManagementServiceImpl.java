@@ -116,4 +116,16 @@ public class UserManagementServiceImpl implements UserManagementService {
 
         userService.delete(userId);
     }
+
+    /**
+     * 恢复用户
+     *
+     * @param userId 用户ID
+     */
+    @Override
+    public void restore(Long userId) {
+        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID");
+
+        userService.restore(userId);
+    }
 }

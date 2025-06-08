@@ -13,8 +13,7 @@ import top.harrylei.forum.service.user.repository.entity.UserDO;
 import top.harrylei.forum.service.user.repository.mapper.UserMapper;
 
 /**
- * 用户账号数据访问对象
- * 负责操作user_account表
+ * 用户账号数据访问对象 负责操作user_account表
  */
 @Repository
 public class UserDAO extends ServiceImpl<UserMapper, UserDO> {
@@ -47,14 +46,14 @@ public class UserDAO extends ServiceImpl<UserMapper, UserDO> {
     public List<UserDetailDTO> listUsers(UserQueryParam queryParam, String limitSql) {
         String orderBySql = queryParam.getOrderBySql();
 
-        return getBaseMapper().listUsers(
-                queryParam.getUserName(),
-                queryParam.getStatus(),
-                queryParam.getDeleted(),
-                queryParam.getStartTime(),
-                queryParam.getEndTime(),
-                orderBySql,
-                limitSql
+        return getBaseMapper()
+                .listUsers(
+                        queryParam.getUserName(),
+                        queryParam.getStatus(),
+                        queryParam.getDeleted(),
+                        queryParam.getStartTime(),
+                        queryParam.getEndTime(),
+                        orderBySql, limitSql
         );
     }
 
@@ -65,13 +64,14 @@ public class UserDAO extends ServiceImpl<UserMapper, UserDO> {
      * @return 用户数量
      */
     public long countUsers(UserQueryParam queryParam) {
-        return getBaseMapper().countUsers(
-                queryParam.getUserName(),
-                queryParam.getStatus(),
-                queryParam.getDeleted(),
-                queryParam.getStartTime(),
-                queryParam.getEndTime()
-        );
+        return getBaseMapper()
+                .countUsers(
+                        queryParam.getUserName(),
+                        queryParam.getStatus(),
+                        queryParam.getDeleted(),
+                        queryParam.getStartTime(),
+                        queryParam.getEndTime()
+                );
     }
 
     /**
@@ -81,11 +81,13 @@ public class UserDAO extends ServiceImpl<UserMapper, UserDO> {
      * @return 用户详细信息
      */
     public UserDetailDTO getUserDetail(Long userId) {
-        return getBaseMapper().selectUserDetail(userId);
+        return getBaseMapper()
+                .selectUserDetail(userId);
     }
 
     /**
      * 通过userId获取用户账号信息
+     * 
      * @param userId 用户ID
      * @return 用户账号信息
      */
@@ -93,6 +95,19 @@ public class UserDAO extends ServiceImpl<UserMapper, UserDO> {
         return lambdaQuery()
                 .eq(UserDO::getId, userId)
                 .eq(UserDO::getDeleted, YesOrNoEnum.NO.getCode())
+                .one();
+    }
+
+    /**
+     * 通过userId查询被删除的账号信息
+     *
+     * @param userId 用户ID
+     * @return 用户账号信息
+     */
+    public UserDO getDeletedUserById(Long userId) {
+        return lambdaQuery()
+                .eq(UserDO::getId, userId)
+                .eq(UserDO::getDeleted, YesOrNoEnum.YES.getCode())
                 .one();
     }
 }

@@ -64,6 +64,7 @@ public enum StatusEnum {
     USER_NOT_ACTIVATED(40011, "账号未激活"),
     USER_UPDATE_FAILED(40012, "更新失败: %s"),
     USER_DELETE_FAILED(40013, "删除用户失败"),
+    USER_RESTORE_FAILED(40014, "恢复用户失败"),
 
     // ========== 文章相关 50000-59999 ==========
     ARTICLE_NOT_EXISTS(50001, "文章不存在: %s"),
