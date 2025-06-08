@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.enums.StatusEnum;
+import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
 import top.harrylei.forum.api.model.vo.page.PageHelper;
 import top.harrylei.forum.api.model.vo.page.PageReq;
 import top.harrylei.forum.api.model.vo.page.PageVO;
@@ -73,5 +74,19 @@ public class UserManagementServiceImpl implements UserManagementService {
     public UserDetailDTO getUserDetail(Long userId) {
         ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID为空");
         return userService.getUserDetail(userId);
+    }
+
+    /**
+     * 修改用户状态
+     *
+     * @param userId 用户ID
+     * @param status 新状态
+     */
+    @Override
+    public void updateStatus(Long userId, UserStatusEnum status) {
+        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID");
+        ExceptionUtil.requireNonNull(status, StatusEnum.PARAM_MISSING, "用户状态");
+
+        userService.updateStatus(userId, status);
     }
 }

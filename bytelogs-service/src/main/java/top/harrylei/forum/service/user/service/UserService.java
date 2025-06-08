@@ -3,6 +3,7 @@ package top.harrylei.forum.service.user.service;
 import java.util.List;
 
 import jakarta.validation.constraints.NotBlank;
+import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
 import top.harrylei.forum.api.model.vo.page.PageReq;
 import top.harrylei.forum.api.model.vo.page.param.UserQueryParam;
 import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
@@ -69,4 +70,12 @@ public interface UserService {
      * @return 用户详细信息
      */
     UserDetailDTO getUserDetail(Long userId);
+
+    /**
+     * 修改用户状态
+     *
+     * @param userId 用户ID
+     * @param status 新状态
+     */
+    void updateStatus(Long userId, UserStatusEnum status);
 }

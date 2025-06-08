@@ -105,7 +105,7 @@ public class AuthServiceImpl implements AuthService {
         ExceptionUtil.requireNonNull(user, StatusEnum.USER_NOT_EXISTS, username);
 
         // 校验账号是否启用
-        ExceptionUtil.errorIf(!Objects.equals(user.getStatus(), UserStatusEnum.ENABLE.getCode()),
+        ExceptionUtil.errorIf(!Objects.equals(user.getStatus(), UserStatusEnum.ENABLED.getCode()),
             StatusEnum.USER_DISABLED);
 
         // 校验密码

@@ -8,12 +8,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import top.harrylei.forum.api.model.enums.StatusEnum;
+import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
 import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.UserQueryParam;
 import top.harrylei.forum.api.model.vo.user.dto.UserDetailDTO;
 import top.harrylei.forum.api.model.vo.user.vo.UserDetailVO;
 import top.harrylei.forum.api.model.vo.user.vo.UserListItemVO;
+import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.core.security.permission.RequiresAdmin;
 import top.harrylei.forum.service.admin.service.UserManagementService;
 import top.harrylei.forum.service.user.converted.UserStructMapper;
@@ -69,7 +72,9 @@ public class UserManagementController {
     @Operation(summary = "修改用户状态", description = "启用或禁用指定用户")
     @PutMapping("/{userId}/status")
     public ResVO<Void> updateStatus(@PathVariable Long userId, @RequestBody Integer status) {
-        // 待实现: userManagementService.updateStatus(userId, status);
+        UserStatusEnum statusEnum = UserStatusEnum.fromCode(status);
+        ExceptionUtil.requireNonNull(statusEnum, StatusEnum.ILLEGAL_ARGUMENTS_MIXED, "非法用户状态 statusCode=" + status);
+        userManagementService.updateStatus(userId, statusEnum);
         return ResVO.ok();
     }
 

@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.enums.StatusEnum;
+import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
 import top.harrylei.forum.api.model.vo.page.PageReq;
 import top.harrylei.forum.api.model.vo.page.param.UserQueryParam;
 import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
@@ -103,22 +104,19 @@ public class UserServiceImpl implements UserService {
         Long userId = ReqInfoContext.getContext().getUserId();
 
         if (Objects.equals(oldPassword, newPassword)) {
-            log.warn("新密码与旧密码相同: userId={}", userId);
             ExceptionUtil.error(StatusEnum.USER_UPDATE_FAILED, "新密码与旧密码相同");
         }
 
         // 校验旧密码
         UserDO user = userDAO.getById(userId);
-        ExceptionUtil.requireNonNull(user, StatusEnum.USER_NOT_EXISTS);
+        ExceptionUtil.requireNonNull(user, StatusEnum.USER_NOT_EXISTS, "userId=" + userId);
 
         if (!BCryptUtil.matches(oldPassword, user.getPassword())) {
-            log.warn("用户密码错误: username={}", user.getUserName());
             ExceptionUtil.error(StatusEnum.USER_PASSWORD_ERROR);
         }
 
         // 校验新密码安全性
         if (!PasswordUtil.isValid(newPassword)) {
-            log.warn("密码必须包含字母、数字，可包含特殊字符，长度为8~20位");
             ExceptionUtil.error(StatusEnum.USER_PASSWORD_INVALID);
         }
 
@@ -127,7 +125,6 @@ public class UserServiceImpl implements UserService {
             userDAO.updateById(user);
             log.info("用户密码更新成功: userId={}", userId);
         } catch (Exception e) {
-            log.warn("数据库更新失败: userId={}", userId, e);
             ExceptionUtil.error(StatusEnum.USER_UPDATE_FAILED, "用户密码更新失败，请稍后重试！", e);
         }
 
@@ -155,7 +152,6 @@ public class UserServiceImpl implements UserService {
             userInfoDAO.updateById(userStructMapper.toDO(userInfo));
             log.info("用户头像更新成功: userId={}", userId);
         } catch (Exception e) {
-            log.warn("数据库更新失败: userId={}", userId, e);
             ExceptionUtil.error(StatusEnum.USER_UPDATE_FAILED, "用户头像更新失败，请稍候重试！", e);
         }
     }
@@ -175,7 +171,6 @@ public class UserServiceImpl implements UserService {
         try {
             return userDAO.listUsers(queryParam, pageRequest.getLimitSql());
         } catch (Exception e) {
-            log.error("查询用户列表异常", e);
             ExceptionUtil.error(StatusEnum.SYSTEM_ERROR, "查询用户列表异常", e);
             return List.of();
         }
@@ -194,7 +189,6 @@ public class UserServiceImpl implements UserService {
         try {
             return userDAO.countUsers(queryParam);
         } catch (Exception e) {
-            log.error("统计用户数量异常", e);
             ExceptionUtil.error(StatusEnum.SYSTEM_ERROR, "统计用户数量失败", e);
             return 0;
         }
@@ -213,9 +207,31 @@ public class UserServiceImpl implements UserService {
         try {
             return userDAO.getUserDetail(userId);
         } catch (Exception e) {
-            log.error("查询用户详细信息失败 userId={}", userId, e);
             ExceptionUtil.error(StatusEnum.SYSTEM_ERROR, "查询用户详细信息异常", e);
             return null;
+        }
+    }
+
+    /**
+     * 修改用户状态
+     *
+     * @param userId 用户ID
+     * @param status 新状态
+     */
+    @Override
+    public void updateStatus(Long userId, UserStatusEnum status) {
+        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID");
+        ExceptionUtil.requireNonNull(status, StatusEnum.PARAM_MISSING, "用户状态");
+
+        UserDO user = userDAO.getById(userId);
+        ExceptionUtil.requireNonNull(user, StatusEnum.USER_NOT_EXISTS, "userId=" + userId);
+
+        try {
+            user.setStatus(status.getCode());
+            userDAO.updateById(user);
+            log.info("修改用户状态成功: userId={}", userId);
+        } catch (Exception e) {
+            ExceptionUtil.error(StatusEnum.USER_UPDATE_FAILED, "用户状态更新失败，请稍后重试");
         }
     }
 
