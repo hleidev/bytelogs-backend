@@ -2,6 +2,7 @@ package top.harrylei.forum.service.user.service;
 
 import java.util.List;
 
+import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
 import top.harrylei.forum.api.model.vo.page.PageReq;
 import top.harrylei.forum.api.model.vo.page.param.UserQueryParam;
@@ -99,4 +100,12 @@ public interface UserService {
      * @param userId 用户ID
      */
     void restore(Long userId);
+
+    /**
+     * 修改用户角色
+     *
+     * @param userId 用户ID
+     * @param role 角色枚举
+     */
+    void updateUserRole(Long userId, UserRoleEnum role);
 }

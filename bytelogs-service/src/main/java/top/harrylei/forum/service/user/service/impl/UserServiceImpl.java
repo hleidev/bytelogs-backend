@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.enums.StatusEnum;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
+import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
 import top.harrylei.forum.api.model.vo.page.PageReq;
 import top.harrylei.forum.api.model.vo.page.param.UserQueryParam;
@@ -231,7 +232,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public void resetPassword(Long userId, String password) {
-        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID为空");
+        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID");
         // 校验新密码安全性
         if (!PasswordUtil.isValid(password)) {
             ExceptionUtil.error(StatusEnum.USER_PASSWORD_INVALID);
@@ -257,7 +258,7 @@ public class UserServiceImpl implements UserService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void delete(Long userId) {
-        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID为空");
+        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID");
 
         UserDO user = userDAO.getUserById(userId);
         ExceptionUtil.requireNonNull(user, StatusEnum.USER_NOT_EXISTS, "userId=" + userId);
@@ -304,6 +305,37 @@ public class UserServiceImpl implements UserService {
             log.info("恢复用户成功: userId={}, operatorId={}", userId, operatorId);
         } catch (Exception e) {
             ExceptionUtil.error(StatusEnum.USER_RESTORE_FAILED, e);
+        }
+    }
+
+    /**
+     * 修改用户角色
+     *
+     * @param userId 用户ID
+     * @param role 角色枚举
+     */
+    @Override
+    public void updateUserRole(Long userId, UserRoleEnum role) {
+        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID");
+        ExceptionUtil.requireNonNull(role, StatusEnum.PARAM_MISSING, "角色");
+
+        UserInfoDO userInfo = userInfoDAO.getUserInfoById(userId);
+        ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_INFO_NOT_EXISTS, "userId=" + userId);
+
+        Long operatorId = ReqInfoContext.getContext().getUserId();
+
+        // 判断新旧角色是否一致，避免无效写入
+        if (Objects.equals(userInfo.getUserRole(), role.getCode())) {
+            log.info("用户角色未变更，无需更新: userId={}, operatorId={}", userId, operatorId);
+            return;
+        }
+
+        try {
+            userInfo.setUserRole(role.getCode());
+            userInfoDAO.updateById(userInfo);
+            log.info("更新用户角色成功: userId={}, operatorId={}", userId, operatorId);
+        } catch (Exception e) {
+            ExceptionUtil.error(StatusEnum.USER_UPDATE_FAILED, "更新用户角色失败 userId=" + userId, e);
         }
     }
 }

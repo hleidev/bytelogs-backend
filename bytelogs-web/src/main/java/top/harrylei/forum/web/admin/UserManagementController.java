@@ -1,15 +1,16 @@
 package top.harrylei.forum.web.admin;
 
-import jakarta.validation.constraints.NotBlank;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.enums.StatusEnum;
+import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
 import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.page.PageVO;
@@ -107,12 +108,12 @@ public class UserManagementController {
     }
 
     /**
-     * 删除用户
+     * 删除用户账户
      *
      * @param userId 用户ID
      * @return 操作结果
      */
-    @Operation(summary = "删除用户", description = "将用户标记为已删除状态")
+    @Operation(summary = "删除用户账户", description = "将用户标记为已删除状态")
     @PostMapping("/{userId}/delete")
     public ResVO<Void> deleteUser(@NotNull(message = "用户ID为空") @PathVariable Long userId) {
         userManagementService.delete(userId);
@@ -120,15 +121,32 @@ public class UserManagementController {
     }
 
     /**
-     * 恢复用户
+     * 恢复用户账户
      *
      * @param userId 用户ID
      * @return 操作结果
      */
-    @Operation(summary = "恢复用户", description = "将用户标记为未删除状态")
+    @Operation(summary = "恢复用户账户", description = "将用户标记为未删除状态")
     @PostMapping("/{userId}/restore")
     public ResVO<Void> restoreUser(@NotNull(message = "用户ID为空") @PathVariable Long userId) {
         userManagementService.restore(userId);
         return ResVO.ok();
     }
+
+    /**
+     * 修改用户角色
+     *
+     * @param userId 用户ID
+     * @param roleCode 角色编码
+     * @return 操作结果
+     */
+    @Operation(summary = "修改用户角色", description = "修改用户的系统角色")
+    @PostMapping("/{userId}/role")
+    public ResVO<Void> updateUserRole(@NotNull(message = "用户ID为空") @PathVariable Long userId,
+                                      @NotNull(message = "角色编码为空") @RequestBody Integer roleCode) {
+        userManagementService.updateUserRole(userId, UserRoleEnum.fromCode(roleCode));
+        return ResVO.ok();
+    }
+
+
 }
