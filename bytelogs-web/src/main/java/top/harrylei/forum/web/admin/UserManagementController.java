@@ -1,5 +1,6 @@
 package top.harrylei.forum.web.admin;
 
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -71,7 +72,7 @@ public class UserManagementController {
      */
     @Operation(summary = "修改用户状态", description = "启用或禁用指定用户")
     @PutMapping("/{userId}/status")
-    public ResVO<Void> updateStatus(@PathVariable Long userId, @RequestBody Integer status) {
+    public ResVO<Void> updateStatus(@NotNull(message = "用户ID为空") @PathVariable Long userId, @NotNull(message = "状态为空") @RequestBody Integer status) {
         UserStatusEnum statusEnum = UserStatusEnum.fromCode(status);
         ExceptionUtil.requireNonNull(statusEnum, StatusEnum.ILLEGAL_ARGUMENTS_MIXED, "非法用户状态 statusCode=" + status);
         userManagementService.updateStatus(userId, statusEnum);
@@ -86,7 +87,7 @@ public class UserManagementController {
      */
     @Operation(summary = "重置用户密码", description = "将用户密码重置为系统默认密码并通知用户")
     @PostMapping("/{userId}/password/reset")
-    public ResVO<Void> resetPassword(@PathVariable Long userId) {
+    public ResVO<Void> resetPassword(@NotNull(message = "用户ID为空") @PathVariable Long userId) {
         userManagementService.resetPassword(userId);
         return ResVO.ok();
     }
@@ -100,8 +101,8 @@ public class UserManagementController {
      */
     @Operation(summary = "修改用户邮箱", description = "更新用户的邮箱地址")
     @PutMapping("/{userId}/email")
-    public ResVO<Void> updateEmail(@PathVariable Long userId, @RequestBody String email) {
-        // 待实现: userManagementService.updateEmail(userId, email);
+    public ResVO<Void> updateEmail(@NotNull(message = "用户ID为空") @PathVariable Long userId, @NotBlank(message = "邮箱为空") @RequestBody String email) {
+        // TODO userManagementService.updateEmail(userId, email);
         return ResVO.ok();
     }
 
@@ -113,8 +114,8 @@ public class UserManagementController {
      */
     @Operation(summary = "删除用户", description = "将用户标记为已删除状态")
     @PostMapping("/{userId}/delete")
-    public ResVO<Void> deleteUser(@PathVariable Long userId) {
-        // 待实现: userManagementService.deleteUser(userId);
+    public ResVO<Void> deleteUser(@NotNull(message = "用户ID为空") @PathVariable Long userId) {
+        // userManagementService.delete(userId);
         return ResVO.ok();
     }
 }
