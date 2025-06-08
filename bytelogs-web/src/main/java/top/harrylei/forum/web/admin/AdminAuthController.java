@@ -71,11 +71,9 @@ public class AdminAuthController {
     @PostMapping("/logout")
     public ResVO<Void> logout(@RequestHeader(name = "Authorization", required = false) String authHeader) {
         String token = jwtUtil.extractTokenFromAuthorizationHeader(authHeader);
-        Long userId = ReqInfoContext.getContext().getUserId();
 
         if (StringUtils.isBlank(token)) {
-            log.warn("管理员退出失败 userId={} reason=缺少有效认证信息", userId);
-            return ResVO.fail(StatusEnum.REQUEST_BODY_ERROR);
+            return ResVO.fail(StatusEnum.PARAM_VALIDATE_FAILED, "缺少有效认证信息");
         } else {
             authService.logout(token);
             return ResVO.ok();

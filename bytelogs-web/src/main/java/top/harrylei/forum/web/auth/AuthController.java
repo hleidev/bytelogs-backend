@@ -13,11 +13,10 @@ import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.enums.StatusEnum;
 import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.auth.AuthReq;
-import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
+import top.harrylei.forum.core.security.permission.RequiresLogin;
 import top.harrylei.forum.core.util.JwtUtil;
 import top.harrylei.forum.service.auth.service.AuthService;
-import top.harrylei.forum.core.security.permission.RequiresLogin;
 
 /**
  * 用户认证控制器
@@ -78,11 +77,9 @@ public class AuthController {
     @PostMapping("/logout")
     public ResVO<Void> logout(@RequestHeader(name = "Authorization", required = false) String authHeader) {
         String token = jwtUtil.extractTokenFromAuthorizationHeader(authHeader);
-        Long userId = ReqInfoContext.getContext().getUserId();
-        
+
         if (StringUtils.isBlank(token)) {
-            log.warn("退出登录失败 userId={} reason=缺少有效认证信息", userId);
-            return ResVO.fail(StatusEnum.REQUEST_BODY_ERROR);
+            return ResVO.fail(StatusEnum.PARAM_VALIDATE_FAILED, "缺少有效认证信息");
         } else {
             authService.logout(token);
             return ResVO.ok();

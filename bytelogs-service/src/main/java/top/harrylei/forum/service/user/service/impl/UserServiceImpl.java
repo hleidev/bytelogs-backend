@@ -84,7 +84,6 @@ public class UserServiceImpl implements UserService {
 
             log.info("用户信息更新成功: userId={}", userInfoDTO.getUserId());
         } catch (Exception e) {
-            log.error("更新用户数据失败: userId={}", ReqInfoContext.getContext().getUserId(), e);
             ExceptionUtil.error(StatusEnum.USER_UPDATE_FAILED, "用户信息更新失败，请稍后重试！", e);
         }
     }
@@ -231,7 +230,7 @@ public class UserServiceImpl implements UserService {
             userDAO.updateById(user);
             log.info("修改用户状态成功: userId={}", userId);
         } catch (Exception e) {
-            ExceptionUtil.error(StatusEnum.USER_UPDATE_FAILED, "用户状态更新失败，请稍后重试");
+            ExceptionUtil.error(StatusEnum.USER_UPDATE_FAILED, "用户状态更新失败，请稍后重试", e);
         }
     }
 

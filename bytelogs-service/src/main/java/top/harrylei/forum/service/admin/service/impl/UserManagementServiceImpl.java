@@ -58,8 +58,7 @@ public class UserManagementServiceImpl implements UserManagementService {
             return PageHelper.build(result, pageRequest.getPageNum(), pageRequest.getPageSize(), total);
             
         } catch (Exception e) {
-            log.error("查询用户列表异常: queryParam={}", queryParam, e);
-            ExceptionUtil.error(StatusEnum.SYSTEM_ERROR, "查询用户列表失败");
+            ExceptionUtil.error(StatusEnum.SYSTEM_ERROR, "查询用户列表失败", e);
             return null; // 不会执行到这里，因为ExceptionUtil.error会抛出异常
         }
     }
