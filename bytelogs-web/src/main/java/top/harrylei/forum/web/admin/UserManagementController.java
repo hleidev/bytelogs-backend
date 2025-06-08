@@ -115,7 +115,7 @@ public class UserManagementController {
     @Operation(summary = "删除用户", description = "将用户标记为已删除状态")
     @PostMapping("/{userId}/delete")
     public ResVO<Void> deleteUser(@NotNull(message = "用户ID为空") @PathVariable Long userId) {
-        // userManagementService.delete(userId);
+        userManagementService.delete(userId);
         return ResVO.ok();
     }
 }

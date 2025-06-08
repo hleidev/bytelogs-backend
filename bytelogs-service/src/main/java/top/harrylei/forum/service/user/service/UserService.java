@@ -85,4 +85,11 @@ public interface UserService {
      * @param password 新密码
      */
     void resetPassword(Long userId, String password);
+
+    /**
+     * 删除用户
+     *
+     * @param userId 用户ID
+     */
+    void delete(Long userId);
 }

@@ -104,4 +104,16 @@ public class UserManagementServiceImpl implements UserManagementService {
 
         userService.resetPassword(userId, defaultPassword);
     }
+
+    /**
+     * 删除用户
+     *
+     * @param userId 用户ID
+     */
+    @Override
+    public void delete(Long userId) {
+        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID");
+
+        userService.delete(userId);
+    }
 }

@@ -4,6 +4,7 @@ import org.springframework.stereotype.Repository;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
+import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.service.user.repository.entity.UserInfoDO;
 import top.harrylei.forum.service.user.repository.mapper.UserInfoMapper;
 
@@ -13,4 +14,12 @@ import top.harrylei.forum.service.user.repository.mapper.UserInfoMapper;
  */
 @Repository
 public class UserInfoDAO extends ServiceImpl<UserInfoMapper, UserInfoDO> {
-} 
+
+
+    public UserInfoDO getUserInfoById(Long userId) {
+        return lambdaQuery()
+                .eq(UserInfoDO::getUserId, userId)
+                .eq(UserInfoDO::getDeleted, YesOrNoEnum.NO.getCode())
+                .one();
+    }
+}

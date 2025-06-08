@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.enums.StatusEnum;
+import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
 import top.harrylei.forum.api.model.vo.page.PageReq;
 import top.harrylei.forum.api.model.vo.page.param.UserQueryParam;
@@ -245,6 +246,35 @@ public class UserServiceImpl implements UserService {
             log.info("用户密码更新成功: userId={}", userId);
         } catch (Exception e) {
             ExceptionUtil.error(StatusEnum.USER_UPDATE_FAILED, "用户密码更新失败，请稍后重试！", e);
+        }
+    }
+
+    /**
+     * 删除用户
+     *
+     * @param userId 用户ID
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void delete(Long userId) {
+        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID为空");
+
+        UserDO user = userDAO.getUserById(userId);
+        ExceptionUtil.requireNonNull(user, StatusEnum.USER_NOT_EXISTS, "userId=" + userId);
+
+        UserInfoDO userInfo = userInfoDAO.getUserInfoById(userId);
+        ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_INFO_NOT_EXISTS, "userId=" + userId);
+
+        Long operatorId = ReqInfoContext.getContext().getUserId();
+
+        try {
+            user.setDeleted(YesOrNoEnum.YES.getCode());
+            userDAO.updateById(user);
+            userInfo.setDeleted(YesOrNoEnum.YES.getCode());
+            userInfoDAO.updateById(userInfo);
+            log.info("删除用户成功: userId={}, operatorId={}", userId, operatorId);
+        } catch (Exception e) {
+            ExceptionUtil.error(StatusEnum.USER_DELETE_FAILED, e);
         }
     }
 

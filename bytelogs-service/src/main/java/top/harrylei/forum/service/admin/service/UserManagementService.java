@@ -1,5 +1,6 @@
 package top.harrylei.forum.service.admin.service;
 
+import jakarta.validation.constraints.NotNull;
 import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.UserQueryParam;
@@ -38,4 +39,11 @@ public interface UserManagementService {
      * @param userId 用户ID
      */
     void resetPassword(Long userId);
+
+    /**
+     * 删除用户
+     *
+     * @param userId 用户ID
+     */
+    void delete(@NotNull(message = "用户ID为空") Long userId);
 }
