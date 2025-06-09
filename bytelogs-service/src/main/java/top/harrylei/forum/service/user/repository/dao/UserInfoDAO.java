@@ -16,17 +16,24 @@ import top.harrylei.forum.service.user.repository.mapper.UserInfoMapper;
 public class UserInfoDAO extends ServiceImpl<UserInfoMapper, UserInfoDO> {
 
 
-    public UserInfoDO getUserInfoById(Long userId) {
+    public UserInfoDO getByUserId(Long userId) {
         return lambdaQuery()
                 .eq(UserInfoDO::getUserId, userId)
                 .eq(UserInfoDO::getDeleted, YesOrNoEnum.NO.getCode())
                 .one();
     }
 
-    public UserInfoDO getDeletedUserInfoById(Long userId) {
+    public UserInfoDO getDeletedByUserId(Long userId) {
         return lambdaQuery()
                 .eq(UserInfoDO::getUserId, userId)
                 .eq(UserInfoDO::getDeleted, YesOrNoEnum.YES.getCode())
+                .one();
+    }
+
+    public UserInfoDO getByUserName(String username) {
+        return lambdaQuery()
+                .eq(UserInfoDO::getUserName, username)
+                .eq(UserInfoDO::getDeleted, YesOrNoEnum.NO.getCode())
                 .one();
     }
 }

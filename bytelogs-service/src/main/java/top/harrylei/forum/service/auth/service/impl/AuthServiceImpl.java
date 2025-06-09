@@ -45,10 +45,11 @@ public class AuthServiceImpl implements AuthService {
      *
      * @param username 用户名
      * @param password 密码
+     * @param userRole 用户角色
      */
-    @Override
     @Transactional(rollbackFor = Exception.class)
-    public void register(String username, String password) {
+    @Override
+    public void register(String username, String password, UserRoleEnum userRole) {
         // 参数校验
         ExceptionUtil.requireNonEmpty(username, StatusEnum.PARAM_MISSING, "用户名");
         ExceptionUtil.requireNonEmpty(password, StatusEnum.PARAM_MISSING, "密码");
@@ -61,16 +62,37 @@ public class AuthServiceImpl implements AuthService {
         ExceptionUtil.errorIf(user != null, StatusEnum.USER_EXISTS, username);
 
         // 创建新用户
-        UserDO newUser = new UserDO().setUserName(username).setPassword(BCryptUtil.hash(password)).setThirdAccountId("")
-            .setLoginType(LoginTypeEnum.USER_PWD.getCode());
+        UserDO newUser = new UserDO()
+                .setUserName(username)
+                .setPassword(BCryptUtil.hash(password))
+                .setThirdAccountId("")
+                .setLoginType(LoginTypeEnum.USER_PWD.getCode());
         userDAO.save(newUser);
 
         // 创建用户信息
         UserInfoDO newUserInfo = new UserInfoDO().setUserId(newUser.getId()).setUserName(username).setAvatar("");
+
+        if (UserRoleEnum.ADMIN.equals(userRole)) {
+            checkCurrentUserIsAdmin();
+            newUserInfo.setUserRole(userRole.getCode());
+        }
+
         userInfoDAO.save(newUserInfo);
 
         // 简洁、标准化的日志
         log.info("用户注册成功 userId={}", newUser.getId());
+    }
+
+    /**
+     * 检查当前操作用户是否有管理员权限
+     */
+    private void checkCurrentUserIsAdmin() {
+        Long userId = ReqInfoContext.getContext().getUserId();
+        UserInfoDO userInfo = userInfoDAO.getByUserId(userId);
+
+        ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_INFO_NOT_EXISTS);
+        ExceptionUtil.errorIf(!UserRoleEnum.ADMIN.getCode().equals(userInfo.getUserRole()),
+                StatusEnum.FORBID_ERROR_MIXED, "当前用户没有管理员权限 userId=" + userId);
     }
 
     /**

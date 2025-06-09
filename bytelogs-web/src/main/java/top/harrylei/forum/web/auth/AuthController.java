@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.enums.StatusEnum;
+import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.auth.AuthReq;
 import top.harrylei.forum.core.context.ReqInfoContext;
@@ -46,7 +47,7 @@ public class AuthController {
     @Operation(summary = "用户注册", description = "通过用户名和密码进行注册")
     @PostMapping("/register")
     public ResVO<Void> register(@Valid @RequestBody AuthReq authReq) {
-        authService.register(authReq.getUsername(), authReq.getPassword());
+        authService.register(authReq.getUsername(), authReq.getPassword(), UserRoleEnum.NORMAL);
         return ResVO.ok();
     }
 

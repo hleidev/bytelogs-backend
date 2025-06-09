@@ -4,6 +4,7 @@ import java.util.List;
 
 import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
+import top.harrylei.forum.api.model.vo.auth.UserCreateReq;
 import top.harrylei.forum.api.model.vo.page.PageReq;
 import top.harrylei.forum.api.model.vo.page.param.UserQueryParam;
 import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
@@ -108,4 +109,11 @@ public interface UserService {
      * @param role 角色枚举
      */
     void updateUserRole(Long userId, UserRoleEnum role);
+
+    /**
+     * 新建用户账号
+     *
+     * @param req 新建用户的请求参数
+     */
+    void save(UserCreateReq req);
 }

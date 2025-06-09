@@ -36,12 +36,10 @@ public enum StatusEnum {
     // ========== 权限相关 20000-29999 ==========
     UNAUTHORIZED(20001, "未登录"),
     FORBIDDEN(20002, "无权限"),
-    FORBIDDEN_OPERATION(20003, "禁止的操作: %s"),
-    FORBID_ERROR(20004, "无权限"),
-    FORBID_ERROR_MIXED(20005, "无权限: %s"),
-    FORBID_NOTLOGIN(20006, "未登录"),
-    TOKEN_EXPIRED(20007, "登录已过期，请重新登录"),
-    TOKEN_INVALID(20008, "无效的认证令牌"),
+    FORBID_ERROR_MIXED(20003, "无权限: %s"),
+    FORBIDDEN_OPERATION(20004, "禁止的操作: %s"),
+    TOKEN_EXPIRED(20005, "登录已过期，请重新登录"),
+    TOKEN_INVALID(20006, "无效的认证令牌"),
 
     // ========== 资源相关 30000-39999 ==========
     RESOURCE_NOT_FOUND(30001, "资源未找到: %s"),

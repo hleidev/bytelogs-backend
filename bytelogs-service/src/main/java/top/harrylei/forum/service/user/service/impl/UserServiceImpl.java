@@ -12,6 +12,7 @@ import top.harrylei.forum.api.model.enums.StatusEnum;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
+import top.harrylei.forum.api.model.vo.auth.UserCreateReq;
 import top.harrylei.forum.api.model.vo.page.PageReq;
 import top.harrylei.forum.api.model.vo.page.param.UserQueryParam;
 import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
@@ -263,7 +264,7 @@ public class UserServiceImpl implements UserService {
         UserDO user = userDAO.getUserById(userId);
         ExceptionUtil.requireNonNull(user, StatusEnum.USER_NOT_EXISTS, "userId=" + userId);
 
-        UserInfoDO userInfo = userInfoDAO.getUserInfoById(userId);
+        UserInfoDO userInfo = userInfoDAO.getByUserId(userId);
         ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_INFO_NOT_EXISTS, "userId=" + userId);
 
         Long operatorId = ReqInfoContext.getContext().getUserId();
@@ -292,7 +293,7 @@ public class UserServiceImpl implements UserService {
         UserDO user = userDAO.getDeletedUserById(userId);
         ExceptionUtil.requireNonNull(user, StatusEnum.USER_NOT_EXISTS, "userId=" + userId);
 
-        UserInfoDO userInfo = userInfoDAO.getDeletedUserInfoById(userId);
+        UserInfoDO userInfo = userInfoDAO.getDeletedByUserId(userId);
         ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_INFO_NOT_EXISTS, "userId=" + userId);
 
         Long operatorId = ReqInfoContext.getContext().getUserId();
@@ -319,7 +320,7 @@ public class UserServiceImpl implements UserService {
         ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID");
         ExceptionUtil.requireNonNull(role, StatusEnum.PARAM_MISSING, "角色");
 
-        UserInfoDO userInfo = userInfoDAO.getUserInfoById(userId);
+        UserInfoDO userInfo = userInfoDAO.getByUserId(userId);
         ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_INFO_NOT_EXISTS, "userId=" + userId);
 
         Long operatorId = ReqInfoContext.getContext().getUserId();
@@ -336,6 +337,28 @@ public class UserServiceImpl implements UserService {
             log.info("更新用户角色成功: userId={}, operatorId={}", userId, operatorId);
         } catch (Exception e) {
             ExceptionUtil.error(StatusEnum.USER_UPDATE_FAILED, "更新用户角色失败 userId=" + userId, e);
+        }
+    }
+
+    /**
+     * 新建用户账号
+     *
+     * @param req 新建用户的请求参数
+     */
+    @Override
+    public void save(UserCreateReq req) {
+        ExceptionUtil.requireNonNull(req, StatusEnum.PARAM_MISSING, "请求参数");
+
+        UserRoleEnum role = UserRoleEnum.fromCode(req.getRole());
+        ExceptionUtil.requireNonNull(role, StatusEnum.PARAM_VALIDATE_FAILED, "角色代码异常");
+
+        Long operatorId = ReqInfoContext.getContext().getUserId();
+
+        try {
+            authService.register(req.getUsername(), req.getPassword(), role);
+            log.info("新建用户账号成功: username={}, operatorId={}", req.getUsername(), operatorId);
+        } catch (Exception e) {
+            ExceptionUtil.error(StatusEnum.UNEXPECT_ERROR, "更新用户角色失败");
         }
     }
 }

@@ -12,8 +12,9 @@ public interface AuthService {
      *
      * @param username 用户名
      * @param password 密码
+     * @param userRole 用户角色
      */
-    void register(String username, String password);
+    void register(String username, String password, UserRoleEnum userRole);
 
     /**
      * 用户登录

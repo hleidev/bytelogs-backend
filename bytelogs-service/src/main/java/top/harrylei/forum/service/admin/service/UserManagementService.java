@@ -1,8 +1,10 @@
 package top.harrylei.forum.service.admin.service;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
+import top.harrylei.forum.api.model.vo.auth.UserCreateReq;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.UserQueryParam;
 import top.harrylei.forum.api.model.vo.user.dto.UserDetailDTO;
@@ -62,4 +64,11 @@ public interface UserManagementService {
      * @param userRoleEnum 角色枚举
      */
     void updateUserRole(Long userId, UserRoleEnum userRoleEnum);
+
+    /**
+     * 新建用户账号
+     *
+     * @param req 新建用户的请求参数
+     */
+    void save(@Valid UserCreateReq req);
 }

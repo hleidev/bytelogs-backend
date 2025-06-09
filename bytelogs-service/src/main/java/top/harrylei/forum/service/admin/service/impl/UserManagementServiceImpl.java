@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.enums.StatusEnum;
 import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
+import top.harrylei.forum.api.model.vo.auth.UserCreateReq;
 import top.harrylei.forum.api.model.vo.page.PageHelper;
 import top.harrylei.forum.api.model.vo.page.PageReq;
 import top.harrylei.forum.api.model.vo.page.PageVO;
@@ -142,5 +143,17 @@ public class UserManagementServiceImpl implements UserManagementService {
         ExceptionUtil.requireNonNull(role, StatusEnum.PARAM_MISSING, "角色");
 
         userService.updateUserRole(userId, role);
+    }
+
+    /**
+     * 新建用户账号
+     *
+     * @param req 新建用户的请求参数
+     */
+    @Override
+    public void save(UserCreateReq req) {
+        ExceptionUtil.requireNonNull(req, StatusEnum.PARAM_MISSING, "请求参数");
+
+        userService.save(req);
     }
 }

@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import top.harrylei.forum.api.model.enums.StatusEnum;
 import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
 import top.harrylei.forum.api.model.vo.ResVO;
+import top.harrylei.forum.api.model.vo.auth.UserCreateReq;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.UserQueryParam;
 import top.harrylei.forum.api.model.vo.user.dto.UserDetailDTO;
@@ -73,7 +75,8 @@ public class UserManagementController {
      */
     @Operation(summary = "修改用户状态", description = "启用或禁用指定用户")
     @PutMapping("/{userId}/status")
-    public ResVO<Void> updateStatus(@NotNull(message = "用户ID为空") @PathVariable Long userId, @NotNull(message = "状态为空") @RequestBody Integer status) {
+    public ResVO<Void> updateStatus(@NotNull(message = "用户ID为空") @PathVariable Long userId,
+        @NotNull(message = "状态为空") @RequestBody Integer status) {
         UserStatusEnum statusEnum = UserStatusEnum.fromCode(status);
         ExceptionUtil.requireNonNull(statusEnum, StatusEnum.ILLEGAL_ARGUMENTS_MIXED, "非法用户状态 statusCode=" + status);
         userManagementService.updateStatus(userId, statusEnum);
@@ -102,7 +105,8 @@ public class UserManagementController {
      */
     @Operation(summary = "修改用户邮箱", description = "更新用户的邮箱地址")
     @PutMapping("/{userId}/email")
-    public ResVO<Void> updateEmail(@NotNull(message = "用户ID为空") @PathVariable Long userId, @NotBlank(message = "邮箱为空") @RequestBody String email) {
+    public ResVO<Void> updateEmail(@NotNull(message = "用户ID为空") @PathVariable Long userId,
+        @NotBlank(message = "邮箱为空") @RequestBody String email) {
         // TODO userManagementService.updateEmail(userId, email);
         return ResVO.ok();
     }
@@ -143,10 +147,21 @@ public class UserManagementController {
     @Operation(summary = "修改用户角色", description = "修改用户的系统角色")
     @PostMapping("/{userId}/role")
     public ResVO<Void> updateUserRole(@NotNull(message = "用户ID为空") @PathVariable Long userId,
-                                      @NotNull(message = "角色编码为空") @RequestBody Integer roleCode) {
+        @NotNull(message = "角色编码为空") @RequestBody Integer roleCode) {
         userManagementService.updateUserRole(userId, UserRoleEnum.fromCode(roleCode));
         return ResVO.ok();
     }
 
-
+    /**
+     * 新建用户账号
+     *
+     * @param req 新建用户的请求参数
+     * @return 操作结果
+     */
+    @Operation(summary = "新建用户账号", description = "后台管理端新建用户")
+    @PostMapping
+    public ResVO<Void> saveUser(@Valid @RequestBody UserCreateReq req) {
+        userManagementService.save(req);
+        return ResVO.ok();
+    }
 }
