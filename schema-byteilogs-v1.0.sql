@@ -141,9 +141,9 @@ CREATE TABLE `article_detail`
 CREATE TABLE `category`
 (
     `id`            bigint unsigned  NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-    `category_name` varchar(64)      NOT NULL DEFAULT '' COMMENT '类目名称',
+    `category_name` varchar(16)      NOT NULL DEFAULT '' COMMENT '类目名称',
     `status`        tinyint unsigned NOT NULL DEFAULT 0 COMMENT '状态：0-未发布，1-已发布',
-    `rank`          tinyint unsigned NOT NULL DEFAULT 0 COMMENT '排序值（越大越靠前）',
+    `sort`          tinyint unsigned NOT NULL DEFAULT 0 COMMENT '排序值（越大越靠前）',
     `deleted`       tinyint unsigned NOT NULL DEFAULT 0 COMMENT '是否删除：0-未删除，1-已删除',
     `create_time`   timestamp        NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time`   timestamp        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
