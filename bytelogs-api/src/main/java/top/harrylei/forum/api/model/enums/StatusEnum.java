@@ -74,7 +74,11 @@ public enum StatusEnum {
     // ========== 评论相关 60000-69999 ==========
     COMMENT_NOT_EXISTS(60001, "评论不存在: %s"),
     COMMENT_CONTENT_INVALID(60002, "评论内容不符合规范: %s"),
-    COMMENT_DISABLED(60003, "评论功能已关闭");
+    COMMENT_DISABLED(60003, "评论功能已关闭"),
+
+    // ========== 分类相关 60000-69999 ==========
+    CATEGORY_NOT_EXISTS(70001, "分类不存在"),
+    CATEGORY_UPDATE_FAILED(70002, "更新失败: %s");
 
     /**
      * 业务状态码

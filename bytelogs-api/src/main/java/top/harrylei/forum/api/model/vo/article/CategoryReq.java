@@ -1,10 +1,7 @@
 package top.harrylei.forum.api.model.vo.article;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 
 /**
@@ -12,7 +9,7 @@ import lombok.Data;
  */
 @Data
 @Schema(description = "分类请求")
-public class CategoryCreateReq {
+public class CategoryReq {
 
     /**
      * 类目名称
@@ -28,12 +25,14 @@ public class CategoryCreateReq {
     /**
      * 状态：0-未发布，1-已发布
      */
+    @NotNull(message = "分类状态不能为空")
     @Schema(description = "分类状态", example = "0")
     private Integer status;
 
     /**
      * 排序值（越大越靠前）
      */
+    @NotNull(message = "排序值不能为空")
     @Min(value = 0, message = "排序值不能小于0")
     @Max(value = 255, message = "排序值不能大于255")
     @Schema(description = "排序值", example = "0")
