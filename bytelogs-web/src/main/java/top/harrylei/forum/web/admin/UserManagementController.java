@@ -90,7 +90,7 @@ public class UserManagementController {
      * @return 操作结果
      */
     @Operation(summary = "重置用户密码", description = "将用户密码重置为系统默认密码并通知用户")
-    @PostMapping("/{userId}/password/reset")
+    @PutMapping("/{userId}/password/reset")
     public ResVO<Void> resetPassword(@NotNull(message = "用户ID为空") @PathVariable Long userId) {
         userManagementService.resetPassword(userId);
         return ResVO.ok();
@@ -118,7 +118,7 @@ public class UserManagementController {
      * @return 操作结果
      */
     @Operation(summary = "删除用户账户", description = "将用户标记为已删除状态")
-    @PostMapping("/{userId}/delete")
+    @DeleteMapping("/{userId}")
     public ResVO<Void> deleteUser(@NotNull(message = "用户ID为空") @PathVariable Long userId) {
         userManagementService.delete(userId);
         return ResVO.ok();
@@ -145,7 +145,7 @@ public class UserManagementController {
      * @return 操作结果
      */
     @Operation(summary = "修改用户角色", description = "修改用户的系统角色")
-    @PostMapping("/{userId}/role")
+    @PutMapping("/{userId}/role")
     public ResVO<Void> updateUserRole(@NotNull(message = "用户ID为空") @PathVariable Long userId,
         @NotNull(message = "角色编码为空") @RequestBody Integer roleCode) {
         userManagementService.updateUserRole(userId, UserRoleEnum.fromCode(roleCode));

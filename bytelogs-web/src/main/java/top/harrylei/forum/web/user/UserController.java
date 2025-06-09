@@ -62,7 +62,7 @@ public class UserController {
      * @return 操作成功的响应
      */
     @Operation(summary = "更新用户信息", description = "更新当前登录用户的个人基本信息")
-    @PostMapping("/update-info")
+    @PutMapping("/info")
     public ResVO<Void> updateUserInfo(@Valid @RequestBody UserInfoReq userInfoReq) {
         // 获取当前上下文中的用户信息
         BaseUserInfoDTO userInfo = ReqInfoContext.getContext().getUser();
@@ -84,7 +84,7 @@ public class UserController {
      * @return 操作成功响应
      */
     @Operation(summary = "修改用户密码", description = "修改当前登录用户的个人密码")
-    @PostMapping("/update-password")
+    @PutMapping("/password")
     public ResVO<Void> updatePassword(@Valid @RequestBody PasswordUpdateReq passwordUpdateReq) {
         Long userId = ReqInfoContext.getContext().getUserId();
         ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_VALIDATE_FAILED, "用户ID为空");
@@ -99,7 +99,7 @@ public class UserController {
      * @return 操作成功
      */
     @Operation(summary = "修改用户头像", description = "修改当前登录用户的个人头像")
-    @PostMapping("/update-avatar")
+    @PutMapping("/avatar")
     public ResVO<Void> updateAvatar(@NotBlank(message = "用户头像不能为空") String avatar) {
         userService.updateAvatar(avatar);
         return ResVO.ok();

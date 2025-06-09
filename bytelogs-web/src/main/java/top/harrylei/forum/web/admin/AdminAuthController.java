@@ -98,7 +98,7 @@ public class AdminAuthController {
      */
     @Operation(summary = "修改管理员密码", description = "修改当前管理员的个人密码")
     @RequiresAdmin
-    @PostMapping("/update-password")
+    @PutMapping("/password")
     public ResVO<Void> updatePassword(@Valid @RequestBody PasswordUpdateReq passwordUpdateReq) {
         Long userId = ReqInfoContext.getContext().getUserId();
         ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_VALIDATE_FAILED, "用户ID为空");
