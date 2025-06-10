@@ -48,4 +48,11 @@ public interface CategoryManagementService {
      * @param categoryId 分类ID
      */
     void delete(Long categoryId);
+
+    /**
+     * 恢复分类
+     *
+     * @param categoryId 分类ID
+     */
+    void restore(Long categoryId);
 }

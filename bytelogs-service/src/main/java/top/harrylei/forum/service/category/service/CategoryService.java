@@ -1,6 +1,7 @@
 package top.harrylei.forum.service.category.service;
 
 import top.harrylei.forum.api.model.enums.CategoryStatusEnum;
+import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.vo.article.CategoryReq;
 import top.harrylei.forum.api.model.vo.article.dto.CategoryDTO;
 import top.harrylei.forum.api.model.vo.page.PageVO;
@@ -43,9 +44,9 @@ public interface CategoryService {
     void updateStatus(Long categoryId, CategoryStatusEnum status);
 
     /**
-     * 删除分类
+     * 更新删除状态
      *
      * @param categoryId 分类ID
      */
-    void delete(Long categoryId);
+    void updateDeleted(Long categoryId, YesOrNoEnum status);
 }

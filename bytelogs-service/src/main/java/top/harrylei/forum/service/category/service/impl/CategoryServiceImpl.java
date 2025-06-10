@@ -126,25 +126,30 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     /**
-     * 删除分类
+     * 更新删除状态
      *
      * @param categoryId 分类ID
+     * @param status 删除状态
      */
     @Override
-    public void delete(Long categoryId) {
+    public void updateDeleted(Long categoryId, YesOrNoEnum status) {
         ExceptionUtil.requireNonNull(categoryId, StatusEnum.PARAM_MISSING, "分类ID");
+        ExceptionUtil.requireNonNull(status, StatusEnum.PARAM_MISSING, "删除状态");
 
-        CategoryDO category = categoryDAO.getByCategoryId(categoryId);
+        CategoryDO category = categoryDAO.getById(categoryId);
         ExceptionUtil.requireNonNull(category, StatusEnum.CATEGORY_NOT_EXISTS);
+
+        ExceptionUtil.noticeIf(Objects.equals(status.getCode(), category.getDeleted()),
+                StatusEnum.CATEGORY_UPDATE_FAILED, "分类删除状态未变更，无需更新");
 
         Long operatorId = ReqInfoContext.getContext().getUserId();
 
         try {
-            category.setDeleted(YesOrNoEnum.YES.getCode());
+            category.setDeleted(status.getCode());
             categoryDAO.updateById(category);
-            log.info("删除分类状态成功 category={} operatorId={}", category.getCategoryName(), operatorId);
+            log.info("更新分类删除状态成功 category={} operatorId={}", category.getCategoryName(), operatorId);
         } catch (Exception e) {
-            ExceptionUtil.error(StatusEnum.CATEGORY_UPDATE_FAILED, "更新删除标识失败", e);
+            ExceptionUtil.error(StatusEnum.CATEGORY_UPDATE_FAILED, "更新删除状态失败", e);
         }
     }
 }

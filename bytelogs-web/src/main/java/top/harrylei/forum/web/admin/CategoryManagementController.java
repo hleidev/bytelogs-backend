@@ -104,4 +104,17 @@ public class CategoryManagementController {
         categoryManagementService.delete(categoryId);
         return ResVO.ok();
     }
+
+    /**
+     * 恢复分类
+     *
+     * @param categoryId 分类ID
+     * @return 操作结果
+     */
+    @Operation(summary = "恢复分类", description = "根据分类ID恢复分类")
+    @PutMapping("/{categoryId}/restore")
+    public ResVO<Void> restore(@NotNull(message = "分类ID为空") @PathVariable Long categoryId) {
+        categoryManagementService.restore(categoryId);
+        return ResVO.ok();
+    }
 }

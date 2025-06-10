@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.enums.CategoryStatusEnum;
 import top.harrylei.forum.api.model.enums.StatusEnum;
+import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.vo.article.CategoryReq;
 import top.harrylei.forum.api.model.vo.article.dto.CategoryDTO;
 import top.harrylei.forum.api.model.vo.page.PageVO;
@@ -85,6 +86,18 @@ public class CategoryManagementServiceImpl implements CategoryManagementService 
     public void delete(Long categoryId) {
         ExceptionUtil.requireNonNull(categoryId, StatusEnum.PARAM_MISSING, "分类ID");
 
-        categoryService.delete(categoryId);
+        categoryService.updateDeleted(categoryId, YesOrNoEnum.YES);
+    }
+
+    /**
+     * 恢复分类
+     *
+     * @param categoryId 分类ID
+     */
+    @Override
+    public void restore(Long categoryId) {
+        ExceptionUtil.requireNonNull(categoryId, StatusEnum.PARAM_MISSING, "分类ID");
+
+        categoryService.updateDeleted(categoryId, YesOrNoEnum.NO);
     }
 }
