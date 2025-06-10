@@ -15,6 +15,7 @@ import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
 import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.auth.UserCreateReq;
+import top.harrylei.forum.api.model.vo.page.PageHelper;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.UserQueryParam;
 import top.harrylei.forum.api.model.vo.user.dto.UserDetailDTO;
@@ -49,8 +50,8 @@ public class UserManagementController {
     @Operation(summary = "查询用户列表", description = "分页查询用户列表，支持多条件筛选和多字段排序")
     @GetMapping
     public ResVO<PageVO<UserListItemVO>> list(UserQueryParam queryParam) {
-        PageVO<UserListItemVO> pageVO = userManagementService.list(queryParam);
-        return ResVO.ok(pageVO);
+        PageVO<UserDetailDTO> pageVO = userManagementService.list(queryParam);
+        return ResVO.ok(PageHelper.map(pageVO, userStructMapper::toUserDetailVO));
     }
 
     /**

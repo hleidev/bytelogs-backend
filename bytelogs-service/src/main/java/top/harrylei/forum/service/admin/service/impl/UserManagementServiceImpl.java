@@ -11,12 +11,11 @@ import top.harrylei.forum.api.model.enums.StatusEnum;
 import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
 import top.harrylei.forum.api.model.vo.auth.UserCreateReq;
-import top.harrylei.forum.api.model.vo.page.PageHelper;
 import top.harrylei.forum.api.model.vo.page.Page;
+import top.harrylei.forum.api.model.vo.page.PageHelper;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.UserQueryParam;
 import top.harrylei.forum.api.model.vo.user.dto.UserDetailDTO;
-import top.harrylei.forum.api.model.vo.user.vo.UserListItemVO;
 import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.service.admin.service.UserManagementService;
 import top.harrylei.forum.service.user.converted.UserStructMapper;
@@ -43,7 +42,7 @@ public class UserManagementServiceImpl implements UserManagementService {
      * @return 用户分页列表
      */
     @Override
-    public PageVO<UserListItemVO> list(UserQueryParam queryParam) {
+    public PageVO<UserDetailDTO> list(UserQueryParam queryParam) {
         // 参数校验
         ExceptionUtil.requireNonNull(queryParam, StatusEnum.PARAM_MISSING, "查询参数不能为空");
         
@@ -55,13 +54,9 @@ public class UserManagementServiceImpl implements UserManagementService {
             List<UserDetailDTO> users = userService.listUsers(queryParam, pageRequest);
             // 获取总记录数
             long total = userService.countUsers(queryParam);
-            // 转换为VO对象
-            List<UserListItemVO> result = users.stream()
-                    .map(userStructMapper::toUserListItemVO)
-                    .toList();
             
             // 构建分页结果
-            return PageHelper.build(result, pageRequest.getPageNum(), pageRequest.getPageSize(), total);
+            return PageHelper.build(users, pageRequest.getPageNum(), pageRequest.getPageSize(), total);
             
         } catch (Exception e) {
             ExceptionUtil.error(StatusEnum.SYSTEM_ERROR, "查询用户列表失败", e);
