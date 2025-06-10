@@ -11,8 +11,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.article.CategoryReq;
+import top.harrylei.forum.api.model.vo.article.dto.CategoryDTO;
+import top.harrylei.forum.api.model.vo.article.vo.CategoryVO;
+import top.harrylei.forum.api.model.vo.page.PageHelper;
+import top.harrylei.forum.api.model.vo.page.PageVO;
+import top.harrylei.forum.api.model.vo.page.param.CategoryQueryParam;
 import top.harrylei.forum.core.security.permission.RequiresAdmin;
 import top.harrylei.forum.service.admin.service.CategoryManagementService;
+import top.harrylei.forum.service.category.converted.CategoryStructMapper;
 
 /**
  * 分类管理模块
@@ -27,6 +33,7 @@ import top.harrylei.forum.service.admin.service.CategoryManagementService;
 public class CategoryManagementController {
 
     private final CategoryManagementService categoryManagementService;
+    private final CategoryStructMapper categoryStructMapper;
 
     /**
      * 新建分类
@@ -54,5 +61,18 @@ public class CategoryManagementController {
         @Valid @RequestBody CategoryReq req) {
         categoryManagementService.update(categoryId, req);
         return ResVO.ok();
+    }
+
+    /**
+     * 分类分页查询
+     *
+     * @param queryParam 分页及筛选参数
+     * @return 分页分类列表
+     */
+    @Operation(summary = "分页查询", description = "支持按名称、状态、时间等多条件分页查询")
+    @GetMapping("/list")
+    public ResVO<PageVO<CategoryVO>> list(CategoryQueryParam queryParam) {
+        PageVO<CategoryDTO> page = categoryManagementService.list(queryParam);
+        return ResVO.ok(PageHelper.map(page, categoryStructMapper::toVO));
     }
 }

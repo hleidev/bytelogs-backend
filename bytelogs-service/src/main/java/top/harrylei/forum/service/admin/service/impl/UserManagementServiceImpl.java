@@ -12,7 +12,7 @@ import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
 import top.harrylei.forum.api.model.vo.auth.UserCreateReq;
 import top.harrylei.forum.api.model.vo.page.PageHelper;
-import top.harrylei.forum.api.model.vo.page.PageReq;
+import top.harrylei.forum.api.model.vo.page.Page;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.UserQueryParam;
 import top.harrylei.forum.api.model.vo.user.dto.UserDetailDTO;
@@ -48,7 +48,7 @@ public class UserManagementServiceImpl implements UserManagementService {
         ExceptionUtil.requireNonNull(queryParam, StatusEnum.PARAM_MISSING, "查询参数不能为空");
         
         // 创建分页参数
-        PageReq pageRequest = PageHelper.createPageRequest(queryParam.getPageNum(), queryParam.getPageSize());
+        Page pageRequest = PageHelper.createPage(queryParam.getPageNum(), queryParam.getPageSize());
         
         try {
             // 调用userService获取用户列表

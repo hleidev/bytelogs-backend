@@ -2,6 +2,7 @@ package top.harrylei.forum.api.model.vo.user.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 import top.harrylei.forum.api.model.entity.BaseDTO;
 
@@ -12,6 +13,7 @@ import top.harrylei.forum.api.model.entity.BaseDTO;
  */
 @Data
 @Schema(description = "用户完整信息DTO")
+@EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
 public class UserDetailDTO extends BaseDTO {
 

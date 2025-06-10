@@ -148,7 +148,7 @@ CREATE TABLE `category`
     `create_time`   timestamp        NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time`   timestamp        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_category_name` (`category_name`) COMMENT '类目名称唯一索引'
+    UNIQUE KEY `uk_category_name_deleted` (`category_name`, `deleted`) COMMENT '类目名称唯一索引'
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4 COMMENT = '类目管理表';
 

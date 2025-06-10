@@ -5,7 +5,7 @@ import java.util.List;
 import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
 import top.harrylei.forum.api.model.vo.auth.UserCreateReq;
-import top.harrylei.forum.api.model.vo.page.PageReq;
+import top.harrylei.forum.api.model.vo.page.Page;
 import top.harrylei.forum.api.model.vo.page.param.UserQueryParam;
 import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
 import top.harrylei.forum.api.model.vo.user.dto.UserDetailDTO;
@@ -54,7 +54,7 @@ public interface UserService {
      * @param pageRequest 分页参数
      * @return 用户列表
      */
-    List<UserDetailDTO> listUsers(UserQueryParam queryParam, PageReq pageRequest);
+    List<UserDetailDTO> listUsers(UserQueryParam queryParam, Page pageRequest);
 
     /**
      * 统计符合条件的用户数量

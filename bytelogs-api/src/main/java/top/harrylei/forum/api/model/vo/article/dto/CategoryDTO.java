@@ -1,45 +1,41 @@
 package top.harrylei.forum.api.model.vo.article.dto;
 
-import top.harrylei.forum.api.model.enums.PushStatusEnum;
+import java.io.Serial;
+import java.io.Serializable;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.io.Serializable;
+import top.harrylei.forum.api.model.enums.CategoryStatusEnum;
 
 /**
- * @author YiHui
- * @date 2022/7/24
+ * 分类传输对象
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class CategoryDTO implements Serializable {
-    public static final String DEFAULT_TOTAL_CATEGORY = "全部";
-    public static final CategoryDTO DEFAULT_CATEGORY = new CategoryDTO(0L, "全部");
 
+    @Serial
     private static final long serialVersionUID = 8272116638231812207L;
-    public static CategoryDTO EMPTY = new CategoryDTO(-1L, "illegal");
 
-    private Long categoryId;
+    /**
+     * 类目名称
+     */
+    private String categoryName;
 
-    private String category;
+    /**
+     * 状态：0-未发布，1-已发布
+     */
+    private CategoryStatusEnum status;
 
-    private Integer rank;
+    /**
+     * 排序值（越大越靠前）
+     */
+    private Integer sort;
 
-    private Integer status;
-
-    private Boolean selected;
-
-    public CategoryDTO(Long categoryId, String category) {
-        this(categoryId, category, 0);
-    }
-
-    public CategoryDTO(Long categoryId, String category, Integer rank) {
-        this.categoryId = categoryId;
-        this.category = category;
-        this.status = PushStatusEnum.ONLINE.getCode();
-        this.rank = rank;
-        this.selected = false;
-    }
+    /**
+     * 是否删除：0-未删除，1-已删除
+     */
+    private Integer deleted;
 }

@@ -15,7 +15,7 @@ import java.io.Serializable;
  */
 @Data
 @Schema(description = "分页请求参数")
-public class PageReq implements Serializable {
+public class Page implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -67,8 +67,8 @@ public class PageReq implements Serializable {
      *
      * @return 默认分页请求
      */
-    public static PageReq of() {
-        return new PageReq();
+    public static Page of() {
+        return new Page();
     }
 
     /**
@@ -78,8 +78,8 @@ public class PageReq implements Serializable {
      * @param pageSize 每页大小
      * @return 分页请求
      */
-    public static PageReq of(int pageNum, int pageSize) {
-        PageReq request = new PageReq();
+    public static Page of(int pageNum, int pageSize) {
+        Page request = new Page();
         request.setPageNum(pageNum);
         request.setPageSize(pageSize);
         return request;

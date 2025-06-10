@@ -6,6 +6,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.enums.StatusEnum;
 import top.harrylei.forum.api.model.vo.article.CategoryReq;
+import top.harrylei.forum.api.model.vo.article.dto.CategoryDTO;
+import top.harrylei.forum.api.model.vo.article.vo.CategoryVO;
+import top.harrylei.forum.api.model.vo.page.PageVO;
+import top.harrylei.forum.api.model.vo.page.param.CategoryQueryParam;
 import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.service.admin.service.CategoryManagementService;
 import top.harrylei.forum.service.category.service.CategoryService;
@@ -44,5 +48,17 @@ public class CategoryManagementServiceImpl implements CategoryManagementService 
         ExceptionUtil.requireNonNull(req, StatusEnum.PARAM_MISSING, "分类请求参数");
 
         categoryService.update(categoryId, req);
+    }
+
+    /**
+     * 分类分页查询
+     *
+     * @param queryParam 分页及筛选参数
+     * @return 分页分类列表
+     */
+    @Override
+    public PageVO<CategoryDTO> list(CategoryQueryParam queryParam) {
+        ExceptionUtil.requireNonNull(queryParam, StatusEnum.PARAM_MISSING, "分页请求参数");
+        return categoryService.list(queryParam);
     }
 }

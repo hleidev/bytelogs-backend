@@ -13,7 +13,7 @@ import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
 import top.harrylei.forum.api.model.vo.auth.UserCreateReq;
-import top.harrylei.forum.api.model.vo.page.PageReq;
+import top.harrylei.forum.api.model.vo.page.Page;
 import top.harrylei.forum.api.model.vo.page.param.UserQueryParam;
 import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
 import top.harrylei.forum.api.model.vo.user.dto.UserDetailDTO;
@@ -154,7 +154,7 @@ public class UserServiceImpl implements UserService {
      * @return 用户列表
      */
     @Override
-    public List<UserDetailDTO> listUsers(UserQueryParam queryParam, PageReq pageRequest) {
+    public List<UserDetailDTO> listUsers(UserQueryParam queryParam, Page pageRequest) {
         ExceptionUtil.requireNonNull(queryParam, StatusEnum.PARAM_MISSING, "请求参数");
         ExceptionUtil.requireNonNull(pageRequest, StatusEnum.PARAM_MISSING, "分页参数");
 

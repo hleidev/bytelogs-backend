@@ -1,11 +1,18 @@
 package top.harrylei.forum.service.category.service.impl;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.enums.StatusEnum;
 import top.harrylei.forum.api.model.vo.article.CategoryReq;
+import top.harrylei.forum.api.model.vo.article.dto.CategoryDTO;
+import top.harrylei.forum.api.model.vo.page.Page;
+import top.harrylei.forum.api.model.vo.page.PageHelper;
+import top.harrylei.forum.api.model.vo.page.PageVO;
+import top.harrylei.forum.api.model.vo.page.param.CategoryQueryParam;
 import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.service.category.converted.CategoryStructMapper;
 import top.harrylei.forum.service.category.repository.dao.CategoryDAO;
@@ -66,5 +73,24 @@ public class CategoryServiceImpl implements CategoryService {
         } catch (Exception e) {
             ExceptionUtil.error(StatusEnum.CATEGORY_UPDATE_FAILED, "新建分类失败", e);
         }
+    }
+
+    /**
+     * 分类分页查询
+     *
+     * @param queryParam 分页及筛选参数
+     * @return 分页分类列表
+     */
+    @Override
+    public PageVO<CategoryDTO> list(CategoryQueryParam queryParam) {
+        ExceptionUtil.requireNonNull(queryParam, StatusEnum.PARAM_MISSING, "分页请求参数");
+        Page page = PageHelper.createPage(queryParam.getPageNum(), queryParam.getPageSize());
+
+        List<CategoryDO> categoryDOList = categoryDAO.listCategory(queryParam, page.getLimitSql());
+        long total = categoryDAO.countCategory(queryParam);
+
+        List<CategoryDTO> categoryList = categoryDOList.stream().map(categoryStructMapper::toDTO).toList();
+
+        return  PageHelper.build(categoryList, page.getPageNum(), page.getPageSize(), total);
     }
 }

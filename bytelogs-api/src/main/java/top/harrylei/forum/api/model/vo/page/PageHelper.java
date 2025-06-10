@@ -60,18 +60,18 @@ public class PageHelper {
      * @param pageSize 每页大小
      * @return 分页请求
      */
-    public static PageReq createPageRequest(Integer pageNum, Integer pageSize) {
+    public static Page createPage(Integer pageNum, Integer pageSize) {
         if (pageNum == null || pageNum < 1) {
-            pageNum = PageReq.DEFAULT_PAGE_NUM;
+            pageNum = Page.DEFAULT_PAGE_NUM;
         }
 
         if (pageSize == null || pageSize < 1) {
-            pageSize = PageReq.DEFAULT_PAGE_SIZE;
-        } else if (pageSize > PageReq.MAX_PAGE_SIZE) {
-            pageSize = PageReq.MAX_PAGE_SIZE;
+            pageSize = Page.DEFAULT_PAGE_SIZE;
+        } else if (pageSize > Page.MAX_PAGE_SIZE) {
+            pageSize = Page.MAX_PAGE_SIZE;
         }
 
-        return PageReq.of(pageNum, pageSize);
+        return Page.of(pageNum, pageSize);
     }
 
     /**
