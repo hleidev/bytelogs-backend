@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.enums.CategoryStatusEnum;
 import top.harrylei.forum.api.model.enums.StatusEnum;
+import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.vo.article.CategoryReq;
 import top.harrylei.forum.api.model.vo.article.dto.CategoryDTO;
 import top.harrylei.forum.api.model.vo.page.Page;
@@ -120,7 +121,30 @@ public class CategoryServiceImpl implements CategoryService {
             log.info("更新分类状态成功 category={} status={} operatorId={}", category.getCategoryName(), status.getLabel(),
                 operatorId);
         } catch (Exception e) {
-            ExceptionUtil.error(StatusEnum.CATEGORY_UPDATE_FAILED, e);
+            ExceptionUtil.error(StatusEnum.CATEGORY_UPDATE_FAILED, "更新状态失败", e);
+        }
+    }
+
+    /**
+     * 删除分类
+     *
+     * @param categoryId 分类ID
+     */
+    @Override
+    public void delete(Long categoryId) {
+        ExceptionUtil.requireNonNull(categoryId, StatusEnum.PARAM_MISSING, "分类ID");
+
+        CategoryDO category = categoryDAO.getByCategoryId(categoryId);
+        ExceptionUtil.requireNonNull(category, StatusEnum.CATEGORY_NOT_EXISTS);
+
+        Long operatorId = ReqInfoContext.getContext().getUserId();
+
+        try {
+            category.setDeleted(YesOrNoEnum.YES.getCode());
+            categoryDAO.updateById(category);
+            log.info("删除分类状态成功 category={} operatorId={}", category.getCategoryName(), operatorId);
+        } catch (Exception e) {
+            ExceptionUtil.error(StatusEnum.CATEGORY_UPDATE_FAILED, "更新删除标识失败", e);
         }
     }
 }

@@ -41,4 +41,11 @@ public interface CategoryService {
      * @param status 新状态
      */
     void updateStatus(Long categoryId, CategoryStatusEnum status);
+
+    /**
+     * 删除分类
+     *
+     * @param categoryId 分类ID
+     */
+    void delete(Long categoryId);
 }

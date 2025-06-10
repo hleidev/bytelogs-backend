@@ -75,4 +75,16 @@ public class CategoryManagementServiceImpl implements CategoryManagementService 
 
         categoryService.updateStatus(categoryId, status);
     }
+
+    /**
+     * 删除分类
+     *
+     * @param categoryId 分类ID
+     */
+    @Override
+    public void delete(Long categoryId) {
+        ExceptionUtil.requireNonNull(categoryId, StatusEnum.PARAM_MISSING, "分类ID");
+
+        categoryService.delete(categoryId);
+    }
 }
