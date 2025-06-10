@@ -9,6 +9,8 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import top.harrylei.forum.api.model.enums.CategoryStatusEnum;
+import top.harrylei.forum.api.model.enums.StatusEnum;
 import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.article.CategoryReq;
 import top.harrylei.forum.api.model.vo.article.dto.CategoryDTO;
@@ -16,6 +18,7 @@ import top.harrylei.forum.api.model.vo.article.vo.CategoryVO;
 import top.harrylei.forum.api.model.vo.page.PageHelper;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.CategoryQueryParam;
+import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.core.security.permission.RequiresAdmin;
 import top.harrylei.forum.service.admin.service.CategoryManagementService;
 import top.harrylei.forum.service.category.converted.CategoryStructMapper;
@@ -74,5 +77,23 @@ public class CategoryManagementController {
     public ResVO<PageVO<CategoryVO>> list(CategoryQueryParam queryParam) {
         PageVO<CategoryDTO> page = categoryManagementService.list(queryParam);
         return ResVO.ok(PageHelper.map(page, categoryStructMapper::toVO));
+    }
+
+    /**
+     * 修改分类状态
+     *
+     * @param categoryId 分类ID
+     * @param status 新状态
+     * @return 操作结果
+     */
+    @Operation(summary = "修改状态", description = "发布/未发布状态变更")
+    @PutMapping("/{categoryId}/status")
+    public ResVO<Void> updateStatus(
+            @NotNull(message = "分类ID为空") @PathVariable Long categoryId,
+            @NotNull(message = "状态为空") @RequestBody CategoryStatusEnum status) {
+        ExceptionUtil.requireNonNull(status, StatusEnum.PARAM_VALIDATE_FAILED, "分类状态异常");
+
+        categoryManagementService.updateStatus(categoryId, status);
+        return ResVO.ok();
     }
 }

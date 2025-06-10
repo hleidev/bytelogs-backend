@@ -4,10 +4,10 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import top.harrylei.forum.api.model.enums.CategoryStatusEnum;
 import top.harrylei.forum.api.model.enums.StatusEnum;
 import top.harrylei.forum.api.model.vo.article.CategoryReq;
 import top.harrylei.forum.api.model.vo.article.dto.CategoryDTO;
-import top.harrylei.forum.api.model.vo.article.vo.CategoryVO;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.CategoryQueryParam;
 import top.harrylei.forum.core.exception.ExceptionUtil;
@@ -60,5 +60,19 @@ public class CategoryManagementServiceImpl implements CategoryManagementService 
     public PageVO<CategoryDTO> list(CategoryQueryParam queryParam) {
         ExceptionUtil.requireNonNull(queryParam, StatusEnum.PARAM_MISSING, "分页请求参数");
         return categoryService.list(queryParam);
+    }
+
+    /**
+     * 修改分类状态
+     *
+     * @param categoryId 分类ID
+     * @param status 新状态
+     */
+    @Override
+    public void updateStatus(Long categoryId, CategoryStatusEnum status) {
+        ExceptionUtil.requireNonNull(categoryId, StatusEnum.PARAM_MISSING, "分类ID");
+        ExceptionUtil.requireNonNull(status, StatusEnum.PARAM_MISSING, "分类状态");
+
+        categoryService.updateStatus(categoryId, status);
     }
 }

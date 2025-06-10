@@ -1,5 +1,6 @@
 package top.harrylei.forum.service.category.service;
 
+import top.harrylei.forum.api.model.enums.CategoryStatusEnum;
 import top.harrylei.forum.api.model.vo.article.CategoryReq;
 import top.harrylei.forum.api.model.vo.article.dto.CategoryDTO;
 import top.harrylei.forum.api.model.vo.page.PageVO;
@@ -32,4 +33,12 @@ public interface CategoryService {
      * @return 分页分类列表
      */
     PageVO<CategoryDTO> list(CategoryQueryParam queryParam);
+
+    /**
+     * 更新分类状态
+     *
+     * @param categoryId 分类ID
+     * @param status 新状态
+     */
+    void updateStatus(Long categoryId, CategoryStatusEnum status);
 }

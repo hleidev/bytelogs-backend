@@ -7,6 +7,9 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -41,11 +44,22 @@ public enum CategoryStatusEnum {
         Arrays.stream(values()).collect(Collectors.toMap(e -> e.name().toUpperCase(), Function.identity()));
 
     /**
+     * 获取状态码
+     *
+     * @return 状态码
+     */
+    @JsonValue
+    public Integer getCode() {
+        return code;
+    }
+
+    /**
      * 根据状态编码获取枚举对象
      *
      * @param code 状态编码
      * @return 对应的状态枚举，若无匹配则返回 null
      */
+    @JsonCreator
     public static CategoryStatusEnum fromCode(Integer code) {
         return code == null ? null : CODE_MAP.get(code);
     }

@@ -44,6 +44,19 @@ public class ExceptionUtil {
     }
 
     /**
+     * 条件业务异常：当条件为真时抛出异常
+     *
+     * @param condition 触发条件
+     * @param statusEnum 状态枚举
+     * @param args 状态消息格式化参数
+     */
+    public static void noticeIf(boolean condition, @NonNull StatusEnum statusEnum, Object... args) {
+        if (condition) {
+            notice(statusEnum, args);
+        }
+    }
+
+    /**
      * 检查字符串非空
      *
      * @param str 要检查的字符串
