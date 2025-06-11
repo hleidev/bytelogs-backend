@@ -1,7 +1,7 @@
 package top.harrylei.forum.service.category.service;
 
-import top.harrylei.forum.api.model.enums.CategoryStatusEnum;
-import top.harrylei.forum.api.model.vo.article.CategoryReq;
+import top.harrylei.forum.api.model.enums.PublishStatusEnum;
+import top.harrylei.forum.api.model.vo.article.req.CategoryReq;
 import top.harrylei.forum.api.model.vo.article.dto.CategoryDTO;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.CategoryQueryParam;
@@ -42,7 +42,7 @@ public interface CategoryManagementService {
      * @param categoryId 分类ID
      * @param status 新状态
      */
-    void updateStatus(Long categoryId, CategoryStatusEnum status);
+    void updateStatus(Long categoryId, PublishStatusEnum status);
 
     /**
      * 删除分类

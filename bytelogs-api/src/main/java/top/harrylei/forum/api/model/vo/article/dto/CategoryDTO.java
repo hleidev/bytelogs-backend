@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import top.harrylei.forum.api.model.entity.BaseDTO;
-import top.harrylei.forum.api.model.enums.CategoryStatusEnum;
+import top.harrylei.forum.api.model.enums.PublishStatusEnum;
 
 /**
  * 分类传输对象
@@ -24,7 +24,7 @@ public class CategoryDTO extends BaseDTO {
     /**
      * 状态：0-未发布，1-已发布
      */
-    private CategoryStatusEnum status;
+    private PublishStatusEnum status;
 
     /**
      * 排序值（越大越靠前）

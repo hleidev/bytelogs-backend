@@ -8,11 +8,11 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import top.harrylei.forum.api.model.enums.CategoryStatusEnum;
+import top.harrylei.forum.api.model.enums.PublishStatusEnum;
 import top.harrylei.forum.api.model.enums.StatusEnum;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
-import top.harrylei.forum.api.model.vo.article.CategoryReq;
 import top.harrylei.forum.api.model.vo.article.dto.CategoryDTO;
+import top.harrylei.forum.api.model.vo.article.req.CategoryReq;
 import top.harrylei.forum.api.model.vo.page.Page;
 import top.harrylei.forum.api.model.vo.page.PageHelper;
 import top.harrylei.forum.api.model.vo.page.PageVO;
@@ -45,7 +45,7 @@ public class CategoryServiceImpl implements CategoryService {
         ExceptionUtil.requireNonNull(req, StatusEnum.PARAM_MISSING, "分类请求参数");
 
         CategoryDO category =
-            new CategoryDO().setCategoryName(req.getCategoryName()).setStatus(req.getStatus()).setSort(req.getSort());
+            new CategoryDO().setCategoryName(req.getCategoryName()).setStatus(req.getStatus().getCode()).setSort(req.getSort());
 
         try {
             categoryDAO.save(category);
@@ -104,7 +104,7 @@ public class CategoryServiceImpl implements CategoryService {
      * @param status 新状态
      */
     @Override
-    public void updateStatus(Long categoryId, CategoryStatusEnum status) {
+    public void updateStatus(Long categoryId, PublishStatusEnum status) {
         ExceptionUtil.requireNonNull(categoryId, StatusEnum.PARAM_MISSING, "分类ID");
         ExceptionUtil.requireNonNull(status, StatusEnum.PARAM_MISSING, "分类状态");
 

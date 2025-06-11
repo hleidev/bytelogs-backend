@@ -11,17 +11,17 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import top.harrylei.forum.api.model.enums.CategoryStatusEnum;
+import top.harrylei.forum.api.model.enums.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.ResVO;
-import top.harrylei.forum.api.model.vo.article.CategoryReq;
 import top.harrylei.forum.api.model.vo.article.dto.CategoryDTO;
+import top.harrylei.forum.api.model.vo.article.req.CategoryReq;
 import top.harrylei.forum.api.model.vo.article.vo.CategoryDetailVO;
 import top.harrylei.forum.api.model.vo.page.PageHelper;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.CategoryQueryParam;
 import top.harrylei.forum.core.security.permission.RequiresAdmin;
-import top.harrylei.forum.service.category.service.CategoryManagementService;
 import top.harrylei.forum.service.category.converted.CategoryStructMapper;
+import top.harrylei.forum.service.category.service.CategoryManagementService;
 
 /**
  * 分类管理模块
@@ -89,7 +89,7 @@ public class CategoryManagementController {
     @Operation(summary = "修改状态", description = "发布/未发布状态变更")
     @PutMapping("/{categoryId}/status")
     public ResVO<Void> updateStatus(@NotNull(message = "分类ID为空") @PathVariable Long categoryId,
-        @NotNull(message = "状态为空") @RequestBody CategoryStatusEnum status) {
+        @NotNull(message = "状态为空") @RequestBody PublishStatusEnum status) {
         categoryManagementService.updateStatus(categoryId, status);
         return ResVO.ok();
     }

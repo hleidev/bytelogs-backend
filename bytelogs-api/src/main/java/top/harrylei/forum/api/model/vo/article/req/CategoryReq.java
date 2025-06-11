@@ -1,8 +1,9 @@
-package top.harrylei.forum.api.model.vo.article;
+package top.harrylei.forum.api.model.vo.article.req;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.Data;
+import top.harrylei.forum.api.model.enums.PublishStatusEnum;
 
 /**
  * 新建分类请求参数
@@ -27,7 +28,7 @@ public class CategoryReq {
      */
     @NotNull(message = "分类状态不能为空")
     @Schema(description = "分类状态", example = "0")
-    private Integer status;
+    private PublishStatusEnum status;
 
     /**
      * 排序值（越大越靠前）
