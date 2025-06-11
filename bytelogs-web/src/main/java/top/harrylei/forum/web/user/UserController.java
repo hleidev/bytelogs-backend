@@ -101,7 +101,8 @@ public class UserController {
     @Operation(summary = "修改用户头像", description = "修改当前登录用户的个人头像")
     @PutMapping("/avatar")
     public ResVO<Void> updateAvatar(@NotBlank(message = "用户头像不能为空") String avatar) {
-        userService.updateAvatar(avatar);
+        Long userId = ReqInfoContext.getContext().getUserId();
+        userService.updateAvatar(userId, avatar);
         return ResVO.ok();
     }
 }

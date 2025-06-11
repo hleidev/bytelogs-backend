@@ -42,10 +42,11 @@ public interface UserService {
 
     /**
      * 更新用户头像
-     * 
+     *
+     * @param userId 用户ID
      * @param avatar 用户头像
      */
-    void updateAvatar(String avatar);
+    void updateAvatar(Long userId, String avatar);
 
     /**
      * 用户列表查询

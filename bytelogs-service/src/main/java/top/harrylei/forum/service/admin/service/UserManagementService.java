@@ -1,7 +1,5 @@
 package top.harrylei.forum.service.admin.service;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
 import top.harrylei.forum.api.model.vo.auth.UserCreateReq;
@@ -47,14 +45,14 @@ public interface UserManagementService {
      *
      * @param userId 用户ID
      */
-    void delete(@NotNull(message = "用户ID为空") Long userId);
+    void delete(Long userId);
 
     /**
      * 恢复用户
      *
      * @param userId 用户ID
      */
-    void restore(@NotNull(message = "用户ID为空") Long userId);
+    void restore(Long userId);
 
     /**
      * 修改用户角色
@@ -69,5 +67,5 @@ public interface UserManagementService {
      *
      * @param req 新建用户的请求参数
      */
-    void save(@Valid UserCreateReq req);
+    void save(UserCreateReq req);
 }

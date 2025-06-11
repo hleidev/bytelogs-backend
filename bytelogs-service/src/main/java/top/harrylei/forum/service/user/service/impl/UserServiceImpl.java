@@ -56,9 +56,11 @@ public class UserServiceImpl implements UserService {
      * @return 用户信息 DTO
      */
     public BaseUserInfoDTO getUserInfoById(Long userId) {
-        ExceptionUtil.errorIf(userId == null, StatusEnum.PARAM_MISSING, "用户ID");
+        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID");
 
-        return userCacheService.getUserInfo(userId);
+        BaseUserInfoDTO userInfo = userCacheService.getUserInfo(userId);
+        ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_INFO_NOT_EXISTS);
+        return userInfo;
     }
 
     /**
@@ -70,15 +72,17 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateUserInfo(BaseUserInfoDTO userInfoDTO) {
-        ExceptionUtil.requireNonNull(userInfoDTO, StatusEnum.PARAM_MISSING, "用户信息为空");
+        ExceptionUtil.requireNonNull(userInfoDTO, StatusEnum.PARAM_MISSING, "用户信息");
 
         try {
             // 转换为数据库实体并更新用户个人信息
             UserInfoDO userInfo = userStructMapper.toDO(userInfoDTO);
             userInfoDAO.updateById(userInfo);
 
+            UserDO userDO = userDAO.getById(userInfo.getUserId());
+            ExceptionUtil.requireNonNull(userDO, StatusEnum.USER_NOT_EXISTS, "userId={}", userInfo.getUserId());
+
             // 更新用户账户信息
-            UserDO userDO = new UserDO();
             userDO.setId(userInfo.getUserId());
             userDO.setUserName(userInfo.getUserName());
             userDAO.updateById(userDO);
@@ -100,9 +104,9 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public void updatePassword(Long userId, String oldPassword, String newPassword) {
-        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID为空");
-        ExceptionUtil.requireNonEmpty(oldPassword, StatusEnum.PARAM_MISSING, "旧密码为空");
-        ExceptionUtil.requireNonEmpty(newPassword, StatusEnum.PARAM_MISSING, "新密码为空");
+        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID");
+        ExceptionUtil.requireNonEmpty(oldPassword, StatusEnum.PARAM_MISSING, "旧密码");
+        ExceptionUtil.requireNonEmpty(newPassword, StatusEnum.PARAM_MISSING, "新密码");
 
         if (Objects.equals(oldPassword, newPassword)) {
             ExceptionUtil.error(StatusEnum.USER_UPDATE_FAILED, "新密码与旧密码相同");
@@ -124,15 +128,15 @@ public class UserServiceImpl implements UserService {
     /**
      * 更新用户头像
      *
+     * @param userId 用户ID
      * @param avatar 用户头像
      */
     @Override
-    public void updateAvatar(String avatar) {
-        ExceptionUtil.requireNonEmpty(avatar, StatusEnum.PARAM_MISSING, "用户头像为空");
+    public void updateAvatar(Long userId, String avatar) {
+        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID");
+        ExceptionUtil.requireNonEmpty(avatar, StatusEnum.PARAM_MISSING, "用户头像");
 
-        Long userId = ReqInfoContext.getContext().getUserId();
-        BaseUserInfoDTO userInfo = ReqInfoContext.getContext().getUser();
-        ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_INFO_NOT_EXISTS);
+        BaseUserInfoDTO userInfo = getUserInfoById(userId);
 
         redisUtil.del(RedisKeyConstants.getUserInfoKey(userInfo.getUserId()));
         userCacheService.updateUserInfoCache(userInfo);
@@ -234,6 +238,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void resetPassword(Long userId, String password) {
         ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID");
+        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "密码");
         // 校验新密码安全性
         if (!PasswordUtil.isValid(password)) {
             ExceptionUtil.error(StatusEnum.USER_PASSWORD_INVALID);
