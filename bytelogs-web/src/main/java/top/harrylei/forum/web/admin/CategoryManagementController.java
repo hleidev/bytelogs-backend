@@ -20,7 +20,7 @@ import top.harrylei.forum.api.model.vo.page.PageHelper;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.CategoryQueryParam;
 import top.harrylei.forum.core.security.permission.RequiresAdmin;
-import top.harrylei.forum.service.admin.service.CategoryManagementService;
+import top.harrylei.forum.service.category.service.CategoryManagementService;
 import top.harrylei.forum.service.category.converted.CategoryStructMapper;
 
 /**

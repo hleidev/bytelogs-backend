@@ -1,4 +1,4 @@
-package top.harrylei.forum.service.admin.service;
+package top.harrylei.forum.service.user.service;
 
 import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.enums.user.UserStatusEnum;

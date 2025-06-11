@@ -21,7 +21,7 @@ import top.harrylei.forum.api.model.vo.user.dto.UserDetailDTO;
 import top.harrylei.forum.api.model.vo.user.vo.UserDetailVO;
 import top.harrylei.forum.api.model.vo.user.vo.UserListItemVO;
 import top.harrylei.forum.core.security.permission.RequiresAdmin;
-import top.harrylei.forum.service.admin.service.UserManagementService;
+import top.harrylei.forum.service.user.service.UserManagementService;
 import top.harrylei.forum.service.user.converted.UserStructMapper;
 
 /**

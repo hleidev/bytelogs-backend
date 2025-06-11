@@ -1,4 +1,4 @@
-package top.harrylei.forum.service.admin.service.impl;
+package top.harrylei.forum.service.user.service.impl;
 
 import java.util.List;
 
@@ -18,7 +18,7 @@ import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.UserQueryParam;
 import top.harrylei.forum.api.model.vo.user.dto.UserDetailDTO;
 import top.harrylei.forum.core.exception.ExceptionUtil;
-import top.harrylei.forum.service.admin.service.UserManagementService;
+import top.harrylei.forum.service.user.service.UserManagementService;
 import top.harrylei.forum.service.user.service.UserService;
 
 /**

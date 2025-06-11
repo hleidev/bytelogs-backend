@@ -1,4 +1,4 @@
-package top.harrylei.forum.service.admin.service;
+package top.harrylei.forum.service.category.service;
 
 import top.harrylei.forum.api.model.enums.CategoryStatusEnum;
 import top.harrylei.forum.api.model.vo.article.CategoryReq;
