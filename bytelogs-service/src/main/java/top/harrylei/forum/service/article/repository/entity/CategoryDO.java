@@ -1,4 +1,4 @@
-package top.harrylei.forum.service.category.repository.entity;
+package top.harrylei.forum.service.article.repository.entity;
 
 import java.io.Serial;
 

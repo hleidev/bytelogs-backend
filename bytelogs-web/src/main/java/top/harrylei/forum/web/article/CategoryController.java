@@ -13,8 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.article.dto.CategoryDTO;
 import top.harrylei.forum.api.model.vo.article.vo.CategoryVO;
-import top.harrylei.forum.service.category.converted.CategoryStructMapper;
-import top.harrylei.forum.service.category.service.CategoryService;
+import top.harrylei.forum.service.article.converted.CategoryStructMapper;
+import top.harrylei.forum.service.article.service.CategoryService;
 
 /**
  * 分类管理控制器

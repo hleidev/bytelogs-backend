@@ -1,4 +1,4 @@
-package top.harrylei.forum.service.category.service.impl;
+package top.harrylei.forum.service.article.service.impl;
 
 import org.springframework.stereotype.Service;
 
@@ -12,8 +12,8 @@ import top.harrylei.forum.api.model.vo.article.dto.CategoryDTO;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.CategoryQueryParam;
 import top.harrylei.forum.core.exception.ExceptionUtil;
-import top.harrylei.forum.service.category.service.CategoryManagementService;
-import top.harrylei.forum.service.category.service.CategoryService;
+import top.harrylei.forum.service.article.service.CategoryManagementService;
+import top.harrylei.forum.service.article.service.CategoryService;
 
 import java.util.List;
 

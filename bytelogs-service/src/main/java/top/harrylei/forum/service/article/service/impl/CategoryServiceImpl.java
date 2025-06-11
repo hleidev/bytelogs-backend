@@ -1,4 +1,4 @@
-package top.harrylei.forum.service.category.service.impl;
+package top.harrylei.forum.service.article.service.impl;
 
 import java.util.Comparator;
 import java.util.List;
@@ -19,10 +19,10 @@ import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.CategoryQueryParam;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
-import top.harrylei.forum.service.category.converted.CategoryStructMapper;
-import top.harrylei.forum.service.category.repository.dao.CategoryDAO;
-import top.harrylei.forum.service.category.repository.entity.CategoryDO;
-import top.harrylei.forum.service.category.service.CategoryService;
+import top.harrylei.forum.service.article.converted.CategoryStructMapper;
+import top.harrylei.forum.service.article.repository.dao.CategoryDAO;
+import top.harrylei.forum.service.article.repository.entity.CategoryDO;
+import top.harrylei.forum.service.article.service.CategoryService;
 
 /**
  * 分类服务层

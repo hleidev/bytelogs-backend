@@ -1,4 +1,4 @@
-package top.harrylei.forum.service.category.service;
+package top.harrylei.forum.service.article.service;
 
 import top.harrylei.forum.api.model.enums.PublishStatusEnum;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;

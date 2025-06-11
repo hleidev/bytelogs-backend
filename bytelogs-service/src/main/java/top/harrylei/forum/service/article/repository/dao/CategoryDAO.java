@@ -1,12 +1,12 @@
-package top.harrylei.forum.service.category.repository.dao;
+package top.harrylei.forum.service.article.repository.dao;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Repository;
 import top.harrylei.forum.api.model.enums.PublishStatusEnum;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.vo.page.param.CategoryQueryParam;
-import top.harrylei.forum.service.category.repository.entity.CategoryDO;
-import top.harrylei.forum.service.category.repository.mapper.CategoryMapper;
+import top.harrylei.forum.service.article.repository.entity.CategoryDO;
+import top.harrylei.forum.service.article.repository.mapper.CategoryMapper;
 
 import java.util.List;
 

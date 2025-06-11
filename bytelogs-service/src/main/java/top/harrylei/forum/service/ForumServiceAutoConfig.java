@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 @ComponentScan("top.harrylei.forum.service")
 @MapperScan(basePackages = {
         "top.harrylei.forum.service.user.repository.mapper",
-        "top.harrylei.forum.service.category.repository.mapper"
+        "top.harrylei.forum.service.article.repository.mapper"
 })
 public class ForumServiceAutoConfig {
 }
