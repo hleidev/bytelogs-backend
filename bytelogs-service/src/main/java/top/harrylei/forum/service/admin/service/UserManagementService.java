@@ -58,9 +58,9 @@ public interface UserManagementService {
      * 修改用户角色
      *
      * @param userId 用户ID
-     * @param userRoleEnum 角色枚举
+     * @param role 角色枚举
      */
-    void updateUserRole(Long userId, UserRoleEnum userRoleEnum);
+    void updateUserRole(Long userId, UserRoleEnum role);
 
     /**
      * 新建用户账号

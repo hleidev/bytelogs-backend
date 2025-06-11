@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
+import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 
 /**
  * 后台新建用户请求参数
@@ -34,5 +35,5 @@ public class UserCreateReq {
      */
     @NotNull(message = "角色不能为空")
     @Schema(description = "角色编码", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
-    private Integer role;
+    private UserRoleEnum role;
 }

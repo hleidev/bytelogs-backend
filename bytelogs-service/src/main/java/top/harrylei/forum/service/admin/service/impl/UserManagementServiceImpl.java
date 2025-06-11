@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.enums.StatusEnum;
+import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
 import top.harrylei.forum.api.model.vo.auth.UserCreateReq;
@@ -18,7 +19,6 @@ import top.harrylei.forum.api.model.vo.page.param.UserQueryParam;
 import top.harrylei.forum.api.model.vo.user.dto.UserDetailDTO;
 import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.service.admin.service.UserManagementService;
-import top.harrylei.forum.service.user.converted.UserStructMapper;
 import top.harrylei.forum.service.user.service.UserService;
 
 /**
@@ -33,7 +33,6 @@ public class UserManagementServiceImpl implements UserManagementService {
     private String defaultPassword;
 
     private final UserService userService;
-    private final UserStructMapper userStructMapper;
 
     /**
      * 分页查询用户列表
@@ -111,7 +110,7 @@ public class UserManagementServiceImpl implements UserManagementService {
     public void delete(Long userId) {
         ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID");
 
-        userService.delete(userId);
+        userService.updateDeleted(userId, YesOrNoEnum.YES);
     }
 
     /**
@@ -123,7 +122,7 @@ public class UserManagementServiceImpl implements UserManagementService {
     public void restore(Long userId) {
         ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID");
 
-        userService.restore(userId);
+        userService.updateDeleted(userId, YesOrNoEnum.NO);
     }
 
     /**

@@ -2,6 +2,7 @@ package top.harrylei.forum.service.user.service;
 
 import java.util.List;
 
+import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
 import top.harrylei.forum.api.model.vo.auth.UserCreateReq;
@@ -93,15 +94,9 @@ public interface UserService {
      * 删除用户
      *
      * @param userId 用户ID
+     * @param status 删除状态
      */
-    void delete(Long userId);
-
-    /**
-     * 恢复用户
-     *
-     * @param userId 用户ID
-     */
-    void restore(Long userId);
+    void updateDeleted(Long userId, YesOrNoEnum status);
 
     /**
      * 修改用户角色
