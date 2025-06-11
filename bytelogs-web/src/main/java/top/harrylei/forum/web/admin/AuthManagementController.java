@@ -30,7 +30,7 @@ import top.harrylei.forum.service.user.service.UserService;
 @RequestMapping("/api/v1/admin/auth")
 @RequiredArgsConstructor
 @Validated
-public class AdminAuthController {
+public class AuthManagementController {
 
     private final AuthService authService;
     private final UserService userService;
