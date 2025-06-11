@@ -8,11 +8,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
- * 管理端分类展示对象
+ * 管理端分类详细展示对象
  */
 @Data
 @Schema(description = "分类展示对象")
-public class AdminCategoryVO {
+public class CategoryDetailVO {
 
     /**
      * 分类主键
