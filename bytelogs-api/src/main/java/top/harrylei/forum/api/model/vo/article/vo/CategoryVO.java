@@ -1,5 +1,9 @@
 package top.harrylei.forum.api.model.vo.article.vo;
 
+import java.time.LocalDateTime;
+
+import org.springframework.format.annotation.DateTimeFormat;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -9,6 +13,12 @@ import lombok.Data;
 @Data
 @Schema(description = "分类展示对象")
 public class CategoryVO {
+
+    /**
+     * 分类主键
+     */
+    @Schema(description = "分类主键", example = "1")
+    private Long categoryId;
 
     /**
      * 分类名
@@ -33,4 +43,18 @@ public class CategoryVO {
      */
     @Schema(description = "是否删除", example = "0")
     private Integer deleted;
+
+    /**
+     * 创建时间
+     */
+    @Schema(description = "创建时间")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime createTime;
+
+    /**
+     * 最后编辑时间
+     */
+    @Schema(description = "最后编辑时间")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime updateTime;
 }

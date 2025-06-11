@@ -23,6 +23,7 @@ public interface CategoryStructMapper {
     @Mapping(target = "createTime", ignore = true)
     void updateDOFromReq(CategoryReq req, @MappingTarget CategoryDO category);
 
+    @Mapping(target = "categoryId", source = "id")
     @Mapping(target = "status", source = "status", qualifiedByName = "StatusEnumToCode")
     CategoryVO toVO(CategoryDTO categoryDTO);
 

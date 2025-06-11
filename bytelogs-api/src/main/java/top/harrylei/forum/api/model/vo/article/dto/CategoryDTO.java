@@ -1,23 +1,20 @@
 package top.harrylei.forum.api.model.vo.article.dto;
 
-import java.io.Serial;
-import java.io.Serializable;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import top.harrylei.forum.api.model.entity.BaseDTO;
 import top.harrylei.forum.api.model.enums.CategoryStatusEnum;
 
 /**
  * 分类传输对象
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CategoryDTO implements Serializable {
-
-    @Serial
-    private static final long serialVersionUID = 8272116638231812207L;
+public class CategoryDTO extends BaseDTO {
 
     /**
      * 类目名称
