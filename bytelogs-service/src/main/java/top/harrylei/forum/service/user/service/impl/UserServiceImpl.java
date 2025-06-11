@@ -220,6 +220,10 @@ public class UserServiceImpl implements UserService {
         UserDO user = userDAO.getById(userId);
         ExceptionUtil.requireNonNull(user, StatusEnum.USER_NOT_EXISTS, "userId=" + userId);
 
+        if (Objects.equals(status.getCode(), user.getStatus())) {
+            log.warn("{}用户状态未改变，无需更新", StatusEnum.CATEGORY_UPDATE_FAILED);
+        }
+
         try {
             user.setStatus(status.getCode());
             userDAO.updateById(user);
