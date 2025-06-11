@@ -221,7 +221,7 @@ public class UserServiceImpl implements UserService {
         ExceptionUtil.requireNonNull(user, StatusEnum.USER_NOT_EXISTS, "userId=" + userId);
 
         if (Objects.equals(status.getCode(), user.getStatus())) {
-            log.warn("{}用户状态未改变，无需更新", StatusEnum.CATEGORY_UPDATE_FAILED);
+            log.warn("用户状态未改变，无需更新");
         }
 
         try {
@@ -278,7 +278,7 @@ public class UserServiceImpl implements UserService {
         ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_INFO_NOT_EXISTS, "userId=" + userId);
 
         if (Objects.equals(user.getDeleted(), status.getCode())) {
-            log.warn("{}用户删除状态未变更，无需更新", StatusEnum.USER_UPDATE_FAILED);
+            log.warn("用户删除状态未变更，无需更新");
             return;
         }
 
@@ -313,7 +313,7 @@ public class UserServiceImpl implements UserService {
 
         // 判断新旧角色是否一致，避免无效写入
         if (Objects.equals(userInfo.getUserRole(), role.getCode())) {
-            log.warn("{}用户角色未变更，无需更新", StatusEnum.USER_UPDATE_FAILED);
+            log.warn("用户角色未变更，无需更新");
         }
 
         try {

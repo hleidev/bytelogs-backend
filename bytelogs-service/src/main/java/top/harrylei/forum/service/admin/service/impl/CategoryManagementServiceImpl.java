@@ -62,7 +62,7 @@ public class CategoryManagementServiceImpl implements CategoryManagementService 
     @Override
     public PageVO<CategoryDTO> list(CategoryQueryParam queryParam) {
         ExceptionUtil.requireNonNull(queryParam, StatusEnum.PARAM_MISSING, "分页请求参数");
-        return categoryService.list(queryParam);
+        return categoryService.page(queryParam);
     }
 
     /**

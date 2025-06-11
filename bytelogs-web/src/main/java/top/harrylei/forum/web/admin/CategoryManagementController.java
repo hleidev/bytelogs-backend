@@ -15,7 +15,7 @@ import top.harrylei.forum.api.model.enums.CategoryStatusEnum;
 import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.article.CategoryReq;
 import top.harrylei.forum.api.model.vo.article.dto.CategoryDTO;
-import top.harrylei.forum.api.model.vo.article.vo.CategoryVO;
+import top.harrylei.forum.api.model.vo.article.vo.AdminCategoryVO;
 import top.harrylei.forum.api.model.vo.page.PageHelper;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.CategoryQueryParam;
@@ -74,9 +74,9 @@ public class CategoryManagementController {
      */
     @Operation(summary = "分页查询", description = "支持按名称、状态、时间等多条件分页查询")
     @GetMapping("/list")
-    public ResVO<PageVO<CategoryVO>> list(CategoryQueryParam queryParam) {
+    public ResVO<PageVO<AdminCategoryVO>> list(CategoryQueryParam queryParam) {
         PageVO<CategoryDTO> page = categoryManagementService.list(queryParam);
-        return ResVO.ok(PageHelper.map(page, categoryStructMapper::toVO));
+        return ResVO.ok(PageHelper.map(page, categoryStructMapper::toAdminVO));
     }
 
     /**
@@ -127,9 +127,9 @@ public class CategoryManagementController {
      */
     @Operation(summary = "已删分类", description = "查看所有已删除的分类")
     @GetMapping("/deleted")
-    public ResVO<List<CategoryVO>> listDeleted() {
+    public ResVO<List<AdminCategoryVO>> listDeleted() {
         List<CategoryDTO> categories = categoryManagementService.listDeleted();
-        List<CategoryVO> list = categories.stream().map(categoryStructMapper::toVO).toList();
+        List<AdminCategoryVO> list = categories.stream().map(categoryStructMapper::toAdminVO).toList();
         return ResVO.ok(list);
     }
 }

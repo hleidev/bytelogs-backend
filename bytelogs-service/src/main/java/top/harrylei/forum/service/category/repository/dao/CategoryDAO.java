@@ -2,6 +2,7 @@ package top.harrylei.forum.service.category.repository.dao;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Repository;
+import top.harrylei.forum.api.model.enums.CategoryStatusEnum;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.vo.page.param.CategoryQueryParam;
 import top.harrylei.forum.service.category.repository.entity.CategoryDO;
@@ -48,6 +49,13 @@ public class CategoryDAO extends ServiceImpl<CategoryMapper, CategoryDO> {
     public List<CategoryDO> getDeleted() {
         return lambdaQuery()
                 .eq(CategoryDO::getDeleted, YesOrNoEnum.YES.getCode())
+                .list();
+    }
+
+    public List<CategoryDO> listPublishedAndUndeleted() {
+        return lambdaQuery()
+                .eq(CategoryDO::getStatus, CategoryStatusEnum.PUBLISHED.getCode())
+                .eq(CategoryDO::getDeleted, YesOrNoEnum.NO.getCode())
                 .list();
     }
 }

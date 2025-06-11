@@ -8,6 +8,7 @@ import org.mapstruct.Named;
 import top.harrylei.forum.api.model.enums.CategoryStatusEnum;
 import top.harrylei.forum.api.model.vo.article.CategoryReq;
 import top.harrylei.forum.api.model.vo.article.dto.CategoryDTO;
+import top.harrylei.forum.api.model.vo.article.vo.AdminCategoryVO;
 import top.harrylei.forum.api.model.vo.article.vo.CategoryVO;
 import top.harrylei.forum.service.category.repository.entity.CategoryDO;
 
@@ -25,7 +26,7 @@ public interface CategoryStructMapper {
 
     @Mapping(target = "categoryId", source = "id")
     @Mapping(target = "status", source = "status", qualifiedByName = "StatusEnumToCode")
-    CategoryVO toVO(CategoryDTO categoryDTO);
+    AdminCategoryVO toAdminVO(CategoryDTO categoryDTO);
 
     @Mapping(target = "status", source = "status", qualifiedByName = "codeToStatusEnum")
     CategoryDTO toDTO(CategoryDO categoryDO);
@@ -39,4 +40,7 @@ public interface CategoryStructMapper {
     default CategoryStatusEnum codeToStatusEnum(Integer code) {
         return CategoryStatusEnum.fromCode(code);
     }
+
+    @Mapping(target = "categoryId", source = "id")
+    CategoryVO toVO(CategoryDTO category);
 }

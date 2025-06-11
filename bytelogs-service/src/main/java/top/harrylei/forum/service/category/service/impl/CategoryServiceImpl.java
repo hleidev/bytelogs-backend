@@ -1,5 +1,6 @@
 package top.harrylei.forum.service.category.service.impl;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -84,7 +85,7 @@ public class CategoryServiceImpl implements CategoryService {
      * @return 分页分类列表
      */
     @Override
-    public PageVO<CategoryDTO> list(CategoryQueryParam queryParam) {
+    public PageVO<CategoryDTO> page(CategoryQueryParam queryParam) {
         ExceptionUtil.requireNonNull(queryParam, StatusEnum.PARAM_MISSING, "分页请求参数");
         Page page = PageHelper.createPage(queryParam.getPageNum(), queryParam.getPageSize());
 
@@ -110,8 +111,10 @@ public class CategoryServiceImpl implements CategoryService {
         CategoryDO category = categoryDAO.getByCategoryId(categoryId);
         ExceptionUtil.requireNonNull(category, StatusEnum.CATEGORY_NOT_EXISTS);
 
-        ExceptionUtil.noticeIf(Objects.equals(status.getCode(), category.getStatus()),
-            StatusEnum.CATEGORY_UPDATE_FAILED, "分类状态未变更，无需更新");
+        if (Objects.equals(status.getCode(), category.getStatus())) {
+            log.warn("分类状态未变更，无需更新");
+            return;
+        }
 
         Long operatorId = ReqInfoContext.getContext().getUserId();
 
@@ -139,8 +142,10 @@ public class CategoryServiceImpl implements CategoryService {
         CategoryDO category = categoryDAO.getById(categoryId);
         ExceptionUtil.requireNonNull(category, StatusEnum.CATEGORY_NOT_EXISTS);
 
-        ExceptionUtil.noticeIf(Objects.equals(status.getCode(), category.getDeleted()),
-                StatusEnum.CATEGORY_UPDATE_FAILED, "分类删除状态未变更，无需更新");
+        if (Objects.equals(status.getCode(), category.getDeleted())) {
+            log.warn("分类删除状态未变更，无需更新");
+            return;
+        }
 
         Long operatorId = ReqInfoContext.getContext().getUserId();
 
@@ -164,5 +169,21 @@ public class CategoryServiceImpl implements CategoryService {
         ExceptionUtil.requireNonNull(categoryList, StatusEnum.CATEGORY_NOT_EXISTS);
 
         return categoryList.stream().map(categoryStructMapper::toDTO).toList();
+    }
+
+    /**
+     * 分类列表
+     *
+     * @return 分类列表
+     */
+    @Override
+    public List<CategoryDTO> list() {
+        List<CategoryDO> category = categoryDAO.listPublishedAndUndeleted();
+
+        return category.stream()
+                .filter(Objects::nonNull)
+                .map(categoryStructMapper::toDTO)
+                .sorted(Comparator.comparingInt(CategoryDTO::getSort).reversed())
+                .toList();
     }
 }

@@ -35,7 +35,7 @@ public interface CategoryService {
      * @param queryParam 分页及筛选参数
      * @return 分页分类列表
      */
-    PageVO<CategoryDTO> list(CategoryQueryParam queryParam);
+    PageVO<CategoryDTO> page(CategoryQueryParam queryParam);
 
     /**
      * 更新分类状态
@@ -58,4 +58,11 @@ public interface CategoryService {
      * @return 已删分类列表
      */
     List<CategoryDTO> listDeleted();
+
+    /**
+     * 分类列表
+     *
+     * @return 分类列表
+     */
+    List<CategoryDTO> list();
 }
