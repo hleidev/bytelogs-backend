@@ -1,5 +1,7 @@
 package top.harrylei.forum.web.admin;
 
+import java.util.List;
+
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -116,5 +118,18 @@ public class CategoryManagementController {
     public ResVO<Void> restore(@NotNull(message = "分类ID为空") @PathVariable Long categoryId) {
         categoryManagementService.restore(categoryId);
         return ResVO.ok();
+    }
+
+    /**
+     * 已删分类
+     *
+     * @return 操作结果
+     */
+    @Operation(summary = "已删分类", description = "查看所有已删除的分类")
+    @GetMapping("/deleted")
+    public ResVO<List<CategoryVO>> listDeleted() {
+        List<CategoryDTO> categories = categoryManagementService.listDeleted();
+        List<CategoryVO> list = categories.stream().map(categoryStructMapper::toVO).toList();
+        return ResVO.ok(list);
     }
 }

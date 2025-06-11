@@ -152,4 +152,17 @@ public class CategoryServiceImpl implements CategoryService {
             ExceptionUtil.error(StatusEnum.CATEGORY_UPDATE_FAILED, "更新删除状态失败", e);
         }
     }
+
+    /**
+     * 已删分类
+     *
+     * @return 已删分类列表
+     */
+    @Override
+    public List<CategoryDTO> listDeleted() {
+        List<CategoryDO> categoryList = categoryDAO.getDeleted();
+        ExceptionUtil.requireNonNull(categoryList, StatusEnum.CATEGORY_NOT_EXISTS);
+
+        return categoryList.stream().map(categoryStructMapper::toDTO).toList();
+    }
 }

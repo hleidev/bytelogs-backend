@@ -15,6 +15,8 @@ import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.service.admin.service.CategoryManagementService;
 import top.harrylei.forum.service.category.service.CategoryService;
 
+import java.util.List;
+
 /**
  * 分类管理服务实现类
  */
@@ -99,5 +101,15 @@ public class CategoryManagementServiceImpl implements CategoryManagementService 
         ExceptionUtil.requireNonNull(categoryId, StatusEnum.PARAM_MISSING, "分类ID");
 
         categoryService.updateDeleted(categoryId, YesOrNoEnum.NO);
+    }
+
+    /**
+     * 已删分类
+     *
+     * @return 已删分类列表
+     */
+    @Override
+    public List<CategoryDTO> listDeleted() {
+        return categoryService.listDeleted();
     }
 }

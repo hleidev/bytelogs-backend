@@ -7,6 +7,8 @@ import top.harrylei.forum.api.model.vo.article.dto.CategoryDTO;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.CategoryQueryParam;
 
+import java.util.List;
+
 /**
  * 分类服务接口类
  */
@@ -49,4 +51,11 @@ public interface CategoryService {
      * @param categoryId 分类ID
      */
     void updateDeleted(Long categoryId, YesOrNoEnum status);
+
+    /**
+     * 已删分类
+     *
+     * @return 已删分类列表
+     */
+    List<CategoryDTO> listDeleted();
 }

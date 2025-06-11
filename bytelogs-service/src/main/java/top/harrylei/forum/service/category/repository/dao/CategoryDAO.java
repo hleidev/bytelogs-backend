@@ -44,4 +44,10 @@ public class CategoryDAO extends ServiceImpl<CategoryMapper, CategoryDO> {
                 .eq(CategoryDO::getDeleted, YesOrNoEnum.NO.getCode())
                 .count();
     }
+
+    public List<CategoryDO> getDeleted() {
+        return lambdaQuery()
+                .eq(CategoryDO::getDeleted, YesOrNoEnum.YES.getCode())
+                .list();
+    }
 }
