@@ -1,5 +1,6 @@
 package top.harrylei.forum.web.admin;
 
+import jakarta.validation.constraints.NotNull;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -58,5 +59,21 @@ public class TagManagementController {
     public ResVO<PageVO<TagDetailVO>> page(TagQueryParam queryParam) {
         PageVO<TagDTO> page = tagManagementService.page(queryParam);
         return ResVO.ok(PageHelper.map(page, tagStructMapper::toDetailVO));
+    }
+
+    /**
+     * 编辑标签
+     * 
+     * @param tagId 标签ID
+     * @param tagReq 标签编辑请求
+     * @return 标签详细信息
+     */
+    @Operation(summary = "编辑标签", description = "后台编辑标签")
+    @PutMapping("/{tagId}")
+    public ResVO<TagDetailVO> update(@NotNull(message = "标签ID为空") @PathVariable Long tagId,
+        @Valid @RequestBody TagReq tagReq) {
+        TagDTO tagDTO = tagManagementService.update(tagId, tagReq);
+        TagDetailVO tagDetailVO = tagStructMapper.toDetailVO(tagDTO);
+        return ResVO.ok(tagDetailVO);
     }
 }

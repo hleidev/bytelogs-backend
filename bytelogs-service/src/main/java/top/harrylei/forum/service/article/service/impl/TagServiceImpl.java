@@ -71,4 +71,22 @@ public class TagServiceImpl implements TagService {
 
         return PageHelper.build(result, page.getPageNum(), page.getPageSize(), total);
     }
+
+    /**
+     * 更新标签
+     *
+     * @param tagDTO 标签传输对象
+     * @return 更新后的标签传输对象
+     */
+    @Override
+    public TagDTO update(TagDTO tagDTO) {
+        ExceptionUtil.requireNonNull(tagDTO, StatusEnum.PARAM_MISSING, "标签传输对象");
+
+        TagDO tagDO = tagDAO.getByTagId(tagDTO.getId());
+        ExceptionUtil.requireNonNull(tagDO, StatusEnum.Tag_NOT_EXISTS, "tagId=" + tagDTO.getId());
+
+        tagStructMapper.updateTagDOFromTagDTO(tagDTO, tagDO);
+        tagDAO.updateById(tagDO);
+        return tagStructMapper.toDTO(tagDO);
+    }
 }

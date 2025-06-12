@@ -23,4 +23,12 @@ public interface TagService {
      * @return 标签分类列表
      */
     PageVO<TagDTO> page(TagQueryParam queryParam);
+
+    /**
+     * 更新标签
+     * 
+     * @param tagDTO 标签传输对象
+     * @return 更新后的标签传输对象
+     */
+    TagDTO update(TagDTO tagDTO);
 }

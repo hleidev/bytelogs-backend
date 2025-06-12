@@ -81,7 +81,8 @@ public enum StatusEnum {
     CATEGORY_UPDATE_FAILED(70002, "更新失败: %s"),
 
     // ========== 标签相关 80000-89999 ==========
-    Tag_EXISTS(80001, "标签已存在: %s");
+    Tag_EXISTS(80001, "标签已存在: %s"),
+    Tag_NOT_EXISTS(80002, "标签不存在: %s");
 
     /**
      * 业务状态码

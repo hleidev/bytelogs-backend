@@ -53,4 +53,24 @@ public class TagManagementServiceImpl implements TagManagementService {
 
         return tagService.page(queryParam);
     }
+
+    /**
+     * 编辑标签
+     *
+     * @param tagId 标签ID
+     * @param tagReq 标签编辑请求
+     * @return 标签详细信息
+     */
+    @Override
+    public TagDTO update(Long tagId, TagReq tagReq) {
+        ExceptionUtil.requireNonNull(tagId, StatusEnum.PARAM_MISSING, "标签ID");
+        ExceptionUtil.requireNonNull(tagReq, StatusEnum.PARAM_MISSING, "标签编辑请求");
+
+        TagDTO tagDTO = tagStructMapper.toDTO(tagReq);
+        tagDTO.setId(tagId);
+
+        TagDTO tag = tagService.update(tagDTO);
+        log.info("修改标签成功 tagId={} operatorId={}", tagId, ReqInfoContext.getContext().getUserId());
+        return tag;
+    }
 }

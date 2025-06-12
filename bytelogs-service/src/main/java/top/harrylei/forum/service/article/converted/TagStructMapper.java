@@ -2,6 +2,7 @@ package top.harrylei.forum.service.article.converted;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 
 import top.harrylei.forum.api.model.enums.article.TagTypeEnum;
@@ -55,4 +56,9 @@ public interface TagStructMapper {
     default TagTypeEnum CodeToTagTypeEnum(Integer code) {
         return code == null ? null : TagTypeEnum.fromCode(code);
     }
+
+    @Mapping(target = "status", source = "status", qualifiedByName = "PublishStatusEnumToCode")
+    @Mapping(target = "tagType", source = "tagType", qualifiedByName = "TagTypeEnumToCode")
+    @Mapping(target = "deleted", ignore = true)
+    void updateTagDOFromTagDTO(TagDTO tagDTO, @MappingTarget TagDO tagDO);
 }

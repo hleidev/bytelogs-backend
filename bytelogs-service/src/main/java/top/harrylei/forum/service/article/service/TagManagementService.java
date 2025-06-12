@@ -24,4 +24,13 @@ public interface TagManagementService {
      * @return 标签分类列表
      */
     PageVO<TagDTO> page(TagQueryParam queryParam);
+
+    /**
+     * 编辑标签
+     *
+     * @param tagId 标签ID
+     * @param tagReq 标签编辑请求
+     * @return 标签详细信息
+     */
+    TagDTO update(Long tagId, TagReq tagReq);
 }
