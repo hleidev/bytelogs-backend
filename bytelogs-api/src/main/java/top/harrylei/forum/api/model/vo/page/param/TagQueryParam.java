@@ -12,13 +12,13 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 /**
- * 分类列表查询参数
+ * 标签列表查询参数
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@Schema(description = "分类列表查询参数")
+@Schema(description = "标签列表查询参数")
 @Accessors(chain = true)
-public class CategoryQueryParam extends BasePageQuery {
+public class TagQueryParam extends BasePageQuery {
 
     /**
      * 默认排序字段
@@ -34,10 +34,11 @@ public class CategoryQueryParam extends BasePageQuery {
      * 前端显示字段到数据库字段的映射
      */
     private static final Map<String, String> FIELD_MAPPING = Map.of(
-            "id","id",
-            "categoryName", "category_name",
+            "id", "id",
+            "tagName", "tag_name",
+            "tagType", "tag_type",
+            "categoryId", "category_id",
             "status", "status",
-            "sortWeight", "sort",
             "createTime", "create_time",
             "updateTime", "update_time"
     );
@@ -48,34 +49,40 @@ public class CategoryQueryParam extends BasePageQuery {
     private static final Set<String> VALID_SORT_FIELDS = FIELD_MAPPING.keySet();
 
     /**
-     * 分类名
+     * 标签名
      */
-    @Schema(description = "分类名")
-    private String categoryName;
+    @Schema(description = "标签名")
+    private String tagName;
 
     /**
-     * 分类状态
+     * 标签类型：1-系统标签，2-自定义标签
      */
-    @Schema(description = "分类状态")
+    @Schema(description = "标签类型：1-系统标签，2-自定义标签")
+    private Integer tagType;
+
+    /**
+     * 所属分类ID
+     */
+    @Schema(description = "所属分类ID")
+    private Long categoryId;
+
+    /**
+     * 标签状态
+     */
+    @Schema(description = "标签状态")
     private Integer status;
-
-    /**
-     * 分类排序
-     */
-    @Schema(description = "分类排序")
-    private Integer sortWeight;
 
     /**
      * 起始时间
      */
-    @Schema(description = "注册起始时间", example = "2025-01-01 00:00:00")
+    @Schema(description = "创建起始时间", example = "2025-01-01 00:00:00")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime startTime;
 
     /**
      * 结束时间
      */
-    @Schema(description = "注册结束时间", example = "2025-12-31 23:59:59")
+    @Schema(description = "创建结束时间", example = "2025-12-31 23:59:59")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime endTime;
 
@@ -92,9 +99,6 @@ public class CategoryQueryParam extends BasePageQuery {
 
     /**
      * 获取字段对应的数据库列名
-     * <p>
-     * 从映射表中获取对应的数据库列名，如果不存在则返回默认排序字段
-     * </p>
      *
      * @param field 字段名
      * @return 数据库列名
@@ -109,9 +113,6 @@ public class CategoryQueryParam extends BasePageQuery {
 
     /**
      * 获取默认排序字段
-     * <p>
-     * 返回默认的排序字段名
-     * </p>
      *
      * @return 默认排序字段
      */

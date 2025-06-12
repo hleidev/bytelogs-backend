@@ -7,6 +7,7 @@ import org.mapstruct.Named;
 import top.harrylei.forum.api.model.enums.article.TagTypeEnum;
 import top.harrylei.forum.api.model.vo.article.dto.TagDTO;
 import top.harrylei.forum.api.model.vo.article.req.TagReq;
+import top.harrylei.forum.api.model.vo.article.vo.TagDetailVO;
 import top.harrylei.forum.core.common.converter.EnumConverter;
 import top.harrylei.forum.service.article.repository.entity.TagDO;
 
@@ -27,8 +28,31 @@ public interface TagStructMapper {
     @Mapping(target = "tagType", source = "tagType", qualifiedByName = "TagTypeEnumToCode")
     TagDO toDO(TagDTO tag);
 
+    @Mapping(target = "status", source = "status", qualifiedByName = "PublishStatusEnumToCode")
+    @Mapping(target = "statusLabel", source = "status", qualifiedByName = "PublishStatusEnumToLabel")
+    @Mapping(target = "tagType", source = "tagType", qualifiedByName = "TagTypeEnumToCode")
+    @Mapping(target = "tagTypeLabel", source = "tagType", qualifiedByName = "TagTypeEnumToLabel")
+    @Mapping(target = "deleted", source = "deleted", qualifiedByName = "YesOrNoEnumToCode")
+    @Mapping(target = "deletedLabel", source = "deleted", qualifiedByName = "YesOrNoEnumToLabel")
+    TagDetailVO toDetailVO(TagDTO tag);
+
+    @Mapping(target = "status", source = "status", qualifiedByName = "CodeToPublishStatusEnum")
+    @Mapping(target = "deleted", source = "deleted", qualifiedByName = "CodeToYesOrNoEnum")
+    @Mapping(target = "tagType", source = "tagType", qualifiedByName = "CodeToTagTypeEnum")
+    TagDTO toDTO(TagDO tag);
+
     @Named("TagTypeEnumToCode")
     default Integer TagTypeEnumToCode(TagTypeEnum tagTypeEnum) {
         return tagTypeEnum == null ? null : tagTypeEnum.getCode();
+    }
+
+    @Named("TagTypeEnumToLabel")
+    default String TagTypeEnumToLabel(TagTypeEnum tagTypeEnum) {
+        return tagTypeEnum == null ? null : tagTypeEnum.getLabel();
+    }
+
+    @Named("CodeToTagTypeEnum")
+    default TagTypeEnum CodeToTagTypeEnum(Integer code) {
+        return code == null ? null : TagTypeEnum.fromCode(code);
     }
 }

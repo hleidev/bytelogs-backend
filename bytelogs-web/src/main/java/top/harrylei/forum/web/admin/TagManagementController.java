@@ -1,10 +1,7 @@
 package top.harrylei.forum.web.admin;
 
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -12,8 +9,14 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.vo.ResVO;
+import top.harrylei.forum.api.model.vo.article.dto.TagDTO;
 import top.harrylei.forum.api.model.vo.article.req.TagReq;
+import top.harrylei.forum.api.model.vo.article.vo.TagDetailVO;
+import top.harrylei.forum.api.model.vo.page.PageHelper;
+import top.harrylei.forum.api.model.vo.page.PageVO;
+import top.harrylei.forum.api.model.vo.page.param.TagQueryParam;
 import top.harrylei.forum.core.security.permission.RequiresAdmin;
+import top.harrylei.forum.service.article.converted.TagStructMapper;
 import top.harrylei.forum.service.article.service.TagManagementService;
 
 /**
@@ -29,6 +32,7 @@ import top.harrylei.forum.service.article.service.TagManagementService;
 public class TagManagementController {
 
     private final TagManagementService tagManagementService;
+    private final TagStructMapper tagStructMapper;
 
     /**
      * 新建标签
@@ -41,5 +45,18 @@ public class TagManagementController {
     public ResVO<Void> create(@Valid @RequestBody TagReq tagReq) {
         tagManagementService.save(tagReq);
         return ResVO.ok();
+    }
+
+    /**
+     * 标签分页查询
+     *
+     * @param queryParam 标签及筛选参数
+     * @return 标签列表
+     */
+    @Operation(summary = "标签查询", description = "支持按名称、状态、时间等多条件标签查询")
+    @GetMapping("/page")
+    public ResVO<PageVO<TagDetailVO>> page(TagQueryParam queryParam) {
+        PageVO<TagDTO> page = tagManagementService.page(queryParam);
+        return ResVO.ok(PageHelper.map(page, tagStructMapper::toDetailVO));
     }
 }

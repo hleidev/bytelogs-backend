@@ -17,6 +17,11 @@ public class EnumConverter {
         return publishStatusEnum == null ? null : publishStatusEnum.getCode();
     }
 
+    @Named("PublishStatusEnumToLabel")
+    public String publishStatusEnumToLabel(PublishStatusEnum publishStatusEnum) {
+        return publishStatusEnum == null ? null : publishStatusEnum.getLabel();
+    }
+
     @Named("CodeToPublishStatusEnum")
     public PublishStatusEnum codeToPublishStatusEnum(Integer code) {
         return code == null ? null : PublishStatusEnum.fromCode(code);
@@ -25,5 +30,15 @@ public class EnumConverter {
     @Named("YesOrNoEnumToCode")
     public Integer yesOrNoEnumToCode(YesOrNoEnum yesOrNoEnum) {
         return yesOrNoEnum == null ? null : yesOrNoEnum.getCode();
+    }
+
+    @Named("YesOrNoEnumToLabel")
+    public String yesOrNoEnumToLabel(YesOrNoEnum yesOrNoEnum) {
+        return yesOrNoEnum == null ? null : yesOrNoEnum.getLabel();
+    }
+
+    @Named("CodeToYesOrNoEnum")
+    public YesOrNoEnum codeToYesOrNoEnum(Integer code) {
+        return code == null ? null : YesOrNoEnum.fromCode(code);
     }
 }
