@@ -5,7 +5,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import top.harrylei.forum.api.model.entity.BaseDTO;
-import top.harrylei.forum.api.model.enums.PublishStatusEnum;
+import top.harrylei.forum.api.model.enums.YesOrNoEnum;
+import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
+import top.harrylei.forum.api.model.enums.article.TagTypeEnum;
 
 /**
  * 标签传输对象
@@ -24,7 +26,7 @@ public class TagDTO extends BaseDTO {
     /**
      * 标签类型：1-系统标签，2-自定义标签
      */
-    private Integer tagType;
+    private TagTypeEnum tagType;
 
     /**
      * 所属类目ID
@@ -39,5 +41,5 @@ public class TagDTO extends BaseDTO {
     /**
      * 是否删除：0-未删除，1-已删除
      */
-    private Integer deleted;
+    private YesOrNoEnum deleted;
 }

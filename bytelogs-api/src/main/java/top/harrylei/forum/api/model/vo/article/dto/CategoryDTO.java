@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import top.harrylei.forum.api.model.entity.BaseDTO;
-import top.harrylei.forum.api.model.enums.PublishStatusEnum;
+import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 
 /**
  * 分类传输对象

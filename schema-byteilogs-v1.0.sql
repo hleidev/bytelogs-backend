@@ -163,7 +163,8 @@ CREATE TABLE `tag`
     `create_time` timestamp        NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` timestamp        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
     PRIMARY KEY (`id`),
-    KEY `idx_category_id` (`category_id`)
+    KEY `idx_category_id` (`category_id`),
+    UNIQUE KEY `uk_tag_name_category_id_tag_type_deleted` (tag_name, category_id, tag_type, deleted)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4 COMMENT = '标签管理表';
 

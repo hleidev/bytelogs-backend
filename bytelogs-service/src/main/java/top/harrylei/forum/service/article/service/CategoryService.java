@@ -1,6 +1,6 @@
 package top.harrylei.forum.service.article.service;
 
-import top.harrylei.forum.api.model.enums.PublishStatusEnum;
+import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.vo.article.req.CategoryReq;
 import top.harrylei.forum.api.model.vo.article.dto.CategoryDTO;

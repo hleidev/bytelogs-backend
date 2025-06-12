@@ -1,4 +1,4 @@
-package top.harrylei.forum.api.model.enums;
+package top.harrylei.forum.api.model.enums.article;
 
 import java.util.Arrays;
 import java.util.Map;

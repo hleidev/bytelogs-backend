@@ -3,7 +3,7 @@ package top.harrylei.forum.api.model.vo.article.req;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.Data;
-import top.harrylei.forum.api.model.enums.PublishStatusEnum;
+import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 
 /**
  * 新建分类请求参数

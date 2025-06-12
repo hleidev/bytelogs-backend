@@ -3,7 +3,8 @@ package top.harrylei.forum.api.model.vo.article.req;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.Data;
-import top.harrylei.forum.api.model.enums.PushStatusEnum;
+import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
+import top.harrylei.forum.api.model.enums.article.TagTypeEnum;
 
 /**
  * 新建标签请求参数
@@ -28,10 +29,8 @@ public class TagReq {
      * 标签类型：1-系统标签，2-自定义标签
      */
     @NotNull(message = "标签类型不能为空")
-    @Min(value = 1, message = "标签类型最小为1")
-    @Max(value = 2, message = "标签类型最大为2")
     @Schema(description = "标签类型，1-系统标签，2-自定义标签", example = "1")
-    private Integer tagType;
+    private TagTypeEnum tagType;
 
     /**
      * 类目ID
@@ -45,5 +44,5 @@ public class TagReq {
      */
     @NotNull(message = "标签状态不能为空")
     @Schema(description = "标签状态", example = "0")
-    private PushStatusEnum status;
+    private PublishStatusEnum status;
 }
