@@ -24,10 +24,10 @@ public interface CategoryService {
     /**
      * 更新分类
      *
-     * @param categoryId 分类ID
-     * @param req 修改参数
+     * @param categoryDTO 分类传输对象
+     * @return 新的分类传输对象
      */
-    void update(Long categoryId, CategoryReq req);
+    CategoryDTO update(CategoryDTO categoryDTO);
 
     /**
      * 分类分页查询

@@ -60,10 +60,10 @@ public class CategoryManagementController {
      */
     @Operation(summary = "修改分类", description = "修改现有分类信息")
     @PutMapping("/{categoryId}")
-    public ResVO<Void> update(@NotNull(message = "分类ID为空") @PathVariable Long categoryId,
+    public ResVO<CategoryDetailVO> update(@NotNull(message = "分类ID为空") @PathVariable Long categoryId,
         @Valid @RequestBody CategoryReq req) {
-        categoryManagementService.update(categoryId, req);
-        return ResVO.ok();
+        CategoryDTO categoryDTO = categoryManagementService.update(categoryId, req);
+        return ResVO.ok(categoryStructMapper.toDetailVO(categoryDTO));
     }
 
     /**
@@ -76,7 +76,7 @@ public class CategoryManagementController {
     @GetMapping("/list")
     public ResVO<PageVO<CategoryDetailVO>> list(CategoryQueryParam queryParam) {
         PageVO<CategoryDTO> page = categoryManagementService.list(queryParam);
-        return ResVO.ok(PageHelper.map(page, categoryStructMapper::toAdminVO));
+        return ResVO.ok(PageHelper.map(page, categoryStructMapper::toDetailVO));
     }
 
     /**
@@ -129,7 +129,7 @@ public class CategoryManagementController {
     @GetMapping("/deleted")
     public ResVO<List<CategoryDetailVO>> listDeleted() {
         List<CategoryDTO> categories = categoryManagementService.listDeleted();
-        List<CategoryDetailVO> list = categories.stream().map(categoryStructMapper::toAdminVO).toList();
+        List<CategoryDetailVO> list = categories.stream().map(categoryStructMapper::toDetailVO).toList();
         return ResVO.ok(list);
     }
 }

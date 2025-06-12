@@ -8,9 +8,9 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.enums.StatusEnum;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
+import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.article.dto.CategoryDTO;
 import top.harrylei.forum.api.model.vo.article.req.CategoryReq;
 import top.harrylei.forum.api.model.vo.page.Page;
@@ -58,23 +58,24 @@ public class CategoryServiceImpl implements CategoryService {
     /**
      * 更新分类
      *
-     * @param categoryId 分类ID
-     * @param req 修改参数
+     * @param categoryDTO 分类传输对象
+     * @return 新的分类传输对象
      */
     @Override
-    public void update(Long categoryId, CategoryReq req) {
-        ExceptionUtil.requireNonNull(categoryId, StatusEnum.PARAM_MISSING, "分类ID");
-        ExceptionUtil.requireNonNull(req, StatusEnum.PARAM_MISSING, "分类请求参数");
+    public CategoryDTO update(CategoryDTO categoryDTO) {
+        ExceptionUtil.requireNonNull(categoryDTO, StatusEnum.PARAM_MISSING, "分类传输对象");
 
-        CategoryDO category = categoryDAO.getByCategoryId(categoryId);
+        CategoryDO category = categoryDAO.getByCategoryId(categoryDTO.getId());
         ExceptionUtil.requireNonNull(category, StatusEnum.CATEGORY_NOT_EXISTS);
 
-        categoryStructMapper.updateDOFromReq(req, category);
+        categoryStructMapper.updateDOFromDTO(categoryDTO, category);
 
         try {
             categoryDAO.updateById(category);
+            return categoryStructMapper.toDTO(category);
         } catch (Exception e) {
             ExceptionUtil.error(StatusEnum.CATEGORY_UPDATE_FAILED, "新建分类失败", e);
+            return null;
         }
     }
 

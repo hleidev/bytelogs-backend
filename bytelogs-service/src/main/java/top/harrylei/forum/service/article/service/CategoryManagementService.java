@@ -26,7 +26,7 @@ public interface CategoryManagementService {
      * @param categoryId 分类ID
      * @param req 修改参数
      */
-    void update(Long categoryId, CategoryReq req);
+    CategoryDTO update(Long categoryId, CategoryReq req);
 
     /**
      * 分类分页查询

@@ -22,14 +22,21 @@ public interface CategoryStructMapper {
     @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "createTime", ignore = true)
     @Mapping(target = "status", source = "status", qualifiedByName = "PublishStatusEnumToCode")
-    void updateDOFromReq(CategoryReq req, @MappingTarget CategoryDO category);
+    void updateDOFromDTO(CategoryDTO categoryDTO, @MappingTarget CategoryDO category);
 
     @Mapping(target = "categoryId", source = "id")
     @Mapping(target = "status", source = "status", qualifiedByName = "PublishStatusEnumToCode")
-    CategoryDetailVO toAdminVO(CategoryDTO categoryDTO);
+    CategoryDetailVO toDetailVO(CategoryDTO categoryDTO);
 
     @Mapping(target = "status", source = "status", qualifiedByName = "CodeToPublishStatusEnum")
     CategoryDTO toDTO(CategoryDO categoryDO);
+
+
+    @Mapping(target = "updateTime", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "deleted", ignore = true)
+    @Mapping(target = "createTime", ignore = true)
+    CategoryDTO toDTO(CategoryReq categoryReq);
 
     @Mapping(target = "categoryId", source = "id")
     CategoryVO toVO(CategoryDTO category);

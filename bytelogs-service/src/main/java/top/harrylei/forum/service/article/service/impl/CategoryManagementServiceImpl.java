@@ -12,6 +12,7 @@ import top.harrylei.forum.api.model.vo.article.dto.CategoryDTO;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.CategoryQueryParam;
 import top.harrylei.forum.core.exception.ExceptionUtil;
+import top.harrylei.forum.service.article.converted.CategoryStructMapper;
 import top.harrylei.forum.service.article.service.CategoryManagementService;
 import top.harrylei.forum.service.article.service.CategoryService;
 
@@ -26,6 +27,7 @@ import java.util.List;
 public class CategoryManagementServiceImpl implements CategoryManagementService {
 
     private final CategoryService categoryService;
+    private final CategoryStructMapper categoryStructMapper;
 
     /**
      * 新建分类
@@ -46,11 +48,13 @@ public class CategoryManagementServiceImpl implements CategoryManagementService 
      * @param req 修改参数
      */
     @Override
-    public void update(Long categoryId, CategoryReq req) {
+    public CategoryDTO update(Long categoryId, CategoryReq req) {
         ExceptionUtil.requireNonNull(categoryId, StatusEnum.PARAM_MISSING, "分类ID");
         ExceptionUtil.requireNonNull(req, StatusEnum.PARAM_MISSING, "分类请求参数");
 
-        categoryService.update(categoryId, req);
+        CategoryDTO category = categoryStructMapper.toDTO(req);
+        category.setId(categoryId);
+        return categoryService.update(category);
     }
 
     /**
