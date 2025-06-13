@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.article.dto.TagDTO;
@@ -22,6 +23,7 @@ import top.harrylei.forum.api.model.vo.page.param.TagQueryParam;
 import top.harrylei.forum.core.security.permission.RequiresAdmin;
 import top.harrylei.forum.service.article.converted.TagStructMapper;
 import top.harrylei.forum.service.article.service.TagManagementService;
+import top.harrylei.forum.service.article.service.TagService;
 
 /**
  * 标签管理模块
@@ -35,6 +37,7 @@ import top.harrylei.forum.service.article.service.TagManagementService;
 @Validated
 public class TagManagementController {
 
+    private final TagService tagService;
     private final TagManagementService tagManagementService;
     private final TagStructMapper tagStructMapper;
 
@@ -47,7 +50,8 @@ public class TagManagementController {
     @Operation(summary = "新建标签", description = "后台新建标签")
     @PostMapping
     public ResVO<Void> create(@Valid @RequestBody TagReq tagReq) {
-        tagManagementService.save(tagReq);
+        TagDTO tag = tagStructMapper.toDTO(tagReq);
+        tagService.save(tag);
         return ResVO.ok();
     }
 
@@ -60,7 +64,7 @@ public class TagManagementController {
     @Operation(summary = "标签查询", description = "支持按名称、状态、时间等多条件标签查询")
     @GetMapping("/page")
     public ResVO<PageVO<TagDetailVO>> page(TagQueryParam queryParam) {
-        PageVO<TagDTO> page = tagManagementService.page(queryParam);
+        PageVO<TagDTO> page = tagService.page(queryParam);
         return ResVO.ok(PageHelper.map(page, tagStructMapper::toDetailVO));
     }
 
@@ -75,8 +79,11 @@ public class TagManagementController {
     @PutMapping("/{tagId}")
     public ResVO<TagDetailVO> update(@NotNull(message = "标签ID为空") @PathVariable Long tagId,
         @Valid @RequestBody TagReq tagReq) {
-        TagDTO tagDTO = tagManagementService.update(tagId, tagReq);
-        TagDetailVO tagDetailVO = tagStructMapper.toDetailVO(tagDTO);
+        TagDTO tagDTO = tagStructMapper.toDTO(tagReq);
+        tagDTO.setId(tagId);
+
+        TagDTO tag = tagService.update(tagDTO);
+        TagDetailVO tagDetailVO = tagStructMapper.toDetailVO(tag);
         return ResVO.ok(tagDetailVO);
     }
 
@@ -89,7 +96,7 @@ public class TagManagementController {
     @Operation(summary = "删除标签", description = "后台删除标签")
     @DeleteMapping("/{tagId}")
     public ResVO<Void> delete(@NotNull(message = "标签ID为空") @PathVariable Long tagId) {
-        tagManagementService.delete(tagId);
+        tagService.updateDelete(tagId, YesOrNoEnum.YES);
         return ResVO.ok();
     }
 
@@ -102,7 +109,7 @@ public class TagManagementController {
     @Operation(summary = "恢复标签", description = "后台恢复标签")
     @PutMapping("/{tagId}/restore")
     public ResVO<Void> restore(@NotNull(message = "标签ID为空") @PathVariable Long tagId) {
-        tagManagementService.restore(tagId);
+        tagService.updateDelete(tagId, YesOrNoEnum.NO);
         return ResVO.ok();
     }
 
@@ -114,7 +121,7 @@ public class TagManagementController {
     @Operation(summary = "已删标签", description = "后台查看已删除的标签")
     @GetMapping("/deleted")
     public ResVO<List<TagDetailVO>> listDeleted() {
-        List<TagDTO> list = tagManagementService.listDeleted();
+        List<TagDTO> list = tagService.listDeleted();
         List<TagDetailVO> result = list.stream().map(tagStructMapper::toDetailVO).toList();
         return ResVO.ok(result);
     }
@@ -130,7 +137,7 @@ public class TagManagementController {
     @PutMapping("/{tagId}/status")
     public ResVO<Void> updateStatus(@NotNull(message = "标签ID为空") @PathVariable Long tagId,
         @NotNull(message = "发布状态为空") @RequestBody PublishStatusEnum status) {
-        tagManagementService.updateStatus(tagId, status);
+        tagService.updateStatus(tagId, status);
         return ResVO.ok();
     }
 
