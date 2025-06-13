@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.enums.StatusEnum;
+import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.vo.article.dto.TagDTO;
 import top.harrylei.forum.api.model.vo.article.req.TagReq;
 import top.harrylei.forum.api.model.vo.page.PageVO;
@@ -81,7 +82,18 @@ public class TagManagementServiceImpl implements TagManagementService {
      */
     @Override
     public void delete(Long tagId) {
-        tagService.delete(tagId);
+        tagService.updateDelete(tagId, YesOrNoEnum.YES);
         log.info("删除标签成功 tagId={} operatorId={}", tagId, ReqInfoContext.getContext().getUserId());
+    }
+
+    /**
+     * 恢复标签
+     *
+     * @param tagId 标签ID
+     */
+    @Override
+    public void restore(Long tagId) {
+        tagService.updateDelete(tagId, YesOrNoEnum.NO);
+        log.info("恢复标签成功 tagId={} operatorId={}", tagId, ReqInfoContext.getContext().getUserId());
     }
 }

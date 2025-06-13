@@ -1,5 +1,6 @@
 package top.harrylei.forum.service.article.service;
 
+import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.vo.article.dto.TagDTO;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.TagQueryParam;
@@ -33,9 +34,10 @@ public interface TagService {
     TagDTO update(TagDTO tagDTO);
 
     /**
-     * 删除标签
+     * 更新标签
      *
      * @param tagId 标签ID
+     * @param yesOrNoEnum 删除标识
      */
-    void delete(Long tagId);
+    void updateDelete(Long tagId, YesOrNoEnum yesOrNoEnum);
 }

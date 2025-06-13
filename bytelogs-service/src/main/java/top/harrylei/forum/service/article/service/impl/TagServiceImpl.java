@@ -64,9 +64,7 @@ public class TagServiceImpl implements TagService {
         Page page = PageHelper.createPage(queryParam.getPageNum(), queryParam.getPageSize());
 
         List<TagDO> tags = tagDAO.listTags(queryParam, page);
-        List<TagDTO> result = tags.stream()
-                .filter(Objects::nonNull)
-                .map(tagStructMapper::toDTO).toList();
+        List<TagDTO> result = tags.stream().filter(Objects::nonNull).map(tagStructMapper::toDTO).toList();
 
         long total = tagDAO.countTags(queryParam);
 
@@ -92,16 +90,22 @@ public class TagServiceImpl implements TagService {
     }
 
     /**
-     * 删除标签
+     * 更新标签
      *
      * @param tagId 标签ID
+     * @param yesOrNoEnum 删除标识
      */
     @Override
-    public void delete(Long tagId) {
-        TagDO tag = tagDAO.getByTagId(tagId);
+    public void updateDelete(Long tagId, YesOrNoEnum yesOrNoEnum) {
+        TagDO tag = tagDAO.getById(tagId);
         ExceptionUtil.requireNonNull(tag, StatusEnum.Tag_NOT_EXISTS, "tagId=" + tagId);
 
-        tag.setDeleted(YesOrNoEnum.YES.getCode());
+        if (Objects.equals(tag.getDeleted(), yesOrNoEnum.getCode())) {
+            log.warn("分类删除状态未变更，无需更新");
+            return;
+        }
+
+        tag.setDeleted(yesOrNoEnum.getCode());
         tagDAO.updateById(tag);
     }
 }

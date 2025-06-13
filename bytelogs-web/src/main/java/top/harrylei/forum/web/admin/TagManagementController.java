@@ -89,4 +89,17 @@ public class TagManagementController {
         tagManagementService.delete(tagId);
         return ResVO.ok();
     }
+
+    /**
+     * 恢复标签
+     *
+     * @param tagId 标签ID
+     * @return 操作结果
+     */
+    @Operation(summary = "恢复标签", description = "后台恢复标签")
+    @PutMapping("/{tagId}/restore")
+    public ResVO<Void> restore(@NotNull(message = "标签ID为空") @PathVariable Long tagId) {
+        tagManagementService.restore(tagId);
+        return ResVO.ok();
+    }
 }

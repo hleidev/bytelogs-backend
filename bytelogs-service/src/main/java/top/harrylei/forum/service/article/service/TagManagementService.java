@@ -40,4 +40,11 @@ public interface TagManagementService {
      * @param tagId 标签ID
      */
     void delete(Long tagId);
+
+    /**
+     * 恢复标签
+     *
+     * @param tagId 标签ID
+     */
+    void restore(Long tagId);
 }
