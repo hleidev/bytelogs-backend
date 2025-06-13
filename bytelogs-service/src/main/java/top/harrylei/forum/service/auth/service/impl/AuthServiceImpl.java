@@ -126,8 +126,8 @@ public class AuthServiceImpl implements AuthService {
         Long userId = user.getId();
         BaseUserInfoDTO userInfoDTO = userCacheService.getUserInfo(userId);
 
-        // 校验角色权限（如果需要）
-        if (userRole != null) {
+        // 校验角色权限
+        if (userRole != null && ReqInfoContext.getContext().isAdmin()) {
             ExceptionUtil.errorIf(!Objects.equals(userInfoDTO.getRole(), userRole), StatusEnum.FORBID_ERROR_MIXED,
                 "当前用户无管理员权限");
         }
