@@ -72,27 +72,16 @@ public class AuthServiceImpl implements AuthService {
         // 创建用户信息
         UserInfoDO newUserInfo = new UserInfoDO().setUserId(newUser.getId()).setUserName(username).setAvatar("");
 
-        if (UserRoleEnum.ADMIN.equals(userRole)) {
-            checkCurrentUserIsAdmin();
+        if (UserRoleEnum.ADMIN.equals(userRole) && ReqInfoContext.getContext().isAdmin()) {
             newUserInfo.setUserRole(userRole.getCode());
+        } else {
+            ExceptionUtil.error(StatusEnum.FORBID_ERROR_MIXED, "当前用户没有管理员权限");
         }
 
         userInfoDAO.save(newUserInfo);
 
         // 简洁、标准化的日志
         log.info("用户注册成功 userId={}", newUser.getId());
-    }
-
-    /**
-     * 检查当前操作用户是否有管理员权限
-     */
-    private void checkCurrentUserIsAdmin() {
-        Long userId = ReqInfoContext.getContext().getUserId();
-        UserInfoDO userInfo = userInfoDAO.getByUserId(userId);
-
-        ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_INFO_NOT_EXISTS);
-        ExceptionUtil.errorIf(!UserRoleEnum.ADMIN.getCode().equals(userInfo.getUserRole()),
-                StatusEnum.FORBID_ERROR_MIXED, "当前用户没有管理员权限 userId=" + userId);
     }
 
     /**
