@@ -10,7 +10,7 @@ import com.alibaba.ttl.TransmittableThreadLocal;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
-import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
+import top.harrylei.forum.api.model.vo.user.dto.UserInfoDetailDTO;
 
 /**
  * 请求上下文管理类
@@ -69,7 +69,7 @@ public class ReqInfoContext {
         /**
          * 用户详细信息
          */
-        private BaseUserInfoDTO user;
+        private UserInfoDetailDTO user;
 
         /**
          * 用户角色权限列表

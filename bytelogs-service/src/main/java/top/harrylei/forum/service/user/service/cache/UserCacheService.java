@@ -3,7 +3,7 @@ package top.harrylei.forum.service.user.service.cache;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
+import top.harrylei.forum.api.model.vo.user.dto.UserInfoDetailDTO;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.common.constans.RedisKeyConstants;
 import top.harrylei.forum.core.util.RedisUtil;
@@ -33,20 +33,20 @@ public class UserCacheService {
      * @param userId 用户ID
      * @return 用户信息DTO，若不存在则返回null
      */
-    public BaseUserInfoDTO getUserInfo(Long userId) {
+    public UserInfoDetailDTO getUserInfo(Long userId) {
         if (userId == null) {
             return null;
         }
 
         // 1. 尝试从上下文获取
-        BaseUserInfoDTO contextUser = ReqInfoContext.getContext().getUser();
+        UserInfoDetailDTO contextUser = ReqInfoContext.getContext().getUser();
         if (contextUser != null && contextUser.getUserId().equals(userId)) {
             return contextUser;
         }
 
         // 2. 尝试从缓存获取
-        BaseUserInfoDTO userInfoDTO =
-                redisUtil.getObj(RedisKeyConstants.getUserInfoKey(userId), BaseUserInfoDTO.class);
+        UserInfoDetailDTO userInfoDTO =
+                redisUtil.getObj(RedisKeyConstants.getUserInfoKey(userId), UserInfoDetailDTO.class);
 
         // 缓存命中，直接返回
         if (userInfoDTO != null) {
@@ -75,7 +75,7 @@ public class UserCacheService {
      * @param userId 用户ID
      * @param userInfoDTO 用户信息DTO
      */
-    public void cacheUserInfo(Long userId, BaseUserInfoDTO userInfoDTO) {
+    public void cacheUserInfo(Long userId, UserInfoDetailDTO userInfoDTO) {
         if (userId == null || userInfoDTO == null) {
             return;
         }
@@ -93,7 +93,7 @@ public class UserCacheService {
      * 
      * @param userInfoDTO 更新后的用户信息
      */
-    public void updateUserInfoCache(BaseUserInfoDTO userInfoDTO) {
+    public void updateUserInfoCache(UserInfoDetailDTO userInfoDTO) {
         if (userInfoDTO == null || userInfoDTO.getUserId() == null) {
             return;
         }

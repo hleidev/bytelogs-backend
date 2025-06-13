@@ -15,7 +15,7 @@ import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
 import top.harrylei.forum.api.model.vo.auth.UserCreateReq;
 import top.harrylei.forum.api.model.vo.page.Page;
 import top.harrylei.forum.api.model.vo.page.param.UserQueryParam;
-import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
+import top.harrylei.forum.api.model.vo.user.dto.UserInfoDetailDTO;
 import top.harrylei.forum.api.model.vo.user.dto.UserDetailDTO;
 import top.harrylei.forum.core.common.constans.RedisKeyConstants;
 import top.harrylei.forum.core.context.ReqInfoContext;
@@ -55,10 +55,10 @@ public class UserServiceImpl implements UserService {
      * @param userId 用户 ID
      * @return 用户信息 DTO
      */
-    public BaseUserInfoDTO getUserInfoById(Long userId) {
+    public UserInfoDetailDTO getUserInfoById(Long userId) {
         ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID");
 
-        BaseUserInfoDTO userInfo = userCacheService.getUserInfo(userId);
+        UserInfoDetailDTO userInfo = userCacheService.getUserInfo(userId);
         ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_INFO_NOT_EXISTS);
         return userInfo;
     }
@@ -71,7 +71,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void updateUserInfo(BaseUserInfoDTO userInfoDTO) {
+    public void updateUserInfo(UserInfoDetailDTO userInfoDTO) {
         ExceptionUtil.requireNonNull(userInfoDTO, StatusEnum.PARAM_MISSING, "用户信息");
 
         try {
@@ -136,7 +136,7 @@ public class UserServiceImpl implements UserService {
         ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID");
         ExceptionUtil.requireNonEmpty(avatar, StatusEnum.PARAM_MISSING, "用户头像");
 
-        BaseUserInfoDTO userInfo = getUserInfoById(userId);
+        UserInfoDetailDTO userInfo = getUserInfoById(userId);
 
         redisUtil.del(RedisKeyConstants.getUserInfoKey(userInfo.getUserId()));
         userCacheService.updateUserInfoCache(userInfo);

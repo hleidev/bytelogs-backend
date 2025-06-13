@@ -13,13 +13,12 @@ import top.harrylei.forum.api.model.enums.StatusEnum;
 import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.auth.AuthReq;
-import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
+import top.harrylei.forum.api.model.vo.user.dto.UserInfoDetailDTO;
 import top.harrylei.forum.api.model.vo.user.req.PasswordUpdateReq;
 import top.harrylei.forum.api.model.vo.user.vo.UserInfoVO;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.core.security.permission.RequiresAdmin;
-import top.harrylei.forum.core.util.JwtUtil;
 import top.harrylei.forum.service.auth.service.AuthService;
 import top.harrylei.forum.service.user.converted.UserStructMapper;
 import top.harrylei.forum.service.user.service.UserService;
@@ -35,7 +34,6 @@ public class AuthManagementController {
     private final AuthService authService;
     private final UserService userService;
     private final UserStructMapper userStructMapper;
-    private final JwtUtil jwtUtil;
 
     /**
      * 管理员登录接口
@@ -53,7 +51,7 @@ public class AuthManagementController {
         response.setHeader("Authorization", "Bearer " + token);
         response.setHeader("Access-Control-Expose-Headers", "Authorization");
 
-        BaseUserInfoDTO userInfo = ReqInfoContext.getContext().getUser();
+        UserInfoDetailDTO userInfo = ReqInfoContext.getContext().getUser();
         ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_INFO_NOT_EXISTS);
 
         return ResVO.ok(userStructMapper.toVO(userInfo));
@@ -83,7 +81,7 @@ public class AuthManagementController {
     @RequiresAdmin
     @GetMapping("/profile")
     public ResVO<UserInfoVO> getProfile() {
-        BaseUserInfoDTO userInfo = ReqInfoContext.getContext().getUser();
+        UserInfoDetailDTO userInfo = ReqInfoContext.getContext().getUser();
 
         ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_INFO_NOT_EXISTS);
         return ResVO.ok(userStructMapper.toVO(userInfo));

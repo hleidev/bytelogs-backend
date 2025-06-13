@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.enums.StatusEnum;
 import top.harrylei.forum.api.model.vo.ResVO;
-import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
+import top.harrylei.forum.api.model.vo.user.dto.UserInfoDetailDTO;
 import top.harrylei.forum.api.model.vo.user.req.PasswordUpdateReq;
 import top.harrylei.forum.api.model.vo.user.req.UserInfoReq;
 import top.harrylei.forum.api.model.vo.user.vo.UserInfoVO;
@@ -49,7 +49,7 @@ public class UserController {
     @GetMapping("/profile")
     public ResVO<UserInfoVO> getUserInfo() {
         // 从请求上下文中获取当前用户信息
-        BaseUserInfoDTO user = ReqInfoContext.getContext().getUser();
+        UserInfoDetailDTO user = ReqInfoContext.getContext().getUser();
         ExceptionUtil.requireNonNull(user, StatusEnum.USER_INFO_NOT_EXISTS);
         // 将用户DTO转换为前端展示所需的VO对象
         return ResVO.ok(userStructMapper.toVO(user));
@@ -65,7 +65,7 @@ public class UserController {
     @PutMapping("/info")
     public ResVO<Void> updateUserInfo(@Valid @RequestBody UserInfoReq userInfoReq) {
         // 获取当前上下文中的用户信息
-        BaseUserInfoDTO userInfo = ReqInfoContext.getContext().getUser();
+        UserInfoDetailDTO userInfo = ReqInfoContext.getContext().getUser();
         ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_INFO_NOT_EXISTS);
         
         // 直接更新上下文中的用户信息

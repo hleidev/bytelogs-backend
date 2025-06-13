@@ -19,7 +19,6 @@ import top.harrylei.forum.api.model.vo.auth.AuthReq;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.core.security.permission.RequiresLogin;
-import top.harrylei.forum.core.util.JwtUtil;
 import top.harrylei.forum.service.auth.service.AuthService;
 
 /**
@@ -36,7 +35,6 @@ import top.harrylei.forum.service.auth.service.AuthService;
 public class AuthController {
 
     private final AuthService authService;
-    private final JwtUtil jwtUtil;
 
     /**
      * 用户注册接口

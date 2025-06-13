@@ -19,7 +19,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
-import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
+import top.harrylei.forum.api.model.vo.user.dto.UserInfoDetailDTO;
 import top.harrylei.forum.core.common.constans.RedisKeyConstants;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.util.JwtUtil;
@@ -71,11 +71,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     setAuthentication(userId, isAdmin);
 
                     // 获取完整用户信息
-                    BaseUserInfoDTO userInfo = userCacheService.getUserInfo(userId);
+                    UserInfoDetailDTO userInfo = userCacheService.getUserInfo(userId);
 
                     // 如果获取失败，创建基本用户信息
                     if (userInfo == null) {
-                        userInfo = new BaseUserInfoDTO().setUserId(userId).setRole(UserRoleEnum.fromName(role));
+                        userInfo = new UserInfoDetailDTO().setUserId(userId).setRole(UserRoleEnum.fromName(role));
                     }
 
                     // 设置用户信息到上下文
@@ -177,7 +177,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * @param userInfo 用户信息
      * @param isAdmin 是否为管理员
      */
-    private void setUserContext(Long userId, BaseUserInfoDTO userInfo, boolean isAdmin) {
+    private void setUserContext(Long userId, UserInfoDetailDTO userInfo, boolean isAdmin) {
         // 构建用户上下文信息
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority("ROLE_NORMAL"));

@@ -6,7 +6,7 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 
 import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
-import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
+import top.harrylei.forum.api.model.vo.user.dto.UserInfoDetailDTO;
 import top.harrylei.forum.api.model.vo.user.dto.UserDetailDTO;
 import top.harrylei.forum.api.model.vo.user.req.UserInfoReq;
 import top.harrylei.forum.api.model.vo.user.vo.UserDetailVO;
@@ -30,15 +30,15 @@ public interface UserStructMapper {
      * @return 用户信息DTO
      */
     @Mapping(source = "userRole", target = "role", qualifiedByName = "codeToRoleName")
-    BaseUserInfoDTO toDTO(UserInfoDO userInfo);
+    UserInfoDetailDTO toDTO(UserInfoDO userInfo);
 
     /**
      * 将数据传输对象转换为视图对象
      *
-     * @param baseUserInfoDTO 用户信息DTO
+     * @param userInfoDetailDTO 用户信息DTO
      * @return 用户信息视图对象
      */
-    UserInfoVO toVO(BaseUserInfoDTO baseUserInfoDTO);
+    UserInfoVO toVO(UserInfoDetailDTO userInfoDetailDTO);
 
     /**
      * 将请求对象中的数据更新到DTO对象
@@ -58,7 +58,7 @@ public interface UserStructMapper {
     @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "createTime", ignore = true)
     @Mapping(target = "avatar", ignore = true)
-    void updateDTOFromReq(UserInfoReq req, @MappingTarget BaseUserInfoDTO dto);
+    void updateDTOFromReq(UserInfoReq req, @MappingTarget UserInfoDetailDTO dto);
 
     /**
      * 将数据传输对象转化为数据库实体对象
@@ -67,7 +67,7 @@ public interface UserStructMapper {
      * @return 数据库实体对象
      */
     @Mapping(target = "userRole", source = "role", qualifiedByName = "roleNameToCode")
-    UserInfoDO toDO(BaseUserInfoDTO userInfoDTO);
+    UserInfoDO toDO(UserInfoDetailDTO userInfoDTO);
 
     /**
      * 将完整用户DTO转换为用户列表项视图对象

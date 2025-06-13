@@ -63,10 +63,11 @@ public class SecurityConfig {
             // 配置请求授权规则
             .authorizeHttpRequests(auth -> auth
                 // 公共接口，无需认证
-                .requestMatchers("/api/v1/auth/**").permitAll().requestMatchers("/api/v1/tag/**").permitAll()
-                .requestMatchers("/api/v1/category/**").permitAll().requestMatchers("/api/v1/public/**").permitAll()
-                .requestMatchers("/api/v1/test/**").permitAll().requestMatchers("/error").permitAll()
-                .requestMatchers("/favicon.ico").permitAll().requestMatchers("/actuator/**").permitAll()
+                .requestMatchers("/api/v1/auth/**").permitAll().requestMatchers("/api/v1/admin/auth/login").permitAll()
+                .requestMatchers("/api/v1/tag/**").permitAll().requestMatchers("/api/v1/category/**").permitAll()
+                .requestMatchers("/api/v1/public/**").permitAll().requestMatchers("/api/v1/test/**").permitAll()
+                .requestMatchers("/error").permitAll().requestMatchers("/favicon.ico").permitAll()
+                .requestMatchers("/actuator/**").permitAll()
                 // 静态资源
                 .requestMatchers("/static/**").permitAll()
                 // OPTIONS请求放行

@@ -11,7 +11,7 @@ import top.harrylei.forum.api.model.enums.StatusEnum;
 import top.harrylei.forum.api.model.enums.user.LoginTypeEnum;
 import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
-import top.harrylei.forum.api.model.vo.user.dto.BaseUserInfoDTO;
+import top.harrylei.forum.api.model.vo.user.dto.UserInfoDetailDTO;
 import top.harrylei.forum.core.common.constans.RedisKeyConstants;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
@@ -124,7 +124,7 @@ public class AuthServiceImpl implements AuthService {
 
         // 获取用户ID和信息
         Long userId = user.getId();
-        BaseUserInfoDTO userInfoDTO = userCacheService.getUserInfo(userId);
+        UserInfoDetailDTO userInfoDTO = userCacheService.getUserInfo(userId);
 
         // 校验角色权限
         if (userRole != null && ReqInfoContext.getContext().isAdmin()) {
