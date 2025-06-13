@@ -108,4 +108,18 @@ public class TagServiceImpl implements TagService {
         tag.setDeleted(yesOrNoEnum.getCode());
         tagDAO.updateById(tag);
     }
+
+    /**
+     * 已删标签
+     *
+     * @return 已经删除的标签详细信息列表
+     */
+    @Override
+    public List<TagDTO> listDeleted() {
+        List<TagDO> list = tagDAO.listDeleted();
+        return list.stream()
+                .filter(Objects::nonNull)
+                .map(tagStructMapper::toDTO)
+                .toList();
+    }
 }

@@ -58,4 +58,10 @@ public class TagDAO extends ServiceImpl<TagMapper, TagDO> {
                 .eq(TagDO::getDeleted, YesOrNoEnum.NO.getCode())
                 .one();
     }
+
+    public List<TagDO> listDeleted() {
+        return lambdaQuery()
+                .eq(TagDO::getDeleted, YesOrNoEnum.YES.getCode())
+                .list();
+    }
 }

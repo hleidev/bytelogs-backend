@@ -5,6 +5,8 @@ import top.harrylei.forum.api.model.vo.article.dto.TagDTO;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.TagQueryParam;
 
+import java.util.List;
+
 /**
  * 标签服务接口类
  */
@@ -40,4 +42,11 @@ public interface TagService {
      * @param yesOrNoEnum 删除标识
      */
     void updateDelete(Long tagId, YesOrNoEnum yesOrNoEnum);
+
+    /**
+     * 已删标签
+     *
+     * @return 已经删除的标签详细信息列表
+     */
+    List<TagDTO> listDeleted();
 }

@@ -16,6 +16,8 @@ import top.harrylei.forum.service.article.converted.TagStructMapper;
 import top.harrylei.forum.service.article.service.TagManagementService;
 import top.harrylei.forum.service.article.service.TagService;
 
+import java.util.List;
+
 /**
  * 标签管理实现类
  */
@@ -95,5 +97,15 @@ public class TagManagementServiceImpl implements TagManagementService {
     public void restore(Long tagId) {
         tagService.updateDelete(tagId, YesOrNoEnum.NO);
         log.info("恢复标签成功 tagId={} operatorId={}", tagId, ReqInfoContext.getContext().getUserId());
+    }
+
+    /**
+     * 已删标签
+     *
+     * @return 已经删除的标签详细信息列表
+     */
+    @Override
+    public List<TagDTO> listDeleted() {
+        return tagService.listDeleted();
     }
 }

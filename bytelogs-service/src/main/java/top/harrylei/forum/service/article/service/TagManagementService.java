@@ -5,6 +5,8 @@ import top.harrylei.forum.api.model.vo.article.req.TagReq;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.TagQueryParam;
 
+import java.util.List;
+
 /**
  * 标签管理接口类
  */
@@ -47,4 +49,11 @@ public interface TagManagementService {
      * @param tagId 标签ID
      */
     void restore(Long tagId);
+
+    /**
+     * 已删标签
+     *
+     * @return 已经删除的标签详细信息列表
+     */
+    List<TagDTO> listDeleted();
 }

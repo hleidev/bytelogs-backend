@@ -1,12 +1,14 @@
 package top.harrylei.forum.web.admin;
 
-import jakarta.validation.constraints.NotNull;
+import java.util.List;
+
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.vo.ResVO;
@@ -101,5 +103,18 @@ public class TagManagementController {
     public ResVO<Void> restore(@NotNull(message = "标签ID为空") @PathVariable Long tagId) {
         tagManagementService.restore(tagId);
         return ResVO.ok();
+    }
+
+    /**
+     * 已删标签
+     * 
+     * @return 已经删除的标签详细信息列表
+     */
+    @Operation(summary = "已删标签", description = "后台查看已删除的标签")
+    @GetMapping("/deleted")
+    public ResVO<List<TagDetailVO>> listDeleted() {
+        List<TagDTO> list = tagManagementService.listDeleted();
+        List<TagDetailVO> result = list.stream().map(tagStructMapper::toDetailVO).toList();
+        return ResVO.ok(result);
     }
 }
