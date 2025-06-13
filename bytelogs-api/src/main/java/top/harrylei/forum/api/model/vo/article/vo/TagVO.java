@@ -21,4 +21,16 @@ public class TagVO {
      */
     @Schema(description = "标签名称", example = "Java")
     private String tagName;
+
+    /**
+     * 标签类型：1-系统标签，2-自定义标签
+     */
+    @Schema(description = "标签编码", example = "0")
+    private Integer tagType;
+
+    /**
+     * 标签描述
+     */
+    @Schema(description = "标签描述", example = "0")
+    private String tagTypeLabel;
 }

@@ -9,6 +9,7 @@ import top.harrylei.forum.api.model.enums.article.TagTypeEnum;
 import top.harrylei.forum.api.model.vo.article.dto.TagDTO;
 import top.harrylei.forum.api.model.vo.article.req.TagReq;
 import top.harrylei.forum.api.model.vo.article.vo.TagDetailVO;
+import top.harrylei.forum.api.model.vo.article.vo.TagVO;
 import top.harrylei.forum.core.common.converter.EnumConverter;
 import top.harrylei.forum.service.article.repository.entity.TagDO;
 
@@ -61,4 +62,9 @@ public interface TagStructMapper {
     @Mapping(target = "tagType", source = "tagType", qualifiedByName = "TagTypeEnumToCode")
     @Mapping(target = "deleted", ignore = true)
     void updateTagDOFromTagDTO(TagDTO tagDTO, @MappingTarget TagDO tagDO);
+
+    @Mapping(target = "tagId", source = "id")
+    @Mapping(target = "tagType", source = "tagType", qualifiedByName = "TagTypeEnumToCode")
+    @Mapping(target = "tagTypeLabel", source = "tagType", qualifiedByName = "TagTypeEnumToLabel")
+    TagVO toVO(TagDTO tagDTO);
 }

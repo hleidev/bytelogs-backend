@@ -135,4 +135,16 @@ public class TagServiceImpl implements TagService {
         tag.setStatus(status.getCode());
         tagDAO.updateById(tag);
     }
+
+    /**
+     * 标签列表
+     */
+    @Override
+    public List<TagDTO> list() {
+        List<TagDO> list = tagDAO.listPublishedAndUndeleted();
+        return list.stream()
+                .filter(Objects::nonNull)
+                .map(tagStructMapper::toDTO)
+                .toList();
+    }
 }

@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
+import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.page.Page;
 import top.harrylei.forum.api.model.vo.page.param.TagQueryParam;
 import top.harrylei.forum.service.article.repository.entity.TagDO;
@@ -62,6 +63,13 @@ public class TagDAO extends ServiceImpl<TagMapper, TagDO> {
     public List<TagDO> listDeleted() {
         return lambdaQuery()
                 .eq(TagDO::getDeleted, YesOrNoEnum.YES.getCode())
+                .list();
+    }
+
+    public List<TagDO> listPublishedAndUndeleted() {
+        return lambdaQuery()
+                .eq(TagDO::getStatus, PublishStatusEnum.PUBLISHED.getCode())
+                .eq(TagDO::getDeleted, YesOrNoEnum.NO.getCode())
                 .list();
     }
 }

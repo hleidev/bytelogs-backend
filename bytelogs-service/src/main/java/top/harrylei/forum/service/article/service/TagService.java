@@ -58,4 +58,9 @@ public interface TagService {
      * @param status 发布状态
      */
     void updateStatus(Long tagId, PublishStatusEnum status);
+
+    /**
+     * 标签列表
+     */
+    List<TagDTO> list();
 }
