@@ -1,6 +1,7 @@
 package top.harrylei.forum.service.article.service;
 
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
+import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.article.dto.TagDTO;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.TagQueryParam;
@@ -49,4 +50,12 @@ public interface TagService {
      * @return 已经删除的标签详细信息列表
      */
     List<TagDTO> listDeleted();
+
+    /**
+     * 修改状态
+     *
+     * @param tagId 标签ID
+     * @param status 发布状态
+     */
+    void updateStatus(Long tagId, PublishStatusEnum status);
 }

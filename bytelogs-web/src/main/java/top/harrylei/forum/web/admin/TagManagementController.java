@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.article.dto.TagDTO;
 import top.harrylei.forum.api.model.vo.article.req.TagReq;
@@ -116,5 +117,20 @@ public class TagManagementController {
         List<TagDTO> list = tagManagementService.listDeleted();
         List<TagDetailVO> result = list.stream().map(tagStructMapper::toDetailVO).toList();
         return ResVO.ok(result);
+    }
+
+    /**
+     * 修改状态
+     * 
+     * @param tagId 标签ID
+     * @param status 发布状态
+     * @return 操作结果
+     */
+    @Operation(summary = "修改状态", description = "后台修改发布标签状态")
+    @PutMapping("/{tagId}/status")
+    public ResVO<Void> updateStatus(@NotNull(message = "标签ID为空") @PathVariable Long tagId,
+        @NotNull(message = "发布状态为空") @RequestBody PublishStatusEnum status) {
+        tagManagementService.updateStatus(tagId, status);
+        return ResVO.ok();
     }
 }

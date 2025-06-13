@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.enums.StatusEnum;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
+import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.article.dto.TagDTO;
 import top.harrylei.forum.api.model.vo.page.Page;
 import top.harrylei.forum.api.model.vo.page.PageHelper;
@@ -101,7 +102,7 @@ public class TagServiceImpl implements TagService {
         ExceptionUtil.requireNonNull(tag, StatusEnum.Tag_NOT_EXISTS, "tagId=" + tagId);
 
         if (Objects.equals(tag.getDeleted(), yesOrNoEnum.getCode())) {
-            log.warn("分类删除状态未变更，无需更新");
+            log.warn("标签删除状态未变更，无需更新");
             return;
         }
 
@@ -121,5 +122,17 @@ public class TagServiceImpl implements TagService {
                 .filter(Objects::nonNull)
                 .map(tagStructMapper::toDTO)
                 .toList();
+    }
+
+    @Override
+    public void updateStatus(Long tagId, PublishStatusEnum status) {
+        TagDO tag = tagDAO.getByTagId(tagId);
+        if (Objects.equals(tag.getStatus(), status.getCode())) {
+            log.warn("标签发布状态未更变，无需更新");
+            return;
+        }
+
+        tag.setStatus(status.getCode());
+        tagDAO.updateById(tag);
     }
 }

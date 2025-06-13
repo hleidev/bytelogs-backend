@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.enums.StatusEnum;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
+import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.article.dto.TagDTO;
 import top.harrylei.forum.api.model.vo.article.req.TagReq;
 import top.harrylei.forum.api.model.vo.page.PageVO;
@@ -107,5 +108,18 @@ public class TagManagementServiceImpl implements TagManagementService {
     @Override
     public List<TagDTO> listDeleted() {
         return tagService.listDeleted();
+    }
+
+    /**
+     * 修改状态
+     *
+     * @param tagId 标签ID
+     * @param status 发布状态
+     */
+    @Override
+    public void updateStatus(Long tagId, PublishStatusEnum status) {
+        tagService.updateStatus(tagId, status);
+        log.info("修改发布状态成功 tagId={} status={} operatorId={}", tagId, status.getLabel(),
+            ReqInfoContext.getContext().getUserId());
     }
 }

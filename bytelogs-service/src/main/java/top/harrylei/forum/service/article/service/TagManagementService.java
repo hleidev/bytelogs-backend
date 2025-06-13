@@ -1,11 +1,12 @@
 package top.harrylei.forum.service.article.service;
 
+import java.util.List;
+
+import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.article.dto.TagDTO;
 import top.harrylei.forum.api.model.vo.article.req.TagReq;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.TagQueryParam;
-
-import java.util.List;
 
 /**
  * 标签管理接口类
@@ -56,4 +57,12 @@ public interface TagManagementService {
      * @return 已经删除的标签详细信息列表
      */
     List<TagDTO> listDeleted();
+
+    /**
+     * 修改状态
+     *
+     * @param tagId 标签ID
+     * @param status 发布状态
+     */
+    void updateStatus(Long tagId, PublishStatusEnum status);
 }
