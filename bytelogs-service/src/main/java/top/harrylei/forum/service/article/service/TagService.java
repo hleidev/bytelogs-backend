@@ -31,4 +31,11 @@ public interface TagService {
      * @return 更新后的标签传输对象
      */
     TagDTO update(TagDTO tagDTO);
+
+    /**
+     * 删除标签
+     *
+     * @param tagId 标签ID
+     */
+    void delete(Long tagId);
 }

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.enums.StatusEnum;
+import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.vo.article.dto.TagDTO;
 import top.harrylei.forum.api.model.vo.page.Page;
 import top.harrylei.forum.api.model.vo.page.PageHelper;
@@ -88,5 +89,19 @@ public class TagServiceImpl implements TagService {
         tagStructMapper.updateTagDOFromTagDTO(tagDTO, tagDO);
         tagDAO.updateById(tagDO);
         return tagStructMapper.toDTO(tagDO);
+    }
+
+    /**
+     * 删除标签
+     *
+     * @param tagId 标签ID
+     */
+    @Override
+    public void delete(Long tagId) {
+        TagDO tag = tagDAO.getByTagId(tagId);
+        ExceptionUtil.requireNonNull(tag, StatusEnum.Tag_NOT_EXISTS, "tagId=" + tagId);
+
+        tag.setDeleted(YesOrNoEnum.YES.getCode());
+        tagDAO.updateById(tag);
     }
 }

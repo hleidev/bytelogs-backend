@@ -38,7 +38,7 @@ public class TagManagementServiceImpl implements TagManagementService {
         TagDTO tag = tagStructMapper.toDTO(tagReq);
         tagService.save(tag);
         log.info("新建标签成功 tagName={} categoryId={} operatorId={}", tagReq.getTagName(), tag.getCategoryId(),
-                ReqInfoContext.getContext().getUserId());
+            ReqInfoContext.getContext().getUserId());
     }
 
     /**
@@ -72,5 +72,16 @@ public class TagManagementServiceImpl implements TagManagementService {
         TagDTO tag = tagService.update(tagDTO);
         log.info("修改标签成功 tagId={} operatorId={}", tagId, ReqInfoContext.getContext().getUserId());
         return tag;
+    }
+
+    /**
+     * 删除标签
+     *
+     * @param tagId 标签ID
+     */
+    @Override
+    public void delete(Long tagId) {
+        tagService.delete(tagId);
+        log.info("删除标签成功 tagId={} operatorId={}", tagId, ReqInfoContext.getContext().getUserId());
     }
 }

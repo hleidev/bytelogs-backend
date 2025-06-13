@@ -76,4 +76,17 @@ public class TagManagementController {
         TagDetailVO tagDetailVO = tagStructMapper.toDetailVO(tagDTO);
         return ResVO.ok(tagDetailVO);
     }
+
+    /**
+     * 删除标签
+     * 
+     * @param tagId 标签ID
+     * @return 操作结果
+     */
+    @Operation(summary = "删除标签", description = "后台删除标签")
+    @DeleteMapping("/{tagId}")
+    public ResVO<Void> delete(@NotNull(message = "标签ID为空") @PathVariable Long tagId) {
+        tagManagementService.delete(tagId);
+        return ResVO.ok();
+    }
 }

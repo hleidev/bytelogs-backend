@@ -33,4 +33,11 @@ public interface TagManagementService {
      * @return 标签详细信息
      */
     TagDTO update(Long tagId, TagReq tagReq);
+
+    /**
+     * 删除标签
+     *
+     * @param tagId 标签ID
+     */
+    void delete(Long tagId);
 }
