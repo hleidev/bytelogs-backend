@@ -85,7 +85,7 @@ public class TagServiceImpl implements TagService {
         TagDO tagDO = tagDAO.getByTagId(tagDTO.getId());
         ExceptionUtil.requireNonNull(tagDO, ErrorCodeEnum.Tag_NOT_EXISTS, "tagId=" + tagDTO.getId());
 
-        tagStructMapper.updateTagDOFromTagDTO(tagDTO, tagDO);
+        tagStructMapper.updateDOFromDTO(tagDTO, tagDO);
         tagDAO.updateById(tagDO);
         return tagStructMapper.toDTO(tagDO);
     }

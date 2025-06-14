@@ -38,7 +38,7 @@ public class CategoryController {
     @GetMapping("/list")
     public ResVO<List<CategorySimpleVO>> list() {
         List<CategoryDTO> category = categoryService.list();
-        List<CategorySimpleVO> result = category.stream().map(categoryStructMapper::toVO).toList();
+        List<CategorySimpleVO> result = category.stream().map(categoryStructMapper::toSimpleVO).toList();
         return ResVO.ok(result);
     }
 }

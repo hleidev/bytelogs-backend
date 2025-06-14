@@ -26,7 +26,7 @@ public interface CategoryStructMapper {
 
     @Mapping(target = "categoryId", source = "id")
     @Mapping(target = "status", source = "status", qualifiedByName = "PublishStatusEnumToCode")
-    CategoryVO toDetailVO(CategoryDTO categoryDTO);
+    CategoryVO toVO(CategoryDTO categoryDTO);
 
     @Mapping(target = "status", source = "status", qualifiedByName = "CodeToPublishStatusEnum")
     CategoryDTO toDTO(CategoryDO categoryDO);
@@ -39,5 +39,5 @@ public interface CategoryStructMapper {
     CategoryDTO toDTO(CategoryReq categoryReq);
 
     @Mapping(target = "categoryId", source = "id")
-    CategorySimpleVO toVO(CategoryDTO category);
+    CategorySimpleVO toSimpleVO(CategoryDTO category);
 }

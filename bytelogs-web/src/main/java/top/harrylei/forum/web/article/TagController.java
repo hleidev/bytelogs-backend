@@ -40,7 +40,7 @@ public class TagController {
     @GetMapping("/list")
     public ResVO<List<TagSimpleVO>> list() {
         List<TagDTO> list = tagService.list();
-        List<TagSimpleVO> result = list.stream().map(tagStructMapper::toVO).toList();
+        List<TagSimpleVO> result = list.stream().map(tagStructMapper::toSimpleVO).toList();
         return ResVO.ok(result);
     }
 }

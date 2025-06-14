@@ -65,7 +65,7 @@ public class TagManagementController {
     @GetMapping("/page")
     public ResVO<PageVO<TagVO>> page(TagQueryParam queryParam) {
         PageVO<TagDTO> page = tagService.page(queryParam);
-        return ResVO.ok(PageHelper.map(page, tagStructMapper::toDetailVO));
+        return ResVO.ok(PageHelper.map(page, tagStructMapper::toVO));
     }
 
     /**
@@ -83,7 +83,7 @@ public class TagManagementController {
         tagDTO.setId(tagId);
 
         TagDTO tag = tagService.update(tagDTO);
-        TagVO tagVO = tagStructMapper.toDetailVO(tag);
+        TagVO tagVO = tagStructMapper.toVO(tag);
         return ResVO.ok(tagVO);
     }
 
@@ -122,7 +122,7 @@ public class TagManagementController {
     @GetMapping("/deleted")
     public ResVO<List<TagVO>> listDeleted() {
         List<TagDTO> list = tagService.listDeleted();
-        List<TagVO> result = list.stream().map(tagStructMapper::toDetailVO).toList();
+        List<TagVO> result = list.stream().map(tagStructMapper::toVO).toList();
         return ResVO.ok(result);
     }
 

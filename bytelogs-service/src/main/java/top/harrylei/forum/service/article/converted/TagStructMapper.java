@@ -36,7 +36,7 @@ public interface TagStructMapper {
     @Mapping(target = "tagTypeLabel", source = "tagType", qualifiedByName = "TagTypeEnumToLabel")
     @Mapping(target = "deleted", source = "deleted", qualifiedByName = "YesOrNoEnumToCode")
     @Mapping(target = "deletedLabel", source = "deleted", qualifiedByName = "YesOrNoEnumToLabel")
-    TagVO toDetailVO(TagDTO tag);
+    TagVO toVO(TagDTO tag);
 
     @Mapping(target = "status", source = "status", qualifiedByName = "CodeToPublishStatusEnum")
     @Mapping(target = "deleted", source = "deleted", qualifiedByName = "CodeToYesOrNoEnum")
@@ -61,10 +61,10 @@ public interface TagStructMapper {
     @Mapping(target = "status", source = "status", qualifiedByName = "PublishStatusEnumToCode")
     @Mapping(target = "tagType", source = "tagType", qualifiedByName = "TagTypeEnumToCode")
     @Mapping(target = "deleted", ignore = true)
-    void updateTagDOFromTagDTO(TagDTO tagDTO, @MappingTarget TagDO tagDO);
+    void updateDOFromDTO(TagDTO tagDTO, @MappingTarget TagDO tagDO);
 
     @Mapping(target = "tagId", source = "id")
     @Mapping(target = "tagType", source = "tagType", qualifiedByName = "TagTypeEnumToCode")
     @Mapping(target = "tagTypeLabel", source = "tagType", qualifiedByName = "TagTypeEnumToLabel")
-    TagSimpleVO toVO(TagDTO tagDTO);
+    TagSimpleVO toSimpleVO(TagDTO tagDTO);
 }
