@@ -9,7 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import top.harrylei.forum.api.model.enums.StatusEnum;
+import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
 import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.auth.AuthReq;
@@ -46,13 +46,13 @@ public class AuthManagementController {
     @PostMapping("/login")
     public ResVO<UserInfoVO> login(@Valid @RequestBody AuthReq authReq, HttpServletResponse response) {
         String token = authService.login(authReq.getUsername(), authReq.getPassword(), UserRoleEnum.ADMIN);
-        ExceptionUtil.requireNonEmpty(token, StatusEnum.USER_LOGIN_FAILED, "token 为空");
+        ExceptionUtil.requireNonEmpty(token, ErrorCodeEnum.USER_LOGIN_FAILED, "token 为空");
 
         response.setHeader("Authorization", "Bearer " + token);
         response.setHeader("Access-Control-Expose-Headers", "Authorization");
 
         UserInfoDetailDTO userInfo = ReqInfoContext.getContext().getUser();
-        ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_INFO_NOT_EXISTS);
+        ExceptionUtil.requireNonNull(userInfo, ErrorCodeEnum.USER_INFO_NOT_EXISTS);
 
         return ResVO.ok(userStructMapper.toVO(userInfo));
     }
@@ -67,7 +67,7 @@ public class AuthManagementController {
     @PostMapping("/logout")
     public ResVO<Void> logout() {
         Long userId = ReqInfoContext.getContext().getUserId();
-        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_VALIDATE_FAILED, "用户ID为空");
+        ExceptionUtil.requireNonNull(userId, ErrorCodeEnum.PARAM_VALIDATE_FAILED, "用户ID为空");
         authService.logout(userId);
         return ResVO.ok();
     }
@@ -83,7 +83,7 @@ public class AuthManagementController {
     public ResVO<UserInfoVO> getProfile() {
         UserInfoDetailDTO userInfo = ReqInfoContext.getContext().getUser();
 
-        ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_INFO_NOT_EXISTS);
+        ExceptionUtil.requireNonNull(userInfo, ErrorCodeEnum.USER_INFO_NOT_EXISTS);
         return ResVO.ok(userStructMapper.toVO(userInfo));
     }
 
@@ -99,7 +99,7 @@ public class AuthManagementController {
     @PutMapping("/password")
     public ResVO<Void> updatePassword(@Valid @RequestBody PasswordUpdateReq passwordUpdateReq) {
         Long userId = ReqInfoContext.getContext().getUserId();
-        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_VALIDATE_FAILED, "用户ID为空");
+        ExceptionUtil.requireNonNull(userId, ErrorCodeEnum.PARAM_VALIDATE_FAILED, "用户ID为空");
         userService.updatePassword(userId, passwordUpdateReq.getOldPassword(), passwordUpdateReq.getNewPassword());
         return ResVO.ok();
     }}

@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import top.harrylei.forum.api.model.enums.StatusEnum;
+import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
@@ -56,10 +56,10 @@ public class UserServiceImpl implements UserService {
      * @return 用户信息 DTO
      */
     public UserInfoDetailDTO getUserInfoById(Long userId) {
-        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID");
+        ExceptionUtil.requireNonNull(userId, ErrorCodeEnum.PARAM_MISSING, "用户ID");
 
         UserInfoDetailDTO userInfo = userCacheService.getUserInfo(userId);
-        ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_INFO_NOT_EXISTS);
+        ExceptionUtil.requireNonNull(userInfo, ErrorCodeEnum.USER_INFO_NOT_EXISTS);
         return userInfo;
     }
 
@@ -72,7 +72,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateUserInfo(UserInfoDetailDTO userInfoDTO) {
-        ExceptionUtil.requireNonNull(userInfoDTO, StatusEnum.PARAM_MISSING, "用户信息");
+        ExceptionUtil.requireNonNull(userInfoDTO, ErrorCodeEnum.PARAM_MISSING, "用户信息");
 
         try {
             // 转换为数据库实体并更新用户个人信息
@@ -80,7 +80,7 @@ public class UserServiceImpl implements UserService {
             userInfoDAO.updateById(userInfo);
 
             UserDO userDO = userDAO.getById(userInfo.getUserId());
-            ExceptionUtil.requireNonNull(userDO, StatusEnum.USER_NOT_EXISTS, "userId={}", userInfo.getUserId());
+            ExceptionUtil.requireNonNull(userDO, ErrorCodeEnum.USER_NOT_EXISTS, "userId={}", userInfo.getUserId());
 
             // 更新用户账户信息
             userDO.setId(userInfo.getUserId());
@@ -91,7 +91,7 @@ public class UserServiceImpl implements UserService {
 
             log.info("用户信息更新成功: userId={}", userInfoDTO.getUserId());
         } catch (Exception e) {
-            ExceptionUtil.error(StatusEnum.USER_UPDATE_FAILED, "用户信息更新失败，请稍后重试！", e);
+            ExceptionUtil.error(ErrorCodeEnum.USER_UPDATE_FAILED, "用户信息更新失败，请稍后重试！", e);
         }
     }
 
@@ -104,20 +104,20 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public void updatePassword(Long userId, String oldPassword, String newPassword) {
-        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID");
-        ExceptionUtil.requireNonEmpty(oldPassword, StatusEnum.PARAM_MISSING, "旧密码");
-        ExceptionUtil.requireNonEmpty(newPassword, StatusEnum.PARAM_MISSING, "新密码");
+        ExceptionUtil.requireNonNull(userId, ErrorCodeEnum.PARAM_MISSING, "用户ID");
+        ExceptionUtil.requireNonEmpty(oldPassword, ErrorCodeEnum.PARAM_MISSING, "旧密码");
+        ExceptionUtil.requireNonEmpty(newPassword, ErrorCodeEnum.PARAM_MISSING, "新密码");
 
         if (Objects.equals(oldPassword, newPassword)) {
-            ExceptionUtil.error(StatusEnum.USER_UPDATE_FAILED, "新密码与旧密码相同");
+            ExceptionUtil.error(ErrorCodeEnum.USER_UPDATE_FAILED, "新密码与旧密码相同");
         }
 
         // 校验旧密码
         UserDO user = userDAO.getUserById(userId);
-        ExceptionUtil.requireNonNull(user, StatusEnum.USER_NOT_EXISTS, "userId=" + userId);
+        ExceptionUtil.requireNonNull(user, ErrorCodeEnum.USER_NOT_EXISTS, "userId=" + userId);
 
         if (!BCryptUtil.matches(oldPassword, user.getPassword())) {
-            ExceptionUtil.error(StatusEnum.USER_PASSWORD_ERROR);
+            ExceptionUtil.error(ErrorCodeEnum.USER_PASSWORD_ERROR);
         }
 
         resetPassword(userId, newPassword);
@@ -133,8 +133,8 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public void updateAvatar(Long userId, String avatar) {
-        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID");
-        ExceptionUtil.requireNonEmpty(avatar, StatusEnum.PARAM_MISSING, "用户头像");
+        ExceptionUtil.requireNonNull(userId, ErrorCodeEnum.PARAM_MISSING, "用户ID");
+        ExceptionUtil.requireNonEmpty(avatar, ErrorCodeEnum.PARAM_MISSING, "用户头像");
 
         UserInfoDetailDTO userInfo = getUserInfoById(userId);
 
@@ -146,7 +146,7 @@ public class UserServiceImpl implements UserService {
             userInfoDAO.updateById(userStructMapper.toDO(userInfo));
             log.info("用户头像更新成功: userId={}", userId);
         } catch (Exception e) {
-            ExceptionUtil.error(StatusEnum.USER_UPDATE_FAILED, "用户头像更新失败，请稍候重试！", e);
+            ExceptionUtil.error(ErrorCodeEnum.USER_UPDATE_FAILED, "用户头像更新失败，请稍候重试！", e);
         }
     }
 
@@ -159,13 +159,13 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public List<UserDetailDTO> listUsers(UserQueryParam queryParam, Page pageRequest) {
-        ExceptionUtil.requireNonNull(queryParam, StatusEnum.PARAM_MISSING, "请求参数");
-        ExceptionUtil.requireNonNull(pageRequest, StatusEnum.PARAM_MISSING, "分页参数");
+        ExceptionUtil.requireNonNull(queryParam, ErrorCodeEnum.PARAM_MISSING, "请求参数");
+        ExceptionUtil.requireNonNull(pageRequest, ErrorCodeEnum.PARAM_MISSING, "分页参数");
 
         try {
             return userDAO.listUsers(queryParam, pageRequest.getLimitSql());
         } catch (Exception e) {
-            ExceptionUtil.error(StatusEnum.SYSTEM_ERROR, "查询用户列表异常", e);
+            ExceptionUtil.error(ErrorCodeEnum.SYSTEM_ERROR, "查询用户列表异常", e);
             return List.of();
         }
     }
@@ -178,12 +178,12 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public long countUsers(UserQueryParam queryParam) {
-        ExceptionUtil.requireNonNull(queryParam, StatusEnum.PARAM_MISSING, "请求参数");
+        ExceptionUtil.requireNonNull(queryParam, ErrorCodeEnum.PARAM_MISSING, "请求参数");
 
         try {
             return userDAO.countUsers(queryParam);
         } catch (Exception e) {
-            ExceptionUtil.error(StatusEnum.SYSTEM_ERROR, "统计用户数量失败", e);
+            ExceptionUtil.error(ErrorCodeEnum.SYSTEM_ERROR, "统计用户数量失败", e);
             return 0;
         }
     }
@@ -196,12 +196,12 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public UserDetailDTO getUserDetail(Long userId) {
-        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID");
+        ExceptionUtil.requireNonNull(userId, ErrorCodeEnum.PARAM_MISSING, "用户ID");
 
         try {
             return userDAO.getUserDetail(userId);
         } catch (Exception e) {
-            ExceptionUtil.error(StatusEnum.SYSTEM_ERROR, "查询用户详细信息异常", e);
+            ExceptionUtil.error(ErrorCodeEnum.SYSTEM_ERROR, "查询用户详细信息异常", e);
             return null;
         }
     }
@@ -214,11 +214,11 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public void updateStatus(Long userId, UserStatusEnum status) {
-        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID");
-        ExceptionUtil.requireNonNull(status, StatusEnum.PARAM_MISSING, "用户状态");
+        ExceptionUtil.requireNonNull(userId, ErrorCodeEnum.PARAM_MISSING, "用户ID");
+        ExceptionUtil.requireNonNull(status, ErrorCodeEnum.PARAM_MISSING, "用户状态");
 
         UserDO user = userDAO.getById(userId);
-        ExceptionUtil.requireNonNull(user, StatusEnum.USER_NOT_EXISTS, "userId=" + userId);
+        ExceptionUtil.requireNonNull(user, ErrorCodeEnum.USER_NOT_EXISTS, "userId=" + userId);
 
         if (Objects.equals(status.getCode(), user.getStatus())) {
             log.warn("用户状态未改变，无需更新");
@@ -229,7 +229,7 @@ public class UserServiceImpl implements UserService {
             userDAO.updateById(user);
             log.info("更新用户状态成功: userId={}", userId);
         } catch (Exception e) {
-            ExceptionUtil.error(StatusEnum.USER_UPDATE_FAILED, "用户状态更新失败，请稍后重试", e);
+            ExceptionUtil.error(ErrorCodeEnum.USER_UPDATE_FAILED, "用户状态更新失败，请稍后重试", e);
         }
     }
 
@@ -241,22 +241,22 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public void resetPassword(Long userId, String password) {
-        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID");
-        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "密码");
+        ExceptionUtil.requireNonNull(userId, ErrorCodeEnum.PARAM_MISSING, "用户ID");
+        ExceptionUtil.requireNonNull(userId, ErrorCodeEnum.PARAM_MISSING, "密码");
         // 校验新密码安全性
         if (!PasswordUtil.isValid(password)) {
-            ExceptionUtil.error(StatusEnum.USER_PASSWORD_INVALID);
+            ExceptionUtil.error(ErrorCodeEnum.USER_PASSWORD_INVALID);
         }
 
         UserDO user = userDAO.getUserById(userId);
-        ExceptionUtil.requireNonNull(user, StatusEnum.USER_NOT_EXISTS, "userId=" + userId);
+        ExceptionUtil.requireNonNull(user, ErrorCodeEnum.USER_NOT_EXISTS, "userId=" + userId);
 
         try {
             user.setPassword(BCryptUtil.hash(password));
             userDAO.updateById(user);
             log.info("用户密码更新成功: userId={}", userId);
         } catch (Exception e) {
-            ExceptionUtil.error(StatusEnum.USER_UPDATE_FAILED, "用户密码更新失败，请稍后重试！", e);
+            ExceptionUtil.error(ErrorCodeEnum.USER_UPDATE_FAILED, "用户密码更新失败，请稍后重试！", e);
         }
     }
 
@@ -268,14 +268,14 @@ public class UserServiceImpl implements UserService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void updateDeleted(Long userId, YesOrNoEnum status) {
-        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID");
-        ExceptionUtil.requireNonNull(status, StatusEnum.PARAM_MISSING, "删除状态");
+        ExceptionUtil.requireNonNull(userId, ErrorCodeEnum.PARAM_MISSING, "用户ID");
+        ExceptionUtil.requireNonNull(status, ErrorCodeEnum.PARAM_MISSING, "删除状态");
 
         UserDO user = userDAO.getById(userId);
-        ExceptionUtil.requireNonNull(user, StatusEnum.USER_NOT_EXISTS, "userId=" + userId);
+        ExceptionUtil.requireNonNull(user, ErrorCodeEnum.USER_NOT_EXISTS, "userId=" + userId);
 
         UserInfoDO userInfo = userInfoDAO.getById(userId);
-        ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_INFO_NOT_EXISTS, "userId=" + userId);
+        ExceptionUtil.requireNonNull(userInfo, ErrorCodeEnum.USER_INFO_NOT_EXISTS, "userId=" + userId);
 
         if (Objects.equals(user.getDeleted(), status.getCode())) {
             log.warn("用户删除状态未变更，无需更新");
@@ -291,7 +291,7 @@ public class UserServiceImpl implements UserService {
             userInfoDAO.updateById(userInfo);
             log.info("用户删除状态更新成功: userId={}, deleted={}, operatorId={}", userId, status.getLabel(), operatorId);
         } catch (Exception e) {
-            ExceptionUtil.error(StatusEnum.USER_DELETE_FAILED, e);
+            ExceptionUtil.error(ErrorCodeEnum.USER_DELETE_FAILED, e);
         }
     }
 
@@ -303,11 +303,11 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public void updateUserRole(Long userId, UserRoleEnum role) {
-        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID");
-        ExceptionUtil.requireNonNull(role, StatusEnum.PARAM_MISSING, "角色");
+        ExceptionUtil.requireNonNull(userId, ErrorCodeEnum.PARAM_MISSING, "用户ID");
+        ExceptionUtil.requireNonNull(role, ErrorCodeEnum.PARAM_MISSING, "角色");
 
         UserInfoDO userInfo = userInfoDAO.getByUserId(userId);
-        ExceptionUtil.requireNonNull(userInfo, StatusEnum.USER_INFO_NOT_EXISTS, "userId=" + userId);
+        ExceptionUtil.requireNonNull(userInfo, ErrorCodeEnum.USER_INFO_NOT_EXISTS, "userId=" + userId);
 
         Long operatorId = ReqInfoContext.getContext().getUserId();
 
@@ -321,7 +321,7 @@ public class UserServiceImpl implements UserService {
             userInfoDAO.updateById(userInfo);
             log.info("更新用户角色成功: userId={}, role={}, operatorId={}", userId, role.getLabel(), operatorId);
         } catch (Exception e) {
-            ExceptionUtil.error(StatusEnum.USER_UPDATE_FAILED, "更新用户角色失败 userId=" + userId, e);
+            ExceptionUtil.error(ErrorCodeEnum.USER_UPDATE_FAILED, "更新用户角色失败 userId=" + userId, e);
         }
     }
 
@@ -332,9 +332,9 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public void save(UserCreateReq req) {
-        ExceptionUtil.requireNonNull(req, StatusEnum.PARAM_MISSING, "请求参数");
+        ExceptionUtil.requireNonNull(req, ErrorCodeEnum.PARAM_MISSING, "请求参数");
 
-        ExceptionUtil.requireNonNull(req.getRole(), StatusEnum.PARAM_VALIDATE_FAILED, "角色代码异常");
+        ExceptionUtil.requireNonNull(req.getRole(), ErrorCodeEnum.PARAM_VALIDATE_FAILED, "角色代码异常");
 
         Long operatorId = ReqInfoContext.getContext().getUserId();
 
@@ -342,7 +342,7 @@ public class UserServiceImpl implements UserService {
             authService.register(req.getUsername(), req.getPassword(), req.getRole());
             log.info("新建用户账号成功: username={}, operatorId={}", req.getUsername(), operatorId);
         } catch (Exception e) {
-            ExceptionUtil.error(StatusEnum.UNEXPECT_ERROR, "更新用户角色失败");
+            ExceptionUtil.error(ErrorCodeEnum.UNEXPECT_ERROR, "更新用户角色失败");
         }
     }
 }

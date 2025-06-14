@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import top.harrylei.forum.api.model.enums.StatusEnum;
+import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
 import top.harrylei.forum.api.model.enums.user.LoginTypeEnum;
 import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
@@ -51,15 +51,15 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void register(String username, String password, UserRoleEnum userRole) {
         // 参数校验
-        ExceptionUtil.requireNonEmpty(username, StatusEnum.PARAM_MISSING, "用户名");
-        ExceptionUtil.requireNonEmpty(password, StatusEnum.PARAM_MISSING, "密码");
+        ExceptionUtil.requireNonEmpty(username, ErrorCodeEnum.PARAM_MISSING, "用户名");
+        ExceptionUtil.requireNonEmpty(password, ErrorCodeEnum.PARAM_MISSING, "密码");
 
         // 密码格式校验
-        ExceptionUtil.errorIf(!PasswordUtil.isValid(password), StatusEnum.USER_PASSWORD_INVALID);
+        ExceptionUtil.errorIf(!PasswordUtil.isValid(password), ErrorCodeEnum.USER_PASSWORD_INVALID);
 
         // 检查用户名是否已存在
         UserDO user = userDAO.getUserByUserName(username);
-        ExceptionUtil.errorIf(user != null, StatusEnum.USER_EXISTS, username);
+        ExceptionUtil.errorIf(user != null, ErrorCodeEnum.USER_EXISTS, username);
 
         // 创建新用户
         UserDO newUser = new UserDO()
@@ -75,7 +75,7 @@ public class AuthServiceImpl implements AuthService {
         if (UserRoleEnum.ADMIN.equals(userRole) && ReqInfoContext.getContext().isAdmin()) {
             newUserInfo.setUserRole(userRole.getCode());
         } else {
-            ExceptionUtil.error(StatusEnum.FORBID_ERROR_MIXED, "当前用户没有管理员权限");
+            ExceptionUtil.error(ErrorCodeEnum.FORBID_ERROR_MIXED, "当前用户没有管理员权限");
         }
 
         userInfoDAO.save(newUserInfo);
@@ -107,20 +107,20 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public String login(String username, String password, UserRoleEnum userRole) {
         // 参数校验
-        ExceptionUtil.requireNonEmpty(username, StatusEnum.PARAM_MISSING, "用户名");
-        ExceptionUtil.requireNonEmpty(password, StatusEnum.PARAM_MISSING, "密码");
+        ExceptionUtil.requireNonEmpty(username, ErrorCodeEnum.PARAM_MISSING, "用户名");
+        ExceptionUtil.requireNonEmpty(password, ErrorCodeEnum.PARAM_MISSING, "密码");
 
         // 查找用户
         UserDO user = userDAO.getUserByUserName(username);
-        ExceptionUtil.requireNonNull(user, StatusEnum.USER_NOT_EXISTS, username);
+        ExceptionUtil.requireNonNull(user, ErrorCodeEnum.USER_NOT_EXISTS, username);
 
         // 校验账号是否启用
         ExceptionUtil.errorIf(!Objects.equals(user.getStatus(), UserStatusEnum.ENABLED.getCode()),
-            StatusEnum.USER_DISABLED);
+            ErrorCodeEnum.USER_DISABLED);
 
         // 校验密码
         ExceptionUtil.errorIf(!BCryptUtil.matches(password, user.getPassword()),
-            StatusEnum.USER_USERNAME_OR_PASSWORD_ERROR);
+            ErrorCodeEnum.USER_USERNAME_OR_PASSWORD_ERROR);
 
         // 获取用户ID和信息
         Long userId = user.getId();
@@ -128,7 +128,7 @@ public class AuthServiceImpl implements AuthService {
 
         // 校验角色权限
         if (userRole != null && ReqInfoContext.getContext().isAdmin()) {
-            ExceptionUtil.errorIf(!Objects.equals(userInfoDTO.getRole(), userRole), StatusEnum.FORBID_ERROR_MIXED,
+            ExceptionUtil.errorIf(!Objects.equals(userInfoDTO.getRole(), userRole), ErrorCodeEnum.FORBID_ERROR_MIXED,
                 "当前用户无管理员权限");
         }
 
@@ -153,7 +153,7 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public void logout(Long userId) {
-        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID");
+        ExceptionUtil.requireNonNull(userId, ErrorCodeEnum.PARAM_MISSING, "用户ID");
 
         try {
             boolean result = redisUtil.del(RedisKeyConstants.getUserTokenKey(userId));

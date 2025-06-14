@@ -1,6 +1,6 @@
 package top.harrylei.forum.core.exception;
 
-import top.harrylei.forum.api.model.enums.StatusEnum;
+import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
 
 import java.io.Serial;
 
@@ -17,10 +17,10 @@ public class ForumAdviceException extends ForumException {
     /**
      * 通过状态枚举构造通知异常
      *
-     * @param statusEnum 状态枚举
+     * @param errorCodeEnum 状态枚举
      * @param args 消息格式化参数
      */
-    public ForumAdviceException(StatusEnum statusEnum, Object... args) {
-        super(statusEnum, args);
+    public ForumAdviceException(ErrorCodeEnum errorCodeEnum, Object... args) {
+        super(errorCodeEnum, args);
     }
 }

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import top.harrylei.forum.api.model.enums.StatusEnum;
+import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.article.dto.CategoryDTO;
@@ -42,7 +42,7 @@ public class CategoryServiceImpl implements CategoryService {
      */
     @Override
     public void save(CategoryReq req) {
-        ExceptionUtil.requireNonNull(req, StatusEnum.PARAM_MISSING, "分类请求参数");
+        ExceptionUtil.requireNonNull(req, ErrorCodeEnum.PARAM_MISSING, "分类请求参数");
 
         CategoryDO category =
             new CategoryDO().setCategoryName(req.getCategoryName()).setStatus(req.getStatus().getCode()).setSort(req.getSort());
@@ -51,7 +51,7 @@ public class CategoryServiceImpl implements CategoryService {
             categoryDAO.save(category);
             log.info("新建分类成功 category={}", category.getCategoryName());
         } catch (Exception e) {
-            ExceptionUtil.error(StatusEnum.SYSTEM_ERROR, "新建分类失败", e);
+            ExceptionUtil.error(ErrorCodeEnum.SYSTEM_ERROR, "新建分类失败", e);
         }
     }
 
@@ -63,10 +63,10 @@ public class CategoryServiceImpl implements CategoryService {
      */
     @Override
     public CategoryDTO update(CategoryDTO categoryDTO) {
-        ExceptionUtil.requireNonNull(categoryDTO, StatusEnum.PARAM_MISSING, "分类传输对象");
+        ExceptionUtil.requireNonNull(categoryDTO, ErrorCodeEnum.PARAM_MISSING, "分类传输对象");
 
         CategoryDO category = categoryDAO.getByCategoryId(categoryDTO.getId());
-        ExceptionUtil.requireNonNull(category, StatusEnum.CATEGORY_NOT_EXISTS);
+        ExceptionUtil.requireNonNull(category, ErrorCodeEnum.CATEGORY_NOT_EXISTS);
 
         categoryStructMapper.updateDOFromDTO(categoryDTO, category);
 
@@ -74,7 +74,7 @@ public class CategoryServiceImpl implements CategoryService {
             categoryDAO.updateById(category);
             return categoryStructMapper.toDTO(category);
         } catch (Exception e) {
-            ExceptionUtil.error(StatusEnum.CATEGORY_UPDATE_FAILED, "新建分类失败", e);
+            ExceptionUtil.error(ErrorCodeEnum.CATEGORY_UPDATE_FAILED, "新建分类失败", e);
             return null;
         }
     }
@@ -87,7 +87,7 @@ public class CategoryServiceImpl implements CategoryService {
      */
     @Override
     public PageVO<CategoryDTO> page(CategoryQueryParam queryParam) {
-        ExceptionUtil.requireNonNull(queryParam, StatusEnum.PARAM_MISSING, "分页请求参数");
+        ExceptionUtil.requireNonNull(queryParam, ErrorCodeEnum.PARAM_MISSING, "分页请求参数");
         Page page = PageHelper.createPage(queryParam.getPageNum(), queryParam.getPageSize());
 
         List<CategoryDO> categoryDOList = categoryDAO.listCategory(queryParam, page.getLimitSql());
@@ -106,11 +106,11 @@ public class CategoryServiceImpl implements CategoryService {
      */
     @Override
     public void updateStatus(Long categoryId, PublishStatusEnum status) {
-        ExceptionUtil.requireNonNull(categoryId, StatusEnum.PARAM_MISSING, "分类ID");
-        ExceptionUtil.requireNonNull(status, StatusEnum.PARAM_MISSING, "分类状态");
+        ExceptionUtil.requireNonNull(categoryId, ErrorCodeEnum.PARAM_MISSING, "分类ID");
+        ExceptionUtil.requireNonNull(status, ErrorCodeEnum.PARAM_MISSING, "分类状态");
 
         CategoryDO category = categoryDAO.getByCategoryId(categoryId);
-        ExceptionUtil.requireNonNull(category, StatusEnum.CATEGORY_NOT_EXISTS);
+        ExceptionUtil.requireNonNull(category, ErrorCodeEnum.CATEGORY_NOT_EXISTS);
 
         if (Objects.equals(status.getCode(), category.getStatus())) {
             log.warn("分类状态未变更，无需更新");
@@ -125,7 +125,7 @@ public class CategoryServiceImpl implements CategoryService {
             log.info("更新分类状态成功 category={} status={} operatorId={}", category.getCategoryName(), status.getLabel(),
                 operatorId);
         } catch (Exception e) {
-            ExceptionUtil.error(StatusEnum.CATEGORY_UPDATE_FAILED, "更新状态失败", e);
+            ExceptionUtil.error(ErrorCodeEnum.CATEGORY_UPDATE_FAILED, "更新状态失败", e);
         }
     }
 
@@ -137,11 +137,11 @@ public class CategoryServiceImpl implements CategoryService {
      */
     @Override
     public void updateDeleted(Long categoryId, YesOrNoEnum status) {
-        ExceptionUtil.requireNonNull(categoryId, StatusEnum.PARAM_MISSING, "分类ID");
-        ExceptionUtil.requireNonNull(status, StatusEnum.PARAM_MISSING, "删除状态");
+        ExceptionUtil.requireNonNull(categoryId, ErrorCodeEnum.PARAM_MISSING, "分类ID");
+        ExceptionUtil.requireNonNull(status, ErrorCodeEnum.PARAM_MISSING, "删除状态");
 
         CategoryDO category = categoryDAO.getById(categoryId);
-        ExceptionUtil.requireNonNull(category, StatusEnum.CATEGORY_NOT_EXISTS);
+        ExceptionUtil.requireNonNull(category, ErrorCodeEnum.CATEGORY_NOT_EXISTS);
 
         if (Objects.equals(status.getCode(), category.getDeleted())) {
             log.warn("分类删除状态未变更，无需更新");
@@ -155,7 +155,7 @@ public class CategoryServiceImpl implements CategoryService {
             categoryDAO.updateById(category);
             log.info("更新分类删除状态成功 category={} operatorId={}", category.getCategoryName(), operatorId);
         } catch (Exception e) {
-            ExceptionUtil.error(StatusEnum.CATEGORY_UPDATE_FAILED, "更新删除状态失败", e);
+            ExceptionUtil.error(ErrorCodeEnum.CATEGORY_UPDATE_FAILED, "更新删除状态失败", e);
         }
     }
 
@@ -167,7 +167,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public List<CategoryDTO> listDeleted() {
         List<CategoryDO> categoryList = categoryDAO.getDeleted();
-        ExceptionUtil.requireNonNull(categoryList, StatusEnum.CATEGORY_NOT_EXISTS);
+        ExceptionUtil.requireNonNull(categoryList, ErrorCodeEnum.CATEGORY_NOT_EXISTS);
 
         return categoryList.stream().map(categoryStructMapper::toDTO).toList();
     }

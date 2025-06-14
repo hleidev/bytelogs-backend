@@ -1,7 +1,7 @@
 package top.harrylei.forum.core.exception;
 
 import lombok.Getter;
-import top.harrylei.forum.api.model.enums.StatusEnum;
+import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
 
 import java.io.Serial;
 
@@ -18,16 +18,16 @@ public class ForumException extends RuntimeException {
     /**
      * 状态枚举
      */
-    private final StatusEnum statusEnum;
+    private final ErrorCodeEnum errorCodeEnum;
     
     /**
      * 错误消息格式化参数
      */
     private final Object[] args;
 
-    public ForumException(StatusEnum statusEnum, Object... args) {
-        super(formatMessage(statusEnum.getMessage(), args));
-        this.statusEnum = statusEnum;
+    public ForumException(ErrorCodeEnum errorCodeEnum, Object... args) {
+        super(formatMessage(errorCodeEnum.getMessage(), args));
+        this.errorCodeEnum = errorCodeEnum;
         this.args = args;
     }
     

@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import top.harrylei.forum.api.model.enums.StatusEnum;
+import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.article.dto.TagDTO;
@@ -39,16 +39,16 @@ public class TagServiceImpl implements TagService {
      */
     @Override
     public void save(TagDTO tag) {
-        ExceptionUtil.requireNonNull(tag, StatusEnum.PARAM_MISSING, "标签");
+        ExceptionUtil.requireNonNull(tag, ErrorCodeEnum.PARAM_MISSING, "标签");
 
         TagDO tagDO = tagStructMapper.toDO(tag);
         boolean hasTag = tagDAO.existsTag(tagDO);
-        ExceptionUtil.errorIf(hasTag, StatusEnum.Tag_EXISTS, "tag=" + tag);
+        ExceptionUtil.errorIf(hasTag, ErrorCodeEnum.Tag_EXISTS, "tag=" + tag);
 
         try {
             tagDAO.save(tagDO);
         } catch (Exception e) {
-            ExceptionUtil.error(StatusEnum.SYSTEM_ERROR, e);
+            ExceptionUtil.error(ErrorCodeEnum.SYSTEM_ERROR, e);
         }
     }
 
@@ -60,7 +60,7 @@ public class TagServiceImpl implements TagService {
      */
     @Override
     public PageVO<TagDTO> page(TagQueryParam queryParam) {
-        ExceptionUtil.requireNonNull(queryParam, StatusEnum.PARAM_MISSING, "分页请求参数");
+        ExceptionUtil.requireNonNull(queryParam, ErrorCodeEnum.PARAM_MISSING, "分页请求参数");
 
         Page page = PageHelper.createPage(queryParam.getPageNum(), queryParam.getPageSize());
 
@@ -80,10 +80,10 @@ public class TagServiceImpl implements TagService {
      */
     @Override
     public TagDTO update(TagDTO tagDTO) {
-        ExceptionUtil.requireNonNull(tagDTO, StatusEnum.PARAM_MISSING, "标签传输对象");
+        ExceptionUtil.requireNonNull(tagDTO, ErrorCodeEnum.PARAM_MISSING, "标签传输对象");
 
         TagDO tagDO = tagDAO.getByTagId(tagDTO.getId());
-        ExceptionUtil.requireNonNull(tagDO, StatusEnum.Tag_NOT_EXISTS, "tagId=" + tagDTO.getId());
+        ExceptionUtil.requireNonNull(tagDO, ErrorCodeEnum.Tag_NOT_EXISTS, "tagId=" + tagDTO.getId());
 
         tagStructMapper.updateTagDOFromTagDTO(tagDTO, tagDO);
         tagDAO.updateById(tagDO);
@@ -99,7 +99,7 @@ public class TagServiceImpl implements TagService {
     @Override
     public void updateDelete(Long tagId, YesOrNoEnum yesOrNoEnum) {
         TagDO tag = tagDAO.getById(tagId);
-        ExceptionUtil.requireNonNull(tag, StatusEnum.Tag_NOT_EXISTS, "tagId=" + tagId);
+        ExceptionUtil.requireNonNull(tag, ErrorCodeEnum.Tag_NOT_EXISTS, "tagId=" + tagId);
 
         if (Objects.equals(tag.getDeleted(), yesOrNoEnum.getCode())) {
             log.warn("标签删除状态未变更，无需更新");

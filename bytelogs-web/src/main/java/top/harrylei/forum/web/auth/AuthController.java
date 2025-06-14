@@ -12,7 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import top.harrylei.forum.api.model.enums.StatusEnum;
+import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
 import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.auth.AuthReq;
@@ -60,7 +60,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResVO<Void> login(@Valid @RequestBody AuthReq authReq, HttpServletResponse response) {
         String token = authService.login(authReq.getUsername(), authReq.getPassword());
-        ExceptionUtil.requireNonEmpty(token, StatusEnum.USER_LOGIN_FAILED, "token 为空");
+        ExceptionUtil.requireNonEmpty(token, ErrorCodeEnum.USER_LOGIN_FAILED, "token 为空");
         
         response.setHeader("Authorization", "Bearer " + token);
         response.setHeader("Access-Control-Expose-Headers", "Authorization");
@@ -78,7 +78,7 @@ public class AuthController {
     @PostMapping("/logout")
     public ResVO<Void> logout() {
         Long userId = ReqInfoContext.getContext().getUserId();
-        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_VALIDATE_FAILED, "用户ID为空");
+        ExceptionUtil.requireNonNull(userId, ErrorCodeEnum.PARAM_VALIDATE_FAILED, "用户ID为空");
         authService.logout(userId);
         return ResVO.ok();
     }

@@ -18,7 +18,7 @@ import lombok.Getter;
  * 3. 每个状态码都有明确语义，避免重复或含义模糊
  */
 @Getter
-public enum StatusEnum {
+public enum ErrorCodeEnum {
     // ========== 成功状态 ==========
     SUCCESS(0, "OK"),
 
@@ -100,7 +100,7 @@ public enum StatusEnum {
      * @param code 状态码
      * @param message 状态消息
      */
-    StatusEnum(int code, String message) {
+    ErrorCodeEnum(int code, String message) {
         this.code = code;
         this.message = message;
     }
@@ -134,10 +134,10 @@ public enum StatusEnum {
      * @param code 状态码
      * @return 状态枚举，不存在时返回 null
      */
-    public static StatusEnum getByCode(int code) {
-        for (StatusEnum statusEnum : values()) {
-            if (statusEnum.getCode() == code) {
-                return statusEnum;
+    public static ErrorCodeEnum getByCode(int code) {
+        for (ErrorCodeEnum errorCodeEnum : values()) {
+            if (errorCodeEnum.getCode() == code) {
+                return errorCodeEnum;
             }
         }
         return null;

@@ -14,7 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import top.harrylei.forum.api.model.enums.StatusEnum;
+import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
 import top.harrylei.forum.api.model.vo.ResVO;
 
 /**
@@ -35,7 +35,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
         response.setCharacterEncoding("UTF-8");
 
         // 创建标准错误响应
-        ResVO<Void> errorResponse = ResVO.fail(StatusEnum.FORBID_ERROR_MIXED, "权限不足，无法访问该资源");
+        ResVO<Void> errorResponse = ResVO.fail(ErrorCodeEnum.FORBID_ERROR_MIXED, "权限不足，无法访问该资源");
 
         // 或者如果想保持Spring Boot的错误格式，可以用下面的代码
         // Map<String, Object> errorResponse = new HashMap<>();

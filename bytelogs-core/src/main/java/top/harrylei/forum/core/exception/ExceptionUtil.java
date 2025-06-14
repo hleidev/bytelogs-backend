@@ -1,7 +1,7 @@
 package top.harrylei.forum.core.exception;
 
 import org.springframework.lang.NonNull;
-import top.harrylei.forum.api.model.enums.StatusEnum;
+import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
 
 /**
  * 异常工具类
@@ -13,33 +13,33 @@ public class ExceptionUtil {
     /**
      * 抛出业务异常
      *
-     * @param statusEnum 状态枚举
+     * @param errorCodeEnum 状态枚举
      * @param args 状态消息格式化参数
      */
-    public static void error(@NonNull StatusEnum statusEnum, Object... args) {
-        throw new ForumException(statusEnum, args);
+    public static void error(@NonNull ErrorCodeEnum errorCodeEnum, Object... args) {
+        throw new ForumException(errorCodeEnum, args);
     }
 
     /**
      * 抛出业务通知异常
      *
-     * @param statusEnum 状态枚举
+     * @param errorCodeEnum 状态枚举
      * @param args 状态消息格式化参数
      */
-    public static void notice(@NonNull StatusEnum statusEnum, Object... args) {
-        throw new ForumAdviceException(statusEnum, args);
+    public static void notice(@NonNull ErrorCodeEnum errorCodeEnum, Object... args) {
+        throw new ForumAdviceException(errorCodeEnum, args);
     }
 
     /**
      * 条件业务异常：当条件为真时抛出异常
      *
      * @param condition 触发条件
-     * @param statusEnum 状态枚举
+     * @param errorCodeEnum 状态枚举
      * @param args 状态消息格式化参数
      */
-    public static void errorIf(boolean condition, @NonNull StatusEnum statusEnum, Object... args) {
+    public static void errorIf(boolean condition, @NonNull ErrorCodeEnum errorCodeEnum, Object... args) {
         if (condition) {
-            error(statusEnum, args);
+            error(errorCodeEnum, args);
         }
     }
 
@@ -47,12 +47,12 @@ public class ExceptionUtil {
      * 条件业务异常：当条件为真时抛出异常
      *
      * @param condition 触发条件
-     * @param statusEnum 状态枚举
+     * @param errorCodeEnum 状态枚举
      * @param args 状态消息格式化参数
      */
-    public static void noticeIf(boolean condition, @NonNull StatusEnum statusEnum, Object... args) {
+    public static void noticeIf(boolean condition, @NonNull ErrorCodeEnum errorCodeEnum, Object... args) {
         if (condition) {
-            notice(statusEnum, args);
+            notice(errorCodeEnum, args);
         }
     }
 
@@ -60,12 +60,12 @@ public class ExceptionUtil {
      * 检查字符串非空
      *
      * @param str 要检查的字符串
-     * @param statusEnum 状态枚举
+     * @param errorCodeEnum 状态枚举
      * @param args 状态消息格式化参数
      */
-    public static void requireNonEmpty(String str, @NonNull StatusEnum statusEnum, Object... args) {
+    public static void requireNonEmpty(String str, @NonNull ErrorCodeEnum errorCodeEnum, Object... args) {
         if (str == null || str.trim().isEmpty()) {
-            error(statusEnum, args);
+            error(errorCodeEnum, args);
         }
     }
 
@@ -73,12 +73,12 @@ public class ExceptionUtil {
      * 对象为空时抛出业务异常
      *
      * @param obj        要检查的对象
-     * @param statusEnum 状态枚举
+     * @param errorCodeEnum 状态枚举
      * @param args       状态消息格式化参数
      */
-    public static <T> void requireNonNull(T obj, @NonNull StatusEnum statusEnum, Object... args) {
+    public static <T> void requireNonNull(T obj, @NonNull ErrorCodeEnum errorCodeEnum, Object... args) {
         if (obj == null) {
-            error(statusEnum, args);
+            error(errorCodeEnum, args);
         }
     }
 }

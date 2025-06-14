@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import top.harrylei.forum.api.model.enums.StatusEnum;
+import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
@@ -43,7 +43,7 @@ public class UserManagementServiceImpl implements UserManagementService {
     @Override
     public PageVO<UserDetailDTO> list(UserQueryParam queryParam) {
         // 参数校验
-        ExceptionUtil.requireNonNull(queryParam, StatusEnum.PARAM_MISSING, "查询参数不能为空");
+        ExceptionUtil.requireNonNull(queryParam, ErrorCodeEnum.PARAM_MISSING, "查询参数不能为空");
         
         // 创建分页参数
         Page pageRequest = PageHelper.createPage(queryParam.getPageNum(), queryParam.getPageSize());
@@ -58,7 +58,7 @@ public class UserManagementServiceImpl implements UserManagementService {
             return PageHelper.build(users, pageRequest.getPageNum(), pageRequest.getPageSize(), total);
             
         } catch (Exception e) {
-            ExceptionUtil.error(StatusEnum.SYSTEM_ERROR, "查询用户列表失败", e);
+            ExceptionUtil.error(ErrorCodeEnum.SYSTEM_ERROR, "查询用户列表失败", e);
             return null; // 不会执行到这里，因为ExceptionUtil.error会抛出异常
         }
     }
@@ -71,7 +71,7 @@ public class UserManagementServiceImpl implements UserManagementService {
      */
     @Override
     public UserDetailDTO getUserDetail(Long userId) {
-        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID");
+        ExceptionUtil.requireNonNull(userId, ErrorCodeEnum.PARAM_MISSING, "用户ID");
         return userService.getUserDetail(userId);
     }
 
@@ -83,8 +83,8 @@ public class UserManagementServiceImpl implements UserManagementService {
      */
     @Override
     public void updateStatus(Long userId, UserStatusEnum status) {
-        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID");
-        ExceptionUtil.requireNonNull(status, StatusEnum.PARAM_MISSING, "用户状态");
+        ExceptionUtil.requireNonNull(userId, ErrorCodeEnum.PARAM_MISSING, "用户ID");
+        ExceptionUtil.requireNonNull(status, ErrorCodeEnum.PARAM_MISSING, "用户状态");
 
         userService.updateStatus(userId, status);
     }
@@ -96,7 +96,7 @@ public class UserManagementServiceImpl implements UserManagementService {
      */
     @Override
     public void resetPassword(Long userId) {
-        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID");
+        ExceptionUtil.requireNonNull(userId, ErrorCodeEnum.PARAM_MISSING, "用户ID");
 
         userService.resetPassword(userId, defaultPassword);
     }
@@ -108,7 +108,7 @@ public class UserManagementServiceImpl implements UserManagementService {
      */
     @Override
     public void delete(Long userId) {
-        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID");
+        ExceptionUtil.requireNonNull(userId, ErrorCodeEnum.PARAM_MISSING, "用户ID");
 
         userService.updateDeleted(userId, YesOrNoEnum.YES);
     }
@@ -120,7 +120,7 @@ public class UserManagementServiceImpl implements UserManagementService {
      */
     @Override
     public void restore(Long userId) {
-        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID");
+        ExceptionUtil.requireNonNull(userId, ErrorCodeEnum.PARAM_MISSING, "用户ID");
 
         userService.updateDeleted(userId, YesOrNoEnum.NO);
     }
@@ -133,8 +133,8 @@ public class UserManagementServiceImpl implements UserManagementService {
      */
     @Override
     public void updateUserRole(Long userId, UserRoleEnum role) {
-        ExceptionUtil.requireNonNull(userId, StatusEnum.PARAM_MISSING, "用户ID");
-        ExceptionUtil.requireNonNull(role, StatusEnum.PARAM_MISSING, "角色");
+        ExceptionUtil.requireNonNull(userId, ErrorCodeEnum.PARAM_MISSING, "用户ID");
+        ExceptionUtil.requireNonNull(role, ErrorCodeEnum.PARAM_MISSING, "角色");
 
         userService.updateUserRole(userId, role);
     }
@@ -146,7 +146,7 @@ public class UserManagementServiceImpl implements UserManagementService {
      */
     @Override
     public void save(UserCreateReq req) {
-        ExceptionUtil.requireNonNull(req, StatusEnum.PARAM_MISSING, "请求参数");
+        ExceptionUtil.requireNonNull(req, ErrorCodeEnum.PARAM_MISSING, "请求参数");
 
         userService.save(req);
     }

@@ -2,7 +2,7 @@ package top.harrylei.forum.api.model.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import top.harrylei.forum.api.model.enums.StatusEnum;
+import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -99,7 +99,7 @@ public class ResVO<T> implements Serializable {
      * @param <T> 数据类型
      * @return 失败响应
      */
-    public static <T> ResVO<T> fail(StatusEnum status, Object... args) {
+    public static <T> ResVO<T> fail(ErrorCodeEnum status, Object... args) {
         String message = formatMessage(status.getMessage(), args);
         return fail(status.getCode(), message);
     }
