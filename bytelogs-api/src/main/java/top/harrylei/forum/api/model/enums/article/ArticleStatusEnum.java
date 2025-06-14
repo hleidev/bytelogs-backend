@@ -7,29 +7,38 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import top.harrylei.forum.api.model.enums.base.CodeLabelEnum;
-import top.harrylei.forum.api.model.enums.base.EnumCodeLabelJsonSerializer;
 
 /**
- * 标签类型枚举
+ * 文章状态枚举
+ * 状态：0-草稿，1-待审核，2-已发布，3-下架，4-驳回
  */
 @Getter
 @AllArgsConstructor
-@JsonSerialize(using = EnumCodeLabelJsonSerializer.class)
-public enum TagTypeEnum implements CodeLabelEnum {
+public enum ArticleStatusEnum {
 
     /**
-     * 系统标签
+     * 草稿
      */
-    SYSTEM(1, "系统标签"),
+    DRAFT(0, "草稿"),
     /**
-     * 自定义标签
+     * 待审核
      */
-    CUSTOM(2, "自定义标签");
+    PENDING(1, "待审核"),
+    /**
+     * 已发布
+     */
+    PUBLISHED(2, "已发布"),
+    /**
+     * 下架
+     */
+    OFFLINE(3, "下架"),
+    /**
+     * 驳回
+     */
+    REJECTED(4, "驳回");
 
     // 编码（唯一标识）
     private final Integer code;
@@ -38,10 +47,10 @@ public enum TagTypeEnum implements CodeLabelEnum {
     private final String label;
 
     // 根据编码快速定位枚举实例
-    private static final Map<Integer, TagTypeEnum> CODE_MAP =
-        Arrays.stream(values()).collect(Collectors.toMap(TagTypeEnum::getCode, Function.identity()));
+    private static final Map<Integer, ArticleStatusEnum> CODE_MAP =
+        Arrays.stream(values()).collect(Collectors.toMap(ArticleStatusEnum::getCode, Function.identity()));
     // 根据枚举名称（不区分大小写）快速定位枚举实例
-    private static final Map<String, TagTypeEnum> NAME_MAP =
+    private static final Map<String, ArticleStatusEnum> NAME_MAP =
         Arrays.stream(values()).collect(Collectors.toMap(e -> e.name().toUpperCase(), Function.identity()));
 
     /**
@@ -61,7 +70,7 @@ public enum TagTypeEnum implements CodeLabelEnum {
      * @return 对应的枚举，若无匹配则返回 null
      */
     @JsonCreator
-    public static TagTypeEnum fromCode(Integer code) {
+    public static ArticleStatusEnum fromCode(Integer code) {
         return code == null ? null : CODE_MAP.get(code);
     }
 }

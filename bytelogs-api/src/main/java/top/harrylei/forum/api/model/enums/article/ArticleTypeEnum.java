@@ -7,29 +7,25 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import top.harrylei.forum.api.model.enums.base.CodeLabelEnum;
-import top.harrylei.forum.api.model.enums.base.EnumCodeLabelJsonSerializer;
 
 /**
- * 标签类型枚举
+ * 文章类型枚举
  */
 @Getter
 @AllArgsConstructor
-@JsonSerialize(using = EnumCodeLabelJsonSerializer.class)
-public enum TagTypeEnum implements CodeLabelEnum {
+public enum ArticleTypeEnum {
 
     /**
-     * 系统标签
+     * 博文
      */
-    SYSTEM(1, "系统标签"),
+    BLOG(1, "博文"),
     /**
-     * 自定义标签
+     * 问答
      */
-    CUSTOM(2, "自定义标签");
+    ANSWER(2, "问答");
 
     // 编码（唯一标识）
     private final Integer code;
@@ -38,11 +34,11 @@ public enum TagTypeEnum implements CodeLabelEnum {
     private final String label;
 
     // 根据编码快速定位枚举实例
-    private static final Map<Integer, TagTypeEnum> CODE_MAP =
-        Arrays.stream(values()).collect(Collectors.toMap(TagTypeEnum::getCode, Function.identity()));
+    private static final Map<Integer, ArticleTypeEnum> CODE_MAP =
+            Arrays.stream(values()).collect(Collectors.toMap(ArticleTypeEnum::getCode, Function.identity()));
     // 根据枚举名称（不区分大小写）快速定位枚举实例
-    private static final Map<String, TagTypeEnum> NAME_MAP =
-        Arrays.stream(values()).collect(Collectors.toMap(e -> e.name().toUpperCase(), Function.identity()));
+    private static final Map<String, ArticleTypeEnum> NAME_MAP =
+            Arrays.stream(values()).collect(Collectors.toMap(e -> e.name().toUpperCase(), Function.identity()));
 
     /**
      * 获取码
@@ -61,7 +57,7 @@ public enum TagTypeEnum implements CodeLabelEnum {
      * @return 对应的枚举，若无匹配则返回 null
      */
     @JsonCreator
-    public static TagTypeEnum fromCode(Integer code) {
+    public static ArticleTypeEnum fromCode(Integer code) {
         return code == null ? null : CODE_MAP.get(code);
     }
 }
