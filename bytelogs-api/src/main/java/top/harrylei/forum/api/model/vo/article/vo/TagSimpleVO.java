@@ -2,6 +2,7 @@ package top.harrylei.forum.api.model.vo.article.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import top.harrylei.forum.api.model.enums.article.TagTypeEnum;
 
 /**
  * 标签展示对象
@@ -25,12 +26,6 @@ public class TagSimpleVO {
     /**
      * 标签类型：1-系统标签，2-自定义标签
      */
-    @Schema(description = "标签编码", example = "0")
-    private Integer tagType;
-
-    /**
-     * 标签描述
-     */
-    @Schema(description = "标签描述", example = "0")
-    private String tagTypeLabel;
+    @Schema(description = "标签类型", example = "{\"code\":1,\"label\":\"系统标签\"}")
+    private TagTypeEnum tagType;
 }

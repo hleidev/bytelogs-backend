@@ -58,7 +58,5 @@ public interface TagStructMapper {
     void updateDOFromDTO(TagDTO tagDTO, @MappingTarget TagDO tagDO);
 
     @Mapping(target = "tagId", source = "id")
-    @Mapping(target = "tagType", source = "tagType", qualifiedByName = "TagTypeEnumToCode")
-    @Mapping(target = "tagTypeLabel", source = "tagType", qualifiedByName = "TagTypeEnumToLabel")
     TagSimpleVO toSimpleVO(TagDTO tagDTO);
 }
