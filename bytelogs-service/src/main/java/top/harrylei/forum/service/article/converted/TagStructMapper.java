@@ -30,12 +30,6 @@ public interface TagStructMapper {
     @Mapping(target = "tagType", source = "tagType", qualifiedByName = "TagTypeEnumToCode")
     TagDO toDO(TagDTO tag);
 
-    @Mapping(target = "status", source = "status", qualifiedByName = "PublishStatusEnumToCode")
-    @Mapping(target = "statusLabel", source = "status", qualifiedByName = "PublishStatusEnumToLabel")
-    @Mapping(target = "tagType", source = "tagType", qualifiedByName = "TagTypeEnumToCode")
-    @Mapping(target = "tagTypeLabel", source = "tagType", qualifiedByName = "TagTypeEnumToLabel")
-    @Mapping(target = "deleted", source = "deleted", qualifiedByName = "YesOrNoEnumToCode")
-    @Mapping(target = "deletedLabel", source = "deleted", qualifiedByName = "YesOrNoEnumToLabel")
     TagVO toVO(TagDTO tag);
 
     @Mapping(target = "status", source = "status", qualifiedByName = "CodeToPublishStatusEnum")

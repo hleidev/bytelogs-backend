@@ -9,16 +9,20 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import top.harrylei.forum.api.model.enums.base.CodeLabelEnum;
+import top.harrylei.forum.api.model.enums.base.EnumCodeLabelJsonSerializer;
 
 /**
  * 发布状态枚举
  */
 @Getter
 @AllArgsConstructor
-public enum PublishStatusEnum {
+@JsonSerialize(using = EnumCodeLabelJsonSerializer.class)
+public enum PublishStatusEnum implements CodeLabelEnum {
 
     /**
      * 未发布

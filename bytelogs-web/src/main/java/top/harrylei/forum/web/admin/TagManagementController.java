@@ -22,7 +22,6 @@ import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.TagQueryParam;
 import top.harrylei.forum.core.security.permission.RequiresAdmin;
 import top.harrylei.forum.service.article.converted.TagStructMapper;
-import top.harrylei.forum.service.article.service.TagManagementService;
 import top.harrylei.forum.service.article.service.TagService;
 
 /**
@@ -38,7 +37,6 @@ import top.harrylei.forum.service.article.service.TagService;
 public class TagManagementController {
 
     private final TagService tagService;
-    private final TagManagementService tagManagementService;
     private final TagStructMapper tagStructMapper;
 
     /**
@@ -61,7 +59,7 @@ public class TagManagementController {
      * @param queryParam 标签及筛选参数
      * @return 标签列表
      */
-    @Operation(summary = "标签查询", description = "支持按名称、状态、时间等多条件标签查询")
+    @Operation(summary = "分页查询", description = "支持按名称、状态、时间等多条件分页查询")
     @GetMapping("/page")
     public ResVO<PageVO<TagVO>> page(TagQueryParam queryParam) {
         PageVO<TagDTO> page = tagService.page(queryParam);
