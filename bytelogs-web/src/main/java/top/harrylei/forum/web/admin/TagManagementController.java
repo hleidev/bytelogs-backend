@@ -16,7 +16,7 @@ import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.article.dto.TagDTO;
 import top.harrylei.forum.api.model.vo.article.req.TagReq;
-import top.harrylei.forum.api.model.vo.article.vo.TagDetailVO;
+import top.harrylei.forum.api.model.vo.article.vo.TagVO;
 import top.harrylei.forum.api.model.vo.page.PageHelper;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.TagQueryParam;
@@ -63,7 +63,7 @@ public class TagManagementController {
      */
     @Operation(summary = "标签查询", description = "支持按名称、状态、时间等多条件标签查询")
     @GetMapping("/page")
-    public ResVO<PageVO<TagDetailVO>> page(TagQueryParam queryParam) {
+    public ResVO<PageVO<TagVO>> page(TagQueryParam queryParam) {
         PageVO<TagDTO> page = tagService.page(queryParam);
         return ResVO.ok(PageHelper.map(page, tagStructMapper::toDetailVO));
     }
@@ -77,14 +77,14 @@ public class TagManagementController {
      */
     @Operation(summary = "编辑标签", description = "后台编辑标签")
     @PutMapping("/{tagId}")
-    public ResVO<TagDetailVO> update(@NotNull(message = "标签ID为空") @PathVariable Long tagId,
-        @Valid @RequestBody TagReq tagReq) {
+    public ResVO<TagVO> update(@NotNull(message = "标签ID为空") @PathVariable Long tagId,
+                               @Valid @RequestBody TagReq tagReq) {
         TagDTO tagDTO = tagStructMapper.toDTO(tagReq);
         tagDTO.setId(tagId);
 
         TagDTO tag = tagService.update(tagDTO);
-        TagDetailVO tagDetailVO = tagStructMapper.toDetailVO(tag);
-        return ResVO.ok(tagDetailVO);
+        TagVO tagVO = tagStructMapper.toDetailVO(tag);
+        return ResVO.ok(tagVO);
     }
 
     /**
@@ -120,9 +120,9 @@ public class TagManagementController {
      */
     @Operation(summary = "已删标签", description = "后台查看已删除的标签")
     @GetMapping("/deleted")
-    public ResVO<List<TagDetailVO>> listDeleted() {
+    public ResVO<List<TagVO>> listDeleted() {
         List<TagDTO> list = tagService.listDeleted();
-        List<TagDetailVO> result = list.stream().map(tagStructMapper::toDetailVO).toList();
+        List<TagVO> result = list.stream().map(tagStructMapper::toDetailVO).toList();
         return ResVO.ok(result);
     }
 

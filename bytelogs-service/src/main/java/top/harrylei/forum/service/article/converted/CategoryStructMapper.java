@@ -6,8 +6,8 @@ import org.mapstruct.MappingTarget;
 
 import top.harrylei.forum.api.model.vo.article.dto.CategoryDTO;
 import top.harrylei.forum.api.model.vo.article.req.CategoryReq;
-import top.harrylei.forum.api.model.vo.article.vo.CategoryDetailVO;
 import top.harrylei.forum.api.model.vo.article.vo.CategoryVO;
+import top.harrylei.forum.api.model.vo.article.vo.CategorySimpleVO;
 import top.harrylei.forum.core.common.converter.EnumConverter;
 import top.harrylei.forum.service.article.repository.entity.CategoryDO;
 
@@ -26,7 +26,7 @@ public interface CategoryStructMapper {
 
     @Mapping(target = "categoryId", source = "id")
     @Mapping(target = "status", source = "status", qualifiedByName = "PublishStatusEnumToCode")
-    CategoryDetailVO toDetailVO(CategoryDTO categoryDTO);
+    CategoryVO toDetailVO(CategoryDTO categoryDTO);
 
     @Mapping(target = "status", source = "status", qualifiedByName = "CodeToPublishStatusEnum")
     CategoryDTO toDTO(CategoryDO categoryDO);
@@ -39,5 +39,5 @@ public interface CategoryStructMapper {
     CategoryDTO toDTO(CategoryReq categoryReq);
 
     @Mapping(target = "categoryId", source = "id")
-    CategoryVO toVO(CategoryDTO category);
+    CategorySimpleVO toVO(CategoryDTO category);
 }

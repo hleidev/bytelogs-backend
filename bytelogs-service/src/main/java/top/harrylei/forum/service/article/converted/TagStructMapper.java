@@ -8,8 +8,8 @@ import org.mapstruct.Named;
 import top.harrylei.forum.api.model.enums.article.TagTypeEnum;
 import top.harrylei.forum.api.model.vo.article.dto.TagDTO;
 import top.harrylei.forum.api.model.vo.article.req.TagReq;
-import top.harrylei.forum.api.model.vo.article.vo.TagDetailVO;
 import top.harrylei.forum.api.model.vo.article.vo.TagVO;
+import top.harrylei.forum.api.model.vo.article.vo.TagSimpleVO;
 import top.harrylei.forum.core.common.converter.EnumConverter;
 import top.harrylei.forum.service.article.repository.entity.TagDO;
 
@@ -36,7 +36,7 @@ public interface TagStructMapper {
     @Mapping(target = "tagTypeLabel", source = "tagType", qualifiedByName = "TagTypeEnumToLabel")
     @Mapping(target = "deleted", source = "deleted", qualifiedByName = "YesOrNoEnumToCode")
     @Mapping(target = "deletedLabel", source = "deleted", qualifiedByName = "YesOrNoEnumToLabel")
-    TagDetailVO toDetailVO(TagDTO tag);
+    TagVO toDetailVO(TagDTO tag);
 
     @Mapping(target = "status", source = "status", qualifiedByName = "CodeToPublishStatusEnum")
     @Mapping(target = "deleted", source = "deleted", qualifiedByName = "CodeToYesOrNoEnum")
@@ -66,5 +66,5 @@ public interface TagStructMapper {
     @Mapping(target = "tagId", source = "id")
     @Mapping(target = "tagType", source = "tagType", qualifiedByName = "TagTypeEnumToCode")
     @Mapping(target = "tagTypeLabel", source = "tagType", qualifiedByName = "TagTypeEnumToLabel")
-    TagVO toVO(TagDTO tagDTO);
+    TagSimpleVO toVO(TagDTO tagDTO);
 }
