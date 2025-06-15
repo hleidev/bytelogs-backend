@@ -15,7 +15,7 @@ import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.article.dto.ArticleDTO;
 import top.harrylei.forum.api.model.vo.article.req.ArticlePostReq;
 import top.harrylei.forum.core.context.ReqInfoContext;
-import top.harrylei.forum.core.security.permission.RequiresAdmin;
+import top.harrylei.forum.core.security.permission.RequiresLogin;
 import top.harrylei.forum.service.article.converted.ArticleStructMapper;
 import top.harrylei.forum.service.article.service.ArticleService;
 
@@ -40,7 +40,7 @@ public class ArticleController {
      * @return 新建文章ID
      */
     @Operation(summary = "新建文章", description = "用户新建文章（支持草稿/提交审核）")
-    @RequiresAdmin
+    @RequiresLogin
     @PostMapping
     public ResVO<Long> create(@Valid @RequestBody ArticlePostReq articlePostReq) {
         ArticleDTO articleDTO = articleStructMapper.toDTO(articlePostReq);

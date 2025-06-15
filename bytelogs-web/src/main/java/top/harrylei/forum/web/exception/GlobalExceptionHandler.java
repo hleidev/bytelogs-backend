@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -104,6 +105,15 @@ public class GlobalExceptionHandler {
         String message = String.format("缺少必需的请求参数: %s", e.getParameterName());
         log.warn("缺少请求参数：{}, 请求路径：{}", message, request.getRequestURI());
         return ResVO.fail(ErrorCodeEnum.PARAM_MISSING, e.getParameterName());
+    }
+
+    /**
+     * 处理权限不足异常
+     */
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResVO<Void> handleAuthDenied(HttpServletRequest req, AuthorizationDeniedException e) {
+        log.warn("权限不足, 请求路径: {}", req.getRequestURI());
+        return ResVO.fail(ErrorCodeEnum.FORBIDDEN, "权限不足");
     }
 
     /**
