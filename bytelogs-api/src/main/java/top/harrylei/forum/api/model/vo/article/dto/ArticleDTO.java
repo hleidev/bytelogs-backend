@@ -7,8 +7,8 @@ import lombok.EqualsAndHashCode;
 import top.harrylei.forum.api.model.entity.BaseDTO;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.article.ArticleSourceEnum;
-import top.harrylei.forum.api.model.enums.article.ArticleStatusEnum;
 import top.harrylei.forum.api.model.enums.article.ArticleTypeEnum;
+import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 
 /**
  * 文章详情传输对象
@@ -45,12 +45,12 @@ public class ArticleDTO extends BaseDTO {
     /**
      * 类目ID
      */
-    private CategoryDTO categoryId;
+    private Long categoryId;
 
     /**
      * 标签列表
      */
-    private List<TagDTO> tags;
+    private List<Long> tagIds;
 
     /**
      * 用户ID
@@ -83,9 +83,9 @@ public class ArticleDTO extends BaseDTO {
     private YesOrNoEnum cream;
 
     /**
-     * 状态：0-草稿，1-待审核，2-已发布，3-下架，4-驳回
+     * 状态：0-未发布，1-已发布
      */
-    private ArticleStatusEnum status;
+    private PublishStatusEnum status;
 
     /**
      * 当前发布版本号

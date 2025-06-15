@@ -32,7 +32,12 @@ public enum PublishStatusEnum implements CodeLabelEnum {
     /**
      * 已发布
      */
-    PUBLISHED(1, "已发布");
+    PUBLISHED(1, "已发布"),
+
+    /**
+     * 待审核
+     */
+    REVIEW(2, "待审核");
 
     // 状态编码（唯一标识）
     private final Integer code;

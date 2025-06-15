@@ -82,7 +82,7 @@ public class ArticleDO extends BaseDO {
     private Integer cream;
 
     /**
-     * 状态：0-草稿，1-待审核，2-已发布，3-下架，4-驳回
+     * 状态：0-未发布，1-已发布，2-待审核
      */
     private Integer status;
 

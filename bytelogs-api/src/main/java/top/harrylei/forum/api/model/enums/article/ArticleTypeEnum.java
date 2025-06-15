@@ -7,16 +7,20 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import top.harrylei.forum.api.model.enums.base.CodeLabelEnum;
+import top.harrylei.forum.api.model.enums.base.EnumCodeLabelJsonSerializer;
 
 /**
  * 文章类型枚举
  */
 @Getter
 @AllArgsConstructor
-public enum ArticleTypeEnum {
+@JsonSerialize(using = EnumCodeLabelJsonSerializer.class)
+public enum ArticleTypeEnum implements CodeLabelEnum {
 
     /**
      * 博文

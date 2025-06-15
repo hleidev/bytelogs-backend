@@ -29,7 +29,7 @@ public class ArticleDetailDO extends BaseDO {
     /**
      * 版本号
      */
-    private Integer version;
+    private Long version;
 
     /**
      * 文章内容

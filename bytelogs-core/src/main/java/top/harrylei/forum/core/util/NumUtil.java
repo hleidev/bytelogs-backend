@@ -1,8 +1,7 @@
 package top.harrylei.forum.core.util;
 
 /**
- * @author YiHui
- * @date 2022/8/31
+ * 数值类型通用工具类
  */
 public class NumUtil {
 

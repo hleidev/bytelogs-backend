@@ -1,11 +1,13 @@
 package top.harrylei.forum.api.model.entity;
 
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Data;
-
 import java.util.Date;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+import lombok.experimental.Accessors;
+
 @Data
+@Accessors(chain = true)
 public class BaseDTO {
     @Schema(description = "业务主键")
     private Long id;
