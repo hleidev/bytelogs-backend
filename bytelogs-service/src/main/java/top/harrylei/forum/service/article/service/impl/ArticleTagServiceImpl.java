@@ -95,4 +95,14 @@ public class ArticleTagServiceImpl implements ArticleTagService {
     public void deleteByArticleId(Long articleId) {
         articleTagDAO.updateDeleted(articleId, YesOrNoEnum.YES.getCode());
     }
+
+    /**
+     * 恢复绑定
+     *
+     * @param articleId 文章ID
+     */
+    @Override
+    public void restoreByArticleId(Long articleId) {
+        articleTagDAO.updateDeleted(articleId, YesOrNoEnum.NO.getCode());
+    }
 }

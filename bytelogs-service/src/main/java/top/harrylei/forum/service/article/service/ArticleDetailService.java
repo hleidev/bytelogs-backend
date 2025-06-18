@@ -33,4 +33,10 @@ public interface ArticleDetailService {
      * @param articleId 文章ID
      */
     void deleteByArticleId(Long articleId);
+
+    /**
+     * 恢复文章内容
+     * @param articleId 文章ID
+     */
+    void restoreByArticleId(Long articleId);
 }

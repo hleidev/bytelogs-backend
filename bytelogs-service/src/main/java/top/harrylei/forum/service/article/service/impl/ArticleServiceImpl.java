@@ -74,8 +74,8 @@ public class ArticleServiceImpl implements ArticleService {
         articleDTO.setUserId(author);
         ArticleDO articleDO = articleStructMapper.toDO(articleDTO);
 
-        ArticleDTO article = transactionTemplate.execute(status ->
-                updateArticle(articleDO, articleDTO.getContent(), articleDTO.getTagIds()));
+        ArticleDTO article = transactionTemplate
+            .execute(status -> updateArticle(articleDO, articleDTO.getContent(), articleDTO.getTagIds()));
 
         ArticleVO result = articleStructMapper.toVO(article);
 
@@ -100,10 +100,23 @@ public class ArticleServiceImpl implements ArticleService {
     public void deleteArticle(Long articleId, Long operatorId) {
         checkArticleEditPermission(articleId, operatorId);
 
-        articleDAO.updateDeleted(articleId, YesOrNoEnum.YES.getCode());
-        articleDetailService.deleteByArticleId(articleId);
-        articleTagService.deleteByArticleId(articleId);
+        updateArticleDeletedStatus(articleId, YesOrNoEnum.YES);
         log.info("删除文章成功 articleId={} operatorId={}", articleId, operatorId);
+    }
+
+    /**
+     * 恢复文章
+     *
+     * @param articleId 文章ID
+     * @param operatorId 操作者ID
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void restoreArticle(Long articleId, Long operatorId) {
+        checkArticleEditPermission(articleId, operatorId, true);
+
+        updateArticleDeletedStatus(articleId, YesOrNoEnum.NO);
+        log.info("恢复文章成功 articleId={} operatorId={}", articleId, operatorId);
     }
 
     /**
@@ -114,8 +127,24 @@ public class ArticleServiceImpl implements ArticleService {
      * @return 文章原作者ID
      */
     private Long checkArticleEditPermission(Long articleId, Long editorId) {
+        return checkArticleEditPermission(articleId, editorId, false);
+    }
+
+    /**
+     * 检查文章编辑权限
+     *
+     * @param articleId 文章ID
+     * @param editorId 编辑者ID
+     * @return 文章原作者ID
+     */
+    private Long checkArticleEditPermission(Long articleId, Long editorId, Boolean includeDeleted) {
         // 检查文章是否存在
-        Long authorId = articleDAO.getUserIdByArticleId(articleId);
+        Long authorId;
+        if (includeDeleted) {
+            authorId = articleDAO.getUserIdByArticleIdIncludeDeleted(articleId);
+        } else {
+            authorId = articleDAO.getUserIdByArticleId(articleId);
+        }
         ExceptionUtil.requireNonNull(authorId, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "articleId=" + articleId);
 
         // 只有作者本人或管理员可以修改文章
@@ -124,6 +153,18 @@ public class ArticleServiceImpl implements ArticleService {
         ExceptionUtil.errorIf(!isAuthor && !isAdmin, ErrorCodeEnum.FORBID_ERROR_MIXED, "当前用户非管理员，无权限修改非自己我的文章");
 
         return authorId;
+    }
+
+    private void updateArticleDeletedStatus(Long articleId, YesOrNoEnum deletedStatus) {
+        articleDAO.updateDeleted(articleId, deletedStatus.getCode());
+
+        if (YesOrNoEnum.YES.equals(deletedStatus)) {
+            articleDetailService.deleteByArticleId(articleId);
+            articleTagService.deleteByArticleId(articleId);
+        } else {
+            articleDetailService.restoreByArticleId(articleId);
+            articleTagService.restoreByArticleId(articleId);
+        }
     }
 
     private Long insertArticle(ArticleDO article, String content, List<Long> tagIds) {

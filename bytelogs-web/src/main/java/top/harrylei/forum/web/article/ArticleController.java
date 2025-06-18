@@ -74,4 +74,17 @@ public class ArticleController {
         articleService.deleteArticle(articleId, ReqInfoContext.getContext().getUserId());
         return ResVO.ok();
     }
+
+    /**
+     * 恢复文章
+     *
+     * @param articleId 文章ID
+     * @return 操作结果
+     */
+    @Operation(summary = "恢复文章", description = "用户恢复文章")
+    @PutMapping("/{articleId}/restore")
+    public ResVO<Void> restore(@PathVariable Long articleId) {
+        articleService.restoreArticle(articleId, ReqInfoContext.getContext().getUserId());
+        return ResVO.ok();
+    }
 }

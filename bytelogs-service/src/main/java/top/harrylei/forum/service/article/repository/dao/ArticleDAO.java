@@ -33,4 +33,8 @@ public class ArticleDAO extends ServiceImpl<ArticleMapper, ArticleDO> {
     public void updateDeleted(Long articleId, Integer deleted) {
         getBaseMapper().updateDeleted(articleId, deleted);
     }
+
+    public Long getUserIdByArticleIdIncludeDeleted(Long articleId) {
+        return getBaseMapper().getUserIdByArticleIdIncludeDeleted(articleId);
+    }
 }

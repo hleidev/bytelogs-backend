@@ -37,4 +37,11 @@ public interface ArticleTagService {
      * @param articleId 文章ID
      */
     void deleteByArticleId(Long articleId);
+
+    /**
+     * 恢复绑定
+     * 
+     * @param articleId 文章ID
+     */
+    void restoreByArticleId(Long articleId);
 }

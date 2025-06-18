@@ -68,4 +68,13 @@ public class ArticleDetailServiceImpl implements ArticleDetailService {
     public void deleteByArticleId(Long articleId) {
         articleDetailDAO.updateDeleted(articleId, YesOrNoEnum.YES.getCode());
     }
+
+    /**
+     * 恢复文章内容
+     * @param articleId 文章ID
+     */
+    @Override
+    public void restoreByArticleId(Long articleId) {
+        articleDetailDAO.updateDeleted(articleId, YesOrNoEnum.NO.getCode());
+    }
 }

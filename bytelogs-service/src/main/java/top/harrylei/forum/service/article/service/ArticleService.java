@@ -32,4 +32,12 @@ public interface ArticleService {
      * @param operatorId 操作者ID
      */
     void deleteArticle(Long articleId, Long operatorId);
+
+    /**
+     * 恢复文章
+     *
+     * @param articleId 文章ID
+     * @param operatorId 操作者ID
+     */
+    void restoreArticle(Long articleId, Long operatorId);
 }

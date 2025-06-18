@@ -13,4 +13,7 @@ public interface ArticleMapper extends BaseMapper<ArticleDO> {
 
     @Update("update article set deleted = #{deleted} where id = #{articleId}")
     void updateDeleted(Long articleId, Integer deleted);
+
+    @Select("select user_id from article where id = #{articleId}")
+    Long getUserIdByArticleIdIncludeDeleted(Long articleId);
 }
