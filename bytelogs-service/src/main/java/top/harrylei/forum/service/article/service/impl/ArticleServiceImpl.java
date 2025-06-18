@@ -13,15 +13,19 @@ import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.article.dto.ArticleDTO;
+import top.harrylei.forum.api.model.vo.article.vo.ArticleDetailVO;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
 import top.harrylei.forum.api.model.vo.article.vo.CategorySimpleVO;
 import top.harrylei.forum.api.model.vo.article.vo.TagSimpleVO;
+import top.harrylei.forum.api.model.vo.user.dto.UserInfoDetailDTO;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.service.article.converted.ArticleStructMapper;
 import top.harrylei.forum.service.article.repository.dao.ArticleDAO;
 import top.harrylei.forum.service.article.repository.entity.ArticleDO;
 import top.harrylei.forum.service.article.service.*;
+import top.harrylei.forum.service.user.converted.UserStructMapper;
+import top.harrylei.forum.service.user.service.cache.UserCacheService;
 
 /**
  * 文章服务实现类
@@ -38,6 +42,8 @@ public class ArticleServiceImpl implements ArticleService {
     private final ArticleTagService articleTagService;
     private final TagService tagService;
     private final CategoryService categoryService;
+    private final UserStructMapper userStructMapper;
+    private final UserCacheService userCacheService;
 
     /**
      * 保存文章
@@ -117,6 +123,32 @@ public class ArticleServiceImpl implements ArticleService {
 
         updateArticleDeletedStatus(articleId, YesOrNoEnum.NO);
         log.info("恢复文章成功 articleId={} operatorId={}", articleId, operatorId);
+    }
+
+    /**
+     * 文章详细
+     *
+     * @param articleId 文章ID
+     * @return 文章详细展示对象
+     */
+    @Override
+    public ArticleDetailVO getArticleDetail(Long articleId) {
+        ArticleDTO dto = getCompleteArticle(articleId);
+
+        UserInfoDetailDTO user = userCacheService.getUserInfo(dto.getUserId());
+
+        checkArticleViewPermission(dto);
+
+        return new ArticleDetailVO().setArticle(articleStructMapper.toVO(dto)).setAuthor(userStructMapper.toVO(user));
+    }
+
+    private void checkArticleViewPermission(ArticleDTO article) {
+        // 已删除文章 or 草稿或审核中文章仅作者和管理员可见
+        if (YesOrNoEnum.YES.equals(article.getDeleted()) || !PublishStatusEnum.PUBLISHED.equals(article.getStatus())) {
+            boolean isAdmin = ReqInfoContext.getContext().isAdmin();
+            boolean isAuthor = Objects.equals(article.getUserId(), ReqInfoContext.getContext().getUserId());
+            ExceptionUtil.errorIf(!isAdmin && !isAuthor, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "文章不存在");
+        }
     }
 
     /**
@@ -209,10 +241,8 @@ public class ArticleServiceImpl implements ArticleService {
      * @return 完整的文章DTO
      */
     private ArticleDTO getCompleteArticle(Long articleId) {
-        ArticleDO article = articleDAO.getByArticleId(articleId);
-        if (article == null) {
-            return null;
-        }
+        ArticleDO article = articleDAO.getById(articleId);
+        ExceptionUtil.requireNonNull(article, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "articleId=" + articleId);
 
         ArticleDTO result = articleStructMapper.toDTO(article);
 

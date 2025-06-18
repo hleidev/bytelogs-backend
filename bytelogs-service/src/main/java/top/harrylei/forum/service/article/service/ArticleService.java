@@ -1,6 +1,7 @@
 package top.harrylei.forum.service.article.service;
 
 import top.harrylei.forum.api.model.vo.article.dto.ArticleDTO;
+import top.harrylei.forum.api.model.vo.article.vo.ArticleDetailVO;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
 
 /**
@@ -40,4 +41,12 @@ public interface ArticleService {
      * @param operatorId 操作者ID
      */
     void restoreArticle(Long articleId, Long operatorId);
+
+    /**
+     * 文章详细
+     *
+     * @param articleId 文章ID
+     * @return 文章详细展示对象
+     */
+    ArticleDetailVO getArticleDetail(Long articleId);
 }

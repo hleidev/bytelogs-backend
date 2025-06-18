@@ -16,7 +16,7 @@ import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@Schema(description = "文章详情对象")
+@Schema(description = "文章对象")
 public class ArticleVO extends BaseVO {
 
     /**

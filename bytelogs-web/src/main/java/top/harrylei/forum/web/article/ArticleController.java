@@ -12,6 +12,7 @@ import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.article.dto.ArticleDTO;
 import top.harrylei.forum.api.model.vo.article.req.ArticlePostReq;
 import top.harrylei.forum.api.model.vo.article.req.ArticleUpdateReq;
+import top.harrylei.forum.api.model.vo.article.vo.ArticleDetailVO;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.security.permission.RequiresLogin;
@@ -86,5 +87,18 @@ public class ArticleController {
     public ResVO<Void> restore(@PathVariable Long articleId) {
         articleService.restoreArticle(articleId, ReqInfoContext.getContext().getUserId());
         return ResVO.ok();
+    }
+
+    /**
+     * 文章详细
+     * 
+     * @param articleId 文章ID
+     * @return 文章详细
+     */
+    @Operation(summary = "文章详细", description = "用户查询文章详细")
+    @GetMapping("/{articleId}")
+    public ResVO<ArticleDetailVO> detail(@PathVariable Long articleId) {
+        ArticleDetailVO vo = articleService.getArticleDetail(articleId);
+        return ResVO.ok(vo);
     }
 }
