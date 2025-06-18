@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
+import top.harrylei.forum.api.model.vo.article.vo.TagSimpleVO;
 import top.harrylei.forum.api.model.vo.page.Page;
 import top.harrylei.forum.api.model.vo.page.param.TagQueryParam;
 import top.harrylei.forum.service.article.repository.entity.TagDO;
@@ -71,5 +72,9 @@ public class TagDAO extends ServiceImpl<TagMapper, TagDO> {
                 .eq(TagDO::getStatus, PublishStatusEnum.PUBLISHED.getCode())
                 .eq(TagDO::getDeleted, YesOrNoEnum.NO.getCode())
                 .list();
+    }
+
+    public List<TagSimpleVO> listSimpleTagsByIds(List<Long> ids) {
+        return getBaseMapper().listSimpleTagsByIds(ids);
     }
 }

@@ -3,11 +3,26 @@ package top.harrylei.forum.service.article.service;
 public interface ArticleDetailService {
 
     /**
-     * 插入文章详细
+     * 保持文章内容
      * 
      * @param articleId 文章ID
      * @param content 文章内容
      * @return 文章详细ID
      */
-    Long insertArticleDetail(Long articleId, String content);
+    Long saveArticleContent(Long articleId, String content);
+
+    /**
+     * 更新文章内容
+     *
+     * @param articleId 文章ID
+     * @param content 文章内容
+     */
+    void updateArticleContent(Long articleId, String content);
+
+    /**
+     * 查询文章内容
+     * @param articleId 文章ID
+     * @return 文章内容
+     */
+    String getContentByArticleId(Long articleId);
 }

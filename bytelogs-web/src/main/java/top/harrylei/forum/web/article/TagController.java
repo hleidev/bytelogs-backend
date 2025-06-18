@@ -12,7 +12,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.vo.ResVO;
-import top.harrylei.forum.api.model.vo.article.dto.TagDTO;
 import top.harrylei.forum.api.model.vo.article.vo.TagSimpleVO;
 import top.harrylei.forum.service.article.converted.TagStructMapper;
 import top.harrylei.forum.service.article.service.TagService;
@@ -39,8 +38,7 @@ public class TagController {
     @Operation(summary = "标签列表", description = "用户标签列表查询")
     @GetMapping("/list")
     public ResVO<List<TagSimpleVO>> list() {
-        List<TagDTO> list = tagService.list();
-        List<TagSimpleVO> result = list.stream().map(tagStructMapper::toSimpleVO).toList();
+        List<TagSimpleVO> result = tagService.listSimpleTags();
         return ResVO.ok(result);
     }
 }

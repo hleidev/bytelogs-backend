@@ -13,5 +13,21 @@ public interface ArticleTagService {
      * @param articleId 文章ID
      * @param tagIds 标签ID列表
      */
-    void batchBindTagsToArticle(Long articleId, List<Long> tagIds);
+    void saveBatch(Long articleId, List<Long> tagIds);
+
+    /**
+     * 更新文章的标签
+     * 
+     * @param articleId 文章ID
+     * @param tagIds 标签ID列表
+     */
+    void updateTags(Long articleId, List<Long> tagIds);
+
+    /**
+     * 通过文章ID查询标签ID列表
+     * 
+     * @param articleId 文章ID
+     * @return 标签ID列表
+     */
+    List<Long> listTagIdsByArticleId(Long articleId);
 }

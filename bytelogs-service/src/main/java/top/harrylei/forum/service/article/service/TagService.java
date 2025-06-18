@@ -3,6 +3,7 @@ package top.harrylei.forum.service.article.service;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.article.dto.TagDTO;
+import top.harrylei.forum.api.model.vo.article.vo.TagSimpleVO;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.TagQueryParam;
 
@@ -61,6 +62,16 @@ public interface TagService {
 
     /**
      * 标签列表
+     *
+     * @return 返回标签简单展示对象
      */
-    List<TagDTO> list();
+    List<TagSimpleVO> listSimpleTags();
+
+    /**
+     * 根据标签列表查询获取标签简单展示对象列表
+     * 
+     * @param tagIds 标签列表查询
+     * @return 简单展示对象列表
+     */
+    List<TagSimpleVO> listSimpleTagsByTagsIds(List<Long> tagIds);
 }

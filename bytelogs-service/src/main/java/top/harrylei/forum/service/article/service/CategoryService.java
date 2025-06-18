@@ -4,6 +4,7 @@ import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.vo.article.req.CategoryReq;
 import top.harrylei.forum.api.model.vo.article.dto.CategoryDTO;
+import top.harrylei.forum.api.model.vo.article.vo.CategorySimpleVO;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.CategoryQueryParam;
 
@@ -65,4 +66,12 @@ public interface CategoryService {
      * @return 分类列表
      */
     List<CategoryDTO> list();
+
+    /**
+     * 根据分类ID获取分类简单展示对象
+     * 
+     * @param id 分类ID
+     * @return 分类简单展示对象
+     */
+    CategorySimpleVO getSimpleCategoryByCategoryId(Long id);
 }

@@ -6,6 +6,8 @@ import top.harrylei.forum.service.article.repository.dao.ArticleDetailDAO;
 import top.harrylei.forum.service.article.repository.entity.ArticleDetailDO;
 import top.harrylei.forum.service.article.service.ArticleDetailService;
 
+import java.util.Objects;
+
 /**
  * 文章详细实现类
  */
@@ -16,18 +18,43 @@ public class ArticleDetailServiceImpl implements ArticleDetailService {
     private final ArticleDetailDAO articleDetailDAO;
 
     /**
-     * 插入文章详细
+     * 保存文章详细
      *
      * @param articleId 文章ID
      * @param content 文章内容
      * @return 文章详细ID
      */
     @Override
-    public Long insertArticleDetail(Long articleId, String content) {
+    public Long saveArticleContent(Long articleId, String content) {
         ArticleDetailDO articleDetail = new ArticleDetailDO()
                 .setArticleId(articleId)
                 .setContent(content);
         articleDetailDAO.save(articleDetail);
         return articleDetail.getId();
+    }
+
+    /**
+     * 更新文章内容
+     *
+     * @param articleId 文章ID
+     * @param content 文章内容
+     */
+    @Override
+    public void updateArticleContent(Long articleId, String content) {
+        ArticleDetailDO articleDetail = articleDetailDAO.getLatestContentAndVersionByArticleId(articleId);
+        if (!Objects.equals(content, articleDetail.getContent())) {
+            articleDetailDAO.updateArticleContent(articleId, content, articleDetail.getVersion());
+        }
+    }
+
+    /**
+     * 查询文章内容
+     * @param articleId 文章ID
+     * @return 文章内容
+     */
+    @Override
+    public String getContentByArticleId(Long articleId) {
+        ArticleDetailDO articleDetailDO = articleDetailDAO.getLatestContentAndVersionByArticleId(articleId);
+        return articleDetailDO.getContent();
     }
 }

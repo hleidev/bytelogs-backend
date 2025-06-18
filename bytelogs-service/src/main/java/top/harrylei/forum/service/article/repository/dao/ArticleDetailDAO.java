@@ -1,7 +1,9 @@
 package top.harrylei.forum.service.article.repository.dao;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Repository;
+
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+
 import top.harrylei.forum.service.article.repository.entity.ArticleDetailDO;
 import top.harrylei.forum.service.article.repository.mapper.ArticleDetailMapper;
 
@@ -11,4 +13,11 @@ import top.harrylei.forum.service.article.repository.mapper.ArticleDetailMapper;
 @Repository
 public class ArticleDetailDAO extends ServiceImpl<ArticleDetailMapper, ArticleDetailDO> {
 
+    public void updateArticleContent(Long articleId, String content, Long version) {
+        this.getBaseMapper().updateArticleContent(articleId, content, version);
+    }
+
+    public ArticleDetailDO getLatestContentAndVersionByArticleId(Long articleId) {
+        return getBaseMapper().getLatestContentAndVersionByArticleId(articleId);
+    }
 }

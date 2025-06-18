@@ -1,10 +1,7 @@
 package top.harrylei.forum.web.article;
 
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,6 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.article.dto.ArticleDTO;
 import top.harrylei.forum.api.model.vo.article.req.ArticlePostReq;
+import top.harrylei.forum.api.model.vo.article.req.ArticleUpdateReq;
+import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.security.permission.RequiresLogin;
 import top.harrylei.forum.service.article.converted.ArticleStructMapper;
@@ -47,5 +46,20 @@ public class ArticleController {
         articleDTO.setUserId(ReqInfoContext.getContext().getUserId());
         Long articleId = articleService.saveArticle(articleDTO);
         return ResVO.ok(articleId);
+    }
+
+    /**
+     * 编辑文章
+     *
+     * @param articleUpdateReq 文章更新请求
+     * @return 文章VO
+     */
+    @Operation(summary = "编辑文章", description = "用户编辑文章")
+    @RequiresLogin
+    @PutMapping
+    public ResVO<ArticleVO> update(@Valid @RequestBody ArticleUpdateReq articleUpdateReq) {
+        ArticleDTO articleDTO = articleStructMapper.toDTO(articleUpdateReq);
+        ArticleVO article = articleService.updateArticle(articleDTO, ReqInfoContext.getContext().getUserId());
+        return ResVO.ok(article);
     }
 }

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.harrylei.forum.service.article.repository.mapper.CategoryMapper">
+
+    <resultMap id="CategorySimpleVOMap" type="top.harrylei.forum.api.model.vo.article.vo.CategorySimpleVO">
+        <id property="categoryId" column="id"/>
+        <result property="categoryName" column="category_name"/>
+    </resultMap>
+
+    <select id="getSimpleById" resultMap="CategorySimpleVOMap">
+        select id, category_name
+        from category
+        where id = #{id} and deleted = 0
+    </select>
+
+</mapper>

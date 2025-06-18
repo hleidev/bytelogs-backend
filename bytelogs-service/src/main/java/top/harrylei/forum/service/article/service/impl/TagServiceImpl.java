@@ -11,6 +11,7 @@ import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.article.dto.TagDTO;
+import top.harrylei.forum.api.model.vo.article.vo.TagSimpleVO;
 import top.harrylei.forum.api.model.vo.page.Page;
 import top.harrylei.forum.api.model.vo.page.PageHelper;
 import top.harrylei.forum.api.model.vo.page.PageVO;
@@ -140,11 +141,25 @@ public class TagServiceImpl implements TagService {
      * 标签列表
      */
     @Override
-    public List<TagDTO> list() {
-        List<TagDO> list = tagDAO.listPublishedAndUndeleted();
-        return list.stream()
+    public List<TagSimpleVO> listSimpleTags() {
+        List<TagDO> doList = tagDAO.listPublishedAndUndeleted();
+        if (doList == null || doList.isEmpty()) {
+            return List.of();
+        }
+        return doList.stream()
                 .filter(Objects::nonNull)
-                .map(tagStructMapper::toDTO)
+                .map(tagStructMapper::toSimpleVO)
                 .toList();
+    }
+
+    /**
+     * 根据标签列表查询获取标签简单展示对象列表
+     *
+     * @param tagIds 标签列表查询
+     * @return 简单展示对象列表
+     */
+    @Override
+    public List<TagSimpleVO> listSimpleTagsByTagsIds(List<Long> tagIds) {
+        return tagDAO.listSimpleTagsByIds(tagIds);
     }
 }
