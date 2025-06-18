@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.service.article.repository.dao.ArticleTagDAO;
 import top.harrylei.forum.service.article.repository.entity.ArticleTagDO;
 import top.harrylei.forum.service.article.service.ArticleTagService;
@@ -83,5 +84,15 @@ public class ArticleTagServiceImpl implements ArticleTagService {
     @Override
     public List<Long> listTagIdsByArticleId(Long articleId) {
         return articleTagDAO.listTagIdsByArticleId(articleId);
+    }
+
+    /**
+     * 删除绑定
+     *
+     * @param articleId 文章ID
+     */
+    @Override
+    public void deleteByArticleId(Long articleId) {
+        articleTagDAO.updateDeleted(articleId, YesOrNoEnum.YES.getCode());
     }
 }

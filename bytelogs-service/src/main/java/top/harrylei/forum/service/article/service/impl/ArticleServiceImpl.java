@@ -4,11 +4,13 @@ import java.util.List;
 import java.util.Objects;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
+import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.article.dto.ArticleDTO;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
@@ -88,6 +90,23 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     /**
+     * 删除文章
+     *
+     * @param articleId 文章ID
+     * @param operatorId 操作者ID
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void deleteArticle(Long articleId, Long operatorId) {
+        checkArticleEditPermission(articleId, operatorId);
+
+        articleDAO.updateDeleted(articleId, YesOrNoEnum.YES.getCode());
+        articleDetailService.deleteByArticleId(articleId);
+        articleTagService.deleteByArticleId(articleId);
+        log.info("删除文章成功 articleId={} operatorId={}", articleId, operatorId);
+    }
+
+    /**
      * 检查文章编辑权限
      *
      * @param articleId 文章ID
@@ -102,7 +121,7 @@ public class ArticleServiceImpl implements ArticleService {
         // 只有作者本人或管理员可以修改文章
         boolean isAdmin = ReqInfoContext.getContext().isAdmin();
         boolean isAuthor = Objects.equals(authorId, editorId);
-        ExceptionUtil.errorIf(!isAuthor && !isAdmin, ErrorCodeEnum.FORBID_ERROR_MIXED, "当前用户非管理员，无权限修改他人的文章");
+        ExceptionUtil.errorIf(!isAuthor && !isAdmin, ErrorCodeEnum.FORBID_ERROR_MIXED, "当前用户非管理员，无权限修改非自己我的文章");
 
         return authorId;
     }

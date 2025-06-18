@@ -20,4 +20,8 @@ public class ArticleDetailDAO extends ServiceImpl<ArticleDetailMapper, ArticleDe
     public ArticleDetailDO getLatestContentAndVersionByArticleId(Long articleId) {
         return getBaseMapper().getLatestContentAndVersionByArticleId(articleId);
     }
+
+    public void updateDeleted(Long articleId, Integer deleted) {
+        getBaseMapper().updateDeleted(articleId, deleted);
+    }
 }

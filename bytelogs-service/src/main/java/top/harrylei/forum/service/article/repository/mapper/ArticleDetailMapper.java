@@ -13,4 +13,7 @@ public interface ArticleDetailMapper extends BaseMapper<ArticleDetailDO> {
 
     @Select("select content, version from article_detail where article_id = #{articleId} and deleted = 0 order by version desc limit 1")
     ArticleDetailDO getLatestContentAndVersionByArticleId(Long articleId);
+
+    @Update("update article_detail set deleted = #{deleted} where article_id = #{articleId}")
+    void updateDeleted(Long articleId, Integer deleted);
 }

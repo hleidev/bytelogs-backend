@@ -22,4 +22,8 @@ public class ArticleTagDAO extends ServiceImpl<ArticleTagMapper, ArticleTagDO> {
     public List<ArticleTagDO> listIdAndTagIdByArticleId(Long articleId) {
         return getBaseMapper().listIdAndTagIdByArticleId(articleId);
     }
+
+    public void updateDeleted(Long articleId, Integer deleted) {
+        getBaseMapper().updateDeleted(articleId, deleted);
+    }
 }

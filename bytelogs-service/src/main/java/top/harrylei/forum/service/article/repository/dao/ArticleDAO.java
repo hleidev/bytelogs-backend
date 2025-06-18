@@ -29,4 +29,8 @@ public class ArticleDAO extends ServiceImpl<ArticleMapper, ArticleDO> {
                 .eq(ArticleDO::getDeleted, YesOrNoEnum.NO.getCode())
                 .one();
     }
+
+    public void updateDeleted(Long articleId, Integer deleted) {
+        getBaseMapper().updateDeleted(articleId, deleted);
+    }
 }

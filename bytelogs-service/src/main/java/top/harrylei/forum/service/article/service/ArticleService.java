@@ -24,4 +24,12 @@ public interface ArticleService {
      * @return 文章VO
      */
     ArticleVO updateArticle(ArticleDTO articleDTO, Long editor);
+
+    /**
+     * 删除文章
+     *
+     * @param articleId 文章ID
+     * @param operatorId 操作者ID
+     */
+    void deleteArticle(Long articleId, Long operatorId);
 }

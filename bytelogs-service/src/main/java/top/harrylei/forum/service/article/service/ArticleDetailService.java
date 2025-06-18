@@ -21,8 +21,16 @@ public interface ArticleDetailService {
 
     /**
      * 查询文章内容
+     * 
      * @param articleId 文章ID
      * @return 文章内容
      */
     String getContentByArticleId(Long articleId);
+
+    /**
+     * 删除文章内容
+     * 
+     * @param articleId 文章ID
+     */
+    void deleteByArticleId(Long articleId);
 }

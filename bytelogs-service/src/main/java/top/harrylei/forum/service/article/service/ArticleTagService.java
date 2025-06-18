@@ -30,4 +30,11 @@ public interface ArticleTagService {
      * @return 标签ID列表
      */
     List<Long> listTagIdsByArticleId(Long articleId);
+
+    /**
+     * 删除绑定
+     * 
+     * @param articleId 文章ID
+     */
+    void deleteByArticleId(Long articleId);
 }

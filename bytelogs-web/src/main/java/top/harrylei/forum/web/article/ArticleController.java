@@ -26,6 +26,7 @@ import top.harrylei.forum.service.article.service.ArticleService;
 @RestController
 @RequestMapping("/api/v1/article")
 @RequiredArgsConstructor
+@RequiresLogin
 @Validated
 public class ArticleController {
 
@@ -39,7 +40,6 @@ public class ArticleController {
      * @return 新建文章ID
      */
     @Operation(summary = "新建文章", description = "用户新建文章（支持草稿/提交审核）")
-    @RequiresLogin
     @PostMapping
     public ResVO<Long> create(@Valid @RequestBody ArticlePostReq articlePostReq) {
         ArticleDTO articleDTO = articleStructMapper.toDTO(articlePostReq);
@@ -55,11 +55,23 @@ public class ArticleController {
      * @return 文章VO
      */
     @Operation(summary = "编辑文章", description = "用户编辑文章")
-    @RequiresLogin
     @PutMapping
     public ResVO<ArticleVO> update(@Valid @RequestBody ArticleUpdateReq articleUpdateReq) {
         ArticleDTO articleDTO = articleStructMapper.toDTO(articleUpdateReq);
         ArticleVO article = articleService.updateArticle(articleDTO, ReqInfoContext.getContext().getUserId());
         return ResVO.ok(article);
+    }
+
+    /**
+     * 删除文章
+     * 
+     * @param articleId 文章ID
+     * @return 操作结果
+     */
+    @Operation(summary = "删除文章", description = "用户删除文章")
+    @DeleteMapping("/{articleId}")
+    public ResVO<Void> delete(@PathVariable Long articleId) {
+        articleService.deleteArticle(articleId, ReqInfoContext.getContext().getUserId());
+        return ResVO.ok();
     }
 }

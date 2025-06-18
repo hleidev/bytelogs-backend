@@ -2,6 +2,7 @@ package top.harrylei.forum.service.article.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.service.article.repository.dao.ArticleDetailDAO;
 import top.harrylei.forum.service.article.repository.entity.ArticleDetailDO;
 import top.harrylei.forum.service.article.service.ArticleDetailService;
@@ -56,5 +57,15 @@ public class ArticleDetailServiceImpl implements ArticleDetailService {
     public String getContentByArticleId(Long articleId) {
         ArticleDetailDO articleDetailDO = articleDetailDAO.getLatestContentAndVersionByArticleId(articleId);
         return articleDetailDO.getContent();
+    }
+
+    /**
+     * 删除文章内容
+     *
+     * @param articleId 文章ID
+     */
+    @Override
+    public void deleteByArticleId(Long articleId) {
+        articleDetailDAO.updateDeleted(articleId, YesOrNoEnum.YES.getCode());
     }
 }
