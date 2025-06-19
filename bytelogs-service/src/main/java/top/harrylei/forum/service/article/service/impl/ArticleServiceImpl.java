@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Objects;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import lombok.RequiredArgsConstructor;
@@ -66,16 +65,15 @@ public class ArticleServiceImpl implements ArticleService {
      * 编辑文章
      *
      * @param articleDTO 文章传输对象
-     * @param editor 编辑用户ID
      * @return 文章VO
      */
     @Override
-    public ArticleVO updateArticle(ArticleDTO articleDTO, Long editor) {
+    public ArticleVO updateArticle(ArticleDTO articleDTO) {
         Long articleId = articleDTO.getId();
         ExceptionUtil.requireNonNull(articleId, ErrorCodeEnum.PARAM_ERROR, "文章ID不能为空");
 
         // 权限校验并获取原作者ID
-        Long author = checkArticleEditPermission(articleId, editor);
+        Long author = checkArticleEditPermission(articleId);
 
         articleDTO.setUserId(author);
         ArticleDO articleDO = articleStructMapper.toDO(articleDTO);
@@ -91,7 +89,7 @@ public class ArticleServiceImpl implements ArticleService {
         CategorySimpleVO categorySimple = categoryService.getSimpleCategoryByCategoryId(articleDTO.getCategoryId());
         result.setCategory(categorySimple);
 
-        log.info("编辑文章成功 editor={} articleId={}", editor, articleDTO.getId());
+        log.info("编辑文章成功 editor={} articleId={}", ReqInfoContext.getContext().getUserId(), articleDTO.getId());
         return result;
     }
 
@@ -99,30 +97,26 @@ public class ArticleServiceImpl implements ArticleService {
      * 删除文章
      *
      * @param articleId 文章ID
-     * @param operatorId 操作者ID
      */
-    @Transactional(rollbackFor = Exception.class)
     @Override
-    public void deleteArticle(Long articleId, Long operatorId) {
-        checkArticleEditPermission(articleId, operatorId);
+    public void deleteArticle(Long articleId) {
+        checkArticleEditPermission(articleId);
 
         updateArticleDeletedStatus(articleId, YesOrNoEnum.YES);
-        log.info("删除文章成功 articleId={} operatorId={}", articleId, operatorId);
+        log.info("删除文章成功 articleId={} operatorId={}", articleId, ReqInfoContext.getContext().getUserId());
     }
 
     /**
      * 恢复文章
      *
      * @param articleId 文章ID
-     * @param operatorId 操作者ID
      */
-    @Transactional(rollbackFor = Exception.class)
     @Override
-    public void restoreArticle(Long articleId, Long operatorId) {
-        checkArticleEditPermission(articleId, operatorId, true);
+    public void restoreArticle(Long articleId) {
+        checkArticleEditPermission(articleId, true);
 
         updateArticleDeletedStatus(articleId, YesOrNoEnum.NO);
-        log.info("恢复文章成功 articleId={} operatorId={}", articleId, operatorId);
+        log.info("恢复文章成功 articleId={} operatorId={}", articleId, ReqInfoContext.getContext().getUserId());
     }
 
     /**
@@ -159,22 +153,15 @@ public class ArticleServiceImpl implements ArticleService {
         }
 
         // 权限校验
-        Long operatorId = ReqInfoContext.getContext().getUserId();
-        checkArticleEditPermission(articleId, operatorId);
+        checkArticleEditPermission(articleId);
 
-        Integer dbStatus = articleDO.getStatus();
-
-        // 更新DO对象状态，用于后续判断
-        articleDO.setStatus(status.getCode());
-
-        // 明确的逻辑：只要是发布状态，非管理员均需审核
-        if (needToReview(articleDO)) {
+        if (needToReview(status)) {
             status = PublishStatusEnum.REVIEW;
         }
 
         // 如果审核后的最终状态与数据库当前状态一致，也无需更新
-        if (Objects.equals(dbStatus, status.getCode())) {
-            log.info("文章状态经审核校验后未变更，无需更新 articleId={} dbStatus={}", articleId, dbStatus);
+        if (Objects.equals(articleDO.getStatus(), status.getCode())) {
+            log.info("文章状态经审核校验后未变更，无需更新 articleId={} status={}", articleId, status);
             return;
         }
 
@@ -182,7 +169,8 @@ public class ArticleServiceImpl implements ArticleService {
         int updated = articleDAO.updateStatus(articleId, status.getCode());
         ExceptionUtil.errorIf(updated == 0, ErrorCodeEnum.SYSTEM_ERROR, "更新文章状态失败");
 
-        log.info("文章状态更新成功 articleId={} dbStatus={} operatorId={}", articleId, dbStatus, operatorId);
+        log.info("文章状态更新成功 articleId={} status={} operatorId={}", articleId, status,
+            ReqInfoContext.getContext().getUserId());
     }
 
     private void checkArticleViewPermission(ArticleDTO article) {
@@ -198,21 +186,14 @@ public class ArticleServiceImpl implements ArticleService {
      * 检查文章编辑权限
      *
      * @param articleId 文章ID
-     * @param editorId 编辑者ID
+     * @param includeDeleted 是否包含已删除的文章
      * @return 文章原作者ID
      */
-    private Long checkArticleEditPermission(Long articleId, Long editorId) {
-        return checkArticleEditPermission(articleId, editorId, false);
-    }
+    private Long checkArticleEditPermission(Long articleId, Boolean includeDeleted) {
+        // 获取当前操作者ID
+        Long operatorId = ReqInfoContext.getContext().getUserId();
+        boolean isAdmin = ReqInfoContext.getContext().isAdmin();
 
-    /**
-     * 检查文章编辑权限
-     *
-     * @param articleId 文章ID
-     * @param editorId 编辑者ID
-     * @return 文章原作者ID
-     */
-    private Long checkArticleEditPermission(Long articleId, Long editorId, Boolean includeDeleted) {
         // 检查文章是否存在
         Long authorId;
         if (includeDeleted) {
@@ -223,11 +204,20 @@ public class ArticleServiceImpl implements ArticleService {
         ExceptionUtil.requireNonNull(authorId, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "articleId=" + articleId);
 
         // 只有作者本人或管理员可以修改文章
-        boolean isAdmin = ReqInfoContext.getContext().isAdmin();
-        boolean isAuthor = Objects.equals(authorId, editorId);
-        ExceptionUtil.errorIf(!isAuthor && !isAdmin, ErrorCodeEnum.FORBID_ERROR_MIXED, "当前用户非管理员，无权限修改非自己我的文章");
+        boolean isAuthor = Objects.equals(authorId, operatorId);
+        ExceptionUtil.errorIf(!isAuthor && !isAdmin, ErrorCodeEnum.FORBID_ERROR_MIXED, "当前用户非管理员，无权限修改非自己的文章");
 
         return authorId;
+    }
+
+    /**
+     * 检查文章编辑权限 - 不包含已删除的文章
+     *
+     * @param articleId 文章ID
+     * @return 文章原作者ID
+     */
+    private Long checkArticleEditPermission(Long articleId) {
+        return checkArticleEditPermission(articleId, false);
     }
 
     private void updateArticleDeletedStatus(Long articleId, YesOrNoEnum deletedStatus) {
@@ -243,7 +233,7 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     private Long insertArticle(ArticleDO article, String content, List<Long> tagIds) {
-        if (needToReview(article)) {
+        if (needToReview(article.getStatus())) {
             article.setStatus(PublishStatusEnum.REVIEW.getCode());
         }
         Long articleId = articleDAO.insertArticle(article);
@@ -256,16 +246,21 @@ public class ArticleServiceImpl implements ArticleService {
         return articleId;
     }
 
-    private boolean needToReview(ArticleDO article) {
+    private boolean needToReview(Integer status) {
+        ExceptionUtil.requireNonNull(status, ErrorCodeEnum.PARAM_MISSING, "状态码");
+        return needToReview(PublishStatusEnum.fromCode(status));
+    }
+
+    private boolean needToReview(PublishStatusEnum status) {
         if (ReqInfoContext.getContext().isAdmin()) {
             return false;
         }
         // TODO 添加用户白名单
-        return Objects.equals(article.getStatus(), PublishStatusEnum.PUBLISHED.getCode());
+        return Objects.equals(status, PublishStatusEnum.PUBLISHED);
     }
 
     private ArticleDTO updateArticle(ArticleDO article, String content, List<Long> tagIds) {
-        if (needToReview(article)) {
+        if (needToReview(article.getStatus())) {
             article.setStatus(PublishStatusEnum.PUBLISHED.getCode());
         }
 

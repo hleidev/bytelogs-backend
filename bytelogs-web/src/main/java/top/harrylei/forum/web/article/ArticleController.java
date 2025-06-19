@@ -61,7 +61,7 @@ public class ArticleController {
     @PutMapping
     public ResVO<ArticleVO> update(@Valid @RequestBody ArticleUpdateReq articleUpdateReq) {
         ArticleDTO articleDTO = articleStructMapper.toDTO(articleUpdateReq);
-        ArticleVO article = articleService.updateArticle(articleDTO, ReqInfoContext.getContext().getUserId());
+        ArticleVO article = articleService.updateArticle(articleDTO);
         return ResVO.ok(article);
     }
 
@@ -74,7 +74,7 @@ public class ArticleController {
     @Operation(summary = "删除文章", description = "用户删除文章")
     @DeleteMapping("/{articleId}")
     public ResVO<Void> delete(@PathVariable Long articleId) {
-        articleService.deleteArticle(articleId, ReqInfoContext.getContext().getUserId());
+        articleService.deleteArticle(articleId);
         return ResVO.ok();
     }
 
@@ -87,7 +87,7 @@ public class ArticleController {
     @Operation(summary = "恢复文章", description = "用户恢复文章")
     @PutMapping("/{articleId}/restore")
     public ResVO<Void> restore(@PathVariable Long articleId) {
-        articleService.restoreArticle(articleId, ReqInfoContext.getContext().getUserId());
+        articleService.restoreArticle(articleId);
         return ResVO.ok();
     }
 

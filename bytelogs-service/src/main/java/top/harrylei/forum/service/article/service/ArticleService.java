@@ -22,26 +22,23 @@ public interface ArticleService {
      * 编辑文章
      *
      * @param articleDTO 文章传输对象
-     * @param editor 编辑用户ID
      * @return 文章VO
      */
-    ArticleVO updateArticle(ArticleDTO articleDTO, Long editor);
+    ArticleVO updateArticle(ArticleDTO articleDTO);
 
     /**
      * 删除文章
      *
      * @param articleId 文章ID
-     * @param operatorId 操作者ID
      */
-    void deleteArticle(Long articleId, Long operatorId);
+    void deleteArticle(Long articleId);
 
     /**
      * 恢复文章
      *
      * @param articleId 文章ID
-     * @param operatorId 操作者ID
      */
-    void restoreArticle(Long articleId, Long operatorId);
+    void restoreArticle(Long articleId);
 
     /**
      * 文章详细
