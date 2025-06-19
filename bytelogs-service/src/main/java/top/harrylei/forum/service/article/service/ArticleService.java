@@ -1,5 +1,6 @@
 package top.harrylei.forum.service.article.service;
 
+import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.article.dto.ArticleDTO;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleDetailVO;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
@@ -49,4 +50,11 @@ public interface ArticleService {
      * @return 文章详细展示对象
      */
     ArticleDetailVO getArticleDetail(Long articleId);
+
+    /**
+     * 更新状态
+     *
+     * @param status 修改状态
+     */
+    void updateArticleStatus(Long articleId, PublishStatusEnum status);
 }

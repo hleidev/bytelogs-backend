@@ -37,4 +37,8 @@ public class ArticleDAO extends ServiceImpl<ArticleMapper, ArticleDO> {
     public Long getUserIdByArticleIdIncludeDeleted(Long articleId) {
         return getBaseMapper().getUserIdByArticleIdIncludeDeleted(articleId);
     }
+
+    public int updateStatus(Long articleId, Integer status) {
+        return getBaseMapper().updateStatus(articleId, status);
+    }
 }

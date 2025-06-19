@@ -142,6 +142,49 @@ public class ArticleServiceImpl implements ArticleService {
         return new ArticleDetailVO().setArticle(articleStructMapper.toVO(dto)).setAuthor(userStructMapper.toVO(user));
     }
 
+    /**
+     * 更新状态
+     *
+     * @param status 修改状态
+     */
+    @Override
+    public void updateArticleStatus(Long articleId, PublishStatusEnum status) {
+        ArticleDO articleDO = articleDAO.getByArticleId(articleId);
+        ExceptionUtil.requireNonNull(articleDO, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "文章不存在或已被删除");
+
+        // 检查目标状态与原状态是否相同，相同则无需更新
+        if (Objects.equals(articleDO.getStatus(), status.getCode())) {
+            log.info("文章状态未变更，无需更新 articleId={} status={}", articleId, status);
+            return;
+        }
+
+        // 权限校验
+        Long operatorId = ReqInfoContext.getContext().getUserId();
+        checkArticleEditPermission(articleId, operatorId);
+
+        Integer dbStatus = articleDO.getStatus();
+
+        // 更新DO对象状态，用于后续判断
+        articleDO.setStatus(status.getCode());
+
+        // 明确的逻辑：只要是发布状态，非管理员均需审核
+        if (needToReview(articleDO)) {
+            status = PublishStatusEnum.REVIEW;
+        }
+
+        // 如果审核后的最终状态与数据库当前状态一致，也无需更新
+        if (Objects.equals(dbStatus, status.getCode())) {
+            log.info("文章状态经审核校验后未变更，无需更新 articleId={} dbStatus={}", articleId, dbStatus);
+            return;
+        }
+
+        // 执行最终状态更新
+        int updated = articleDAO.updateStatus(articleId, status.getCode());
+        ExceptionUtil.errorIf(updated == 0, ErrorCodeEnum.SYSTEM_ERROR, "更新文章状态失败");
+
+        log.info("文章状态更新成功 articleId={} dbStatus={} operatorId={}", articleId, dbStatus, operatorId);
+    }
+
     private void checkArticleViewPermission(ArticleDTO article) {
         // 已删除文章 or 草稿或审核中文章仅作者和管理员可见
         if (YesOrNoEnum.YES.equals(article.getDeleted()) || !PublishStatusEnum.PUBLISHED.equals(article.getStatus())) {

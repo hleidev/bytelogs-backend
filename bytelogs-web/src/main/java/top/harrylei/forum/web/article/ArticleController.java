@@ -1,5 +1,6 @@
 package top.harrylei.forum.web.article;
 
+import jakarta.validation.constraints.NotNull;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -8,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.article.dto.ArticleDTO;
 import top.harrylei.forum.api.model.vo.article.req.ArticlePostReq;
@@ -100,5 +102,19 @@ public class ArticleController {
     public ResVO<ArticleDetailVO> detail(@PathVariable Long articleId) {
         ArticleDetailVO vo = articleService.getArticleDetail(articleId);
         return ResVO.ok(vo);
+    }
+
+    /**
+     * 修改状态
+     * 
+     * @param status 修改状态
+     * @return 操作结果
+     */
+    @Operation(summary = "修改状态", description = "用户修改文章状态")
+    @PutMapping("/{articleId}/status")
+    public ResVO<Void> updateStatus(@NotNull(message = "文章ID不能为空") @PathVariable Long articleId,
+                                    @NotNull(message = "文章状态不能为空") @RequestBody PublishStatusEnum status) {
+        articleService.updateArticleStatus(articleId, status);
+        return ResVO.ok();
     }
 }
