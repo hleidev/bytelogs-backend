@@ -1,6 +1,7 @@
 package top.harrylei.forum.core.exception;
 
 import org.springframework.lang.NonNull;
+
 import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
 
 /**
@@ -21,16 +22,6 @@ public class ExceptionUtil {
     }
 
     /**
-     * 抛出业务通知异常
-     *
-     * @param errorCodeEnum 状态枚举
-     * @param args 状态消息格式化参数
-     */
-    public static void notice(@NonNull ErrorCodeEnum errorCodeEnum, Object... args) {
-        throw new ForumAdviceException(errorCodeEnum, args);
-    }
-
-    /**
      * 条件业务异常：当条件为真时抛出异常
      *
      * @param condition 触发条件
@@ -40,19 +31,6 @@ public class ExceptionUtil {
     public static void errorIf(boolean condition, @NonNull ErrorCodeEnum errorCodeEnum, Object... args) {
         if (condition) {
             error(errorCodeEnum, args);
-        }
-    }
-
-    /**
-     * 条件业务异常：当条件为真时抛出异常
-     *
-     * @param condition 触发条件
-     * @param errorCodeEnum 状态枚举
-     * @param args 状态消息格式化参数
-     */
-    public static void noticeIf(boolean condition, @NonNull ErrorCodeEnum errorCodeEnum, Object... args) {
-        if (condition) {
-            notice(errorCodeEnum, args);
         }
     }
 

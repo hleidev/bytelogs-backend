@@ -23,7 +23,6 @@ import top.harrylei.forum.api.model.vo.user.dto.UserInfoDetailDTO;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.service.article.converted.ArticleStructMapper;
-import top.harrylei.forum.service.article.converted.ArticleStructMapperImpl;
 import top.harrylei.forum.service.article.repository.dao.ArticleDAO;
 import top.harrylei.forum.service.article.repository.entity.ArticleDO;
 import top.harrylei.forum.service.article.service.*;
@@ -47,7 +46,6 @@ public class ArticleServiceImpl implements ArticleService {
     private final CategoryService categoryService;
     private final UserStructMapper userStructMapper;
     private final UserCacheService userCacheService;
-    private final ArticleStructMapperImpl articleStructMapperImpl;
 
     /**
      * 保存文章

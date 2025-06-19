@@ -30,7 +30,7 @@ import top.harrylei.forum.service.article.service.ArticleService;
 @Tag(name = "文章相关模块", description = "提供文章的基础查询")
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/article")
+@RequestMapping("/api/v1/articles")
 @RequiredArgsConstructor
 @Validated
 public class ArticleController {

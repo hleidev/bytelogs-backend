@@ -25,7 +25,6 @@ import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
 import top.harrylei.forum.api.model.vo.ResVO;
-import top.harrylei.forum.core.exception.ForumAdviceException;
 import top.harrylei.forum.core.exception.ForumException;
 
 /**
@@ -50,23 +49,12 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * 处理业务通知类异常 ForumAdviceException
-     * <p>
-     * 区别于普通业务异常，通知类异常仅用于告知前端特定的业务状态，不记录错误日志
-     */
-    @ExceptionHandler(ForumAdviceException.class)
-    @ResponseStatus(HttpStatus.OK)
-    public ResVO<Void> handleForumAdviceException(ForumAdviceException e) {
-        return ResVO.fail(e.getErrorCodeEnum().getCode(), e.getMessage());
-    }
-
-    /**
      * 处理参数校验异常（Bean Validation 注解校验）
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResVO<Void> handleMethodArgumentNotValidException(MethodArgumentNotValidException e,
-        HttpServletRequest request) {
+                                                             HttpServletRequest request) {
         String message = buildBindingResultErrorMessage(e.getBindingResult());
         log.warn("参数校验失败：{}, 请求路径：{}", message, request.getRequestURI());
         return ResVO.fail(ErrorCodeEnum.PARAM_VALIDATE_FAILED, message);
@@ -101,7 +89,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MissingServletRequestParameterException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResVO<Void> handleMissingServletRequestParameterException(MissingServletRequestParameterException e,
-        HttpServletRequest request) {
+                                                                     HttpServletRequest request) {
         String message = String.format("缺少必需的请求参数: %s", e.getParameterName());
         log.warn("缺少请求参数：{}, 请求路径：{}", message, request.getRequestURI());
         return ResVO.fail(ErrorCodeEnum.PARAM_MISSING, e.getParameterName());
@@ -111,7 +99,7 @@ public class GlobalExceptionHandler {
      * 处理权限不足异常
      */
     @ExceptionHandler(AuthorizationDeniedException.class)
-    public ResVO<Void> handleAuthDenied(HttpServletRequest req, AuthorizationDeniedException e) {
+    public ResVO<Void> handleAuthDenied(HttpServletRequest req) {
         log.warn("权限不足, 请求路径: {}", req.getRequestURI());
         return ResVO.fail(ErrorCodeEnum.FORBIDDEN, "权限不足");
     }
@@ -122,7 +110,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
     public ResVO<Void> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e,
-        HttpServletRequest request) {
+                                                                    HttpServletRequest request) {
         String message = String.format("不支持的请求方法: %s", e.getMethod());
         log.warn("请求方法不支持：{}, 请求路径：{}", message, request.getRequestURI());
         return ResVO.fail(ErrorCodeEnum.METHOD_NOT_ALLOWED);
@@ -134,7 +122,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResVO<Void> handleHttpMessageNotReadableException(HttpMessageNotReadableException e,
-        HttpServletRequest request) {
+                                                             HttpServletRequest request) {
         log.warn("请求体解析失败：{}, 请求路径：{}", e.getMessage(), request.getRequestURI());
         return ResVO.fail(ErrorCodeEnum.PARAM_ERROR, "请求体格式错误或解析失败");
     }
@@ -145,7 +133,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResVO<Void> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e,
-        HttpServletRequest request) {
+                                                                 HttpServletRequest request) {
         String type = e.getRequiredType() == null ? "未知" : e.getRequiredType().getSimpleName();
         String message = String.format("参数类型不匹配, 参数 '%s' 应为 %s 类型", e.getName(), type);
         log.warn("参数类型不匹配：{}, 请求路径：{}", message, request.getRequestURI());
