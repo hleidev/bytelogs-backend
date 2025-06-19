@@ -101,4 +101,5 @@ public class ArticleDTO extends BaseDTO {
      * 是否删除
      */
     private YesOrNoEnum deleted;
+
 }

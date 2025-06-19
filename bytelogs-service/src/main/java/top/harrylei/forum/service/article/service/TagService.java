@@ -66,12 +66,4 @@ public interface TagService {
      * @return 返回标签简单展示对象
      */
     List<TagSimpleVO> listSimpleTags();
-
-    /**
-     * 根据标签列表查询获取标签简单展示对象列表
-     * 
-     * @param tagIds 标签列表查询
-     * @return 简单展示对象列表
-     */
-    List<TagSimpleVO> listSimpleTagsByTagsIds(List<Long> tagIds);
 }

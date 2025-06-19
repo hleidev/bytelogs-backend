@@ -1,15 +1,16 @@
 package top.harrylei.forum.service.article.repository.dao;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import java.util.List;
+
 import org.springframework.stereotype.Repository;
-import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
+
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
-import top.harrylei.forum.api.model.vo.article.vo.CategorySimpleVO;
+import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.page.param.CategoryQueryParam;
 import top.harrylei.forum.service.article.repository.entity.CategoryDO;
 import top.harrylei.forum.service.article.repository.mapper.CategoryMapper;
-
-import java.util.List;
 
 /**
  * 分类访问对象
@@ -58,9 +59,5 @@ public class CategoryDAO extends ServiceImpl<CategoryMapper, CategoryDO> {
                 .eq(CategoryDO::getStatus, PublishStatusEnum.PUBLISHED.getCode())
                 .eq(CategoryDO::getDeleted, YesOrNoEnum.NO.getCode())
                 .list();
-    }
-
-    public CategorySimpleVO getSimpleById(Long id) {
-        return this.getBaseMapper().getSimpleById(id);
     }
 }

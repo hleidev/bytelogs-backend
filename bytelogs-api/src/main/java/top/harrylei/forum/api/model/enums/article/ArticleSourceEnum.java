@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -32,6 +33,7 @@ public enum ArticleSourceEnum {
     TRANSLATION(3, "翻译");
 
     // 编码（唯一标识）
+    @EnumValue
     private final Integer code;
 
     // 描述（用于展示）

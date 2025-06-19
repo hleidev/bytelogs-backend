@@ -151,15 +151,4 @@ public class TagServiceImpl implements TagService {
                 .map(tagStructMapper::toSimpleVO)
                 .toList();
     }
-
-    /**
-     * 根据标签列表查询获取标签简单展示对象列表
-     *
-     * @param tagIds 标签列表查询
-     * @return 简单展示对象列表
-     */
-    @Override
-    public List<TagSimpleVO> listSimpleTagsByTagsIds(List<Long> tagIds) {
-        return tagDAO.listSimpleTagsByIds(tagIds);
-    }
 }

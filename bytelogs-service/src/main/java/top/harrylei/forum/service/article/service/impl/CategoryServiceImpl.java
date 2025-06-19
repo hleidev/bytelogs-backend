@@ -13,7 +13,6 @@ import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.article.dto.CategoryDTO;
 import top.harrylei.forum.api.model.vo.article.req.CategoryReq;
-import top.harrylei.forum.api.model.vo.article.vo.CategorySimpleVO;
 import top.harrylei.forum.api.model.vo.page.Page;
 import top.harrylei.forum.api.model.vo.page.PageHelper;
 import top.harrylei.forum.api.model.vo.page.PageVO;
@@ -187,16 +186,5 @@ public class CategoryServiceImpl implements CategoryService {
                 .map(categoryStructMapper::toDTO)
                 .sorted(Comparator.comparingInt(CategoryDTO::getSort).reversed())
                 .toList();
-    }
-
-    /**
-     * 根据分类ID获取分类简单展示对象
-     *
-     * @param id 分类ID
-     * @return 分类简单展示对象
-     */
-    @Override
-    public CategorySimpleVO getSimpleCategoryByCategoryId(Long id) {
-        return categoryDAO.getSimpleById(id);
     }
 }
