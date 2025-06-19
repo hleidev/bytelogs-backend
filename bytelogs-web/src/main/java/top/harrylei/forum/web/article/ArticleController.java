@@ -1,12 +1,12 @@
 package top.harrylei.forum.web.article;
 
-import jakarta.validation.constraints.NotNull;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
@@ -16,6 +16,9 @@ import top.harrylei.forum.api.model.vo.article.req.ArticlePostReq;
 import top.harrylei.forum.api.model.vo.article.req.ArticleUpdateReq;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleDetailVO;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
+import top.harrylei.forum.api.model.vo.page.Page;
+import top.harrylei.forum.api.model.vo.page.PageHelper;
+import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.security.permission.RequiresLogin;
 import top.harrylei.forum.service.article.converted.ArticleStructMapper;
@@ -29,7 +32,6 @@ import top.harrylei.forum.service.article.service.ArticleService;
 @RestController
 @RequestMapping("/api/v1/article")
 @RequiredArgsConstructor
-@RequiresLogin
 @Validated
 public class ArticleController {
 
@@ -42,6 +44,7 @@ public class ArticleController {
      * @param articlePostReq 文章信息请求
      * @return 新建文章ID
      */
+    @RequiresLogin
     @Operation(summary = "新建文章", description = "用户新建文章（支持草稿/提交审核）")
     @PostMapping
     public ResVO<Long> create(@Valid @RequestBody ArticlePostReq articlePostReq) {
@@ -57,6 +60,7 @@ public class ArticleController {
      * @param articleUpdateReq 文章更新请求
      * @return 文章VO
      */
+    @RequiresLogin
     @Operation(summary = "编辑文章", description = "用户编辑文章")
     @PutMapping
     public ResVO<ArticleVO> update(@Valid @RequestBody ArticleUpdateReq articleUpdateReq) {
@@ -71,6 +75,7 @@ public class ArticleController {
      * @param articleId 文章ID
      * @return 操作结果
      */
+    @RequiresLogin
     @Operation(summary = "删除文章", description = "用户删除文章")
     @DeleteMapping("/{articleId}")
     public ResVO<Void> delete(@PathVariable Long articleId) {
@@ -84,6 +89,7 @@ public class ArticleController {
      * @param articleId 文章ID
      * @return 操作结果
      */
+    @RequiresLogin
     @Operation(summary = "恢复文章", description = "用户恢复文章")
     @PutMapping("/{articleId}/restore")
     public ResVO<Void> restore(@PathVariable Long articleId) {
@@ -97,6 +103,7 @@ public class ArticleController {
      * @param articleId 文章ID
      * @return 文章详细
      */
+    @RequiresLogin
     @Operation(summary = "文章详细", description = "用户查询文章详细")
     @GetMapping("/{articleId}")
     public ResVO<ArticleDetailVO> detail(@PathVariable Long articleId) {
@@ -110,11 +117,25 @@ public class ArticleController {
      * @param status 修改状态
      * @return 操作结果
      */
+    @RequiresLogin
     @Operation(summary = "修改状态", description = "用户修改文章状态")
     @PutMapping("/{articleId}/status")
     public ResVO<Void> updateStatus(@NotNull(message = "文章ID不能为空") @PathVariable Long articleId,
                                     @NotNull(message = "文章状态不能为空") @RequestBody PublishStatusEnum status) {
         articleService.updateArticleStatus(articleId, status);
         return ResVO.ok();
+    }
+
+    /**
+     * 分页查询
+     *
+     * @param req 分页请求参数
+     * @return 分页查询结果
+     */
+    @Operation(summary = "分页查询", description = "用户分页查询文章")
+    @GetMapping("/page")
+    public ResVO<PageVO<ArticleVO>> page(@Valid Page req) {
+         PageVO<ArticleDTO> page = articleService.page(req);
+         return ResVO.ok(PageHelper.map(page, articleStructMapper::toVO));
     }
 }

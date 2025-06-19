@@ -8,6 +8,8 @@ import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.service.article.repository.entity.ArticleDO;
 import top.harrylei.forum.service.article.repository.mapper.ArticleMapper;
 
+import java.util.List;
+
 /**
  * 文章访问对象
  */
@@ -40,5 +42,18 @@ public class ArticleDAO extends ServiceImpl<ArticleMapper, ArticleDO> {
 
     public int updateStatus(Long articleId, Integer status) {
         return getBaseMapper().updateStatus(articleId, status);
+    }
+
+    public List<ArticleDO> listArticle(String limitSql) {
+        return lambdaQuery()
+                .eq(ArticleDO::getDeleted, YesOrNoEnum.NO.getCode())
+                .last(limitSql)
+                .list();
+    }
+
+    public Long countArticle() {
+        return lambdaQuery()
+                .eq(ArticleDO::getDeleted, YesOrNoEnum.NO.getCode())
+                .count();
     }
 }

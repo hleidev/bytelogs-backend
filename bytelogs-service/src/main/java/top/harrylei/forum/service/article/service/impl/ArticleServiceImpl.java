@@ -16,10 +16,14 @@ import top.harrylei.forum.api.model.vo.article.vo.ArticleDetailVO;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
 import top.harrylei.forum.api.model.vo.article.vo.CategorySimpleVO;
 import top.harrylei.forum.api.model.vo.article.vo.TagSimpleVO;
+import top.harrylei.forum.api.model.vo.page.Page;
+import top.harrylei.forum.api.model.vo.page.PageHelper;
+import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.user.dto.UserInfoDetailDTO;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.service.article.converted.ArticleStructMapper;
+import top.harrylei.forum.service.article.converted.ArticleStructMapperImpl;
 import top.harrylei.forum.service.article.repository.dao.ArticleDAO;
 import top.harrylei.forum.service.article.repository.entity.ArticleDO;
 import top.harrylei.forum.service.article.service.*;
@@ -43,6 +47,7 @@ public class ArticleServiceImpl implements ArticleService {
     private final CategoryService categoryService;
     private final UserStructMapper userStructMapper;
     private final UserCacheService userCacheService;
+    private final ArticleStructMapperImpl articleStructMapperImpl;
 
     /**
      * 保存文章
@@ -171,6 +176,21 @@ public class ArticleServiceImpl implements ArticleService {
 
         log.info("文章状态更新成功 articleId={} status={} operatorId={}", articleId, status,
             ReqInfoContext.getContext().getUserId());
+    }
+
+    /**
+     * 分页查询
+     *
+     * @param req 分页请求参数
+     * @return 分页查询结果
+     */
+    @Override
+    public PageVO<ArticleDTO> page(Page req) {
+        List<ArticleDO> articleDOS = articleDAO.listArticle(req.getLimitSql());
+        Long total = articleDAO.countArticle();
+
+        List<ArticleDTO> result = articleDOS.stream().filter(Objects::nonNull).map(articleStructMapper::toDTO).toList();
+        return PageHelper.build(result, req.getPageNum(), req.getPageSize(), total);
     }
 
     private void checkArticleViewPermission(ArticleDTO article) {
