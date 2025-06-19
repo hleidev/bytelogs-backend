@@ -1,9 +1,11 @@
 package top.harrylei.forum.service.article.repository.mapper;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+
+import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
 import top.harrylei.forum.service.article.repository.entity.ArticleDO;
 
 public interface ArticleMapper extends BaseMapper<ArticleDO> {
@@ -19,4 +21,12 @@ public interface ArticleMapper extends BaseMapper<ArticleDO> {
 
     @Update("update article set status = #{status} where id = #{articleId} and deleted = 0")
     Integer updateStatus(Long articleId, Integer status);
+
+    /**
+     * 联表查询完整文章VO（包含分类和标签对象）
+     * 
+     * @param articleId 文章ID
+     * @return 完整文章VO
+     */
+    ArticleVO getArticleVOById(Long articleId);
 }

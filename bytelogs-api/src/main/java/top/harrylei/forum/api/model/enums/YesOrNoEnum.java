@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -29,6 +30,7 @@ public enum YesOrNoEnum implements CodeLabelEnum {
     YES(1,"Y");
 
     // 编码（唯一标识）
+    @EnumValue
     private final Integer code;
 
     // 描述（用于展示）

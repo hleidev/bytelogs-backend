@@ -14,8 +14,6 @@ import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.article.dto.ArticleDTO;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleDetailVO;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
-import top.harrylei.forum.api.model.vo.article.vo.CategorySimpleVO;
-import top.harrylei.forum.api.model.vo.article.vo.TagSimpleVO;
 import top.harrylei.forum.api.model.vo.page.Page;
 import top.harrylei.forum.api.model.vo.page.PageHelper;
 import top.harrylei.forum.api.model.vo.page.PageVO;
@@ -25,7 +23,9 @@ import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.service.article.converted.ArticleStructMapper;
 import top.harrylei.forum.service.article.repository.dao.ArticleDAO;
 import top.harrylei.forum.service.article.repository.entity.ArticleDO;
-import top.harrylei.forum.service.article.service.*;
+import top.harrylei.forum.service.article.service.ArticleDetailService;
+import top.harrylei.forum.service.article.service.ArticleService;
+import top.harrylei.forum.service.article.service.ArticleTagService;
 import top.harrylei.forum.service.user.converted.UserStructMapper;
 import top.harrylei.forum.service.user.service.cache.UserCacheService;
 
@@ -42,8 +42,6 @@ public class ArticleServiceImpl implements ArticleService {
     private final ArticleStructMapper articleStructMapper;
     private final ArticleDetailService articleDetailService;
     private final ArticleTagService articleTagService;
-    private final TagService tagService;
-    private final CategoryService categoryService;
     private final UserStructMapper userStructMapper;
     private final UserCacheService userCacheService;
 
@@ -81,19 +79,11 @@ public class ArticleServiceImpl implements ArticleService {
         articleDTO.setUserId(author);
         ArticleDO articleDO = articleStructMapper.toDO(articleDTO);
 
-        ArticleDTO article = transactionTemplate
+        ArticleVO article = transactionTemplate
             .execute(status -> updateArticle(articleDO, articleDTO.getContent(), articleDTO.getTagIds()));
 
-        ArticleVO result = articleStructMapper.toVO(article);
-
-        List<TagSimpleVO> tagSimpleList = tagService.listSimpleTagsByTagsIds(articleDTO.getTagIds());
-        result.setTags(tagSimpleList);
-
-        CategorySimpleVO categorySimple = categoryService.getSimpleCategoryByCategoryId(articleDTO.getCategoryId());
-        result.setCategory(categorySimple);
-
         log.info("编辑文章成功 editor={} articleId={}", ReqInfoContext.getContext().getUserId(), articleDTO.getId());
-        return result;
+        return article;
     }
 
     /**
@@ -130,13 +120,18 @@ public class ArticleServiceImpl implements ArticleService {
      */
     @Override
     public ArticleDetailVO getArticleDetail(Long articleId) {
-        ArticleDTO dto = getCompleteArticle(articleId);
+        ArticleVO completeArticleVO = getCompleteArticleVO(articleId);
 
-        UserInfoDetailDTO user = userCacheService.getUserInfo(dto.getUserId());
+        // 权限检查：已删除文章 or 草稿或审核中文章仅作者和管理员可见
+        if (YesOrNoEnum.YES.equals(completeArticleVO.getDeleted()) || !PublishStatusEnum.PUBLISHED.equals(completeArticleVO.getStatus())) {
+            boolean isAdmin = ReqInfoContext.getContext().isAdmin();
+            boolean isAuthor = Objects.equals(completeArticleVO.getUserId(), ReqInfoContext.getContext().getUserId());
+            ExceptionUtil.errorIf(!isAdmin && !isAuthor, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "文章不存在");
+        }
 
-        checkArticleViewPermission(dto);
+        UserInfoDetailDTO user = userCacheService.getUserInfo(completeArticleVO.getUserId());
 
-        return new ArticleDetailVO().setArticle(articleStructMapper.toVO(dto)).setAuthor(userStructMapper.toVO(user));
+        return new ArticleDetailVO().setArticle(completeArticleVO).setAuthor(userStructMapper.toVO(user));
     }
 
     /**
@@ -191,14 +186,6 @@ public class ArticleServiceImpl implements ArticleService {
         return PageHelper.build(result, req.getPageNum(), req.getPageSize(), total);
     }
 
-    private void checkArticleViewPermission(ArticleDTO article) {
-        // 已删除文章 or 草稿或审核中文章仅作者和管理员可见
-        if (YesOrNoEnum.YES.equals(article.getDeleted()) || !PublishStatusEnum.PUBLISHED.equals(article.getStatus())) {
-            boolean isAdmin = ReqInfoContext.getContext().isAdmin();
-            boolean isAuthor = Objects.equals(article.getUserId(), ReqInfoContext.getContext().getUserId());
-            ExceptionUtil.errorIf(!isAdmin && !isAuthor, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "文章不存在");
-        }
-    }
 
     /**
      * 检查文章编辑权限
@@ -277,7 +264,7 @@ public class ArticleServiceImpl implements ArticleService {
         return Objects.equals(status, PublishStatusEnum.PUBLISHED);
     }
 
-    private ArticleDTO updateArticle(ArticleDO article, String content, List<Long> tagIds) {
+    private ArticleVO updateArticle(ArticleDO article, String content, List<Long> tagIds) {
         if (needToReview(article.getStatus())) {
             article.setStatus(PublishStatusEnum.PUBLISHED.getCode());
         }
@@ -287,24 +274,20 @@ public class ArticleServiceImpl implements ArticleService {
         articleDetailService.updateArticleContent(article.getId(), content);
         articleTagService.updateTags(article.getId(), tagIds);
 
-        return getCompleteArticle(article.getId());
+        return getCompleteArticleVO(article.getId());
     }
 
     /**
-     * 获取完整的文章信息，包括内容和标签
-     * 
+     * 获取完整的文章VO（一次查询获取所有展示数据）
+     *
      * @param articleId 文章ID
-     * @return 完整的文章DTO
+     * @return 完整的文章VO
      */
-    private ArticleDTO getCompleteArticle(Long articleId) {
-        ArticleDO article = articleDAO.getById(articleId);
-        ExceptionUtil.requireNonNull(article, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "articleId=" + articleId);
-
-        ArticleDTO result = articleStructMapper.toDTO(article);
-
-        result.setContent(articleDetailService.getContentByArticleId(articleId));
-        result.setTagIds(articleTagService.listTagIdsByArticleId(articleId));
-
+    private ArticleVO getCompleteArticleVO(Long articleId) {
+        // 使用联表查询一次性获取完整的ArticleVO
+        ArticleVO result = articleDAO.getArticleVOByArticleId(articleId);
+        ExceptionUtil.requireNonNull(result, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "articleId=" + articleId);
+        
         return result;
     }
 }
