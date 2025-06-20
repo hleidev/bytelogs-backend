@@ -43,15 +43,18 @@ public class ArticleDAO extends ServiceImpl<ArticleMapper, ArticleDO> {
         return getBaseMapper().updateStatus(articleId, status);
     }
 
-    public List<ArticleDO> listArticle(String limitSql) {
+    public List<ArticleDO> listArticle(Long userId, String limitSql) {
         return lambdaQuery()
+                .eq(userId != null, ArticleDO::getUserId, userId)
                 .eq(ArticleDO::getDeleted, YesOrNoEnum.NO.getCode())
+                .orderByDesc(ArticleDO::getCreateTime)
                 .last(limitSql)
                 .list();
     }
 
-    public Long countArticle() {
+    public Long countArticle(Long userId) {
         return lambdaQuery()
+                .eq(userId != null, ArticleDO::getUserId, userId)
                 .eq(ArticleDO::getDeleted, YesOrNoEnum.NO.getCode())
                 .count();
     }
@@ -62,7 +65,7 @@ public class ArticleDAO extends ServiceImpl<ArticleMapper, ArticleDO> {
      * @param articleId 文章ID
      * @return 完整文章VO
      */
-    public ArticleVO getArticleVOByArticleId(Long articleId) {
+    public ArticleVO getArticleVoByArticleId(Long articleId) {
         return this.getBaseMapper().getArticleVOById(articleId);
     }
 }

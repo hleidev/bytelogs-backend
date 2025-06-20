@@ -1,6 +1,5 @@
 package top.harrylei.forum.service.article.service;
 
-import jakarta.validation.Valid;
 import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.article.dto.ArticleDTO;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleDetailVO;
@@ -59,10 +58,19 @@ public interface ArticleService {
     void updateArticleStatus(Long articleId, PublishStatusEnum status);
 
     /**
-     * 分页查询
+     * 分页查询所有文章
      *
      * @param req 分页请求参数
      * @return 分页查询结果
      */
-    PageVO<ArticleDTO> page(@Valid Page req);
+    PageVO<ArticleDTO> page(Page req);
+
+    /**
+     * 按用户ID分页查询
+     *
+     * @param userId 用户ID
+     * @param req    分页请求参数
+     * @return 分页查询结果
+     */
+    PageVO<ArticleDTO> page(Long userId, Page req);
 }

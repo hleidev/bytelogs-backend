@@ -172,15 +172,27 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     /**
-     * 分页查询
+     * 分页查询所有文章
      *
      * @param req 分页请求参数
      * @return 分页查询结果
      */
     @Override
     public PageVO<ArticleDTO> page(Page req) {
-        List<ArticleDO> articleDOList = articleDAO.listArticle(req.getLimitSql());
-        Long total = articleDAO.countArticle();
+        return page(null, req);
+    }
+
+    /**
+     * 按用户ID分页查询
+     *
+     * @param userId 用户ID
+     * @param req    分页请求参数
+     * @return 分页查询结果
+     */
+    @Override
+    public PageVO<ArticleDTO> page(Long userId, Page req) {
+        List<ArticleDO> articleDOList = articleDAO.listArticle(userId, req.getLimitSql());
+        Long total = articleDAO.countArticle(userId);
 
         List<ArticleDTO> result = articleDOList.stream().filter(Objects::nonNull).map(articleStructMapper::toDTO).toList();
         return PageHelper.build(result, req.getPageNum(), req.getPageSize(), total);
@@ -287,7 +299,7 @@ public class ArticleServiceImpl implements ArticleService {
      */
     private ArticleVO getCompleteArticleVO(Long articleId) {
         // 使用联表查询一次性获取完整的ArticleVO
-        ArticleVO result = articleDAO.getArticleVOByArticleId(articleId);
+        ArticleVO result = articleDAO.getArticleVoByArticleId(articleId);
         ExceptionUtil.requireNonNull(result, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "articleId=" + articleId);
 
         return result;

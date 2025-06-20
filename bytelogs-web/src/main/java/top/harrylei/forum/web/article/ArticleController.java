@@ -138,4 +138,19 @@ public class ArticleController {
         PageVO<ArticleDTO> page = articleService.page(req);
         return ResVO.ok(PageHelper.map(page, articleStructMapper::toVO));
     }
+
+    /**
+     * 我的文章分页查询
+     *
+     * @param req 分页请求参数
+     * @return 我的文章分页查询结果
+     */
+    @RequiresLogin
+    @Operation(summary = "我的文章", description = "用户分页查询自己的文章")
+    @GetMapping("/my")
+    public ResVO<PageVO<ArticleVO>> myArticles(@Valid Page req) {
+        Long userId = ReqInfoContext.getContext().getUserId();
+        PageVO<ArticleDTO> page = articleService.page(userId, req);
+        return ResVO.ok(PageHelper.map(page, articleStructMapper::toVO));
+    }
 }
