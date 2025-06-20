@@ -6,8 +6,8 @@ import java.util.stream.Collectors;
 
 /**
  * 分页工具类
- * <p>
- * 提供分页数据转换、处理的常用工具方法
+ *
+ * @author Harry
  */
 public class PageHelper {
 
@@ -28,10 +28,10 @@ public class PageHelper {
     /**
      * 对分页结果进行数据转换
      *
-     * @param pageVO 原始分页结果
+     * @param pageVO    原始分页结果
      * @param converter 数据转换函数
-     * @param <T> 原始数据类型
-     * @param <R> 目标数据类型
+     * @param <T>       原始数据类型
+     * @param <R>       目标数据类型
      * @return 转换后的分页结果
      */
     public static <T, R> PageVO<R> map(PageVO<T> pageVO, Function<T, R> converter) {
@@ -56,10 +56,11 @@ public class PageHelper {
     /**
      * 创建分页请求
      *
-     * @param pageNum 页码
+     * @param pageNum  页码
      * @param pageSize 每页大小
      * @return 分页请求
      */
+    @Deprecated
     public static Page createPage(Integer pageNum, Integer pageSize) {
         if (pageNum == null || pageNum < 1) {
             pageNum = Page.DEFAULT_PAGE_NUM;
@@ -77,11 +78,11 @@ public class PageHelper {
     /**
      * 构建分页结果
      *
-     * @param list 数据列表
-     * @param pageNum 当前页码
+     * @param list     数据列表
+     * @param pageNum  当前页码
      * @param pageSize 每页大小
-     * @param total 总记录数
-     * @param <T> 数据类型
+     * @param total    总记录数
+     * @param <T>      数据类型
      * @return 分页结果
      */
     public static <T> PageVO<T> build(List<T> list, int pageNum, int pageSize, long total) {

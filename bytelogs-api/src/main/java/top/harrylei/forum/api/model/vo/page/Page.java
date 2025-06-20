@@ -14,6 +14,7 @@ import java.io.Serializable;
  * <p>
  * 标准化分页查询的请求参数，支持参数校验
  */
+@Deprecated
 @Data
 @Schema(description = "分页请求参数")
 public class Page implements Serializable {

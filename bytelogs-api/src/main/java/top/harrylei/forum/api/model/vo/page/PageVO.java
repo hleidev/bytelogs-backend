@@ -1,5 +1,6 @@
 package top.harrylei.forum.api.model.vo.page;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -10,10 +11,8 @@ import java.util.List;
 
 /**
  * 统一分页结果类
- * <p>
- * 标准化分页查询结果的封装，支持RESTful API返回
  *
- * @param <T> 分页数据项类型
+ * @author Harry
  */
 @Data
 @Schema(description = "分页结果")
@@ -64,11 +63,11 @@ public class PageVO<T> implements Serializable {
     /**
      * 根据查询结果构建分页对象
      *
-     * @param content 内容列表
-     * @param pageNum 当前页码
-     * @param pageSize 每页大小
+     * @param content       内容列表
+     * @param pageNum       当前页码
+     * @param pageSize      每页大小
      * @param totalElements 总记录数
-     * @param <T> 数据类型
+     * @param <T>           数据类型
      * @return 分页结果
      */
     public static <T> PageVO<T> of(List<T> content, long pageNum, long pageSize, long totalElements) {
@@ -90,14 +89,28 @@ public class PageVO<T> implements Serializable {
     }
 
     /**
-     * 从Spring Data Page对象转换（预留接口，方便后续整合Spring Data）
-     * 
-     * @param page Spring Data Page对象
-     * @param <T> 数据类型
+     * 从MyBatis-Plus IPage对象转换
+     *
+     * @param iPage MyBatis-Plus IPage对象
+     * @param <T>   数据类型
      * @return 分页结果
      */
-    public static <T> PageVO<T> from(Object page) {
-        // TODO 预留方法，后续如果使用Spring Data，可以实现此方法
-        throw new UnsupportedOperationException("暂未实现从Spring Data Page的转换");
+    public static <T> PageVO<T> from(IPage<T> iPage) {
+        if (iPage == null) {
+            return empty();
+        }
+
+        PageVO<T> result = new PageVO<>();
+        result.setContent(iPage.getRecords() != null ? iPage.getRecords() : Collections.emptyList());
+        result.setPageNum(iPage.getCurrent());
+        result.setPageSize(iPage.getSize());
+        result.setTotalElements(iPage.getTotal());
+        result.setTotalPages(iPage.getPages());
+
+        // 设置分页导航属性
+        result.setHasPrevious(iPage.getCurrent() > 1);
+        result.setHasNext(iPage.getCurrent() < iPage.getPages());
+
+        return result;
     }
 }

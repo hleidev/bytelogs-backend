@@ -1,22 +1,21 @@
 package top.harrylei.forum.web.article;
 
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.article.dto.ArticleDTO;
+import top.harrylei.forum.api.model.vo.article.req.ArticleQueryParam;
 import top.harrylei.forum.api.model.vo.article.req.ArticlePostReq;
 import top.harrylei.forum.api.model.vo.article.req.ArticleUpdateReq;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleDetailVO;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
-import top.harrylei.forum.api.model.vo.page.Page;
 import top.harrylei.forum.api.model.vo.page.PageHelper;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.core.context.ReqInfoContext;
@@ -26,6 +25,8 @@ import top.harrylei.forum.service.article.service.ArticleService;
 
 /**
  * 文章相关模块
+ *
+ * @author Harry
  */
 @Tag(name = "文章相关模块", description = "提供文章的基础查询")
 @Slf4j
@@ -127,30 +128,21 @@ public class ArticleController {
     }
 
     /**
-     * 分页查询
+     * 文章分页查询
+     * <p>
+     * 支持多种查询模式：
+     * - 公开查询：不传 onlyMine 或 onlyMine=false，查询所有公开文章
+     * - 我的文章：onlyMine=true，查询当前用户的文章（需登录）
+     * - 指定用户：传 userId，查询指定用户的公开文章
+     * - 管理员：可查询所有文章，包括已删除和各种状态
      *
-     * @param req 分页请求参数
+     * @param queryParam 查询参数
      * @return 分页查询结果
      */
-    @Operation(summary = "分页查询", description = "用户分页查询文章")
+    @Operation(summary = "分页查询", description = "智能分页查询，支持公开查询、我的文章、指定用户文章等多种模式")
     @GetMapping("/page")
-    public ResVO<PageVO<ArticleVO>> page(@Valid Page req) {
-        PageVO<ArticleDTO> page = articleService.page(req);
-        return ResVO.ok(PageHelper.map(page, articleStructMapper::toVO));
-    }
-
-    /**
-     * 我的文章分页查询
-     *
-     * @param req 分页请求参数
-     * @return 我的文章分页查询结果
-     */
-    @RequiresLogin
-    @Operation(summary = "我的文章", description = "用户分页查询自己的文章")
-    @GetMapping("/my")
-    public ResVO<PageVO<ArticleVO>> myArticles(@Valid Page req) {
-        Long userId = ReqInfoContext.getContext().getUserId();
-        PageVO<ArticleDTO> page = articleService.page(userId, req);
+    public ResVO<PageVO<ArticleVO>> pageQuery(@Valid ArticleQueryParam queryParam) {
+        PageVO<ArticleDTO> page = articleService.pageQuery(queryParam);
         return ResVO.ok(PageHelper.map(page, articleStructMapper::toVO));
     }
 }

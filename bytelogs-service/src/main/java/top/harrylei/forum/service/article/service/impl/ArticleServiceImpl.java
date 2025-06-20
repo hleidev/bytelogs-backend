@@ -1,5 +1,7 @@
 package top.harrylei.forum.service.article.service.impl;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -8,9 +10,9 @@ import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.article.dto.ArticleDTO;
+import top.harrylei.forum.api.model.vo.article.req.ArticleQueryParam;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleDetailVO;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
-import top.harrylei.forum.api.model.vo.page.Page;
 import top.harrylei.forum.api.model.vo.page.PageHelper;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.user.dto.UserInfoDetailDTO;
@@ -30,6 +32,8 @@ import java.util.Objects;
 
 /**
  * 文章服务实现类
+ *
+ * @author Harry
  */
 @Slf4j
 @Service
@@ -173,32 +177,94 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     /**
-     * 分页查询所有文章
+     * 分页查询文章（智能处理查询权限）
      *
-     * @param req 分页请求参数
+     * @param queryParam 分页查询参数
      * @return 分页查询结果
      */
     @Override
-    public PageVO<ArticleDTO> page(Page req) {
-        return page(null, req);
+    public PageVO<ArticleDTO> pageQuery(ArticleQueryParam queryParam) {
+        // 获取当前用户信息
+        ReqInfoContext.ReqInfo reqInfo = ReqInfoContext.getContext();
+        Long currentUserId = reqInfo.getUserId();
+        boolean isAdmin = reqInfo.isAdmin();
+
+        // 处理查询逻辑
+        processQueryPermissions(queryParam, currentUserId, isAdmin);
+
+        // 创建MyBatis-Plus分页对象
+        IPage<ArticleDO> page = new Page<>(queryParam.getPageNum(), queryParam.getPageSize());
+
+        // 使用MyBatis-Plus分页查询
+        IPage<ArticleDO> resultPage = articleDAO.pageArticle(queryParam, page);
+
+        // 转换数据
+        List<ArticleDTO> result = resultPage.getRecords().stream()
+                .filter(Objects::nonNull)
+                .map(articleStructMapper::toDTO)
+                .toList();
+
+        // 使用PageHelper.build构建分页结果
+        return PageHelper.build(result,
+                                (int) resultPage.getCurrent(),
+                                (int) resultPage.getSize(),
+                                resultPage.getTotal());
     }
 
     /**
-     * 按用户ID分页查询
+     * 处理查询权限逻辑
      *
-     * @param userId 用户ID
-     * @param req    分页请求参数
-     * @return 分页查询结果
+     * @param queryParam    查询参数
+     * @param currentUserId 当前用户ID
+     * @param isAdmin       是否为管理员
      */
-    @Override
-    public PageVO<ArticleDTO> page(Long userId, Page req) {
-        List<ArticleDO> articleDOList = articleDAO.listArticle(userId, req.getLimitSql());
-        Long total = articleDAO.countArticle(userId);
+    private void processQueryPermissions(ArticleQueryParam queryParam, Long currentUserId, boolean isAdmin) {
+        // 1. 处理"只查询我的文章"逻辑
+        if (Boolean.TRUE.equals(queryParam.getOnlyMine())) {
+            // 需要登录才能查询自己的文章
+            ExceptionUtil.requireNonNull(currentUserId, ErrorCodeEnum.UNAUTHORIZED);
+            queryParam.setUserId(currentUserId);
+        }
 
-        List<ArticleDTO> result = articleDOList.stream().filter(Objects::nonNull).map(articleStructMapper::toDTO).toList();
-        return PageHelper.build(result, req.getPageNum(), req.getPageSize(), total);
+        // 2. 处理删除状态权限
+        if (queryParam.getDeleted() != null && queryParam.getDeleted() == 1) {
+            // 只有管理员才能查看已删除的文章
+            ExceptionUtil.errorIf(!isAdmin, ErrorCodeEnum.FORBID_ERROR_MIXED, "无权限查看已删除文章");
+        } else if (queryParam.getDeleted() == null && !isAdmin) {
+            // 如果没有指定删除状态，非管理员默认只查询未删除的文章
+            queryParam.setDeleted(0);
+        }
+
+        // 3. 处理文章状态权限
+        if (queryParam.getStatus() != null) {
+            // 如果查询草稿或审核中的文章，需要是自己的文章或管理员
+            if (queryParam.getStatus() == PublishStatusEnum.DRAFT || queryParam.getStatus() == PublishStatusEnum.REVIEW) {
+                if (!isAdmin && !Objects.equals(queryParam.getUserId(), currentUserId)) {
+                    // 非管理员且不是查询自己的文章时，不允许查询非发布状态的文章
+                    ExceptionUtil.error(ErrorCodeEnum.FORBID_ERROR_MIXED, "无权限查看该状态的文章");
+                }
+            }
+        } else {
+            // 如果没有指定状态，未登录用户或非本人查询时只能看已发布的文章
+            if (currentUserId == null || (queryParam.getUserId() != null && !Objects.equals(queryParam.getUserId(),
+                                                                                            currentUserId) && !isAdmin)) {
+                queryParam.setStatus(PublishStatusEnum.PUBLISHED);
+            }
+        }
+
+        // 4. 处理用户ID权限校验
+        if (queryParam.getUserId() != null && !isAdmin) {
+            // 非管理员查询指定用户的文章时，只能查询已发布的文章
+            if (!Objects.equals(queryParam.getUserId(), currentUserId)) {
+                queryParam.setStatus(PublishStatusEnum.PUBLISHED);
+                queryParam.setDeleted(0);
+            }
+        }
+
+        log.debug("查询参数处理完成: userId={}, onlyMine={}, status={}, deleted={}, currentUser={}, isAdmin={}",
+                  queryParam.getUserId(), queryParam.getOnlyMine(), queryParam.getStatus(),
+                  queryParam.getDeleted(), currentUserId, isAdmin);
     }
-
 
     /**
      * 检查文章编辑权限

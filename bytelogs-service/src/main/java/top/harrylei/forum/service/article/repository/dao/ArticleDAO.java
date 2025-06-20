@@ -1,16 +1,18 @@
 package top.harrylei.forum.service.article.repository.dao;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Repository;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
+import top.harrylei.forum.api.model.vo.article.req.ArticleQueryParam;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
 import top.harrylei.forum.service.article.repository.entity.ArticleDO;
 import top.harrylei.forum.service.article.repository.mapper.ArticleMapper;
 
-import java.util.List;
-
 /**
  * 文章访问对象
+ *
+ * @author Harry
  */
 @Repository
 public class ArticleDAO extends ServiceImpl<ArticleMapper, ArticleDO> {
@@ -43,20 +45,23 @@ public class ArticleDAO extends ServiceImpl<ArticleMapper, ArticleDO> {
         return getBaseMapper().updateStatus(articleId, status);
     }
 
-    public List<ArticleDO> listArticle(Long userId, String limitSql) {
+    public IPage<ArticleDO> pageArticle(ArticleQueryParam queryParam, IPage<ArticleDO> page) {
         return lambdaQuery()
-                .eq(userId != null, ArticleDO::getUserId, userId)
-                .eq(ArticleDO::getDeleted, YesOrNoEnum.NO.getCode())
+                // 基础过滤条件
+                .like(queryParam.getTitle() != null, ArticleDO::getTitle, queryParam.getTitle())
+                .eq(queryParam.getUserId() != null, ArticleDO::getUserId, queryParam.getUserId())
+                .eq(queryParam.getCategoryId() != null, ArticleDO::getCategoryId, queryParam.getCategoryId())
+                .eq(queryParam.getStatus() != null, ArticleDO::getStatus,
+                    queryParam.getStatus() != null ? queryParam.getStatus().getCode() : null)
+                // 删除状态过滤（默认只查询未删除的）
+                .eq(ArticleDO::getDeleted,
+                    queryParam.getDeleted() != null ? queryParam.getDeleted() : YesOrNoEnum.NO.getCode())
+                // 时间范围过滤
+                .ge(queryParam.getCreateTimeStart() != null, ArticleDO::getCreateTime, queryParam.getCreateTimeStart())
+                .le(queryParam.getCreateTimeEnd() != null, ArticleDO::getCreateTime, queryParam.getCreateTimeEnd())
+                // 排序
                 .orderByDesc(ArticleDO::getCreateTime)
-                .last(limitSql)
-                .list();
-    }
-
-    public Long countArticle(Long userId) {
-        return lambdaQuery()
-                .eq(userId != null, ArticleDO::getUserId, userId)
-                .eq(ArticleDO::getDeleted, YesOrNoEnum.NO.getCode())
-                .count();
+                .page(page);
     }
 
     /**
