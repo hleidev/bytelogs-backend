@@ -69,7 +69,6 @@
                  left join article_tag at on a.id = at.article_id and at.deleted = 0
                  left join tag t on at.tag_id = t.id and t.deleted = 0
         where a.id = #{articleId}
-          and a.deleted = 0
     </select>
 
 </mapper>

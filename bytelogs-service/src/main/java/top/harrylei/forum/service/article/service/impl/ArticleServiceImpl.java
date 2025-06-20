@@ -115,17 +115,18 @@ public class ArticleServiceImpl implements ArticleService {
      * 文章详细
      *
      * @param articleId 文章ID
+     * @param userId    当前用户ID（可为null表示未登录）
+     * @param isAdmin   是否为管理员
      * @return 文章详细展示对象
      */
     @Override
-    public ArticleDetailVO getArticleDetail(Long articleId) {
+    public ArticleDetailVO getArticleDetail(Long articleId, Long userId, boolean isAdmin) {
         ArticleVO completeArticleVO = getCompleteArticleVO(articleId);
 
         // 权限检查：已删除文章 or 草稿或审核中文章仅作者和管理员可见
-        if (YesOrNoEnum.YES.equals(completeArticleVO.getDeleted()) || !PublishStatusEnum.PUBLISHED.equals(
-                completeArticleVO.getStatus())) {
-            boolean isAdmin = ReqInfoContext.getContext().isAdmin();
-            boolean isAuthor = Objects.equals(completeArticleVO.getUserId(), ReqInfoContext.getContext().getUserId());
+        if (YesOrNoEnum.YES.equals(completeArticleVO.getDeleted()) ||
+                !PublishStatusEnum.PUBLISHED.equals(completeArticleVO.getStatus())) {
+            boolean isAuthor = userId != null && Objects.equals(completeArticleVO.getUserId(), userId);
             ExceptionUtil.errorIf(!isAdmin && !isAuthor, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "文章不存在");
         }
 
