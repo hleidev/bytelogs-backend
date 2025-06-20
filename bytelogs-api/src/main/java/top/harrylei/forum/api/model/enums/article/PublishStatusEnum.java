@@ -1,21 +1,19 @@
 package top.harrylei.forum.api.model.enums.article;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.StringUtils;
-
 import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import top.harrylei.forum.api.model.enums.base.CodeLabelEnum;
 import top.harrylei.forum.api.model.enums.base.EnumCodeLabelJsonSerializer;
+
+import java.util.Arrays;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * 发布状态枚举
@@ -49,10 +47,10 @@ public enum PublishStatusEnum implements CodeLabelEnum {
 
     // 根据状态编码快速定位枚举实例
     private static final Map<Integer, PublishStatusEnum> CODE_MAP =
-        Arrays.stream(values()).collect(Collectors.toMap(PublishStatusEnum::getCode, Function.identity()));
+            Arrays.stream(values()).collect(Collectors.toMap(PublishStatusEnum::getCode, Function.identity()));
     // 根据枚举名称（不区分大小写）快速定位枚举实例
     private static final Map<String, PublishStatusEnum> NAME_MAP =
-        Arrays.stream(values()).collect(Collectors.toMap(e -> e.name().toUpperCase(), Function.identity()));
+            Arrays.stream(values()).collect(Collectors.toMap(e -> e.name().toUpperCase(), Function.identity()));
 
     /**
      * 获取状态码
@@ -101,7 +99,7 @@ public enum PublishStatusEnum implements CodeLabelEnum {
     /**
      * 根据状态编码获取状态标签，若未找到则返回默认值
      *
-     * @param code 状态编码
+     * @param code         状态编码
      * @param defaultLabel 默认值
      * @return 状态描述，若无匹配则返回默认值
      */
@@ -135,7 +133,7 @@ public enum PublishStatusEnum implements CodeLabelEnum {
     /**
      * 根据状态编码获取状态名称（枚举名）
      *
-     * @param code 状态编码
+     * @param code        状态编码
      * @param defaultName 默认状态名
      * @return 状态名称，若无匹配则返回默认值
      */

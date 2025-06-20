@@ -40,7 +40,7 @@ public class ArticleController {
 
     /**
      * 用户新建文章
-     * 
+     *
      * @param articlePostReq 文章信息请求
      * @return 新建文章ID
      */
@@ -71,7 +71,7 @@ public class ArticleController {
 
     /**
      * 删除文章
-     * 
+     *
      * @param articleId 文章ID
      * @return 操作结果
      */
@@ -99,7 +99,7 @@ public class ArticleController {
 
     /**
      * 文章详细
-     * 
+     *
      * @param articleId 文章ID
      * @return 文章详细
      */
@@ -113,7 +113,7 @@ public class ArticleController {
 
     /**
      * 修改状态
-     * 
+     *
      * @param status 修改状态
      * @return 操作结果
      */
@@ -135,7 +135,7 @@ public class ArticleController {
     @Operation(summary = "分页查询", description = "用户分页查询文章")
     @GetMapping("/page")
     public ResVO<PageVO<ArticleVO>> page(@Valid Page req) {
-         PageVO<ArticleDTO> page = articleService.page(req);
-         return ResVO.ok(PageHelper.map(page, articleStructMapper::toVO));
+        PageVO<ArticleDTO> page = articleService.page(req);
+        return ResVO.ok(PageHelper.map(page, articleStructMapper::toVO));
     }
 }

@@ -1,7 +1,6 @@
 package top.harrylei.forum.web.config;
 
-import java.util.List;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -15,20 +14,14 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import lombok.RequiredArgsConstructor;
 import top.harrylei.forum.web.filter.JwtAuthenticationFilter;
 import top.harrylei.forum.web.security.CustomAccessDeniedHandler;
 import top.harrylei.forum.web.security.CustomAuthenticationEntryPoint;
 
+import java.util.List;
+
 /**
  * Spring Security 安全配置类
- * <p>
- * 提供Web应用安全配置，包括： - JWT令牌认证 - 接口权限控制 - CORS跨域配置 - 无状态会话管理
- * </p>
- * <p>
- * 该配置确保系统安全性，同时支持前后端分离架构。 通过EnableMethodSecurity注解，支持@PreAuthorize等方法级安全注解。
- * </p>
  */
 @Configuration
 @EnableWebSecurity
@@ -54,33 +47,38 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-            // 禁用CSRF保护，因为我们使用JWT进行认证
-            .csrf(AbstractHttpConfigurer::disable)
-            // 配置CORS
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            // 设置会话管理为无状态
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            // 配置请求授权规则
-            .authorizeHttpRequests(auth -> auth
-                // 公共接口，无需认证
-                .requestMatchers("/api/v1/auth/**").permitAll().requestMatchers("/api/v1/admin/auth/login").permitAll()
-                .requestMatchers("/api/v1/tag/**").permitAll().requestMatchers("/api/v1/category/**").permitAll()
-                .requestMatchers("/api/v1/article/**").permitAll().requestMatchers("/api/v1/public/**").permitAll()
-                .requestMatchers("/api/v1/test/**").permitAll().requestMatchers("/error").permitAll()
-                .requestMatchers("/favicon.ico").permitAll().requestMatchers("/actuator/**").permitAll()
-                // 静态资源
-                .requestMatchers("/static/**").permitAll()
-                // OPTIONS请求放行
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                // 需要管理员权限的接口
-                .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-                // 其他请求需要认证
-                .anyRequest().authenticated())
-            // 配置异常处理
-            .exceptionHandling(exception -> exception.authenticationEntryPoint(authenticationEntryPoint) // 处理未认证异常
-                .accessDeniedHandler(accessDeniedHandler)) // 处理权限不足异常
-            // 添加JWT过滤器，在UsernamePasswordAuthenticationFilter之前执行
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class).build();
+                // 禁用CSRF保护，因为我们使用JWT进行认证
+                .csrf(AbstractHttpConfigurer::disable)
+                // 配置CORS
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                // 设置会话管理为无状态
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // 配置请求授权规则
+                .authorizeHttpRequests(auth -> auth
+                        // 公共接口，无需认证
+                        .requestMatchers("/api/v1/auth/**").permitAll()
+                        .requestMatchers("/api/v1/admin/auth/login").permitAll()
+                        .requestMatchers("/api/v1/tag/**").permitAll()
+                        .requestMatchers("/api/v1/category/**").permitAll()
+                        .requestMatchers("/api/v1/article/**").permitAll()
+                        .requestMatchers("/api/v1/public/**").permitAll()
+                        .requestMatchers("/api/v1/test/**").permitAll().
+                        requestMatchers("/error").permitAll()
+                        .requestMatchers("/favicon.ico").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
+                        // 静态资源
+                        .requestMatchers("/static/**").permitAll()
+                        // OPTIONS请求放行
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        // 需要管理员权限的接口
+                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                        // 其他请求需要认证
+                        .anyRequest().authenticated())
+                // 配置异常处理
+                .exceptionHandling(exception -> exception.authenticationEntryPoint(authenticationEntryPoint)
+                        .accessDeniedHandler(accessDeniedHandler))
+                // 添加JWT过滤器，在UsernamePasswordAuthenticationFilter之前执行
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class).build();
     }
 
     /**

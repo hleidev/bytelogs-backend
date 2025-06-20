@@ -1,13 +1,9 @@
 package top.harrylei.forum.service.article.service.impl;
 
-import java.util.List;
-import java.util.Objects;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.TransactionTemplate;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionTemplate;
 import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
@@ -28,6 +24,9 @@ import top.harrylei.forum.service.article.service.ArticleService;
 import top.harrylei.forum.service.article.service.ArticleTagService;
 import top.harrylei.forum.service.user.converted.UserStructMapper;
 import top.harrylei.forum.service.user.service.cache.UserCacheService;
+
+import java.util.List;
+import java.util.Objects;
 
 /**
  * 文章服务实现类
@@ -80,7 +79,7 @@ public class ArticleServiceImpl implements ArticleService {
         ArticleDO articleDO = articleStructMapper.toDO(articleDTO);
 
         ArticleVO article = transactionTemplate
-            .execute(status -> updateArticle(articleDO, articleDTO.getContent(), articleDTO.getTagIds()));
+                .execute(status -> updateArticle(articleDO, articleDTO.getContent(), articleDTO.getTagIds()));
 
         log.info("编辑文章成功 editor={} articleId={}", ReqInfoContext.getContext().getUserId(), articleDTO.getId());
         return article;
@@ -123,7 +122,8 @@ public class ArticleServiceImpl implements ArticleService {
         ArticleVO completeArticleVO = getCompleteArticleVO(articleId);
 
         // 权限检查：已删除文章 or 草稿或审核中文章仅作者和管理员可见
-        if (YesOrNoEnum.YES.equals(completeArticleVO.getDeleted()) || !PublishStatusEnum.PUBLISHED.equals(completeArticleVO.getStatus())) {
+        if (YesOrNoEnum.YES.equals(completeArticleVO.getDeleted()) || !PublishStatusEnum.PUBLISHED.equals(
+                completeArticleVO.getStatus())) {
             boolean isAdmin = ReqInfoContext.getContext().isAdmin();
             boolean isAuthor = Objects.equals(completeArticleVO.getUserId(), ReqInfoContext.getContext().getUserId());
             ExceptionUtil.errorIf(!isAdmin && !isAuthor, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "文章不存在");
@@ -168,7 +168,7 @@ public class ArticleServiceImpl implements ArticleService {
         ExceptionUtil.errorIf(updated == 0, ErrorCodeEnum.SYSTEM_ERROR, "更新文章状态失败");
 
         log.info("文章状态更新成功 articleId={} status={} operatorId={}", articleId, status,
-            ReqInfoContext.getContext().getUserId());
+                 ReqInfoContext.getContext().getUserId());
     }
 
     /**
@@ -179,10 +179,10 @@ public class ArticleServiceImpl implements ArticleService {
      */
     @Override
     public PageVO<ArticleDTO> page(Page req) {
-        List<ArticleDO> articleDOS = articleDAO.listArticle(req.getLimitSql());
+        List<ArticleDO> articleDOList = articleDAO.listArticle(req.getLimitSql());
         Long total = articleDAO.countArticle();
 
-        List<ArticleDTO> result = articleDOS.stream().filter(Objects::nonNull).map(articleStructMapper::toDTO).toList();
+        List<ArticleDTO> result = articleDOList.stream().filter(Objects::nonNull).map(articleStructMapper::toDTO).toList();
         return PageHelper.build(result, req.getPageNum(), req.getPageSize(), total);
     }
 
@@ -190,7 +190,7 @@ public class ArticleServiceImpl implements ArticleService {
     /**
      * 检查文章编辑权限
      *
-     * @param articleId 文章ID
+     * @param articleId      文章ID
      * @param includeDeleted 是否包含已删除的文章
      * @return 文章原作者ID
      */
@@ -210,7 +210,9 @@ public class ArticleServiceImpl implements ArticleService {
 
         // 只有作者本人或管理员可以修改文章
         boolean isAuthor = Objects.equals(authorId, operatorId);
-        ExceptionUtil.errorIf(!isAuthor && !isAdmin, ErrorCodeEnum.FORBID_ERROR_MIXED, "当前用户非管理员，无权限修改非自己的文章");
+        ExceptionUtil.errorIf(!isAuthor && !isAdmin,
+                              ErrorCodeEnum.FORBID_ERROR_MIXED,
+                              "当前用户非管理员，无权限修改非自己的文章");
 
         return authorId;
     }
@@ -287,7 +289,7 @@ public class ArticleServiceImpl implements ArticleService {
         // 使用联表查询一次性获取完整的ArticleVO
         ArticleVO result = articleDAO.getArticleVOByArticleId(articleId);
         ExceptionUtil.requireNonNull(result, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "articleId=" + articleId);
-        
+
         return result;
     }
 }
