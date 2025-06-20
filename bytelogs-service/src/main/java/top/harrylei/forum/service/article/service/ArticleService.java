@@ -67,5 +67,5 @@ public interface ArticleService {
      * @param queryParam 分页查询参数
      * @return 分页查询结果
      */
-    PageVO<ArticleDTO> pageQuery(ArticleQueryParam queryParam);
+    PageVO<ArticleVO> pageQuery(ArticleQueryParam queryParam);
 }

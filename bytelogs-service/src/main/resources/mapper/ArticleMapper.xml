@@ -71,4 +71,54 @@
         where a.id = #{articleId}
     </select>
 
+    <!-- 联表分页查询文章，返回ArticleVO -->
+    <select id="pageArticleVO" resultMap="ArticleVOMap">
+        SELECT a.id, a.user_id, a.article_type, a.title, a.short_title, a.picture,
+               a.summary, a.source, a.source_url, a.official, a.topping, a.cream,
+               a.status, a.current_version, a.deleted, a.create_time, a.update_time,
+               '' as content,
+               c.id as category_id, c.category_name,
+               t.id as tag_id, t.tag_name, t.tag_type
+        FROM article a
+        LEFT JOIN category c ON a.category_id = c.id AND c.deleted = 0
+        LEFT JOIN article_tag at ON a.id = at.article_id AND at.deleted = 0
+        LEFT JOIN tag t ON at.tag_id = t.id AND t.deleted = 0
+        <if test="query.userName != null and query.userName != ''">
+            INNER JOIN user_info ui ON a.user_id = ui.user_id AND ui.deleted = 0
+        </if>
+        <where>
+            <if test="query.title != null and query.title != ''">
+                AND a.title LIKE CONCAT('%', #{query.title}, '%')
+            </if>
+            <if test="query.userId != null">
+                AND a.user_id = #{query.userId}
+            </if>
+            <if test="query.userName != null and query.userName != ''">
+                AND ui.user_name LIKE CONCAT('%', #{query.userName}, '%')
+            </if>
+            <if test="query.categoryId != null">
+                AND a.category_id = #{query.categoryId}
+            </if>
+            <if test="query.tagIdList != null and query.tagIdList.size() > 0">
+                AND t.id IN
+                <foreach collection="query.tagIdList" item="tagId" open="(" separator="," close=")">
+                    #{tagId}
+                </foreach>
+            </if>
+            <if test="query.status != null">
+                AND a.status = #{query.status.code}
+            </if>
+            <if test="query.deleted != null">
+                AND a.deleted = #{query.deleted.code}
+            </if>
+            <if test="query.createTimeStart != null">
+                AND a.create_time &gt;= #{query.createTimeStart}
+            </if>
+            <if test="query.createTimeEnd != null">
+                AND a.create_time &lt;= #{query.createTimeEnd}
+            </if>
+        </where>
+        ORDER BY a.create_time DESC
+    </select>
+
 </mapper>

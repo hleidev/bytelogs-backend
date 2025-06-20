@@ -45,23 +45,9 @@ public class ArticleDAO extends ServiceImpl<ArticleMapper, ArticleDO> {
         return getBaseMapper().updateStatus(articleId, status);
     }
 
-    public IPage<ArticleDO> pageArticle(ArticleQueryParam queryParam, IPage<ArticleDO> page) {
-        return lambdaQuery()
-                // 基础过滤条件
-                .like(queryParam.getTitle() != null, ArticleDO::getTitle, queryParam.getTitle())
-                .eq(queryParam.getUserId() != null, ArticleDO::getUserId, queryParam.getUserId())
-                .eq(queryParam.getCategoryId() != null, ArticleDO::getCategoryId, queryParam.getCategoryId())
-                .eq(queryParam.getStatus() != null, ArticleDO::getStatus,
-                    queryParam.getStatus() != null ? queryParam.getStatus().getCode() : null)
-                // 删除状态过滤（默认只查询未删除的）
-                .eq(ArticleDO::getDeleted,
-                    queryParam.getDeleted() != null ? queryParam.getDeleted() : YesOrNoEnum.NO.getCode())
-                // 时间范围过滤
-                .ge(queryParam.getCreateTimeStart() != null, ArticleDO::getCreateTime, queryParam.getCreateTimeStart())
-                .le(queryParam.getCreateTimeEnd() != null, ArticleDO::getCreateTime, queryParam.getCreateTimeEnd())
-                // 排序
-                .orderByDesc(ArticleDO::getCreateTime)
-                .page(page);
+    public IPage<ArticleVO> pageArticleVO(ArticleQueryParam queryParam, IPage<ArticleVO> page) {
+        // 联表查询，返回包含分类和标签的ArticleVO
+        return this.getBaseMapper().pageArticleVO(queryParam, page);
     }
 
     /**

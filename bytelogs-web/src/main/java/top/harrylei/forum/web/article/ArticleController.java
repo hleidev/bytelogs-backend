@@ -11,12 +11,11 @@ import org.springframework.web.bind.annotation.*;
 import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.article.dto.ArticleDTO;
-import top.harrylei.forum.api.model.vo.article.req.ArticleQueryParam;
 import top.harrylei.forum.api.model.vo.article.req.ArticlePostReq;
+import top.harrylei.forum.api.model.vo.article.req.ArticleQueryParam;
 import top.harrylei.forum.api.model.vo.article.req.ArticleUpdateReq;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleDetailVO;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
-import top.harrylei.forum.api.model.vo.page.PageHelper;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.security.permission.RequiresLogin;
@@ -142,7 +141,7 @@ public class ArticleController {
     @Operation(summary = "分页查询", description = "智能分页查询，支持公开查询、我的文章、指定用户文章等多种模式")
     @GetMapping("/page")
     public ResVO<PageVO<ArticleVO>> pageQuery(@Valid ArticleQueryParam queryParam) {
-        PageVO<ArticleDTO> page = articleService.pageQuery(queryParam);
-        return ResVO.ok(PageHelper.map(page, articleStructMapper::toVO));
+        PageVO<ArticleVO> page = articleService.pageQuery(queryParam);
+        return ResVO.ok(page);
     }
 }

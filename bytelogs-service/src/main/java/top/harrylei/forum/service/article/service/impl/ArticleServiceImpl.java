@@ -183,7 +183,7 @@ public class ArticleServiceImpl implements ArticleService {
      * @return 分页查询结果
      */
     @Override
-    public PageVO<ArticleDTO> pageQuery(ArticleQueryParam queryParam) {
+    public PageVO<ArticleVO> pageQuery(ArticleQueryParam queryParam) {
         // 获取当前用户信息
         ReqInfoContext.ReqInfo reqInfo = ReqInfoContext.getContext();
         Long currentUserId = reqInfo.getUserId();
@@ -193,22 +193,17 @@ public class ArticleServiceImpl implements ArticleService {
         processQueryPermissions(queryParam, currentUserId, isAdmin);
 
         // 创建MyBatis-Plus分页对象
-        IPage<ArticleDO> page = new Page<>(queryParam.getPageNum(), queryParam.getPageSize());
+        IPage<ArticleVO> page = new Page<>(queryParam.getPageNum(), queryParam.getPageSize());
 
-        // 使用MyBatis-Plus分页查询
-        IPage<ArticleDO> resultPage = articleDAO.pageArticle(queryParam, page);
-
-        // 转换数据
-        List<ArticleDTO> result = resultPage.getRecords().stream()
-                .filter(Objects::nonNull)
-                .map(articleStructMapper::toDTO)
-                .toList();
+        // 使用联表查询，一次性获取文章、分类、标签信息
+        queryParam.setTagIdList(queryParam.getTagIdList());
+        IPage<ArticleVO> result = articleDAO.pageArticleVO(queryParam, page);
 
         // 使用PageHelper.build构建分页结果
-        return PageHelper.build(result,
-                                (int) resultPage.getCurrent(),
-                                (int) resultPage.getSize(),
-                                resultPage.getTotal());
+        return PageHelper.build(result.getRecords(),
+                                (int) result.getCurrent(),
+                                (int) result.getSize(),
+                                result.getTotal());
     }
 
     /**
@@ -227,12 +222,12 @@ public class ArticleServiceImpl implements ArticleService {
         }
 
         // 2. 处理删除状态权限
-        if (queryParam.getDeleted() != null && queryParam.getDeleted() == 1) {
+        if (queryParam.getDeleted() != null && Objects.equals(queryParam.getDeleted(), YesOrNoEnum.YES)) {
             // 只有管理员才能查看已删除的文章
             ExceptionUtil.errorIf(!isAdmin, ErrorCodeEnum.FORBID_ERROR_MIXED, "无权限查看已删除文章");
         } else if (queryParam.getDeleted() == null && !isAdmin) {
             // 如果没有指定删除状态，非管理员默认只查询未删除的文章
-            queryParam.setDeleted(0);
+            queryParam.setDeleted(YesOrNoEnum.NO);
         }
 
         // 3. 处理文章状态权限
@@ -257,7 +252,7 @@ public class ArticleServiceImpl implements ArticleService {
             // 非管理员查询指定用户的文章时，只能查询已发布的文章
             if (!Objects.equals(queryParam.getUserId(), currentUserId)) {
                 queryParam.setStatus(PublishStatusEnum.PUBLISHED);
-                queryParam.setDeleted(0);
+                queryParam.setDeleted(YesOrNoEnum.NO);
             }
         }
 
