@@ -1,12 +1,10 @@
 package top.harrylei.forum.service.article.repository.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
-
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-
 import top.harrylei.forum.api.model.vo.article.req.ArticleQueryParam;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
 import top.harrylei.forum.service.article.repository.entity.ArticleDO;
@@ -31,10 +29,10 @@ public interface ArticleMapper extends BaseMapper<ArticleDO> {
      * @param articleId 文章ID
      * @return 完整文章VO
      */
-    ArticleVO getArticleVOById(Long articleId);
+    ArticleVO getArticleVoById(Long articleId);
 
     /**
-     * 联表分页查询文章（支持标签过滤）
+     * 联表分页查询文章
      *
      * @param page  分页参数
      * @param query 查询条件

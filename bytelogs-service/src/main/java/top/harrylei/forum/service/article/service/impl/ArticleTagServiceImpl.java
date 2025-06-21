@@ -1,16 +1,16 @@
 package top.harrylei.forum.service.article.service.impl;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
-import org.springframework.stereotype.Service;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
+import top.harrylei.forum.api.model.vo.article.vo.TagSimpleVO;
 import top.harrylei.forum.service.article.repository.dao.ArticleTagDAO;
 import top.harrylei.forum.service.article.repository.entity.ArticleTagDO;
 import top.harrylei.forum.service.article.service.ArticleTagService;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 文章标签绑定实现类
@@ -104,5 +104,20 @@ public class ArticleTagServiceImpl implements ArticleTagService {
     @Override
     public void restoreByArticleId(Long articleId) {
         articleTagDAO.updateDeleted(articleId, YesOrNoEnum.NO.getCode());
+    }
+
+    /**
+     * 通过文章ID列表插叙标签简单展示对象
+     *
+     * @param articleIds 文章ID列表
+     * @return 标签简单展示对象
+     */
+    @Override
+    public List<TagSimpleVO> listTagSimpleVoByArticleIds(List<Long> articleIds) {
+        if (articleIds == null || articleIds.isEmpty()) {
+            return List.of();
+        }
+
+        return articleTagDAO.listTagSimpleVoByArticleIds(articleIds);
     }
 }

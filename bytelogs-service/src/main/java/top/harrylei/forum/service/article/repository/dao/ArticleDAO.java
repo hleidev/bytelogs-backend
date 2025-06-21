@@ -57,6 +57,6 @@ public class ArticleDAO extends ServiceImpl<ArticleMapper, ArticleDO> {
      * @return 完整文章VO
      */
     public ArticleVO getArticleVoByArticleId(Long articleId) {
-        return this.getBaseMapper().getArticleVOById(articleId);
+        return this.getBaseMapper().getArticleVoById(articleId);
     }
 }

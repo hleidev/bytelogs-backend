@@ -1,5 +1,8 @@
 package top.harrylei.forum.api.model.vo.page;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -22,7 +25,15 @@ public class PageHelper {
      * @return 空的分页结果
      */
     public static <T> PageVO<T> empty() {
-        return PageVO.empty();
+        PageVO<T> result = new PageVO<>();
+        result.setContent(Collections.emptyList());
+        result.setPageNum(1);
+        result.setPageSize(10);
+        result.setTotalPages(0);
+        result.setTotalElements(0);
+        result.setHasPrevious(false);
+        result.setHasNext(false);
+        return result;
     }
 
     /**
@@ -78,14 +89,54 @@ public class PageHelper {
     /**
      * 构建分页结果
      *
-     * @param list     数据列表
-     * @param pageNum  当前页码
-     * @param pageSize 每页大小
-     * @param total    总记录数
-     * @param <T>      数据类型
+     * @param content       内容列表
+     * @param pageNum       当前页码
+     * @param pageSize      每页大小
+     * @param totalElements 总记录数
+     * @param <T>           数据类型
      * @return 分页结果
      */
-    public static <T> PageVO<T> build(List<T> list, int pageNum, int pageSize, long total) {
-        return PageVO.of(list, pageNum, pageSize, total);
+    public static <T> PageVO<T> build(List<T> content, long pageNum, long pageSize, long totalElements) {
+        PageVO<T> result = new PageVO<>();
+        result.setContent(content != null ? content : Collections.emptyList());
+        result.setPageNum(pageNum);
+        result.setPageSize(pageSize);
+        result.setTotalElements(totalElements);
+
+        // 计算总页数
+        long totalPages = pageSize > 0 ? (totalElements + pageSize - 1) / pageSize : 0;
+        result.setTotalPages(totalPages);
+
+        // 设置分页导航属性
+        result.setHasPrevious(pageNum > 1);
+        result.setHasNext(pageNum < totalPages);
+
+        return result;
+    }
+
+    /**
+     * 根据MyBatis-Plus对象转换构建分页结果
+     *
+     * @param iPage MyBatis-Plus IPage对象
+     * @param <T>   数据类型
+     * @return 分页结果
+     */
+    public static <T> PageVO<T> build(IPage<T> iPage) {
+        if (iPage == null) {
+            return empty();
+        }
+
+        PageVO<T> result = new PageVO<>();
+        result.setContent(iPage.getRecords() != null ? iPage.getRecords() : Collections.emptyList());
+        result.setPageNum(iPage.getCurrent());
+        result.setPageSize(iPage.getSize());
+        result.setTotalElements(iPage.getTotal());
+        result.setTotalPages(iPage.getPages());
+
+        // 设置分页导航属性
+        result.setHasPrevious(iPage.getCurrent() > 1);
+        result.setHasNext(iPage.getCurrent() < iPage.getPages());
+
+        return result;
     }
 }

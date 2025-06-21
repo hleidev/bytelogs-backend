@@ -1,5 +1,9 @@
 package top.harrylei.forum.core.util;
 
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -9,20 +13,18 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * 日期工具类
+ *
+ * @author Harry
  */
 public class DateUtil {
     private static final Logger log = LoggerFactory.getLogger(DateUtil.class);
-    
+
     // 标准格式
     public static final DateTimeFormatter STANDARD_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     public static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    
+
     // 已有的特殊格式
     public static final DateTimeFormatter UTC_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
     public static final DateTimeFormatter DB_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
@@ -30,14 +32,14 @@ public class DateUtil {
     public static final DateTimeFormatter BLOG_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy年MM月dd日");
 
     // 支持的日期格式列表
-    private static final List<DateTimeFormatter> SUPPORTED_FORMATTERS = 
-        Arrays.asList(
-            STANDARD_FORMAT,
-            DATE_FORMAT,
-            UTC_FORMAT,
-            DB_FORMAT,
-            DateTimeFormatter.ISO_LOCAL_DATE_TIME
-        );
+    private static final List<DateTimeFormatter> SUPPORTED_FORMATTERS =
+            Arrays.asList(
+                    STANDARD_FORMAT,
+                    DATE_FORMAT,
+                    UTC_FORMAT,
+                    DB_FORMAT,
+                    DateTimeFormatter.ISO_LOCAL_DATE_TIME
+            );
 
     /**
      * 时间常量
@@ -57,7 +59,8 @@ public class DateUtil {
 
         for (DateTimeFormatter formatter : SUPPORTED_FORMATTERS) {
             try {
-                if (dateStr.length() == 10) { // yyyy-MM-dd
+                // yyyy-MM-dd
+                if (dateStr.length() == 10) {
                     return LocalDate.parse(dateStr, formatter).atStartOfDay();
                 } else {
                     return LocalDateTime.parse(dateStr, formatter);

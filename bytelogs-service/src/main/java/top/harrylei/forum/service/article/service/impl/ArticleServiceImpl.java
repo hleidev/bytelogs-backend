@@ -13,6 +13,7 @@ import top.harrylei.forum.api.model.vo.article.dto.ArticleDTO;
 import top.harrylei.forum.api.model.vo.article.req.ArticleQueryParam;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleDetailVO;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
+import top.harrylei.forum.api.model.vo.article.vo.TagSimpleVO;
 import top.harrylei.forum.api.model.vo.page.PageHelper;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.user.dto.UserInfoDetailDTO;
@@ -27,8 +28,11 @@ import top.harrylei.forum.service.article.service.ArticleTagService;
 import top.harrylei.forum.service.user.converted.UserStructMapper;
 import top.harrylei.forum.service.user.service.cache.UserCacheService;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 文章服务实现类
@@ -195,15 +199,15 @@ public class ArticleServiceImpl implements ArticleService {
         // 创建MyBatis-Plus分页对象
         IPage<ArticleVO> page = new Page<>(queryParam.getPageNum(), queryParam.getPageSize());
 
-        // 使用联表查询，一次性获取文章、分类、标签信息
+        // 第一步：分页查询文章基础信息（避免JOIN标签表导致的重复记录）
         queryParam.setTagIdList(queryParam.getTagIdList());
         IPage<ArticleVO> result = articleDAO.pageArticleVO(queryParam, page);
 
+        // 第二步：批量查询标签信息并填充到结果中（提升性能，便于缓存）
+        fillArticleTags(result.getRecords());
+
         // 使用PageHelper.build构建分页结果
-        return PageHelper.build(result.getRecords(),
-                                (int) result.getCurrent(),
-                                (int) result.getSize(),
-                                result.getTotal());
+        return PageHelper.build(result);
     }
 
     /**
@@ -366,4 +370,48 @@ public class ArticleServiceImpl implements ArticleService {
 
         return result;
     }
+
+    /**
+     * 企业级标签填充：批量查询标签信息并填充到文章列表
+     * <p>
+     * 优势：
+     * 1. 避免N+1查询问题
+     * 2. 标签数据可独立缓存
+     * 3. 便于性能监控和优化
+     * 4. 支持异步处理
+     *
+     * @param articles 文章列表
+     */
+    private void fillArticleTags(List<ArticleVO> articles) {
+        if (articles == null || articles.isEmpty()) {
+            return;
+        }
+
+        try {
+            // 收集所有文章ID
+            List<Long> articleIds = articles.stream()
+                    .map(ArticleVO::getId)
+                    .collect(Collectors.toList());
+
+            // 批量查询标签信息 - 这里可以增加缓存逻辑
+            List<TagSimpleVO> allTags = articleTagService.listTagSimpleVoByArticleIds(articleIds);
+
+            // 按文章ID分组标签
+            Map<Long, List<TagSimpleVO>> tagsByArticleId = allTags.stream().collect(Collectors.groupingBy(TagSimpleVO::getArticleId));
+
+            // 为每个文章设置标签列表
+            articles.forEach(article -> {
+                List<TagSimpleVO> tags = tagsByArticleId.getOrDefault(article.getId(), Collections.emptyList());
+                tags.forEach(tag -> tag.setArticleId(null));
+                article.setTags(tags);
+            });
+
+            log.debug("成功填充{}篇文章的标签信息，共{}个标签", articles.size(), allTags.size());
+        } catch (Exception e) {
+            log.error("填充文章标签信息失败", e);
+            // 标签填充失败不应该影响主要数据的返回
+            articles.forEach(article -> article.setTags(Collections.emptyList()));
+        }
+    }
+
 }

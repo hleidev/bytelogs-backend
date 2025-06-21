@@ -39,7 +39,7 @@
     </resultMap>
 
     <!-- 联表查询完整文章VO -->
-    <select id="getArticleVOById" resultMap="ArticleVOMap">
+    <select id="getArticleVoById" resultMap="ArticleVOMap">
         select a.id,
                a.user_id,
                a.article_type,
@@ -71,18 +71,14 @@
         where a.id = #{articleId}
     </select>
 
-    <!-- 联表分页查询文章，返回ArticleVO -->
+    <!-- 分页查询文章基础信息  -->
     <select id="pageArticleVO" resultMap="ArticleVOMap">
         SELECT a.id, a.user_id, a.article_type, a.title, a.short_title, a.picture,
                a.summary, a.source, a.source_url, a.official, a.topping, a.cream,
                a.status, a.current_version, a.deleted, a.create_time, a.update_time,
-               '' as content,
-               c.id as category_id, c.category_name,
-               t.id as tag_id, t.tag_name, t.tag_type
+               c.id as category_id, c.category_name
         FROM article a
         LEFT JOIN category c ON a.category_id = c.id AND c.deleted = 0
-        LEFT JOIN article_tag at ON a.id = at.article_id AND at.deleted = 0
-        LEFT JOIN tag t ON at.tag_id = t.id AND t.deleted = 0
         <if test="query.userName != null and query.userName != ''">
             INNER JOIN user_info ui ON a.user_id = ui.user_id AND ui.deleted = 0
         </if>
@@ -100,10 +96,15 @@
                 AND a.category_id = #{query.categoryId}
             </if>
             <if test="query.tagIdList != null and query.tagIdList.size() > 0">
-                AND t.id IN
-                <foreach collection="query.tagIdList" item="tagId" open="(" separator="," close=")">
-                    #{tagId}
-                </foreach>
+                AND EXISTS (
+                    SELECT 1 FROM article_tag at 
+                    WHERE at.article_id = a.id 
+                    AND at.deleted = 0 
+                    AND at.tag_id IN 
+                    <foreach collection="query.tagIdList" item="tagId" open="(" separator="," close=")">
+                        #{tagId}
+                    </foreach>
+                )
             </if>
             <if test="query.status != null">
                 AND a.status = #{query.status.code}
@@ -120,5 +121,4 @@
         </where>
         ORDER BY a.create_time DESC
     </select>
-
 </mapper>

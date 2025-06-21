@@ -11,6 +11,8 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 /**
  * Redis配置类 提供自定义的RedisTemplate配置，优化序列化方式
+ *
+ * @author Harry
  */
 @Configuration
 public class RedisConfig {

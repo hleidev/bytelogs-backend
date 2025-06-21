@@ -1,13 +1,13 @@
 package top.harrylei.forum.service.article.repository.mapper;
 
-import java.util.List;
-
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
-
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-
+import top.harrylei.forum.api.model.vo.article.vo.TagSimpleVO;
 import top.harrylei.forum.service.article.repository.entity.ArticleTagDO;
+
+import java.util.List;
 
 public interface ArticleTagMapper extends BaseMapper<ArticleTagDO> {
 
@@ -19,4 +19,6 @@ public interface ArticleTagMapper extends BaseMapper<ArticleTagDO> {
 
     @Update("update article_tag set deleted = #{deleted} where article_id = #{articleId}")
     void updateDeleted(Long articleId, Integer deleted);
+
+    List<TagSimpleVO> listTagSimpleVoByArticleIds(@Param("articleIds") List<Long> articleIds);
 }

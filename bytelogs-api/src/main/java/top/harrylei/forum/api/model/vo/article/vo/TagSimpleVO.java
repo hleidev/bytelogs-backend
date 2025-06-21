@@ -6,10 +6,18 @@ import top.harrylei.forum.api.model.enums.article.TagTypeEnum;
 
 /**
  * 标签展示对象
+ *
+ * @author Harry
  */
 @Data
 @Schema(description = "标签展示对象")
 public class TagSimpleVO {
+
+    /**
+     * 文章ID（用于批量查询时的关联，前端不显示）
+     */
+    @Schema(description = "文章ID", example = "1", hidden = true)
+    private Long articleId;
 
     /**
      * 标签主键

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
+import top.harrylei.forum.api.model.vo.article.vo.TagSimpleVO;
 import top.harrylei.forum.service.article.repository.entity.ArticleTagDO;
 import top.harrylei.forum.service.article.repository.mapper.ArticleTagMapper;
 
@@ -25,5 +26,9 @@ public class ArticleTagDAO extends ServiceImpl<ArticleTagMapper, ArticleTagDO> {
 
     public void updateDeleted(Long articleId, Integer deleted) {
         getBaseMapper().updateDeleted(articleId, deleted);
+    }
+
+    public List<TagSimpleVO> listTagSimpleVoByArticleIds(List<Long> articleIds) {
+        return getBaseMapper().listTagSimpleVoByArticleIds(articleIds);
     }
 }
