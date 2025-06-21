@@ -3,14 +3,17 @@ package top.harrylei.forum.web.admin;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.article.req.ArticleQueryParam;
+import top.harrylei.forum.api.model.vo.article.vo.ArticleDetailVO;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.core.security.permission.RequiresAdmin;
@@ -43,5 +46,17 @@ public class ArticleManagementController {
     public ResVO<PageVO<ArticleVO>> pageQuery(@Valid ArticleQueryParam queryParam) {
         PageVO<ArticleVO> page = articleService.pageQuery(queryParam);
         return ResVO.ok(page);
+    }
+
+    /**
+     * 文章详细
+     *
+     * @return 文章详细展示对象
+     */
+    @Operation(summary = "文章详细", description = "管理端文章详细信息")
+    @GetMapping("/{articleId}")
+    public ResVO<ArticleDetailVO> detail(@NotNull(message = "文章ID不能为空") @PathVariable Long articleId) {
+        ArticleDetailVO articleDetail = articleService.getArticleDetail(articleId);
+        return ResVO.ok(articleDetail);
     }
 }
