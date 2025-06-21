@@ -1,7 +1,5 @@
 package top.harrylei.forum.api.model.vo.article.vo;
 
-import java.util.List;
-
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -11,8 +9,12 @@ import top.harrylei.forum.api.model.enums.article.ArticleSourceEnum;
 import top.harrylei.forum.api.model.enums.article.ArticleTypeEnum;
 import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 
+import java.util.List;
+
 /**
  * 文章详情对象
+ *
+ * @author Harry
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -71,7 +73,7 @@ public class ArticleVO extends BaseVO {
      * 标签列表
      */
     @Schema(description = "标签列表",
-        example = "[{\"tagId\":1,\"tagName\":\"Java\",\"tagType\":{\"code\":1,\"label\":\"系统标签\"}}]")
+            example = "[{\"tagId\":1,\"tagName\":\"Java\",\"tagType\":{\"code\":1,\"label\":\"系统标签\"}}]")
     private List<TagSimpleVO> tags;
 
     /**

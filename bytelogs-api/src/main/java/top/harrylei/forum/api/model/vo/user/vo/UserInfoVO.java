@@ -4,7 +4,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
- * 用户信息展示对象（用于前端展示）
+ * 用户信息展示对象
+ *
+ * @author Harry
  */
 @Data
 @Schema(description = "用户信息展示对象")

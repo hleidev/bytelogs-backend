@@ -106,8 +106,7 @@ public class ArticleController {
     @Operation(summary = "文章详细", description = "查询文章详细（支持未登录用户访问已发布文章）")
     @GetMapping("/{articleId}")
     public ResVO<ArticleDetailVO> detail(@PathVariable Long articleId) {
-        ReqInfoContext.ReqInfo reqInfo = ReqInfoContext.getContext();
-        ArticleDetailVO vo = articleService.getArticleDetail(articleId, reqInfo.getUserId(), reqInfo.isAdmin());
+        ArticleDetailVO vo = articleService.getArticleDetail(articleId);
         return ResVO.ok(vo);
     }
 

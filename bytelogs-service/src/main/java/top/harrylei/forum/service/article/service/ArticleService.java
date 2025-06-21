@@ -48,11 +48,9 @@ public interface ArticleService {
      * 文章详细（支持可选登录）
      *
      * @param articleId 文章ID
-     * @param userId    当前用户ID（可为null表示未登录）
-     * @param isAdmin   是否为管理员
      * @return 文章详细展示对象
      */
-    ArticleDetailVO getArticleDetail(Long articleId, Long userId, boolean isAdmin);
+    ArticleDetailVO getArticleDetail(Long articleId);
 
     /**
      * 更新状态

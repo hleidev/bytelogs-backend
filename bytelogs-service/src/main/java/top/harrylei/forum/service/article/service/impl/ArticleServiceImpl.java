@@ -123,13 +123,14 @@ public class ArticleServiceImpl implements ArticleService {
      * 文章详细
      *
      * @param articleId 文章ID
-     * @param userId    当前用户ID（可为null表示未登录）
-     * @param isAdmin   是否为管理员
      * @return 文章详细展示对象
      */
     @Override
-    public ArticleDetailVO getArticleDetail(Long articleId, Long userId, boolean isAdmin) {
+    public ArticleDetailVO getArticleDetail(Long articleId) {
         ArticleVO completeArticleVO = getCompleteArticleVO(articleId);
+
+        Long userId = ReqInfoContext.getContext().getUserId();
+        boolean isAdmin = ReqInfoContext.getContext().isAdmin();
 
         // 权限检查：已删除文章 or 草稿或审核中文章仅作者和管理员可见
         if (YesOrNoEnum.YES.equals(completeArticleVO.getDeleted()) ||
