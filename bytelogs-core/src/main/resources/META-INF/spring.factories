@@ -1,3 +1,0 @@
-# Forum Core Module Auto Configuration
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-top.harrylei.forum.core.ForumCoreAutoConfig

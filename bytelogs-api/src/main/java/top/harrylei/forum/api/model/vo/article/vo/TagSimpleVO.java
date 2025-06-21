@@ -1,5 +1,6 @@
 package top.harrylei.forum.api.model.vo.article.vo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import top.harrylei.forum.api.model.enums.article.TagTypeEnum;
@@ -17,6 +18,7 @@ public class TagSimpleVO {
      * 文章ID（用于批量查询时的关联，前端不显示）
      */
     @Schema(description = "文章ID", example = "1", hidden = true)
+    @JsonIgnore
     private Long articleId;
 
     /**
