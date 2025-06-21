@@ -7,15 +7,15 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
 import top.harrylei.forum.api.model.vo.ResVO;
+import top.harrylei.forum.api.model.vo.article.req.ArticleAuditReq;
 import top.harrylei.forum.api.model.vo.article.req.ArticleQueryParam;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleDetailVO;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
 import top.harrylei.forum.api.model.vo.page.PageVO;
+import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.core.security.permission.RequiresAdmin;
 import top.harrylei.forum.service.article.service.ArticleService;
 
@@ -58,5 +58,25 @@ public class ArticleManagementController {
     public ResVO<ArticleDetailVO> detail(@NotNull(message = "文章ID不能为空") @PathVariable Long articleId) {
         ArticleDetailVO articleDetail = articleService.getArticleDetail(articleId);
         return ResVO.ok(articleDetail);
+    }
+
+    /**
+     * 审核文章
+     *
+     * @param articleId 文章ID
+     * @param request   审核请求
+     * @return 操作结果
+     */
+    @Operation(summary = "审核文章", description = "管理员审核文章，支持通过/驳回")
+    @PutMapping("/{articleId}/audit")
+    public ResVO<Void> auditArticle(@NotNull(message = "文章ID不能为空") @PathVariable Long articleId,
+                                    @Valid @RequestBody ArticleAuditReq request) {
+        // 验证审核状态是否有效
+        ExceptionUtil.errorIf(!request.isValidAuditStatus(),
+                              ErrorCodeEnum.PARAM_VALIDATE_FAILED,
+                              "无效的审核状态，只支持通过(1)或驳回(3)");
+
+        articleService.updateArticleStatus(articleId, request.getStatus());
+        return ResVO.ok();
     }
 }

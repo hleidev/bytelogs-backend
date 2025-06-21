@@ -17,6 +17,8 @@ import java.util.stream.Collectors;
 
 /**
  * 发布状态枚举
+ *
+ * @author Harry
  */
 @Getter
 @AllArgsConstructor
@@ -36,7 +38,12 @@ public enum PublishStatusEnum implements CodeLabelEnum {
     /**
      * 待审核
      */
-    REVIEW(2, "待审核");
+    REVIEW(2, "待审核"),
+
+    /**
+     * 审核驳回
+     */
+    REJECTED(3, "审核驳回");
 
     // 状态编码（唯一标识）
     @EnumValue
