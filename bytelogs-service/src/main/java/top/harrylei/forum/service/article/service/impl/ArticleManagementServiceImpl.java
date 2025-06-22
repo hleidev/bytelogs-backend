@@ -52,6 +52,54 @@ public class ArticleManagementServiceImpl implements ArticleManagementService {
         log.info("批量审核完成 total={} status={} operatorId={}", articleIds.size(), status, operatorId);
     }
 
+    /**
+     * 删除文章
+     *
+     * @param articleIds 文章ID列表（单个文章传单元素列表）
+     */
+    @Override
+    public void deleteArticles(List<Long> articleIds) {
+        Long operatorId = ReqInfoContext.getContext().getUserId();
+
+        // 批量处理文章删除
+        for (Long articleId : articleIds) {
+            try {
+                articleService.deleteArticle(articleId);
+                log.info("删除文章成功 articleId={} operatorId={}", articleId, operatorId);
+            } catch (Exception e) {
+                log.error("删除文章失败 articleId={} operatorId={} error={}",
+                          articleId, operatorId, e.getMessage(), e);
+                // 继续处理其他文章，不因单个失败而中断
+            }
+        }
+
+        log.info("批量删除完成 total={} operatorId={}", articleIds.size(), operatorId);
+    }
+
+    /**
+     * 恢复文章（支持单个和批量）
+     *
+     * @param articleIds 文章ID列表（单个文章传单元素列表）
+     */
+    @Override
+    public void restoreArticles(List<Long> articleIds) {
+        Long operatorId = ReqInfoContext.getContext().getUserId();
+
+        // 批量处理文章恢复
+        for (Long articleId : articleIds) {
+            try {
+                articleService.restoreArticle(articleId);
+                log.info("恢复文章成功 articleId={} operatorId={}", articleId, operatorId);
+            } catch (Exception e) {
+                log.error("恢复文章失败 articleId={} operatorId={} error={}",
+                          articleId, operatorId, e.getMessage(), e);
+                // 继续处理其他文章，不因单个失败而中断
+            }
+        }
+
+        log.info("批量恢复完成 total={} operatorId={}", articleIds.size(), operatorId);
+    }
+
     private void validateAuditStatus(PublishStatusEnum status) {
         switch (status) {
             case PUBLISHED, REJECTED -> {

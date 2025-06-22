@@ -18,6 +18,8 @@ import top.harrylei.forum.core.security.permission.RequiresAdmin;
 import top.harrylei.forum.service.article.service.ArticleManagementService;
 import top.harrylei.forum.service.article.service.ArticleService;
 
+import java.util.List;
+
 /**
  * 文章管理模块
  *
@@ -26,7 +28,7 @@ import top.harrylei.forum.service.article.service.ArticleService;
 @Tag(name = "文章管理模块", description = "提供文章后台管理接口")
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/admin/auth")
+@RequestMapping("/api/v1/admin/article")
 @RequiredArgsConstructor
 @RequiresAdmin
 @Validated
@@ -70,6 +72,26 @@ public class ArticleManagementController {
     @PutMapping("/audit")
     public ResVO<Void> auditArticles(@RequestBody @Valid ArticleAuditReq request) {
         articleManagementService.auditArticles(request.getArticleIds(), request.getStatus());
+        return ResVO.ok();
+    }
+
+    /**
+     * 删除文章
+     *
+     * @param articleIds 文章ID列表
+     * @return 操作结果
+     */
+    @Operation(summary = "删除文章", description = "管理员删除文章，支持单个和批量操作")
+    @DeleteMapping
+    public ResVO<Void> deleteArticles(@NotNull(message = "文章ID列表不能为空") @RequestBody List<Long> articleIds) {
+        articleManagementService.deleteArticles(articleIds);
+        return ResVO.ok();
+    }
+
+    @Operation(summary = "恢复文章", description = "管理员恢复已删除文章，支持单个和批量操作")
+    @PutMapping("/restore")
+    public ResVO<Void> restoreArticles(@NotNull(message = "文章ID列表不能为空") @RequestBody List<Long> articleIds) {
+        articleManagementService.restoreArticles(articleIds);
         return ResVO.ok();
     }
 }

@@ -18,4 +18,18 @@ public interface ArticleManagementService {
      * @param status     审核状态
      */
     void auditArticles(List<Long> articleIds, PublishStatusEnum status);
+
+    /**
+     * 删除文章（支持单个和批量）
+     *
+     * @param articleIds 文章ID列表（单个文章传单元素列表）
+     */
+    void deleteArticles(List<Long> articleIds);
+
+    /**
+     * 恢复文章（支持单个和批量）
+     *
+     * @param articleIds 文章ID列表（单个文章传单元素列表）
+     */
+    void restoreArticles(List<Long> articleIds);
 }
