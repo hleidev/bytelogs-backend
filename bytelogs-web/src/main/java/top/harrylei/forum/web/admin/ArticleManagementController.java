@@ -8,15 +8,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
+import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.ResVO;
-import top.harrylei.forum.api.model.vo.article.req.ArticleAuditReq;
 import top.harrylei.forum.api.model.vo.article.req.ArticleQueryParam;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleDetailVO;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
 import top.harrylei.forum.api.model.vo.page.PageVO;
-import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.core.security.permission.RequiresAdmin;
+import top.harrylei.forum.service.article.service.ArticleManagementService;
 import top.harrylei.forum.service.article.service.ArticleService;
 
 /**
@@ -34,6 +33,7 @@ import top.harrylei.forum.service.article.service.ArticleService;
 public class ArticleManagementController {
 
     private final ArticleService articleService;
+    private final ArticleManagementService articleManagementService;
 
     /**
      * 文章分页查询
@@ -64,19 +64,15 @@ public class ArticleManagementController {
      * 审核文章
      *
      * @param articleId 文章ID
-     * @param request   审核请求
+     * @param status    审核状态
      * @return 操作结果
      */
     @Operation(summary = "审核文章", description = "管理员审核文章，支持通过/驳回")
     @PutMapping("/{articleId}/audit")
     public ResVO<Void> auditArticle(@NotNull(message = "文章ID不能为空") @PathVariable Long articleId,
-                                    @Valid @RequestBody ArticleAuditReq request) {
-        // 验证审核状态是否有效
-        ExceptionUtil.errorIf(!request.isValidAuditStatus(),
-                              ErrorCodeEnum.PARAM_VALIDATE_FAILED,
-                              "无效的审核状态，只支持通过(1)或驳回(3)");
+                                    @Valid @RequestBody PublishStatusEnum status) {
 
-        articleService.updateArticleStatus(articleId, request.getStatus());
+        articleManagementService.auditArticle(articleId, status);
         return ResVO.ok();
     }
 }
