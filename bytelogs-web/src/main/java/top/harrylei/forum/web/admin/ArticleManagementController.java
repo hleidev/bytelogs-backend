@@ -8,8 +8,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.ResVO;
+import top.harrylei.forum.api.model.vo.article.req.ArticleAuditReq;
 import top.harrylei.forum.api.model.vo.article.req.ArticleQueryParam;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleDetailVO;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
@@ -63,16 +63,13 @@ public class ArticleManagementController {
     /**
      * 审核文章
      *
-     * @param articleId 文章ID
-     * @param status    审核状态
+     * @param request 审核请求
      * @return 操作结果
      */
-    @Operation(summary = "审核文章", description = "管理员审核文章，支持通过/驳回")
-    @PutMapping("/{articleId}/audit")
-    public ResVO<Void> auditArticle(@NotNull(message = "文章ID不能为空") @PathVariable Long articleId,
-                                    @Valid @RequestBody PublishStatusEnum status) {
-
-        articleManagementService.auditArticle(articleId, status);
+    @Operation(summary = "审核文章", description = "管理员审核文章，支持单个和批量操作")
+    @PutMapping("/audit")
+    public ResVO<Void> auditArticles(@RequestBody @Valid ArticleAuditReq request) {
+        articleManagementService.auditArticles(request.getArticleIds(), request.getStatus());
         return ResVO.ok();
     }
 }
