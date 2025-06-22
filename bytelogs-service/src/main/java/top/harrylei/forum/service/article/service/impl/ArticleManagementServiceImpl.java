@@ -9,8 +9,6 @@ import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.service.article.service.ArticleManagementService;
 import top.harrylei.forum.service.article.service.ArticleService;
 
-import java.util.Objects;
-
 /**
  * 文章管理实现类
  *
@@ -38,9 +36,12 @@ public class ArticleManagementServiceImpl implements ArticleManagementService {
     }
 
     private void validateAuditStatus(PublishStatusEnum status) {
-        if (!Objects.equals(status, PublishStatusEnum.PUBLISHED) &&
-                !Objects.equals(status, PublishStatusEnum.REJECTED)) {
-            ExceptionUtil.error(ErrorCodeEnum.PARAM_VALIDATE_FAILED, "无效的审核状态，只支持通过(1)或驳回(3)");
+        switch (status) {
+            case PUBLISHED, REJECTED -> {
+                // 有效状态，什么都不做
+            }
+            default -> ExceptionUtil.error(ErrorCodeEnum.PARAM_VALIDATE_FAILED,
+                                           "无效的审核状态，只支持通过(PUBLISHED)或驳回(REJECTED)");
         }
     }
 }
