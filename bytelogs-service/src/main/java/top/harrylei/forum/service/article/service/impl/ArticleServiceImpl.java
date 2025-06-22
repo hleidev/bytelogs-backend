@@ -189,13 +189,8 @@ public class ArticleServiceImpl implements ArticleService {
      */
     @Override
     public PageVO<ArticleVO> pageQuery(ArticleQueryParam queryParam) {
-        // 获取当前用户信息
-        ReqInfoContext.ReqInfo reqInfo = ReqInfoContext.getContext();
-        Long currentUserId = reqInfo.getUserId();
-        boolean isAdmin = reqInfo.isAdmin();
-
         // 处理查询逻辑
-        processQueryPermissions(queryParam, currentUserId, isAdmin);
+        processQueryPermissions(queryParam);
 
         // 创建MyBatis-Plus分页对象
         IPage<ArticleVO> page = new Page<>(queryParam.getPageNum(), queryParam.getPageSize());
@@ -214,11 +209,12 @@ public class ArticleServiceImpl implements ArticleService {
     /**
      * 处理查询权限逻辑
      *
-     * @param queryParam    查询参数
-     * @param currentUserId 当前用户ID
-     * @param isAdmin       是否为管理员
+     * @param queryParam 查询参数
      */
-    private void processQueryPermissions(ArticleQueryParam queryParam, Long currentUserId, boolean isAdmin) {
+    private void processQueryPermissions(ArticleQueryParam queryParam) {
+        // 获取当前用户信息
+        Long currentUserId = ReqInfoContext.getContext().getUserId();
+        boolean isAdmin = ReqInfoContext.getContext().isAdmin();
         // 1. 处理"只查询我的文章"逻辑
         if (Boolean.TRUE.equals(queryParam.getOnlyMine())) {
             // 需要登录才能查询自己的文章
@@ -228,8 +224,9 @@ public class ArticleServiceImpl implements ArticleService {
 
         // 2. 处理删除状态权限
         if (queryParam.getDeleted() != null && Objects.equals(queryParam.getDeleted(), YesOrNoEnum.YES)) {
-            // 只有管理员才能查看已删除的文章
-            ExceptionUtil.errorIf(!isAdmin, ErrorCodeEnum.FORBID_ERROR_MIXED, "无权限查看已删除文章");
+            // 查看已删除文章的权限：管理员 OR 查看自己的文章
+            boolean isAuthor = Objects.equals(queryParam.getUserId(), currentUserId);
+            ExceptionUtil.errorIf(!isAdmin && !isAuthor, ErrorCodeEnum.FORBID_ERROR_MIXED, "无权限查看已删除文章");
         } else if (queryParam.getDeleted() == null && !isAdmin) {
             // 如果没有指定删除状态，非管理员默认只查询未删除的文章
             queryParam.setDeleted(YesOrNoEnum.NO);
