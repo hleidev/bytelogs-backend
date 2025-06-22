@@ -151,36 +151,28 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     /**
-     * 更新状态
+     * 更新文章状态
      *
-     * @param status 修改状态
+     * @param articleId 文章ID
+     * @param status    目标状态
      */
     @Override
     public void updateArticleStatus(Long articleId, PublishStatusEnum status) {
-        ArticleDO article = getArticleWithPermissionCheck(articleId);
+        // 获取文章
+        ArticleDO article = articleDAO.getById(articleId);
+        ExceptionUtil.requireNonNull(article, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "articleId=" + articleId);
 
-        // 检查目标状态与原状态是否相同，相同则无需更新
-        if (Objects.equals(article.getStatus(), status.getCode())) {
-            log.info("文章状态未变更，无需更新 articleId={} status={}", articleId, status);
-            return;
+        // 状态变更业务逻辑处理
+        PublishStatusEnum finalStatus = processStatusTransition(article, status);
+
+        // 检查是否需要执行更新
+        if (checkAndUpdateStatus(article, finalStatus)) {
+            log.info("文章状态更新成功 articleId={} {} -> {} operatorId={}",
+                     articleId, PublishStatusEnum.fromCode(article.getStatus()), finalStatus,
+                     ReqInfoContext.getContext().getUserId());
+        } else {
+            log.info("文章状态未变更，无需更新 articleId={} status={}", articleId, finalStatus);
         }
-
-        if (needToReview(status)) {
-            status = PublishStatusEnum.REVIEW;
-        }
-
-        // 如果审核后的最终状态与数据库当前状态一致，也无需更新
-        if (Objects.equals(article.getStatus(), status.getCode())) {
-            log.info("文章状态经审核校验后未变更，无需更新 articleId={} status={}", articleId, status);
-            return;
-        }
-
-        // 执行最终状态更新
-        int updated = articleDAO.updateStatus(articleId, status.getCode());
-        ExceptionUtil.errorIf(updated == 0, ErrorCodeEnum.SYSTEM_ERROR, "更新文章状态失败");
-
-        log.info("文章状态更新成功 articleId={} status={} operatorId={}", articleId, status,
-                 ReqInfoContext.getContext().getUserId());
     }
 
     /**
@@ -270,7 +262,7 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     /**
-     * 统一的文章权限校验
+     * 获取文章并进行基础权限校验（用于删除/恢复操作）
      *
      * @param articleId      文章ID
      * @param includeDeleted 是否包含已删除的文章
@@ -285,19 +277,19 @@ public class ArticleServiceImpl implements ArticleService {
             ExceptionUtil.error(ErrorCodeEnum.ARTICLE_NOT_EXISTS, "文章不存在: articleId=" + articleId);
         }
 
+        // 基础权限校验：只有作者本人或管理员可以操作
         validateOperatePermission(article.getUserId());
 
         return article;
     }
 
     /**
-     * 校验操作权限（作者或管理员）
+     * 校验基础操作权限（作者或管理员）
      */
-    private static void validateOperatePermission(Long currentUserId) {
-        // 权限校验：只有作者本人或管理员可以操作
+    private static void validateOperatePermission(Long authorId) {
         Long operatorId = ReqInfoContext.getContext().getUserId();
         boolean isAdmin = ReqInfoContext.getContext().isAdmin();
-        boolean isAuthor = Objects.equals(currentUserId, operatorId);
+        boolean isAuthor = Objects.equals(authorId, operatorId);
 
         ExceptionUtil.errorIf(!isAuthor && !isAdmin, ErrorCodeEnum.FORBID_ERROR_MIXED, "无权限操作此文章");
     }
@@ -317,6 +309,61 @@ public class ArticleServiceImpl implements ArticleService {
 
         // 执行状态更新
         updateArticleDeletedStatus(article.getId(), targetDeleted);
+        return true;
+    }
+
+    /**
+     * 处理文章状态转换业务逻辑
+     *
+     * @param article      文章DO对象
+     * @param targetStatus 目标状态
+     * @return 最终状态
+     */
+    private PublishStatusEnum processStatusTransition(ArticleDO article, PublishStatusEnum targetStatus) {
+        // 状态转换权限校验
+        validateOperatePermission(article.getUserId());
+        validateStatusTransitionPermission(targetStatus);
+
+        // 应用业务规则：非管理员发布需要审核
+        if (needToReview(targetStatus)) {
+            return PublishStatusEnum.REVIEW;
+        }
+
+        return targetStatus;
+    }
+
+    /**
+     * 校验状态转换权限
+     *
+     * @param targetStatus 目标状态
+     */
+    private void validateStatusTransitionPermission(PublishStatusEnum targetStatus) {
+        boolean isAdmin = ReqInfoContext.getContext().isAdmin();
+
+        // 业务规则：审核状态只有管理员可以设置
+        if ((targetStatus == PublishStatusEnum.PUBLISHED || targetStatus == PublishStatusEnum.REJECTED)
+                && !isAdmin) {
+            ExceptionUtil.error(ErrorCodeEnum.FORBID_ERROR_MIXED, "只有管理员可以审核文章");
+        }
+    }
+
+    /**
+     * 检查并更新文章状态
+     *
+     * @param article      文章DO对象
+     * @param targetStatus 目标状态
+     * @return 是否执行了更新操作
+     */
+    private boolean checkAndUpdateStatus(ArticleDO article, PublishStatusEnum targetStatus) {
+        // 检查状态是否需要更新
+        if (Objects.equals(article.getStatus(), targetStatus.getCode())) {
+            return false;
+        }
+
+        // 执行状态更新
+        int updated = articleDAO.updateStatus(article.getId(), targetStatus.getCode());
+        ExceptionUtil.errorIf(updated == 0, ErrorCodeEnum.SYSTEM_ERROR, "更新文章状态失败");
+
         return true;
     }
 

@@ -3,7 +3,6 @@ package top.harrylei.forum.service.article.repository.dao;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Repository;
-import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.vo.article.req.ArticleQueryParam;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
 import top.harrylei.forum.service.article.repository.entity.ArticleDO;
@@ -22,23 +21,8 @@ public class ArticleDAO extends ServiceImpl<ArticleMapper, ArticleDO> {
         return article.getId();
     }
 
-    public Long getUserIdByArticleId(Long articleId) {
-        return this.getBaseMapper().getUserIdByArticleId(articleId);
-    }
-
-    public ArticleDO getByArticleId(Long articleId) {
-        return lambdaQuery()
-                .eq(ArticleDO::getId, articleId)
-                .eq(ArticleDO::getDeleted, YesOrNoEnum.NO.getCode())
-                .one();
-    }
-
     public void updateDeleted(Long articleId, Integer deleted) {
         getBaseMapper().updateDeleted(articleId, deleted);
-    }
-
-    public Long getUserIdByArticleIdIncludeDeleted(Long articleId) {
-        return getBaseMapper().getUserIdByArticleIdIncludeDeleted(articleId);
     }
 
     public int updateStatus(Long articleId, Integer status) {
