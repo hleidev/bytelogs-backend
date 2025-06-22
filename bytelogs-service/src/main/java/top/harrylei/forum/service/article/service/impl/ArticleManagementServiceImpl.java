@@ -41,7 +41,6 @@ public class ArticleManagementServiceImpl implements ArticleManagementService {
         for (Long articleId : articleIds) {
             try {
                 articleService.updateArticleStatus(articleId, status);
-                log.info("审核文章成功 articleId={} status={} operatorId={}", articleId, status, operatorId);
             } catch (Exception e) {
                 log.error("审核文章失败 articleId={} status={} operatorId={} error={}",
                           articleId, status, operatorId, e.getMessage(), e);
@@ -65,7 +64,6 @@ public class ArticleManagementServiceImpl implements ArticleManagementService {
         for (Long articleId : articleIds) {
             try {
                 articleService.deleteArticle(articleId);
-                log.info("删除文章成功 articleId={} operatorId={}", articleId, operatorId);
             } catch (Exception e) {
                 log.error("删除文章失败 articleId={} operatorId={} error={}",
                           articleId, operatorId, e.getMessage(), e);
@@ -89,7 +87,6 @@ public class ArticleManagementServiceImpl implements ArticleManagementService {
         for (Long articleId : articleIds) {
             try {
                 articleService.restoreArticle(articleId);
-                log.info("恢复文章成功 articleId={} operatorId={}", articleId, operatorId);
             } catch (Exception e) {
                 log.error("恢复文章失败 articleId={} operatorId={} error={}",
                           articleId, operatorId, e.getMessage(), e);

@@ -80,10 +80,10 @@ public class ArticleServiceImpl implements ArticleService {
         Long articleId = articleDTO.getId();
         ExceptionUtil.requireNonNull(articleId, ErrorCodeEnum.PARAM_ERROR, "文章ID不能为空");
 
-        // 权限校验并获取原作者ID
-        Long author = checkArticleEditPermission(articleId);
+        // 权限校验并获取文章信息
+        ArticleDO existingArticle = getArticleWithPermissionCheck(articleId);
 
-        articleDTO.setUserId(author);
+        articleDTO.setUserId(existingArticle.getUserId());
         ArticleDO articleDO = articleStructMapper.toDO(articleDTO);
 
         ArticleVO article = transactionTemplate
@@ -100,10 +100,13 @@ public class ArticleServiceImpl implements ArticleService {
      */
     @Override
     public void deleteArticle(Long articleId) {
-        checkArticleEditPermission(articleId);
+        ArticleDO article = getArticleWithPermissionCheck(articleId);
 
-        updateArticleDeletedStatus(articleId, YesOrNoEnum.YES);
-        log.info("删除文章成功 articleId={} operatorId={}", articleId, ReqInfoContext.getContext().getUserId());
+        if (checkAndUpdateDeleted(article, YesOrNoEnum.YES)) {
+            log.info("删除文章成功 articleId={} operatorId={}", articleId, ReqInfoContext.getContext().getUserId());
+        } else {
+            log.info("文章已删除，无需重复删除 articleId={}", articleId);
+        }
     }
 
     /**
@@ -113,10 +116,13 @@ public class ArticleServiceImpl implements ArticleService {
      */
     @Override
     public void restoreArticle(Long articleId) {
-        checkArticleEditPermission(articleId, true);
+        ArticleDO article = getArticleWithPermissionCheck(articleId, true);
 
-        updateArticleDeletedStatus(articleId, YesOrNoEnum.NO);
-        log.info("恢复文章成功 articleId={} operatorId={}", articleId, ReqInfoContext.getContext().getUserId());
+        if (checkAndUpdateDeleted(article, YesOrNoEnum.NO)) {
+            log.info("恢复文章成功 articleId={} operatorId={}", articleId, ReqInfoContext.getContext().getUserId());
+        } else {
+            log.info("文章未删除，无需恢复 articleId={}", articleId);
+        }
     }
 
     /**
@@ -151,24 +157,20 @@ public class ArticleServiceImpl implements ArticleService {
      */
     @Override
     public void updateArticleStatus(Long articleId, PublishStatusEnum status) {
-        ArticleDO articleDO = articleDAO.getByArticleId(articleId);
-        ExceptionUtil.requireNonNull(articleDO, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "文章不存在或已被删除");
+        ArticleDO article = getArticleWithPermissionCheck(articleId);
 
         // 检查目标状态与原状态是否相同，相同则无需更新
-        if (Objects.equals(articleDO.getStatus(), status.getCode())) {
+        if (Objects.equals(article.getStatus(), status.getCode())) {
             log.info("文章状态未变更，无需更新 articleId={} status={}", articleId, status);
             return;
         }
-
-        // 权限校验
-        checkArticleEditPermission(articleId);
 
         if (needToReview(status)) {
             status = PublishStatusEnum.REVIEW;
         }
 
         // 如果审核后的最终状态与数据库当前状态一致，也无需更新
-        if (Objects.equals(articleDO.getStatus(), status.getCode())) {
+        if (Objects.equals(article.getStatus(), status.getCode())) {
             log.info("文章状态经审核校验后未变更，无需更新 articleId={} status={}", articleId, status);
             return;
         }
@@ -263,44 +265,59 @@ public class ArticleServiceImpl implements ArticleService {
                   queryParam.getDeleted(), currentUserId, isAdmin);
     }
 
-    /**
-     * 检查文章编辑权限
-     *
-     * @param articleId      文章ID
-     * @param includeDeleted 是否包含已删除的文章
-     * @return 文章原作者ID
-     */
-    private Long checkArticleEditPermission(Long articleId, Boolean includeDeleted) {
-        // 获取当前操作者ID
-        Long operatorId = ReqInfoContext.getContext().getUserId();
-        boolean isAdmin = ReqInfoContext.getContext().isAdmin();
-
-        // 检查文章是否存在
-        Long authorId;
-        if (includeDeleted) {
-            authorId = articleDAO.getUserIdByArticleIdIncludeDeleted(articleId);
-        } else {
-            authorId = articleDAO.getUserIdByArticleId(articleId);
-        }
-        ExceptionUtil.requireNonNull(authorId, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "articleId=" + articleId);
-
-        // 只有作者本人或管理员可以修改文章
-        boolean isAuthor = Objects.equals(authorId, operatorId);
-        ExceptionUtil.errorIf(!isAuthor && !isAdmin,
-                              ErrorCodeEnum.FORBID_ERROR_MIXED,
-                              "当前用户非管理员，无权限修改非自己的文章");
-
-        return authorId;
+    private ArticleDO getArticleWithPermissionCheck(Long articleId) {
+        return getArticleWithPermissionCheck(articleId, false);
     }
 
     /**
-     * 检查文章编辑权限 - 不包含已删除的文章
+     * 统一的文章权限校验
      *
-     * @param articleId 文章ID
-     * @return 文章原作者ID
+     * @param articleId      文章ID
+     * @param includeDeleted 是否包含已删除的文章
+     * @return 文章DO对象
      */
-    private Long checkArticleEditPermission(Long articleId) {
-        return checkArticleEditPermission(articleId, false);
+    private ArticleDO getArticleWithPermissionCheck(Long articleId, boolean includeDeleted) {
+        ArticleDO article = articleDAO.getById(articleId);
+        ExceptionUtil.requireNonNull(article, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "文章不存在: articleId=" + articleId);
+
+        // 如果不包含已删除文章，需要检查删除状态
+        if (!includeDeleted && YesOrNoEnum.YES.getCode().equals(article.getDeleted())) {
+            ExceptionUtil.error(ErrorCodeEnum.ARTICLE_NOT_EXISTS, "文章不存在: articleId=" + articleId);
+        }
+
+        validateOperatePermission(article.getUserId());
+
+        return article;
+    }
+
+    /**
+     * 校验操作权限（作者或管理员）
+     */
+    private static void validateOperatePermission(Long currentUserId) {
+        // 权限校验：只有作者本人或管理员可以操作
+        Long operatorId = ReqInfoContext.getContext().getUserId();
+        boolean isAdmin = ReqInfoContext.getContext().isAdmin();
+        boolean isAuthor = Objects.equals(currentUserId, operatorId);
+
+        ExceptionUtil.errorIf(!isAuthor && !isAdmin, ErrorCodeEnum.FORBID_ERROR_MIXED, "无权限操作此文章");
+    }
+
+    /**
+     * 检查并更新删除状态
+     *
+     * @param article       文章DO对象
+     * @param targetDeleted 目标删除状态
+     * @return 是否执行了更新操作
+     */
+    private boolean checkAndUpdateDeleted(ArticleDO article, YesOrNoEnum targetDeleted) {
+        // 检查状态是否需要更新
+        if (Objects.equals(article.getDeleted(), targetDeleted.getCode())) {
+            return false;
+        }
+
+        // 执行状态更新
+        updateArticleDeletedStatus(article.getId(), targetDeleted);
+        return true;
     }
 
     private void updateArticleDeletedStatus(Long articleId, YesOrNoEnum deletedStatus) {
