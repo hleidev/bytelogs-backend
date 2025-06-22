@@ -135,15 +135,8 @@ public class ArticleServiceImpl implements ArticleService {
     public ArticleDetailVO getArticleDetail(Long articleId) {
         ArticleVO completeArticleVO = getCompleteArticleVO(articleId);
 
-        Long userId = ReqInfoContext.getContext().getUserId();
-        boolean isAdmin = ReqInfoContext.getContext().isAdmin();
-
-        // 权限检查：已删除文章 or 草稿或审核中文章仅作者和管理员可见
-        if (YesOrNoEnum.YES.equals(completeArticleVO.getDeleted()) ||
-                !PublishStatusEnum.PUBLISHED.equals(completeArticleVO.getStatus())) {
-            boolean isAuthor = userId != null && Objects.equals(completeArticleVO.getUserId(), userId);
-            ExceptionUtil.errorIf(!isAdmin && !isAuthor, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "文章不存在");
-        }
+        validateViewPermission(completeArticleVO.getUserId(), completeArticleVO.getDeleted(),
+                               completeArticleVO.getStatus());
 
         UserInfoDetailDTO user = userCacheService.getUserInfo(completeArticleVO.getUserId());
 
@@ -159,8 +152,7 @@ public class ArticleServiceImpl implements ArticleService {
     @Override
     public void updateArticleStatus(Long articleId, PublishStatusEnum status) {
         // 获取文章
-        ArticleDO article = articleDAO.getById(articleId);
-        ExceptionUtil.requireNonNull(article, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "articleId=" + articleId);
+        ArticleDO article = getArticleById(articleId);
 
         // 状态变更业务逻辑处理
         PublishStatusEnum finalStatus = processStatusTransition(article, status);
@@ -176,7 +168,7 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     /**
-     * 分页查询文章（智能处理查询权限）
+     * 分页查询文章
      *
      * @param queryParam 分页查询参数
      * @return 分页查询结果
@@ -206,55 +198,112 @@ public class ArticleServiceImpl implements ArticleService {
      * @param queryParam 查询参数
      */
     private void processQueryPermissions(ArticleQueryParam queryParam) {
-        // 获取当前用户信息
-        Long currentUserId = ReqInfoContext.getContext().getUserId();
-        boolean isAdmin = ReqInfoContext.getContext().isAdmin();
         // 1. 处理"只查询我的文章"逻辑
-        if (Boolean.TRUE.equals(queryParam.getOnlyMine())) {
-            // 需要登录才能查询自己的文章
-            ExceptionUtil.requireNonNull(currentUserId, ErrorCodeEnum.UNAUTHORIZED);
-            queryParam.setUserId(currentUserId);
-        }
+        processOnlyMineQuery(queryParam);
 
         // 2. 处理删除状态权限
-        if (queryParam.getDeleted() != null && Objects.equals(queryParam.getDeleted(), YesOrNoEnum.YES)) {
-            // 查看已删除文章的权限：管理员 OR 查看自己的文章
-            boolean isAuthor = Objects.equals(queryParam.getUserId(), currentUserId);
-            ExceptionUtil.errorIf(!isAdmin && !isAuthor, ErrorCodeEnum.FORBID_ERROR_MIXED, "无权限查看已删除文章");
-        } else if (queryParam.getDeleted() == null && !isAdmin) {
-            // 如果没有指定删除状态，非管理员默认只查询未删除的文章
-            queryParam.setDeleted(YesOrNoEnum.NO);
-        }
+        processDeletedStatusPermission(queryParam);
 
         // 3. 处理文章状态权限
-        if (queryParam.getStatus() != null) {
-            // 如果查询草稿或审核中的文章，需要是自己的文章或管理员
-            if (queryParam.getStatus() == PublishStatusEnum.DRAFT || queryParam.getStatus() == PublishStatusEnum.REVIEW) {
-                if (!isAdmin && !Objects.equals(queryParam.getUserId(), currentUserId)) {
-                    // 非管理员且不是查询自己的文章时，不允许查询非发布状态的文章
-                    ExceptionUtil.error(ErrorCodeEnum.FORBID_ERROR_MIXED, "无权限查看该状态的文章");
-                }
-            }
-        } else {
-            // 如果没有指定状态，未登录用户或非本人查询时只能看已发布的文章
-            if (currentUserId == null || (queryParam.getUserId() != null && !Objects.equals(queryParam.getUserId(),
-                                                                                            currentUserId) && !isAdmin)) {
-                queryParam.setStatus(PublishStatusEnum.PUBLISHED);
-            }
-        }
+        processStatusPermission(queryParam);
 
-        // 4. 处理用户ID权限校验
-        if (queryParam.getUserId() != null && !isAdmin) {
-            // 非管理员查询指定用户的文章时，只能查询已发布的文章
-            if (!Objects.equals(queryParam.getUserId(), currentUserId)) {
-                queryParam.setStatus(PublishStatusEnum.PUBLISHED);
-                queryParam.setDeleted(YesOrNoEnum.NO);
-            }
-        }
+        // 4. 处理指定用户查询权限
+        processUserQueryPermission(queryParam);
 
         log.debug("查询参数处理完成: userId={}, onlyMine={}, status={}, deleted={}, currentUser={}, isAdmin={}",
                   queryParam.getUserId(), queryParam.getOnlyMine(), queryParam.getStatus(),
-                  queryParam.getDeleted(), currentUserId, isAdmin);
+                  queryParam.getDeleted(), getCurrentUserId(), isCurrentUserAdmin());
+    }
+
+    /**
+     * 处理"只查询我的文章"逻辑
+     */
+    private void processOnlyMineQuery(ArticleQueryParam queryParam) {
+        if (Boolean.TRUE.equals(queryParam.getOnlyMine())) {
+            ExceptionUtil.errorIf(!isCurrentUserLoggedIn(), ErrorCodeEnum.UNAUTHORIZED, "请先登录");
+            queryParam.setUserId(getCurrentUserId());
+        }
+    }
+
+    /**
+     * 处理删除状态权限
+     */
+    private void processDeletedStatusPermission(ArticleQueryParam queryParam) {
+        if (queryParam.getDeleted() != null && YesOrNoEnum.YES.equals(queryParam.getDeleted())) {
+            // 查看已删除文章需要作者权限或管理员权限
+            if (queryParam.getUserId() != null) {
+                validateOperatePermission(queryParam.getUserId());
+            } else {
+                // 查询所有已删除文章，只有管理员可以
+                ExceptionUtil.errorIf(!isCurrentUserAdmin(), ErrorCodeEnum.FORBID_ERROR_MIXED, "无权限查看已删除文章");
+            }
+        } else if (queryParam.getDeleted() == null && !isCurrentUserAdmin()) {
+            // 非管理员默认只查询未删除的文章
+            queryParam.setDeleted(YesOrNoEnum.NO);
+        }
+    }
+
+    /**
+     * 处理文章状态权限
+     */
+    private void processStatusPermission(ArticleQueryParam queryParam) {
+        if (queryParam.getStatus() != null) {
+            // 查看非发布状态文章需要作者权限或管理员权限
+            if (!PublishStatusEnum.PUBLISHED.equals(queryParam.getStatus())) {
+                if (queryParam.getUserId() != null) {
+                    validateOperatePermission(queryParam.getUserId());
+                } else {
+                    // 查询所有非发布状态文章，需要登录且是管理员
+                    ExceptionUtil.errorIf(!isCurrentUserLoggedIn(), ErrorCodeEnum.UNAUTHORIZED, "请先登录");
+                    ExceptionUtil.errorIf(!isCurrentUserAdmin(), ErrorCodeEnum.FORBID_ERROR_MIXED,
+                                          "无权限查看该状态的文章");
+                }
+            }
+        } else if (!canViewAllStatusArticles(queryParam.getUserId())) {
+            // 未登录用户或查看他人文章时，只能看已发布的
+            queryParam.setStatus(PublishStatusEnum.PUBLISHED);
+        }
+    }
+
+    /**
+     * 处理指定用户查询权限
+     */
+    private void processUserQueryPermission(ArticleQueryParam queryParam) {
+        if (queryParam.getUserId() != null && !isCurrentUserAdmin() &&
+                !canViewAllStatusArticles(queryParam.getUserId())) {
+            // 非管理员查询他人文章时，限制为已发布且未删除
+            queryParam.setStatus(PublishStatusEnum.PUBLISHED);
+            queryParam.setDeleted(YesOrNoEnum.NO);
+        }
+    }
+
+    /**
+     * 判断当前用户是否可以查看所有状态的文章
+     */
+    private boolean canViewAllStatusArticles(Long targetUserId) {
+        return isCurrentUserLoggedIn() &&
+                (targetUserId == null || Objects.equals(targetUserId, getCurrentUserId()) || isCurrentUserAdmin());
+    }
+
+    /**
+     * 获取当前用户ID
+     */
+    private Long getCurrentUserId() {
+        return ReqInfoContext.getContext().getUserId();
+    }
+
+    /**
+     * 检查当前用户是否已登录
+     */
+    private boolean isCurrentUserLoggedIn() {
+        return ReqInfoContext.getContext().isLoggedIn();
+    }
+
+    /**
+     * 检查当前用户是否为管理员
+     */
+    private boolean isCurrentUserAdmin() {
+        return ReqInfoContext.getContext().isAdmin();
     }
 
     private ArticleDO getArticleWithPermissionCheck(Long articleId) {
@@ -262,15 +311,26 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     /**
-     * 获取文章并进行基础权限校验（用于删除/恢复操作）
+     * 统一的文章获取方法（企业级复用）
+     *
+     * @param articleId 文章ID
+     * @return 文章DO对象
+     */
+    private ArticleDO getArticleById(Long articleId) {
+        ArticleDO article = articleDAO.getById(articleId);
+        ExceptionUtil.requireNonNull(article, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "文章不存在: articleId=" + articleId);
+        return article;
+    }
+
+    /**
+     * 获取文章并进行基础权限校验
      *
      * @param articleId      文章ID
      * @param includeDeleted 是否包含已删除的文章
      * @return 文章DO对象
      */
     private ArticleDO getArticleWithPermissionCheck(Long articleId, boolean includeDeleted) {
-        ArticleDO article = articleDAO.getById(articleId);
-        ExceptionUtil.requireNonNull(article, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "文章不存在: articleId=" + articleId);
+        ArticleDO article = getArticleById(articleId);
 
         // 如果不包含已删除文章，需要检查删除状态
         if (!includeDeleted && YesOrNoEnum.YES.getCode().equals(article.getDeleted())) {
@@ -286,12 +346,29 @@ public class ArticleServiceImpl implements ArticleService {
     /**
      * 校验基础操作权限（作者或管理员）
      */
-    private static void validateOperatePermission(Long authorId) {
+    private void validateOperatePermission(Long authorId) {
         Long operatorId = ReqInfoContext.getContext().getUserId();
         boolean isAdmin = ReqInfoContext.getContext().isAdmin();
         boolean isAuthor = Objects.equals(authorId, operatorId);
 
         ExceptionUtil.errorIf(!isAuthor && !isAdmin, ErrorCodeEnum.FORBID_ERROR_MIXED, "无权限操作此文章");
+    }
+
+    /**
+     * 校验文章查看权限
+     *
+     * @param authorId 文章作者ID
+     * @param deleted  删除状态
+     * @param status   发布状态
+     */
+    private void validateViewPermission(Long authorId, YesOrNoEnum deleted, PublishStatusEnum status) {
+        // 发布状态的文章，所有人都可以查看
+        if (YesOrNoEnum.NO.equals(deleted) && PublishStatusEnum.PUBLISHED.equals(status)) {
+            return;
+        }
+
+        // 非发布状态或已删除文章，需要权限校验
+        validateOperatePermission(authorId);
     }
 
     /**
@@ -407,8 +484,9 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     private ArticleVO updateArticle(ArticleDO article, String content, List<Long> tagIds) {
-        if (needToReview(article.getStatus())) {
-            article.setStatus(PublishStatusEnum.PUBLISHED.getCode());
+        PublishStatusEnum targetStatus = PublishStatusEnum.fromCode(article.getStatus());
+        if (needToReview(targetStatus)) {
+            article.setStatus(PublishStatusEnum.REVIEW.getCode());
         }
 
         articleDAO.updateById(article);
@@ -453,7 +531,7 @@ public class ArticleServiceImpl implements ArticleService {
             // 收集所有文章ID
             List<Long> articleIds = articles.stream()
                     .map(ArticleVO::getId)
-                    .collect(Collectors.toList());
+                    .toList();
 
             // 批量查询标签信息 - 这里可以增加缓存逻辑
             List<TagSimpleVO> allTags = articleTagService.listTagSimpleVoByArticleIds(articleIds);
