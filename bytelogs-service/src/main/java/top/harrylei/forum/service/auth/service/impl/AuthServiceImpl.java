@@ -112,7 +112,7 @@ public class AuthServiceImpl implements AuthService {
 
         // 查找用户
         UserDO user = userDAO.getUserByUserName(username);
-        ExceptionUtil.requireNonNull(user, ErrorCodeEnum.USER_NOT_EXISTS, username);
+        ExceptionUtil.requireValid(user, ErrorCodeEnum.USER_NOT_EXISTS, username);
 
         // 校验账号是否启用
         ExceptionUtil.errorIf(!Objects.equals(user.getStatus(), UserStatusEnum.ENABLED.getCode()),
@@ -153,7 +153,7 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public void logout(Long userId) {
-        ExceptionUtil.requireNonNull(userId, ErrorCodeEnum.PARAM_MISSING, "用户ID");
+        ExceptionUtil.requireValid(userId, ErrorCodeEnum.PARAM_MISSING, "用户ID");
 
         try {
             boolean result = redisUtil.del(RedisKeyConstants.getUserTokenKey(userId));

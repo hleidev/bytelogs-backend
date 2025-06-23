@@ -36,7 +36,7 @@ public class CategoryManagementServiceImpl implements CategoryManagementService 
      */
     @Override
     public void save(CategoryReq req) {
-        ExceptionUtil.requireNonNull(req, ErrorCodeEnum.PARAM_MISSING, "分类请求参数");
+        ExceptionUtil.requireValid(req, ErrorCodeEnum.PARAM_MISSING, "分类请求参数");
 
         categoryService.save(req);
     }
@@ -49,8 +49,8 @@ public class CategoryManagementServiceImpl implements CategoryManagementService 
      */
     @Override
     public CategoryDTO update(Long categoryId, CategoryReq req) {
-        ExceptionUtil.requireNonNull(categoryId, ErrorCodeEnum.PARAM_MISSING, "分类ID");
-        ExceptionUtil.requireNonNull(req, ErrorCodeEnum.PARAM_MISSING, "分类请求参数");
+        ExceptionUtil.requireValid(categoryId, ErrorCodeEnum.PARAM_MISSING, "分类ID");
+        ExceptionUtil.requireValid(req, ErrorCodeEnum.PARAM_MISSING, "分类请求参数");
 
         CategoryDTO category = categoryStructMapper.toDTO(req);
         category.setId(categoryId);
@@ -65,7 +65,7 @@ public class CategoryManagementServiceImpl implements CategoryManagementService 
      */
     @Override
     public PageVO<CategoryDTO> list(CategoryQueryParam queryParam) {
-        ExceptionUtil.requireNonNull(queryParam, ErrorCodeEnum.PARAM_MISSING, "分页请求参数");
+        ExceptionUtil.requireValid(queryParam, ErrorCodeEnum.PARAM_MISSING, "分页请求参数");
         return categoryService.page(queryParam);
     }
 
@@ -77,8 +77,8 @@ public class CategoryManagementServiceImpl implements CategoryManagementService 
      */
     @Override
     public void updateStatus(Long categoryId, PublishStatusEnum status) {
-        ExceptionUtil.requireNonNull(categoryId, ErrorCodeEnum.PARAM_MISSING, "分类ID");
-        ExceptionUtil.requireNonNull(status, ErrorCodeEnum.PARAM_MISSING, "分类状态");
+        ExceptionUtil.requireValid(categoryId, ErrorCodeEnum.PARAM_MISSING, "分类ID");
+        ExceptionUtil.requireValid(status, ErrorCodeEnum.PARAM_MISSING, "分类状态");
 
         categoryService.updateStatus(categoryId, status);
     }
@@ -90,7 +90,7 @@ public class CategoryManagementServiceImpl implements CategoryManagementService 
      */
     @Override
     public void delete(Long categoryId) {
-        ExceptionUtil.requireNonNull(categoryId, ErrorCodeEnum.PARAM_MISSING, "分类ID");
+        ExceptionUtil.requireValid(categoryId, ErrorCodeEnum.PARAM_MISSING, "分类ID");
 
         categoryService.updateDeleted(categoryId, YesOrNoEnum.YES);
     }
@@ -102,7 +102,7 @@ public class CategoryManagementServiceImpl implements CategoryManagementService 
      */
     @Override
     public void restore(Long categoryId) {
-        ExceptionUtil.requireNonNull(categoryId, ErrorCodeEnum.PARAM_MISSING, "分类ID");
+        ExceptionUtil.requireValid(categoryId, ErrorCodeEnum.PARAM_MISSING, "分类ID");
 
         categoryService.updateDeleted(categoryId, YesOrNoEnum.NO);
     }

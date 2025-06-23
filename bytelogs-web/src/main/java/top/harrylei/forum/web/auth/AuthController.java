@@ -78,7 +78,7 @@ public class AuthController {
     @PostMapping("/logout")
     public ResVO<Void> logout() {
         Long userId = ReqInfoContext.getContext().getUserId();
-        ExceptionUtil.requireNonNull(userId, ErrorCodeEnum.PARAM_VALIDATE_FAILED, "用户ID为空");
+        ExceptionUtil.requireValid(userId, ErrorCodeEnum.PARAM_VALIDATE_FAILED, "用户ID为空");
         authService.logout(userId);
         return ResVO.ok();
     }

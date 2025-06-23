@@ -42,7 +42,7 @@ public class CategoryServiceImpl implements CategoryService {
      */
     @Override
     public void save(CategoryReq req) {
-        ExceptionUtil.requireNonNull(req, ErrorCodeEnum.PARAM_MISSING, "分类请求参数");
+        ExceptionUtil.requireValid(req, ErrorCodeEnum.PARAM_MISSING, "分类请求参数");
 
         CategoryDO category =
             new CategoryDO().setCategoryName(req.getCategoryName()).setStatus(req.getStatus().getCode()).setSort(req.getSort());
@@ -63,10 +63,10 @@ public class CategoryServiceImpl implements CategoryService {
      */
     @Override
     public CategoryDTO update(CategoryDTO categoryDTO) {
-        ExceptionUtil.requireNonNull(categoryDTO, ErrorCodeEnum.PARAM_MISSING, "分类传输对象");
+        ExceptionUtil.requireValid(categoryDTO, ErrorCodeEnum.PARAM_MISSING, "分类传输对象");
 
         CategoryDO category = categoryDAO.getByCategoryId(categoryDTO.getId());
-        ExceptionUtil.requireNonNull(category, ErrorCodeEnum.CATEGORY_NOT_EXISTS);
+        ExceptionUtil.requireValid(category, ErrorCodeEnum.CATEGORY_NOT_EXISTS);
 
         categoryStructMapper.updateDOFromDTO(categoryDTO, category);
 
@@ -87,7 +87,7 @@ public class CategoryServiceImpl implements CategoryService {
      */
     @Override
     public PageVO<CategoryDTO> page(CategoryQueryParam queryParam) {
-        ExceptionUtil.requireNonNull(queryParam, ErrorCodeEnum.PARAM_MISSING, "分页请求参数");
+        ExceptionUtil.requireValid(queryParam, ErrorCodeEnum.PARAM_MISSING, "分页请求参数");
         Page page = PageHelper.createPage(queryParam.getPageNum(), queryParam.getPageSize());
 
         List<CategoryDO> categoryDOList = categoryDAO.listCategory(queryParam, page.getLimitSql());
@@ -106,11 +106,11 @@ public class CategoryServiceImpl implements CategoryService {
      */
     @Override
     public void updateStatus(Long categoryId, PublishStatusEnum status) {
-        ExceptionUtil.requireNonNull(categoryId, ErrorCodeEnum.PARAM_MISSING, "分类ID");
-        ExceptionUtil.requireNonNull(status, ErrorCodeEnum.PARAM_MISSING, "分类状态");
+        ExceptionUtil.requireValid(categoryId, ErrorCodeEnum.PARAM_MISSING, "分类ID");
+        ExceptionUtil.requireValid(status, ErrorCodeEnum.PARAM_MISSING, "分类状态");
 
         CategoryDO category = categoryDAO.getByCategoryId(categoryId);
-        ExceptionUtil.requireNonNull(category, ErrorCodeEnum.CATEGORY_NOT_EXISTS);
+        ExceptionUtil.requireValid(category, ErrorCodeEnum.CATEGORY_NOT_EXISTS);
 
         if (Objects.equals(status.getCode(), category.getStatus())) {
             log.warn("分类状态未变更，无需更新");
@@ -137,11 +137,11 @@ public class CategoryServiceImpl implements CategoryService {
      */
     @Override
     public void updateDeleted(Long categoryId, YesOrNoEnum status) {
-        ExceptionUtil.requireNonNull(categoryId, ErrorCodeEnum.PARAM_MISSING, "分类ID");
-        ExceptionUtil.requireNonNull(status, ErrorCodeEnum.PARAM_MISSING, "删除状态");
+        ExceptionUtil.requireValid(categoryId, ErrorCodeEnum.PARAM_MISSING, "分类ID");
+        ExceptionUtil.requireValid(status, ErrorCodeEnum.PARAM_MISSING, "删除状态");
 
         CategoryDO category = categoryDAO.getById(categoryId);
-        ExceptionUtil.requireNonNull(category, ErrorCodeEnum.CATEGORY_NOT_EXISTS);
+        ExceptionUtil.requireValid(category, ErrorCodeEnum.CATEGORY_NOT_EXISTS);
 
         if (Objects.equals(status.getCode(), category.getDeleted())) {
             log.warn("分类删除状态未变更，无需更新");
@@ -167,7 +167,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public List<CategoryDTO> listDeleted() {
         List<CategoryDO> categoryList = categoryDAO.getDeleted();
-        ExceptionUtil.requireNonNull(categoryList, ErrorCodeEnum.CATEGORY_NOT_EXISTS);
+        ExceptionUtil.requireValid(categoryList, ErrorCodeEnum.CATEGORY_NOT_EXISTS);
 
         return categoryList.stream().map(categoryStructMapper::toDTO).toList();
     }

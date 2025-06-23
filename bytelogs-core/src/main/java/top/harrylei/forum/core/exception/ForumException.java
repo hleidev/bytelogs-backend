@@ -7,8 +7,8 @@ import java.io.Serial;
 
 /**
  * 业务异常基类
- * <p>
- * 用于表示可预期的业务逻辑异常，会记录警告日志
+ *
+ * @author harry
  */
 @Getter
 public class ForumException extends RuntimeException {
@@ -19,7 +19,7 @@ public class ForumException extends RuntimeException {
      * 状态枚举
      */
     private final ErrorCodeEnum errorCodeEnum;
-    
+
     /**
      * 错误消息格式化参数
      */
@@ -30,7 +30,7 @@ public class ForumException extends RuntimeException {
         this.errorCodeEnum = errorCodeEnum;
         this.args = args;
     }
-    
+
     /**
      * 格式化错误消息
      */

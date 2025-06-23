@@ -50,7 +50,7 @@ public class UserController {
     public ResVO<UserInfoVO> getUserInfo() {
         // 从请求上下文中获取当前用户信息
         UserInfoDetailDTO user = ReqInfoContext.getContext().getUser();
-        ExceptionUtil.requireNonNull(user, ErrorCodeEnum.USER_INFO_NOT_EXISTS);
+        ExceptionUtil.requireValid(user, ErrorCodeEnum.USER_INFO_NOT_EXISTS);
         // 将用户DTO转换为前端展示所需的VO对象
         return ResVO.ok(userStructMapper.toVO(user));
     }
@@ -66,7 +66,7 @@ public class UserController {
     public ResVO<Void> updateUserInfo(@Valid @RequestBody UserInfoReq userInfoReq) {
         // 获取当前上下文中的用户信息
         UserInfoDetailDTO userInfo = ReqInfoContext.getContext().getUser();
-        ExceptionUtil.requireNonNull(userInfo, ErrorCodeEnum.USER_INFO_NOT_EXISTS);
+        ExceptionUtil.requireValid(userInfo, ErrorCodeEnum.USER_INFO_NOT_EXISTS);
         
         // 直接更新上下文中的用户信息
         userStructMapper.updateDTOFromReq(userInfoReq, userInfo);
@@ -87,7 +87,7 @@ public class UserController {
     @PutMapping("/password")
     public ResVO<Void> updatePassword(@Valid @RequestBody PasswordUpdateReq passwordUpdateReq) {
         Long userId = ReqInfoContext.getContext().getUserId();
-        ExceptionUtil.requireNonNull(userId, ErrorCodeEnum.PARAM_VALIDATE_FAILED, "用户ID为空");
+        ExceptionUtil.requireValid(userId, ErrorCodeEnum.PARAM_VALIDATE_FAILED, "用户ID为空");
         userService.updatePassword(userId, passwordUpdateReq.getOldPassword(), passwordUpdateReq.getNewPassword());
         return ResVO.ok();
     }

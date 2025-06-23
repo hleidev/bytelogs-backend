@@ -40,7 +40,7 @@ public class TagServiceImpl implements TagService {
      */
     @Override
     public void save(TagDTO tag) {
-        ExceptionUtil.requireNonNull(tag, ErrorCodeEnum.PARAM_MISSING, "标签");
+        ExceptionUtil.requireValid(tag, ErrorCodeEnum.PARAM_MISSING, "标签");
 
         TagDO tagDO = tagStructMapper.toDO(tag);
         boolean hasTag = tagDAO.existsTag(tagDO);
@@ -61,7 +61,7 @@ public class TagServiceImpl implements TagService {
      */
     @Override
     public PageVO<TagDTO> page(TagQueryParam queryParam) {
-        ExceptionUtil.requireNonNull(queryParam, ErrorCodeEnum.PARAM_MISSING, "分页请求参数");
+        ExceptionUtil.requireValid(queryParam, ErrorCodeEnum.PARAM_MISSING, "分页请求参数");
 
         Page page = PageHelper.createPage(queryParam.getPageNum(), queryParam.getPageSize());
 
@@ -81,10 +81,10 @@ public class TagServiceImpl implements TagService {
      */
     @Override
     public TagDTO update(TagDTO tagDTO) {
-        ExceptionUtil.requireNonNull(tagDTO, ErrorCodeEnum.PARAM_MISSING, "标签传输对象");
+        ExceptionUtil.requireValid(tagDTO, ErrorCodeEnum.PARAM_MISSING, "标签传输对象");
 
         TagDO tagDO = tagDAO.getByTagId(tagDTO.getId());
-        ExceptionUtil.requireNonNull(tagDO, ErrorCodeEnum.Tag_NOT_EXISTS, "tagId=" + tagDTO.getId());
+        ExceptionUtil.requireValid(tagDO, ErrorCodeEnum.Tag_NOT_EXISTS, "tagId=" + tagDTO.getId());
 
         tagStructMapper.updateDOFromDTO(tagDTO, tagDO);
         tagDAO.updateById(tagDO);
@@ -100,7 +100,7 @@ public class TagServiceImpl implements TagService {
     @Override
     public void updateDelete(Long tagId, YesOrNoEnum yesOrNoEnum) {
         TagDO tag = tagDAO.getById(tagId);
-        ExceptionUtil.requireNonNull(tag, ErrorCodeEnum.Tag_NOT_EXISTS, "tagId=" + tagId);
+        ExceptionUtil.requireValid(tag, ErrorCodeEnum.Tag_NOT_EXISTS, "tagId=" + tagId);
 
         if (Objects.equals(tag.getDeleted(), yesOrNoEnum.getCode())) {
             log.warn("标签删除状态未变更，无需更新");

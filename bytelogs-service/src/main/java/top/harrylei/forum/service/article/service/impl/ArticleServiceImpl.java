@@ -79,7 +79,7 @@ public class ArticleServiceImpl implements ArticleService {
     @Override
     public ArticleVO updateArticle(ArticleDTO articleDTO) {
         Long articleId = articleDTO.getId();
-        ExceptionUtil.requireNonNull(articleId, ErrorCodeEnum.PARAM_ERROR, "文章ID不能为空");
+        ExceptionUtil.requireValid(articleId, ErrorCodeEnum.PARAM_ERROR, "文章ID不能为空");
 
         // 权限校验并获取文章信息
         ArticleDO existingArticle = getArticleWithPermissionCheck(articleId);
@@ -346,7 +346,7 @@ public class ArticleServiceImpl implements ArticleService {
      */
     private ArticleDO getArticleById(Long articleId) {
         ArticleDO article = articleDAO.getById(articleId);
-        ExceptionUtil.requireNonNull(article, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "文章不存在: articleId=" + articleId);
+        ExceptionUtil.requireValid(article, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "文章不存在: articleId=" + articleId);
         return article;
     }
 
@@ -556,7 +556,7 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     private boolean needToReview(Integer status) {
-        ExceptionUtil.requireNonNull(status, ErrorCodeEnum.PARAM_MISSING, "状态码");
+        ExceptionUtil.requireValid(status, ErrorCodeEnum.PARAM_MISSING, "状态码");
         return needToReview(PublishStatusEnum.fromCode(status));
     }
 
@@ -591,7 +591,7 @@ public class ArticleServiceImpl implements ArticleService {
     private ArticleVO getCompleteArticleVO(Long articleId) {
         // 使用联表查询一次性获取完整的ArticleVO
         ArticleVO result = articleDAO.getArticleVoByArticleId(articleId);
-        ExceptionUtil.requireNonNull(result, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "articleId=" + articleId);
+        ExceptionUtil.requireValid(result, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "articleId=" + articleId);
 
         return result;
     }
