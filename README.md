@@ -92,7 +92,14 @@ cd bytelogs-backend
 ```
 
 ### 2. 数据库配置
-创建 MySQL 数据库 `byte_logs`，执行项目根目录下的 `schema-byteilogs-v1.0.sql` 初始化数据库。
+创建 MySQL 数据库，执行数据库初始化脚本：
+
+```bash
+# 执行数据库初始化脚本
+mysql -u root -p < docs/database/init-schema.sql
+```
+
+详细说明请参考 [数据库文档](docs/database/README.md)。
 
 ### 3. 配置文件
 根据你的环境修改配置文件：
