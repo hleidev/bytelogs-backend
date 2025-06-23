@@ -8,7 +8,7 @@ import top.harrylei.forum.api.model.enums.article.TagTypeEnum;
 /**
  * 标签展示对象
  *
- * @author Harry
+ * @author harry
  */
 @Data
 @Schema(description = "标签展示对象")

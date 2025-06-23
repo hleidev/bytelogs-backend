@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * 日期工具类
  *
- * @author Harry
+ * @author harry
  */
 public class DateUtil {
     private static final Logger log = LoggerFactory.getLogger(DateUtil.class);

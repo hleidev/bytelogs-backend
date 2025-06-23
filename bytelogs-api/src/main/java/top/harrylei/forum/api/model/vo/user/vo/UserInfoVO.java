@@ -6,7 +6,7 @@ import lombok.Data;
 /**
  * 用户信息展示对象
  *
- * @author Harry
+ * @author harry
  */
 @Data
 @Schema(description = "用户信息展示对象")

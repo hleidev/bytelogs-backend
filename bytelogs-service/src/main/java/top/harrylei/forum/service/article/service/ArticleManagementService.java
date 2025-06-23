@@ -1,5 +1,7 @@
 package top.harrylei.forum.service.article.service;
 
+import top.harrylei.forum.api.model.enums.YesOrNoEnum;
+import top.harrylei.forum.api.model.enums.article.ArticleStatusTypeEnum;
 import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 
 import java.util.List;
@@ -7,7 +9,7 @@ import java.util.List;
 /**
  * 文章管理接口类
  *
- * @author Harry
+ * @author harry
  */
 public interface ArticleManagementService {
 
@@ -32,4 +34,13 @@ public interface ArticleManagementService {
      * @param articleIds 文章ID列表（单个文章传单元素列表）
      */
     void restoreArticles(List<Long> articleIds);
+
+    /**
+     * 批量更新文章属性标识（置顶/加精/官方）
+     *
+     * @param articleIds 文章ID列表
+     * @param statusType 状态类型
+     * @param status    是否启用
+     */
+    void updateArticleProperty(List<Long> articleIds, ArticleStatusTypeEnum statusType, YesOrNoEnum status);
 }

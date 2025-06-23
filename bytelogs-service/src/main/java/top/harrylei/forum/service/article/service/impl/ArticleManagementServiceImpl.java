@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
+import top.harrylei.forum.api.model.enums.YesOrNoEnum;
+import top.harrylei.forum.api.model.enums.article.ArticleStatusTypeEnum;
 import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
@@ -15,7 +17,7 @@ import java.util.List;
 /**
  * 文章管理实现类
  *
- * @author Harry
+ * @author harry
  */
 @Slf4j
 @Service
@@ -95,6 +97,32 @@ public class ArticleManagementServiceImpl implements ArticleManagementService {
         }
 
         log.info("批量恢复完成 total={} operatorId={}", articleIds.size(), operatorId);
+    }
+
+    /**
+     * 批量更新文章属性标识（置顶/加精/官方）
+     *
+     * @param articleIds 文章ID列表
+     * @param statusType 状态类型
+     * @param status    是否启用
+     */
+    @Override
+    public void updateArticleProperty(List<Long> articleIds, ArticleStatusTypeEnum statusType, YesOrNoEnum status) {
+        Long operatorId = ReqInfoContext.getContext().getUserId();
+
+        // 批量处理文章属性更新
+        for (Long articleId : articleIds) {
+            try {
+                articleService.updateArticleProperty(articleId, statusType, status);
+            } catch (Exception e) {
+                log.error("更新文章{}属性失败 articleId={} enabled={} operatorId={} error={}",
+                          statusType.name(), articleId, status, operatorId, e.getMessage(), e);
+                // 继续处理其他文章，不因单个失败而中断
+            }
+        }
+
+        log.info("批量更新文章{}属性完成 total={} enabled={} operatorId={}",
+                 statusType.name(), articleIds.size(), status, operatorId);
     }
 
     private void validateAuditStatus(PublishStatusEnum status) {

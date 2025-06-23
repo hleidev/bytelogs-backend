@@ -8,7 +8,7 @@ import top.harrylei.forum.api.model.vo.user.vo.UserInfoVO;
 /**
  * 文章详情对象
  *
- * @author Harry
+ * @author harry
  */
 @Data
 @Schema(description = "文章详情对象")

@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 /**
  * 发布状态枚举
  *
- * @author Harry
+ * @author harry
  */
 @Getter
 @AllArgsConstructor

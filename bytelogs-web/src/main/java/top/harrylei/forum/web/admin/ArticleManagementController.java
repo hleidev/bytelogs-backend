@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.article.req.ArticleAuditReq;
 import top.harrylei.forum.api.model.vo.article.req.ArticleQueryParam;
+import top.harrylei.forum.api.model.vo.article.req.ArticleStatusUpdateReq;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleDetailVO;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
 import top.harrylei.forum.api.model.vo.page.PageVO;
@@ -23,7 +24,7 @@ import java.util.List;
 /**
  * 文章管理模块
  *
- * @author Harry
+ * @author harry
  */
 @Tag(name = "文章管理模块", description = "提供文章后台管理接口")
 @Slf4j
@@ -92,6 +93,21 @@ public class ArticleManagementController {
     @PutMapping("/restore")
     public ResVO<Void> restoreArticles(@NotNull(message = "文章ID列表不能为空") @RequestBody List<Long> articleIds) {
         articleManagementService.restoreArticles(articleIds);
+        return ResVO.ok();
+    }
+
+    /**
+     * 更新文章属性标识（置顶/加精/官方）
+     *
+     * @param request 属性更新请求
+     * @return 操作结果
+     */
+    @Operation(summary = "更新属性", description = "管理员更新文章属性标识（置顶/加精/官方），支持批量操作")
+    @PutMapping("/property")
+    public ResVO<Void> updateArticleProperty(@RequestBody @Valid ArticleStatusUpdateReq request) {
+        articleManagementService.updateArticleProperty(request.getArticleIds(),
+                                                       request.getStatusType(),
+                                                       request.getStatus());
         return ResVO.ok();
     }
 }

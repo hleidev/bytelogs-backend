@@ -16,6 +16,15 @@ public interface ArticleMapper extends BaseMapper<ArticleDO> {
     @Update("update article set status = #{status} where id = #{articleId} and deleted = 0")
     Integer updateStatus(Long articleId, Integer status);
 
+    @Update("update article set topping = #{value} where id = #{articleId} and deleted = 0")
+    Integer updateTopping(Long articleId, Integer value);
+
+    @Update("update article set cream = #{value} where id = #{articleId} and deleted = 0")
+    Integer updateCream(Long articleId, Integer value);
+
+    @Update("update article set official = #{value} where id = #{articleId} and deleted = 0")
+    Integer updateOfficial(Long articleId, Integer value);
+
     /**
      * 联表查询完整文章VO（包含分类和标签对象）
      *

@@ -17,7 +17,7 @@ import java.time.format.DateTimeFormatter;
 /**
  * Spring MVC 配置类
  *
- * @author Harry
+ * @author harry
  */
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {

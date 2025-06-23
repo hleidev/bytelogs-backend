@@ -11,7 +11,7 @@ import top.harrylei.forum.service.article.repository.mapper.ArticleMapper;
 /**
  * 文章访问对象
  *
- * @author Harry
+ * @author harry
  */
 @Repository
 public class ArticleDAO extends ServiceImpl<ArticleMapper, ArticleDO> {
@@ -42,5 +42,17 @@ public class ArticleDAO extends ServiceImpl<ArticleMapper, ArticleDO> {
      */
     public ArticleVO getArticleVoByArticleId(Long articleId) {
         return this.getBaseMapper().getArticleVoById(articleId);
+    }
+
+    public Integer updateTopping(Long articleId, Integer intValue) {
+        return getBaseMapper().updateTopping(articleId, intValue);
+    }
+
+    public Integer updateCream(Long articleId, Integer intValue) {
+        return getBaseMapper().updateCream(articleId, intValue);
+    }
+
+    public Integer updateOfficial(Long articleId, Integer intValue) {
+        return getBaseMapper().updateOfficial(articleId, intValue);
     }
 }

@@ -1,5 +1,7 @@
 package top.harrylei.forum.service.article.service;
 
+import top.harrylei.forum.api.model.enums.YesOrNoEnum;
+import top.harrylei.forum.api.model.enums.article.ArticleStatusTypeEnum;
 import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.article.dto.ArticleDTO;
 import top.harrylei.forum.api.model.vo.article.req.ArticleQueryParam;
@@ -10,7 +12,7 @@ import top.harrylei.forum.api.model.vo.page.PageVO;
 /**
  * 文章服务接口类
  *
- * @author Harry
+ * @author harry
  */
 public interface ArticleService {
 
@@ -66,4 +68,13 @@ public interface ArticleService {
      * @return 分页查询结果
      */
     PageVO<ArticleVO> pageQuery(ArticleQueryParam queryParam);
+
+    /**
+     * 更新文章属性标识（置顶/加精/官方）
+     *
+     * @param articleId  文章ID
+     * @param statusType 状态类型
+     * @param status    是否启用
+     */
+    void updateArticleProperty(Long articleId, ArticleStatusTypeEnum statusType, YesOrNoEnum status);
 }

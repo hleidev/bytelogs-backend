@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * 文章分页查询参数
  *
- * @author Harry
+ * @author harry
  */
 @EqualsAndHashCode(callSuper = true)
 @Data

@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * 文章审核请求对象
  *
- * @author Harry
+ * @author harry
  */
 @Data
 @Schema(description = "文章审核请求")

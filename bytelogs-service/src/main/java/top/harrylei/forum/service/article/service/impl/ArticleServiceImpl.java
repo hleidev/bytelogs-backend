@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
+import top.harrylei.forum.api.model.enums.article.ArticleStatusTypeEnum;
 import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.article.dto.ArticleDTO;
 import top.harrylei.forum.api.model.vo.article.req.ArticleQueryParam;
@@ -37,7 +38,7 @@ import java.util.stream.Collectors;
 /**
  * 文章服务实现类
  *
- * @author Harry
+ * @author harry
  */
 @Slf4j
 @Service
@@ -190,6 +191,33 @@ public class ArticleServiceImpl implements ArticleService {
 
         // 使用PageHelper.build构建分页结果
         return PageHelper.build(result);
+    }
+
+    /**
+     * 更新文章属性标识（置顶/加精/官方）
+     *
+     * @param articleId  文章ID
+     * @param statusType 状态类型
+     * @param status     是否启用
+     */
+    @Override
+    public void updateArticleProperty(Long articleId, ArticleStatusTypeEnum statusType, YesOrNoEnum status) {
+        // 获取文章并进行权限检查
+        ArticleDO article = getArticleWithPermissionCheck(articleId);
+
+        // 根据状态类型检查并更新对应字段
+        boolean updated = switch (statusType) {
+            case TOPPING -> checkAndUpdateTopping(article, status);
+            case CREAM -> checkAndUpdateCream(article, status);
+            case OFFICIAL -> checkAndUpdateOfficial(article, status);
+        };
+
+        if (updated) {
+            log.info("更新文章{}属性成功 articleId={} enabled={} operatorId={}",
+                     statusType.name(), articleId, status, ReqInfoContext.getContext().getUserId());
+        } else {
+            log.info("文章{}属性未变更，无需更新 articleId={} enabled={}", statusType.name(), articleId, status);
+        }
     }
 
     /**
@@ -386,6 +414,63 @@ public class ArticleServiceImpl implements ArticleService {
 
         // 执行状态更新
         updateArticleDeletedStatus(article.getId(), targetDeleted);
+        return true;
+    }
+
+    /**
+     * 检查并更新置顶状态
+     *
+     * @param article       文章DO对象
+     * @param targetTopping 目标置顶状态
+     * @return 是否执行了更新操作
+     */
+    private boolean checkAndUpdateTopping(ArticleDO article, YesOrNoEnum targetTopping) {
+        // 检查状态是否需要更新
+        if (Objects.equals(article.getTopping(), targetTopping.getCode())) {
+            return false;
+        }
+
+        // 执行状态更新
+        int updated = articleDAO.updateTopping(article.getId(), targetTopping.getCode());
+        ExceptionUtil.errorIf(updated == 0, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "articleId=" + article.getId());
+        return true;
+    }
+
+    /**
+     * 检查并更新加精状态
+     *
+     * @param article     文章DO对象
+     * @param targetCream 目标加精状态
+     * @return 是否执行了更新操作
+     */
+    private boolean checkAndUpdateCream(ArticleDO article, YesOrNoEnum targetCream) {
+        // 检查状态是否需要更新
+        if (Objects.equals(article.getCream(), targetCream.getCode())) {
+            return false;
+        }
+
+        // 执行状态更新
+        int updated = articleDAO.updateCream(article.getId(), targetCream.getCode());
+        ExceptionUtil.errorIf(updated == 0, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "articleId=" + article.getId());
+        return true;
+    }
+
+    /**
+     * 检查并更新官方状态
+     *
+     * @param article        文章DO对象
+     * @param targetOfficial 目标官方状态
+     * @return 是否执行了更新操作
+     */
+    private boolean checkAndUpdateOfficial(ArticleDO article, YesOrNoEnum targetOfficial) {
+        // 检查状态是否需要更新
+        if (Objects.equals(article.getOfficial(), targetOfficial.getCode())) {
+            return false;
+        }
+
+        // 执行状态更新
+        int updated = articleDAO.updateOfficial(article.getId(), targetOfficial.getCode());
+        ExceptionUtil.errorIf(updated == 0, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "articleId=" + article.getId());
         return true;
     }
 

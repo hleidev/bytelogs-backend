@@ -12,7 +12,7 @@ import java.io.Serializable;
 /**
  * 分页基础类
  *
- * @author Harry
+ * @author harry
  */
 @Data
 @Schema(description = "分页请求参数")

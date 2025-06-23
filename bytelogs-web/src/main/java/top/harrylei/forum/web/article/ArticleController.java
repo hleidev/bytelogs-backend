@@ -25,7 +25,7 @@ import top.harrylei.forum.service.article.service.ArticleService;
 /**
  * 文章相关模块
  *
- * @author Harry
+ * @author harry
  */
 @Tag(name = "文章相关模块", description = "提供文章的基础查询")
 @Slf4j
