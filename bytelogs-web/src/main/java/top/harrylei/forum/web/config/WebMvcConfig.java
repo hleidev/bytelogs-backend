@@ -3,16 +3,12 @@ package top.harrylei.forum.web.config;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import top.harrylei.forum.core.common.converter.StringToLocalDateTimeConverter;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 /**
  * Spring MVC 配置类
@@ -28,20 +24,16 @@ public class WebMvcConfig implements WebMvcConfigurer {
         registry.addConverter(new StringToLocalDateTimeConverter());
     }
 
+    /**
+     * 配置ObjectMapper，支持LocalDateTime等Java 8时间类型
+     * 项目中统一使用此配置，既适用于Web序列化也适用于Redis序列化
+     */
     @Bean
+    @Primary
     public ObjectMapper objectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
-        JavaTimeModule javaTimeModule = new JavaTimeModule();
-
-        // LocalDateTime序列化和反序列化
-        javaTimeModule.addSerializer(LocalDateTime.class,
-                                     new LocalDateTimeSerializer(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-        javaTimeModule.addDeserializer(LocalDateTime.class,
-                                       new LocalDateTimeDeserializer(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-
-        objectMapper.registerModule(javaTimeModule);
+        objectMapper.registerModule(new JavaTimeModule());
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
         return objectMapper;
     }
 }
