@@ -1,107 +1,151 @@
 package top.harrylei.forum.api.model.enums;
 
+import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import top.harrylei.forum.api.model.enums.base.CodeLabelEnum;
+import top.harrylei.forum.api.model.enums.base.EnumCodeLabelJsonSerializer;
+import top.harrylei.forum.api.model.enums.comment.CommentStatusEnum;
+import top.harrylei.forum.api.model.enums.comment.ContentTypeEnum;
+
+import java.util.Arrays;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
- * 操作类型
+ * 操作类型枚举
  *
- * @author louzai
- * @since 2022/7/19
+ * @author harry
  */
 @Getter
-public enum OperateTypeEnum {
+@AllArgsConstructor
+@JsonSerialize(using = EnumCodeLabelJsonSerializer.class)
+public enum OperateTypeEnum implements CodeLabelEnum {
 
-    EMPTY(0, "") {
-        @Override
-        public int getDbStatCode() {
-            return 0;
-        }
-    },
-    READ(1, "阅读") {
-        @Override
-        public int getDbStatCode() {
-            return ReadStatEnum.READ.getCode();
-        }
-    },
-    PRAISE(2, "点赞") {
-        @Override
-        public int getDbStatCode() {
-            return PraiseStatEnum.PRAISE.getCode();
-        }
-    },
-    COLLECTION(3, "收藏") {
-        @Override
-        public int getDbStatCode() {
-            return CollectionStatEnum.COLLECTION.getCode();
-        }
-    },
-    CANCEL_PRAISE(4, "取消点赞") {
-        @Override
-        public int getDbStatCode() {
-            return PraiseStatEnum.CANCEL_PRAISE.getCode();
-        }
-    },
-    CANCEL_COLLECTION(5, "取消收藏") {
-        @Override
-        public int getDbStatCode() {
-            return CollectionStatEnum.CANCEL_COLLECTION.getCode();
-        }
-    },
-    COMMENT(6, "评论") {
-        @Override
-        public int getDbStatCode() {
-            return CommentStatEnum.COMMENT.getCode();
-        }
-    },
-    DELETE_COMMENT(7, "删除评论") {
-        @Override
-        public int getDbStatCode() {
-            return CommentStatEnum.DELETE_COMMENT.getCode();
-        }
-    },
-    ;
+    /**
+     * 空操作
+     */
+    EMPTY(0, ""),
 
-    OperateTypeEnum(Integer code, String desc) {
-        this.code = code;
-        this.desc = desc;
-    }
+    /**
+     * 阅读
+     */
+    READ(1, "阅读"),
 
+    /**
+     * 评论
+     */
+    COMMENT(2, "评论"),
+
+    /**
+     * 点赞
+     */
+    PRAISE(3, "点赞"),
+
+    /**
+     * 收藏
+     */
+    COLLECTION(4, "收藏"),
+    /**
+     * 删除评论
+     */
+    DELETE_COMMENT(5, "删除评论"),
+
+    /**
+     * 取消点赞
+     */
+    CANCEL_PRAISE(6, "取消点赞"),
+
+    /**
+     * 取消收藏
+     */
+    CANCEL_COLLECTION(7, "取消收藏");
+
+
+    // 操作编码（唯一标识）
+    @EnumValue
     private final Integer code;
-    private final String desc;
 
-    public static OperateTypeEnum fromCode(Integer code) {
-        for (OperateTypeEnum value : OperateTypeEnum.values()) {
-            if (value.getCode().equals(code)) {
-                return value;
-            }
-        }
-        return OperateTypeEnum.EMPTY;
+    // 操作描述（用于展示）
+    private final String label;
+
+    // 根据操作编码快速定位枚举实例
+    private static final Map<Integer, OperateTypeEnum> CODE_MAP =
+            Arrays.stream(values()).collect(Collectors.toMap(OperateTypeEnum::getCode, Function.identity()));
+    // 根据枚举名称（不区分大小写）快速定位枚举实例
+    private static final Map<String, OperateTypeEnum> NAME_MAP =
+            Arrays.stream(values()).collect(Collectors.toMap(e -> e.name().toUpperCase(), Function.identity()));
+
+    /**
+     * 获取操作码
+     *
+     * @return 操作码
+     */
+    @JsonValue
+    @Override
+    public Integer getCode() {
+        return code;
     }
 
-    public abstract int getDbStatCode();
+    /**
+     * 根据操作编码获取枚举对象
+     *
+     * @param code 操作编码
+     * @return 对应的操作枚举，若无匹配则返回 null
+     */
+    @JsonCreator
+    public static OperateTypeEnum fromCode(Integer code) {
+        return code == null ? null : CODE_MAP.get(code);
+    }
+
+    /**
+     * 获取数据库状态码
+     *
+     * @return 数据库状态码
+     */
+    public int getStatusCode() {
+        return switch (this) {
+            case READ -> ReadStatusEnum.READ.getCode();
+            case PRAISE -> PraiseStatusEnum.PRAISE.getCode();
+            case COLLECTION -> CollectionStatusEnum.COLLECTION.getCode();
+            case CANCEL_PRAISE -> PraiseStatusEnum.CANCEL_PRAISE.getCode();
+            case CANCEL_COLLECTION -> CollectionStatusEnum.CANCEL_COLLECTION.getCode();
+            case COMMENT -> CommentStatusEnum.COMMENT.getCode();
+            case DELETE_COMMENT -> CommentStatusEnum.DELETE_COMMENT.getCode();
+            default -> 0;
+        };
+    }
 
     /**
      * 判断操作的是否是文章
      *
-     * @param type
-     * @return true 表示文章的相关操作 false 表示评论的相关文章
+     * @param type 操作类型
+     * @return 内容类型枚举，评论相关操作返回 COMMENT，其他返回 ARTICLE
      */
-    public static DocumentTypeEnum getOperateDocumentType(OperateTypeEnum type) {
-        return (type == COMMENT || type == DELETE_COMMENT) ? DocumentTypeEnum.COMMENT : DocumentTypeEnum.ARTICLE;
+    public static ContentTypeEnum getOperateType(OperateTypeEnum type) {
+        return (type == COMMENT || type == DELETE_COMMENT) ? ContentTypeEnum.COMMENT : ContentTypeEnum.ARTICLE;
     }
 
+    /**
+     * 根据操作类型获取对应的通知类型
+     *
+     * @param type 操作类型
+     * @return 对应的通知类型，若无匹配则返回 null
+     */
     public static NotifyTypeEnum getNotifyType(OperateTypeEnum type) {
-        switch (type) {
-            case PRAISE:
-                return NotifyTypeEnum.PRAISE;
-            case CANCEL_PRAISE:
-                return NotifyTypeEnum.CANCEL_PRAISE;
-            case COLLECTION:
-                return NotifyTypeEnum.COLLECT;
-            case CANCEL_COLLECTION:
-                return NotifyTypeEnum.CANCEL_COLLECT;
-            default:
-                return null;
+        if (type == null) {
+            return null;
         }
+        return switch (type) {
+            case PRAISE -> NotifyTypeEnum.PRAISE;
+            case CANCEL_PRAISE -> NotifyTypeEnum.CANCEL_PRAISE;
+            case COLLECTION -> NotifyTypeEnum.COLLECT;
+            case CANCEL_COLLECTION -> NotifyTypeEnum.CANCEL_COLLECT;
+            default -> null;
+        };
     }
 }
