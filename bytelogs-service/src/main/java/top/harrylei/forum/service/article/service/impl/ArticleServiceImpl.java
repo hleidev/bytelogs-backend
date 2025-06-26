@@ -20,6 +20,7 @@ import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.user.dto.UserInfoDetailDTO;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
+import top.harrylei.forum.core.util.NumUtil;
 import top.harrylei.forum.service.article.converted.ArticleStructMapper;
 import top.harrylei.forum.service.article.repository.dao.ArticleDAO;
 import top.harrylei.forum.service.article.repository.entity.ArticleDO;
@@ -339,14 +340,19 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     /**
-     * 统一的文章获取方法（企业级复用）
+     * 统一的文章获取方法
      *
      * @param articleId 文章ID
      * @return 文章DO对象
      */
-    private ArticleDO getArticleById(Long articleId) {
+    @Override
+    public ArticleDO getArticleById(Long articleId) {
+        if (NumUtil.nullOrZero(articleId)) {
+            return null;
+        }
+
         ArticleDO article = articleDAO.getById(articleId);
-        ExceptionUtil.requireValid(article, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "文章不存在: articleId=" + articleId);
+        ExceptionUtil.requireValid(article, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "articleId=" + articleId);
         return article;
     }
 

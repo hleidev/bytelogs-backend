@@ -1,16 +1,17 @@
 package top.harrylei.forum.api.model.vo.comment.dto;
 
 import lombok.Data;
-import org.jetbrains.annotations.NotNull;
+import lombok.EqualsAndHashCode;
+import top.harrylei.forum.api.model.entity.BaseDTO;
 
 /**
  * 评论树状结构
  *
- * @author louzai
- * @since 2022/7/19
+ * @author harry
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class BaseCommentDTO implements Comparable<BaseCommentDTO> {
+public class BaseCommentDTO extends BaseDTO {
 
     /**
      * 用户ID
@@ -28,19 +29,9 @@ public class BaseCommentDTO implements Comparable<BaseCommentDTO> {
     private String userAvatar;
 
     /**
-     * 评论时间
-     */
-    private Long commentTime;
-
-    /**
      * 评论内容
      */
-    private String commentContent;
-
-    /**
-     * 评论id
-     */
-    private Long commentId;
+    private String content;
 
     /**
      * 点赞数量
@@ -51,9 +42,4 @@ public class BaseCommentDTO implements Comparable<BaseCommentDTO> {
      * true 表示已经点赞
      */
     private Boolean praised;
-
-    @Override
-    public int compareTo(@NotNull BaseCommentDTO o) {
-        return Long.compare(o.getCommentTime(), this.commentTime);
-    }
 }

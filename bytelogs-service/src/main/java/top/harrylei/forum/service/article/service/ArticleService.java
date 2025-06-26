@@ -8,6 +8,7 @@ import top.harrylei.forum.api.model.vo.article.req.ArticleQueryParam;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleDetailVO;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
 import top.harrylei.forum.api.model.vo.page.PageVO;
+import top.harrylei.forum.service.article.repository.entity.ArticleDO;
 
 /**
  * 文章服务接口类
@@ -77,4 +78,12 @@ public interface ArticleService {
      * @param status    是否启用
      */
     void updateArticleProperty(Long articleId, ArticleStatusTypeEnum statusType, YesOrNoEnum status);
+
+    /**
+     * 统一的文章获取方法
+     *
+     * @param articleId 文章ID
+     * @return 文章DO对象
+     */
+    ArticleDO getArticleById(Long articleId);
 }

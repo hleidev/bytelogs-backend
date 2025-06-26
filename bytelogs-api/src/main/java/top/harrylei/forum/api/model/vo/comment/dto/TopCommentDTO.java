@@ -2,7 +2,6 @@ package top.harrylei.forum.api.model.vo.comment.dto;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,10 +30,5 @@ public class TopCommentDTO extends BaseCommentDTO {
             childComments = new ArrayList<>();
         }
         return childComments;
-    }
-
-    @Override
-    public int compareTo(@NotNull BaseCommentDTO o) {
-        return Long.compare(o.getCommentTime(), this.getCommentTime());
     }
 }

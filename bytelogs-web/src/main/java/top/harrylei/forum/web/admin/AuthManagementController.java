@@ -23,6 +23,11 @@ import top.harrylei.forum.service.auth.service.AuthService;
 import top.harrylei.forum.service.user.converted.UserStructMapper;
 import top.harrylei.forum.service.user.service.UserService;
 
+/**
+ * 管理员认证模块
+ *
+ * @author harry
+ */
 @Tag(name = "管理员认证模块", description = "提供登录、退出等接口")
 @Slf4j
 @RestController
@@ -38,7 +43,7 @@ public class AuthManagementController {
     /**
      * 管理员登录接口
      *
-     * @param authReq 登录请求体，包含用户名和密码
+     * @param authReq  登录请求体，包含用户名和密码
      * @param response 响应对象，用于设置Token
      * @return 登录结果
      */
@@ -74,7 +79,7 @@ public class AuthManagementController {
 
     /**
      * 获取管理员信息
-     * 
+     *
      * @return 返回管理员信息
      */
     @Operation(summary = "查询管理员信息", description = "从请求上下文中获取管理员用户信息")
@@ -102,4 +107,5 @@ public class AuthManagementController {
         ExceptionUtil.requireValid(userId, ErrorCodeEnum.PARAM_VALIDATE_FAILED, "用户ID为空");
         userService.updatePassword(userId, passwordUpdateReq.getOldPassword(), passwordUpdateReq.getNewPassword());
         return ResVO.ok();
-    }}
+    }
+}
