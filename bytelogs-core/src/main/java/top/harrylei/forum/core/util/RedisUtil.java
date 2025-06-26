@@ -1,12 +1,7 @@
 package top.harrylei.forum.core.util;
 
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.RedisStringCommands;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -14,8 +9,12 @@ import org.springframework.data.redis.core.types.Expiration;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.stereotype.Component;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Redis工具类 封装RedisTemplate，提供常用的Redis操作方法，支持底层连接和高级API操作
@@ -67,10 +66,10 @@ public class RedisUtil {
 
         try {
             if (val instanceof String) {
-                return ((String)val).getBytes(CHARSET);
+                return ((String) val).getBytes(CHARSET);
             }
             @SuppressWarnings("unchecked")
-            RedisSerializer<Object> serializer = (RedisSerializer<Object>)redisTemplate.getValueSerializer();
+            RedisSerializer<Object> serializer = (RedisSerializer<Object>) redisTemplate.getValueSerializer();
             return serializer.serialize(val);
         } catch (Exception e) {
             log.error("序列化对象失败: 对象类型={}, 错误信息={}", val.getClass().getName(), e.getMessage(), e);
@@ -91,7 +90,7 @@ public class RedisUtil {
     /**
      * 将字节数组反序列化为对象
      *
-     * @param <T> 对象类型
+     * @param <T>   对象类型
      * @param bytes 字节数组
      * @param clazz 对象类型
      * @return 反序列化后的对象，反序列化失败或bytes为null时返回null
@@ -103,12 +102,21 @@ public class RedisUtil {
         }
 
         if (String.class.equals(clazz)) {
-            return (T)new String(bytes, CHARSET);
+            return (T) new String(bytes, CHARSET);
         }
 
         try {
-            RedisSerializer<Object> serializer = (RedisSerializer<Object>)redisTemplate.getValueSerializer();
-            return (T)serializer.deserialize(bytes);
+            // 由于我们的Redis序列化器返回的是JSON字符串，需要使用JsonUtil进行类型转换
+            RedisSerializer<Object> serializer = (RedisSerializer<Object>) redisTemplate.getValueSerializer();
+            Object result = serializer.deserialize(bytes);
+
+            if (result instanceof String) {
+                // 如果Redis序列化器返回的是字符串，使用JsonUtil进行类型转换
+                return JsonUtil.parseObject((String) result, clazz);
+            } else {
+                // 如果已经是具体类型，直接转换
+                return (T) result;
+            }
         } catch (Exception e) {
             log.error("反序列化对象失败: 目标类型={}, 错误信息={}", clazz.getName(), e.getMessage(), e);
             return null;
@@ -118,15 +126,15 @@ public class RedisUtil {
     /**
      * 设置对象值
      *
-     * @param <T> 对象类型
-     * @param key 键
-     * @param value 值
+     * @param <T>     对象类型
+     * @param key     键
+     * @param value   值
      * @param seconds 过期时间（秒）
      * @return 是否成功，操作异常时返回false
      */
     public <T> Boolean setObj(String key, T value, long seconds) {
         try {
-            return redisTemplate.execute((RedisCallback<Boolean>)con -> {
+            return redisTemplate.execute((RedisCallback<Boolean>) con -> {
                 byte[] keyBytes = keyBytes(key);
                 byte[] valueBytes = valueBytes(value);
                 if (valueBytes == null) {
@@ -135,7 +143,7 @@ public class RedisUtil {
                 }
                 if (seconds > 0) {
                     return con.stringCommands().set(keyBytes, valueBytes, Expiration.seconds(seconds),
-                        RedisStringCommands.SetOption.UPSERT);
+                                                    RedisStringCommands.SetOption.UPSERT);
                 } else {
                     return con.stringCommands().set(keyBytes, valueBytes);
                 }
@@ -149,8 +157,8 @@ public class RedisUtil {
     /**
      * 设置对象值（不过期）
      *
-     * @param <T> 对象类型
-     * @param key 键
+     * @param <T>   对象类型
+     * @param key   键
      * @param value 值
      * @return 是否成功，操作异常时返回false
      */
@@ -161,14 +169,14 @@ public class RedisUtil {
     /**
      * 获取对象值
      *
-     * @param <T> 对象类型
-     * @param key 键
+     * @param <T>   对象类型
+     * @param key   键
      * @param clazz 对象类型
      * @return 对象，键不存在或操作异常时返回null
      */
     public <T> T getObj(String key, Class<T> clazz) {
         try {
-            return redisTemplate.execute((RedisCallback<T>)con -> {
+            return redisTemplate.execute((RedisCallback<T>) con -> {
                 byte[] val = con.stringCommands().get(keyBytes(key));
                 return bytesToObj(val, clazz);
             });
@@ -186,7 +194,7 @@ public class RedisUtil {
      */
     public Boolean del(String key) {
         try {
-            return redisTemplate.execute((RedisCallback<Boolean>)con -> {
+            return redisTemplate.execute((RedisCallback<Boolean>) con -> {
                 Long result = con.keyCommands().del(keyBytes(key));
                 return result != null && result > 0;
             });
@@ -208,7 +216,7 @@ public class RedisUtil {
         }
 
         try {
-            return redisTemplate.execute((RedisCallback<Long>)con -> {
+            return redisTemplate.execute((RedisCallback<Long>) con -> {
                 long count = 0;
                 for (String key : keys) {
                     Long result = con.keyCommands().del(keyBytes(key));
@@ -232,7 +240,7 @@ public class RedisUtil {
      */
     public Boolean hasKey(String key) {
         try {
-            return redisTemplate.execute((RedisCallback<Boolean>)con -> con.keyCommands().exists(keyBytes(key)));
+            return redisTemplate.execute((RedisCallback<Boolean>) con -> con.keyCommands().exists(keyBytes(key)));
         } catch (Exception e) {
             log.error("Redis检查键是否存在失败: key={}, error={}", key, e.getMessage(), e);
             return false;
@@ -242,14 +250,14 @@ public class RedisUtil {
     /**
      * 设置过期时间
      *
-     * @param key 键
+     * @param key     键
      * @param seconds 过期时间（秒）
      * @return 是否成功，操作异常时返回false
      */
     public Boolean expire(String key, long seconds) {
         try {
             return redisTemplate
-                .execute((RedisCallback<Boolean>)con -> con.keyCommands().expire(keyBytes(key), seconds));
+                    .execute((RedisCallback<Boolean>) con -> con.keyCommands().expire(keyBytes(key), seconds));
         } catch (Exception e) {
             log.error("Redis设置过期时间失败: key={}, seconds={}, error={}", key, seconds, e.getMessage(), e);
             return false;
@@ -264,7 +272,7 @@ public class RedisUtil {
      */
     public Long getExpire(String key) {
         try {
-            return redisTemplate.execute((RedisCallback<Long>)con -> con.keyCommands().ttl(keyBytes(key)));
+            return redisTemplate.execute((RedisCallback<Long>) con -> con.keyCommands().ttl(keyBytes(key)));
         } catch (Exception e) {
             log.error("Redis获取过期时间失败: key={}, error={}", key, e.getMessage(), e);
             return -2L;
@@ -274,13 +282,14 @@ public class RedisUtil {
     /**
      * 自增/自减操作
      *
-     * @param key 键
+     * @param key   键
      * @param delta 增量（正值为自增，负值为自减）
      * @return 操作后的值，失败返回null
      */
     public Long incrBy(String key, long delta) {
         try {
-            return redisTemplate.execute((RedisCallback<Long>)con -> con.stringCommands().incrBy(keyBytes(key), delta));
+            return redisTemplate.execute((RedisCallback<Long>) con -> con.stringCommands().incrBy(keyBytes(key),
+                                                                                                  delta));
         } catch (Exception e) {
             log.error("Redis incrBy 操作失败: key={}, delta={}, error={}", key, delta, e.getMessage(), e);
             return null;
@@ -310,15 +319,15 @@ public class RedisUtil {
     /**
      * 获取哈希表中的对象
      *
-     * @param <T> 对象类型
-     * @param key 键
+     * @param <T>   对象类型
+     * @param key   键
      * @param field 字段
      * @param clazz 对象类型
      * @return 对象，字段不存在或操作异常时返回null
      */
     public <T> T hGet(String key, String field, Class<T> clazz) {
         try {
-            return redisTemplate.execute((RedisCallback<T>)con -> {
+            return redisTemplate.execute((RedisCallback<T>) con -> {
                 byte[] val = con.hashCommands().hGet(keyBytes(key), field.getBytes(CHARSET));
                 return bytesToObj(val, clazz);
             });
@@ -331,8 +340,8 @@ public class RedisUtil {
     /**
      * 设置哈希表中的对象
      *
-     * @param <T> 值的类型
-     * @param key 键
+     * @param <T>   值的类型
+     * @param key   键
      * @param field 字段
      * @param value 值（可以是字符串或任意对象）
      * @return 是否成功，操作异常时返回false
@@ -346,7 +355,7 @@ public class RedisUtil {
             }
 
             return redisTemplate.execute((RedisCallback<
-                Boolean>)con -> con.hashCommands().hSet(keyBytes(key), field.getBytes(CHARSET), valueBytes));
+                    Boolean>) con -> con.hashCommands().hSet(keyBytes(key), field.getBytes(CHARSET), valueBytes));
         } catch (Exception e) {
             log.error("Redis设置哈希对象失败: key={}, field={}, error={}", key, field, e.getMessage(), e);
             return false;
@@ -367,7 +376,7 @@ public class RedisUtil {
         }
 
         try {
-            return redisTemplate.execute((RedisCallback<Boolean>)con -> {
+            return redisTemplate.execute((RedisCallback<Boolean>) con -> {
                 Map<byte[], byte[]> byteMap = new java.util.HashMap<>(map.size());
                 for (Map.Entry<String, T> entry : map.entrySet()) {
                     byte[] fieldBytes = entry.getKey().getBytes(CHARSET);
@@ -393,7 +402,7 @@ public class RedisUtil {
      */
     public Set<String> hKeys(String key) {
         try {
-            return redisTemplate.execute((RedisCallback<Set<String>>)con -> {
+            return redisTemplate.execute((RedisCallback<Set<String>>) con -> {
                 Set<byte[]> fieldBytes = con.hashCommands().hKeys(keyBytes(key));
                 if (fieldBytes == null || fieldBytes.isEmpty()) {
                     return Set.of();
@@ -414,7 +423,7 @@ public class RedisUtil {
     /**
      * 删除哈希表中的字段
      *
-     * @param key 键
+     * @param key    键
      * @param fields 字段
      * @return 删除的字段数量，操作异常时返回0
      */
@@ -424,7 +433,7 @@ public class RedisUtil {
         }
 
         try {
-            return redisTemplate.execute((RedisCallback<Long>)con -> {
+            return redisTemplate.execute((RedisCallback<Long>) con -> {
                 byte[][] fieldBytes = new byte[fields.length][];
                 for (int i = 0; i < fields.length; i++) {
                     fieldBytes[i] = fields[i].getBytes(CHARSET);
@@ -440,14 +449,14 @@ public class RedisUtil {
     /**
      * 判断哈希表中是否有该字段
      *
-     * @param key 键
+     * @param key   键
      * @param field 字段
      * @return 是否存在，操作异常时返回false
      */
     public Boolean hHasKey(String key, String field) {
         try {
             return redisTemplate.execute(
-                (RedisCallback<Boolean>)con -> con.hashCommands().hExists(keyBytes(key), field.getBytes(CHARSET)));
+                    (RedisCallback<Boolean>) con -> con.hashCommands().hExists(keyBytes(key), field.getBytes(CHARSET)));
         } catch (Exception e) {
             log.error("Redis判断哈希字段是否存在失败: key={}, field={}, error={}", key, field, e.getMessage(), e);
             return false;
@@ -457,7 +466,7 @@ public class RedisUtil {
     /**
      * 哈希表中字段自增
      *
-     * @param key 键
+     * @param key   键
      * @param field 字段
      * @param delta 增量
      * @return 增加后的值，操作异常时返回null
@@ -465,9 +474,16 @@ public class RedisUtil {
     public Long hIncrBy(String key, String field, long delta) {
         try {
             return redisTemplate.execute(
-                (RedisCallback<Long>)con -> con.hashCommands().hIncrBy(keyBytes(key), field.getBytes(CHARSET), delta));
+                    (RedisCallback<Long>) con -> con.hashCommands().hIncrBy(keyBytes(key),
+                                                                            field.getBytes(CHARSET),
+                                                                            delta));
         } catch (Exception e) {
-            log.error("Redis哈希字段自增失败: key={}, field={}, delta={}, error={}", key, field, delta, e.getMessage(), e);
+            log.error("Redis哈希字段自增失败: key={}, field={}, delta={}, error={}",
+                      key,
+                      field,
+                      delta,
+                      e.getMessage(),
+                      e);
             return null;
         }
     }
@@ -475,10 +491,10 @@ public class RedisUtil {
     /**
      * 设置缓存对象（使用高级API）
      *
-     * @param key 键
-     * @param value 值
+     * @param key     键
+     * @param value   值
      * @param timeout 过期时间
-     * @param unit 时间单位
+     * @param unit    时间单位
      * @return 是否成功，操作异常时返回false
      */
     public Boolean set(String key, Object value, long timeout, TimeUnit unit) {
@@ -494,7 +510,7 @@ public class RedisUtil {
     /**
      * 设置缓存对象（使用高级API，不过期）
      *
-     * @param key 键
+     * @param key   键
      * @param value 值
      * @return 是否成功，操作异常时返回false
      */
@@ -518,7 +534,7 @@ public class RedisUtil {
     @SuppressWarnings("unchecked")
     public <T> T get(String key) {
         try {
-            return (T)redisTemplate.opsForValue().get(key);
+            return (T) redisTemplate.opsForValue().get(key);
         } catch (Exception e) {
             log.error("Redis获取对象失败: key={}, error={}", key, e.getMessage(), e);
             return null;

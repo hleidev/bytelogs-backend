@@ -6,8 +6,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import top.harrylei.forum.core.util.JsonUtil;
 
 /**
  * Redis配置类 提供自定义的RedisTemplate配置，优化序列化方式
@@ -34,14 +35,31 @@ public class RedisConfig {
         template.setKeySerializer(stringRedisSerializer);
         template.setHashKeySerializer(stringRedisSerializer);
 
-        // 设置value的序列化器为GenericJackson2JsonRedisSerializer
-        GenericJackson2JsonRedisSerializer jsonRedisSerializer = new GenericJackson2JsonRedisSerializer();
-        template.setValueSerializer(jsonRedisSerializer);
-        template.setHashValueSerializer(jsonRedisSerializer);
+        // 设置value的序列化器
+        RedisSerializer<Object> jsonSerializer = new RedisSerializer<>() {
+            @Override
+            public byte[] serialize(Object obj) {
+                return JsonUtil.toBytes(obj);
+            }
+
+            @Override
+            public Object deserialize(byte[] bytes) {
+                if (bytes == null || bytes.length == 0) {
+                    return null;
+                }
+                // 对于Redis，我们存储为字符串，反序列化时返回字符串
+                // 具体的类型转换由业务层调用JsonUtil.parseObject处理
+                return new String(bytes);
+            }
+        };
+        
+        template.setValueSerializer(jsonSerializer);
+        template.setHashValueSerializer(jsonSerializer);
 
         template.afterPropertiesSet();
         return template;
     }
+
 
     /**
      * 提供StringRedisTemplate的Bean 当只需要处理String类型的数据时，使用此模板更为高效
