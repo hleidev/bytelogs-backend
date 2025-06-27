@@ -1,13 +1,9 @@
 package top.harrylei.forum.service.user.service.impl;
 
-import java.util.List;
-import java.util.Objects;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
@@ -15,8 +11,8 @@ import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
 import top.harrylei.forum.api.model.vo.auth.UserCreateReq;
 import top.harrylei.forum.api.model.vo.page.Page;
 import top.harrylei.forum.api.model.vo.page.param.UserQueryParam;
-import top.harrylei.forum.api.model.vo.user.dto.UserInfoDetailDTO;
 import top.harrylei.forum.api.model.vo.user.dto.UserDetailDTO;
+import top.harrylei.forum.api.model.vo.user.dto.UserInfoDetailDTO;
 import top.harrylei.forum.core.common.constans.RedisKeyConstants;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
@@ -31,6 +27,9 @@ import top.harrylei.forum.service.user.repository.entity.UserDO;
 import top.harrylei.forum.service.user.repository.entity.UserInfoDO;
 import top.harrylei.forum.service.user.service.UserService;
 import top.harrylei.forum.service.user.service.cache.UserCacheService;
+
+import java.util.List;
+import java.util.Objects;
 
 /**
  * 用户服务实现类
@@ -87,7 +86,7 @@ public class UserServiceImpl implements UserService {
             userDO.setUserName(userInfo.getUserName());
             userDAO.updateById(userDO);
 
-            redisUtil.del(RedisKeyConstants.getUserInfoKey(userInfo.getUserId()));
+            redisUtil.delete(RedisKeyConstants.getUserInfoKey(userInfo.getUserId()));
 
             log.info("用户信息更新成功: userId={}", userInfoDTO.getUserId());
         } catch (Exception e) {
@@ -138,7 +137,7 @@ public class UserServiceImpl implements UserService {
 
         UserInfoDetailDTO userInfo = getUserInfoById(userId);
 
-        redisUtil.del(RedisKeyConstants.getUserInfoKey(userInfo.getUserId()));
+        redisUtil.delete(RedisKeyConstants.getUserInfoKey(userInfo.getUserId()));
         userCacheService.updateUserInfoCache(userInfo);
 
         try {

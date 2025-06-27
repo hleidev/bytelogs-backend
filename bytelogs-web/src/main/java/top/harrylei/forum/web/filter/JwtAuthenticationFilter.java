@@ -1,9 +1,11 @@
 package top.harrylei.forum.web.filter;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -11,13 +13,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.vo.user.dto.UserInfoDetailDTO;
 import top.harrylei.forum.core.common.constans.RedisKeyConstants;
@@ -25,6 +20,10 @@ import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.util.JwtUtil;
 import top.harrylei.forum.core.util.RedisUtil;
 import top.harrylei.forum.service.user.service.cache.UserCacheService;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * JWT认证过滤器
@@ -127,7 +126,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             // 从Redis获取存储的token
-            String redisToken = redisUtil.getObj(RedisKeyConstants.getUserTokenKey(userId), String.class);
+            String redisToken = redisUtil.getObject(RedisKeyConstants.getUserTokenKey(userId), String.class);
 
             // 验证token是否匹配
             if (StringUtils.isBlank(redisToken) || !token.equals(redisToken)) {

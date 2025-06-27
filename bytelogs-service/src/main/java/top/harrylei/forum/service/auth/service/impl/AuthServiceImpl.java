@@ -1,12 +1,9 @@
 package top.harrylei.forum.service.auth.service.impl;
 
-import java.util.Objects;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
 import top.harrylei.forum.api.model.enums.user.LoginTypeEnum;
 import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
@@ -25,6 +22,8 @@ import top.harrylei.forum.service.user.repository.dao.UserInfoDAO;
 import top.harrylei.forum.service.user.repository.entity.UserDO;
 import top.harrylei.forum.service.user.repository.entity.UserInfoDO;
 import top.harrylei.forum.service.user.service.cache.UserCacheService;
+
+import java.util.Objects;
 
 /**
  * 登录注册服务实现类
@@ -139,7 +138,7 @@ public class AuthServiceImpl implements AuthService {
         ReqInfoContext.getContext().setUserId(userId).setUser(userInfoDTO);
 
         // 缓存token和用户信息
-        redisUtil.setObj(RedisKeyConstants.getUserTokenKey(userId), token, jwtUtil.getExpireSeconds());
+        redisUtil.setObjectWithExpire(RedisKeyConstants.getUserTokenKey(userId), token, jwtUtil.getExpireSeconds());
 
         // 安全相关事件保留日志
         log.info("用户登录成功 userId={}", userId);
@@ -156,7 +155,7 @@ public class AuthServiceImpl implements AuthService {
         ExceptionUtil.requireValid(userId, ErrorCodeEnum.PARAM_MISSING, "用户ID");
 
         try {
-            boolean result = redisUtil.del(RedisKeyConstants.getUserTokenKey(userId));
+            boolean result = redisUtil.delete(RedisKeyConstants.getUserTokenKey(userId));
             userCacheService.clearUserInfoCache(userId);
 
             if (!result) {
