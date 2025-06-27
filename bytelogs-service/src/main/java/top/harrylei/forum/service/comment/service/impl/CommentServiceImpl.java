@@ -56,6 +56,22 @@ public class CommentServiceImpl implements CommentService {
 
         // 保存评论
         CommentDO comment = commentStructMapper.toDO(dto);
+
+        // 设置顶级评论ID
+        if (parent == null) {
+            comment.setTopCommentId(0L);
+        } else {
+            // 子评论，设置顶级评论ID
+            Long topCommentId = parent.getTopCommentId();
+            if (NumUtil.nullOrZero(topCommentId)) {
+                // 父评论本身就是顶级评论
+                comment.setTopCommentId(parent.getId());
+            } else {
+                // 父评论是子评论，继承其顶级评论ID
+                comment.setTopCommentId(topCommentId);
+            }
+        }
+
         commentDAO.save(comment);
 
         // 保存用户足迹

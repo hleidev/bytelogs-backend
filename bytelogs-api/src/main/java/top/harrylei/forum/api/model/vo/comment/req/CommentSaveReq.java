@@ -29,9 +29,4 @@ public class CommentSaveReq {
      * 父评论ID
      */
     private Long parentCommentId;
-
-    /**
-     * 回复评论ID，直接回复某条评论时使用
-     */
-    private Long topCommentId;
 }
