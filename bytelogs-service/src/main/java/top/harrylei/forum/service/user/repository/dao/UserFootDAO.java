@@ -13,11 +13,11 @@ import top.harrylei.forum.service.user.repository.mapper.UserFootMapper;
 @Repository
 public class UserFootDAO extends ServiceImpl<UserFootMapper, UserFootDO> {
 
-    public UserFootDO getByContentAndUserId(Long contentId, Integer type, Long userId) {
+    public UserFootDO getByContentAndUserId(Long userId, Long contentId, Integer type) {
         return lambdaQuery()
+                .eq(UserFootDO::getUserId, userId)
                 .eq(UserFootDO::getContentId, contentId)
                 .eq(UserFootDO::getContentType, type)
-                .eq(UserFootDO::getUserId, userId)
                 .one();
     }
 }
