@@ -2,10 +2,17 @@ package top.harrylei.forum.service.comment.converted;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 import top.harrylei.forum.api.model.vo.comment.dto.CommentDTO;
+import top.harrylei.forum.api.model.vo.comment.dto.SubCommentDTO;
+import top.harrylei.forum.api.model.vo.comment.dto.TopCommentDTO;
 import top.harrylei.forum.api.model.vo.comment.req.CommentSaveReq;
+import top.harrylei.forum.api.model.vo.comment.vo.CommentVO;
 import top.harrylei.forum.core.common.converter.EnumConverter;
 import top.harrylei.forum.service.comment.repository.entity.CommentDO;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 评论结构映射器
@@ -15,6 +22,8 @@ import top.harrylei.forum.service.comment.repository.entity.CommentDO;
 @Mapper(componentModel = "spring", uses = {EnumConverter.class})
 public interface CommentStructMapper {
 
+    @Mapping(target = "userId", ignore = true)
+    @Mapping(target = "topCommentId", ignore = true)
     @Mapping(target = "updateTime", ignore = true)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "deleted", ignore = true)
@@ -22,4 +31,39 @@ public interface CommentStructMapper {
     CommentDTO toDTO(CommentSaveReq req);
 
     CommentDO toDO(CommentDTO dto);
+
+    @Mapping(target = "userName", ignore = true)
+    @Mapping(target = "userAvatar", ignore = true)
+    @Mapping(target = "praised", ignore = true)
+    @Mapping(target = "praiseCount", ignore = true)
+    @Mapping(target = "commentCount", ignore = true)
+    @Mapping(target = "childComments", ignore = true)
+    TopCommentDTO toTopDTO(CommentDO commentDO);
+
+    @Mapping(target = "userName", ignore = true)
+    @Mapping(target = "userAvatar", ignore = true)
+    @Mapping(target = "praised", ignore = true)
+    @Mapping(target = "praiseCount", ignore = true)
+    @Mapping(target = "parentContent", ignore = true)
+    SubCommentDTO toSubDTO(CommentDO commentDO);
+
+    @Mapping(target = "topCommentId", ignore = true)
+    @Mapping(target = "parentCommentId", ignore = true)
+    @Mapping(target = "childComments", source = "childComments", qualifiedByName = "SubCommentListToVOList")
+    CommentVO toVO(TopCommentDTO topCommentDTO);
+
+    @Mapping(target = "topCommentId", ignore = true)
+    @Mapping(target = "parentCommentId", ignore = true)
+    @Mapping(target = "childComments", ignore = true)
+    CommentVO toVO(SubCommentDTO subCommentDTO);
+
+    @Named("SubCommentListToVOList")
+    default List<CommentVO> subCommentListToVOList(List<SubCommentDTO> subComments) {
+        if (subComments == null) {
+            return null;
+        }
+        return subComments.stream()
+                .map(this::toVO)
+                .collect(Collectors.toList());
+    }
 }

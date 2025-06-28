@@ -83,8 +83,4 @@ public interface ArticleStructMapper {
     @Mapping(target = "tags", ignore = true)
     @Mapping(target = "category", ignore = true)
     ArticleVO toVO(ArticleDTO article);
-
-    @Mapping(target = "tagIds", ignore = true)
-    @Mapping(target = "content", ignore = true)
-    ArticleDTO toDTOFromVO(ArticleVO articleVO);
 }
