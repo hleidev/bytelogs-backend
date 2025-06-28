@@ -69,9 +69,8 @@ public class RedisUtil {
             if (value instanceof String) {
                 return ((String) value).getBytes(CHARSET);
             }
-            @SuppressWarnings("unchecked")
-            RedisSerializer<Object> serializer = (RedisSerializer<Object>) redisTemplate.getValueSerializer();
-            return serializer.serialize(value);
+            // 使用统一的JsonUtil进行序列化
+            return JsonUtil.toBytes(value);
         } catch (Exception e) {
             log.error("Failed to serialize object: type={}, error={}", value.getClass().getName(), e.getMessage(), e);
             return null;
@@ -107,14 +106,8 @@ public class RedisUtil {
         }
 
         try {
-            RedisSerializer<Object> serializer = (RedisSerializer<Object>) redisTemplate.getValueSerializer();
-            Object result = serializer.deserialize(bytes);
-
-            if (result instanceof String) {
-                return JsonUtil.parseObject((String) result, clazz);
-            } else {
-                return (T) result;
-            }
+            // 使用统一的JsonUtil进行反序列化
+            return JsonUtil.fromBytes(bytes, clazz);
         } catch (Exception e) {
             log.error("Failed to deserialize object: targetType={}, error={}", clazz.getName(), e.getMessage(), e);
             return null;
