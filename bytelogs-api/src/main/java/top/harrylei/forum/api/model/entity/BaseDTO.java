@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 @Data
 @Accessors(chain = true)
 public class BaseDTO implements Serializable {
+
     @Schema(description = "业务主键")
     private Long id;
 

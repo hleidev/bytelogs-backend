@@ -1,5 +1,6 @@
 package top.harrylei.forum.api.model.vo.comment.req;
 
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import jakarta.validation.constraints.NotBlank;
@@ -23,6 +24,7 @@ public class CommentSaveReq {
      * 评论内容
      */
     @NotBlank(message = "评论内容不能为空")
+    @Size(min = 1, max = 500, message = "评论内容长度必须在1-500字符之间")
     private String content;
 
     /**

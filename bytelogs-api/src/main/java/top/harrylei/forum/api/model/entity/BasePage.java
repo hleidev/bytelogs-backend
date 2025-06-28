@@ -36,12 +36,12 @@ public class BasePage implements Serializable {
      */
     public static final int MAX_PAGE_SIZE = 100;
 
-    @Schema(description = "页码，从1开始", defaultValue = "1")
+    @Schema(description = "页码，从1开始", defaultValue = "1", example = "1")
     @NotNull(message = "页码不能为空")
     @Min(value = 1, message = "页码最小为1")
     private Integer pageNum = DEFAULT_PAGE_NUM;
 
-    @Schema(description = "每页大小", defaultValue = "10")
+    @Schema(description = "每页大小", defaultValue = "10", example = "10")
     @NotNull(message = "每页大小不能为空")
     @Min(value = 1, message = "每页大小最小为1")
     @Max(value = MAX_PAGE_SIZE, message = "每页大小最大为100")
