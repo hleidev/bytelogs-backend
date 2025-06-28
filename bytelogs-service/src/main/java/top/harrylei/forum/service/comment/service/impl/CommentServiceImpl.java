@@ -1,11 +1,24 @@
 package top.harrylei.forum.service.comment.service.impl;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
+import top.harrylei.forum.api.model.enums.PraiseStatusEnum;
+import top.harrylei.forum.api.model.enums.comment.ContentTypeEnum;
+import top.harrylei.forum.api.model.vo.comment.dto.BaseCommentDTO;
 import top.harrylei.forum.api.model.vo.comment.dto.CommentDTO;
+import top.harrylei.forum.api.model.vo.comment.dto.SubCommentDTO;
+import top.harrylei.forum.api.model.vo.comment.dto.TopCommentDTO;
+import top.harrylei.forum.api.model.vo.comment.req.CommentQueryParam;
+import top.harrylei.forum.api.model.vo.page.PageHelper;
+import top.harrylei.forum.api.model.vo.page.PageVO;
+import top.harrylei.forum.api.model.vo.user.dto.UserFootDTO;
+import top.harrylei.forum.api.model.vo.user.dto.UserInfoDetailDTO;
+import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.core.util.NumUtil;
 import top.harrylei.forum.service.article.repository.entity.ArticleDO;
@@ -15,6 +28,13 @@ import top.harrylei.forum.service.comment.repository.dao.CommentDAO;
 import top.harrylei.forum.service.comment.repository.entity.CommentDO;
 import top.harrylei.forum.service.comment.service.CommentService;
 import top.harrylei.forum.service.user.service.UserFootService;
+import top.harrylei.forum.service.user.service.cache.UserCacheService;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 评论服务实现类
@@ -30,6 +50,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentStructMapper commentStructMapper;
     private final ArticleService articleService;
     private final UserFootService userFootService;
+    private final UserCacheService userCacheService;
 
     /**
      * 保存评论
@@ -41,6 +62,110 @@ public class CommentServiceImpl implements CommentService {
     public Long saveComment(CommentDTO dto) {
         CommentDO comment = insertComment(dto);
         return comment.getId();
+    }
+
+    /**
+     * 分页查询
+     *
+     * @param param 分页查询参数
+     * @return 分页结果
+     */
+    @Override
+    public PageVO<TopCommentDTO> pageQuery(CommentQueryParam param) {
+        // 1. 查询顶级评论
+        IPage<CommentDO> page = new Page<>(param.getPageNum(), param.getPageSize());
+        IPage<CommentDO> comments = commentDAO.pageQuery(param.getArticleId(), page);
+
+        if (comments.getRecords().isEmpty()) {
+            return PageHelper.empty();
+        }
+
+        // 2. 处理所有数据
+        List<TopCommentDTO> resultData = buildTopCommentsWithSub(comments.getRecords(), param.getArticleId());
+
+        // 3. 直接构建结果
+        IPage<TopCommentDTO> resultPage = new Page<>(comments.getCurrent(), comments.getSize(), comments.getTotal());
+        resultPage.setRecords(resultData);
+
+        return PageHelper.build(resultPage);
+    }
+
+    /**
+     * 构建顶级评论列表
+     */
+    private List<TopCommentDTO> buildTopCommentsWithSub(List<CommentDO> comments, Long articleId) {
+        // 顶级评论Map
+        Map<Long, TopCommentDTO> topCommentsMap = comments.stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.toMap(CommentDO::getId, commentStructMapper::toTopDTO));
+
+        // 查询子评论列表
+        List<CommentDO> subComments = commentDAO.listSubComments(articleId, topCommentsMap.keySet());
+        Map<Long, SubCommentDTO> subCommentsMap = subComments.stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.toMap(CommentDO::getId, commentStructMapper::toSubDTO));
+
+        // 构建顶级评论和子评论的关系
+        subComments.forEach(comment -> {
+            TopCommentDTO topComment = topCommentsMap.get(comment.getTopCommentId());
+            SubCommentDTO subComment = subCommentsMap.get(comment.getId());
+
+            if (topComment != null && subComment != null) {
+                topComment.getChildComments().add(subComment);
+
+                if (Objects.equals(comment.getTopCommentId(), comment.getParentCommentId())) {
+                    return;
+                }
+                SubCommentDTO parentComment = subCommentsMap.get(comment.getParentCommentId());
+                if (parentComment != null) {
+                    subComment.setParentContent(parentComment.getContent());
+                }
+            }
+        });
+
+        // 填充用户信息
+        List<TopCommentDTO> result = new ArrayList<>(topCommentsMap.size());
+        comments.forEach(comment -> {
+            TopCommentDTO topComment = topCommentsMap.get(comment.getId());
+            fillCommentInfo(topComment);
+            topComment.getChildComments().forEach(this::fillCommentInfo);
+            // 设置评论数量为子评论数量
+            topComment.setCommentCount(topComment.getChildComments().size());
+            result.add(topComment);
+        });
+
+        return result;
+    }
+
+    private void fillCommentInfo(BaseCommentDTO comment) {
+        // 填充用户信息
+        UserInfoDetailDTO userInfo = userCacheService.getUserInfo(comment.getUserId());
+        if (userInfo == null) {
+            comment.setUserName("默认用户");
+            comment.setUserAvatar("");
+        } else {
+            comment.setUserName(userInfo.getUserName());
+            comment.setUserAvatar(userInfo.getAvatar());
+        }
+
+        // 填充点赞信息
+
+        // TODO 待完成，查询并设置点赞数
+
+        Long loginUserId = null;
+        try {
+            loginUserId = ReqInfoContext.getContext().getUserId();
+        } catch (Exception e) {
+            log.debug("获取用户上下文失败", e);
+        }
+
+        if (loginUserId != null) {
+            // 判断当前用户是否点过赞
+            UserFootDTO userFoot = userFootService.getUserFoot(loginUserId, comment.getId(), ContentTypeEnum.COMMENT);
+            comment.setPraised(userFoot != null && PraiseStatusEnum.PRAISE.equals(userFoot.getPraiseState()));
+        } else {
+            comment.setPraised(false);
+        }
     }
 
     /**

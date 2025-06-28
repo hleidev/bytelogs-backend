@@ -6,8 +6,10 @@ import org.springframework.stereotype.Service;
 import top.harrylei.forum.api.model.enums.OperateTypeEnum;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.comment.ContentTypeEnum;
+import top.harrylei.forum.api.model.vo.user.dto.UserFootDTO;
 import top.harrylei.forum.core.util.NumUtil;
 import top.harrylei.forum.service.comment.repository.entity.CommentDO;
+import top.harrylei.forum.service.user.converted.UserFootStructMapper;
 import top.harrylei.forum.service.user.repository.dao.UserFootDAO;
 import top.harrylei.forum.service.user.repository.entity.UserFootDO;
 import top.harrylei.forum.service.user.service.UserFootService;
@@ -27,6 +29,7 @@ import java.util.function.Supplier;
 public class UserFootServiceImpl implements UserFootService {
 
     private final UserFootDAO userFootDAO;
+    private final UserFootStructMapper userFootStructMapper;
 
     /**
      * 保存评论足迹
@@ -55,6 +58,23 @@ public class UserFootServiceImpl implements UserFootService {
     }
 
     /**
+     * 查询用户足迹
+     *
+     * @param userId          用户ID
+     * @param contentId       内容ID
+     * @param contentTypeEnum 内容类型
+     * @return 用户足迹传输对象
+     */
+    @Override
+    public UserFootDTO getUserFoot(Long userId, Long contentId, ContentTypeEnum contentTypeEnum) {
+        if (NumUtil.nullOrZero(userId) || NumUtil.nullOrZero(contentId) || contentTypeEnum == null) {
+            return null;
+        }
+        UserFootDO userFoot = userFootDAO.getByContentAndUserId(userId, contentId, contentTypeEnum.getCode());
+        return userFootStructMapper.toDTO(userFoot);
+    }
+
+    /**
      * 保存或更新状态信息
      *
      * @param contentTypeEnum 内容类型：博文 + 评论
@@ -68,7 +88,7 @@ public class UserFootServiceImpl implements UserFootService {
                                            Long authorId,
                                            Long userId,
                                            OperateTypeEnum operateTypeEnum) {
-        UserFootDO userFoot = userFootDAO.getByContentAndUserId(contentId, contentTypeEnum.getCode(), userId);
+        UserFootDO userFoot = userFootDAO.getByContentAndUserId(userId, contentId, contentTypeEnum.getCode());
         if (userFoot == null) {
             userFoot = new UserFootDO()
                     .setUserId(userId)
