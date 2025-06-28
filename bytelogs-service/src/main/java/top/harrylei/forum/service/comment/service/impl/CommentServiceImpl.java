@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
 import top.harrylei.forum.api.model.enums.PraiseStatusEnum;
+import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.comment.ContentTypeEnum;
 import top.harrylei.forum.api.model.vo.comment.dto.CommentDTO;
 import top.harrylei.forum.api.model.vo.comment.vo.BaseCommentVO;
@@ -104,15 +105,39 @@ public class CommentServiceImpl implements CommentService {
         // 1. 验证评论是否存在并获取
         CommentDO comment = getCommentById(dto.getId());
 
-        // 2. 从上下文获取当前用户ID并验证编辑权限
-        Long currentUserId = ReqInfoContext.getContext().getUserId();
-        validateCommentEditPermission(comment, currentUserId);
+        // 2. 验证评论可见性
+        validateCommentVisibility(comment);
 
-        // 3. 更新评论内容
+        // 3. 验证编辑权限
+        validateCommentEditPermission(comment);
+
+        // 4. 更新评论内容
         comment.setContent(dto.getContent());
         commentDAO.updateById(comment);
 
         log.info("评论编辑成功，commentId={}", comment.getId());
+    }
+
+    /**
+     * 删除评论
+     *
+     * @param commentId 评论ID
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteComment(Long commentId) {
+        // 1. 验证评论是否存在并获取
+        CommentDO comment = getCommentById(commentId);
+
+        // 2. 验证删除权限
+        validateCommentAuthorPermission(comment.getUserId());
+
+        // 3. 检查并删除评论
+        if (checkAndDeleteComment(comment)) {
+            log.info("评论删除成功，commentId={}", commentId);
+        } else {
+            log.info("评论已处于删除状态，无需重复操作，commentId={}", commentId);
+        }
     }
 
     /**
@@ -238,26 +263,69 @@ public class CommentServiceImpl implements CommentService {
      * @return 评论实体
      */
     private CommentDO getCommentById(Long commentId) {
-        CommentDO comment = commentDAO.getByCommentId(commentId);
+        CommentDO comment = commentDAO.getById(commentId);
         ExceptionUtil.requireValid(comment, ErrorCodeEnum.COMMENT_NOT_EXISTS, "评论不存在，commentId=" + commentId);
         return comment;
+    }
+
+    /**
+     * 验证评论可见性（管理员可以操作已删除评论）
+     *
+     * @param comment 评论实体
+     */
+    private void validateCommentVisibility(CommentDO comment) {
+        boolean isAdmin = ReqInfoContext.getContext().isAdmin();
+        boolean isDeleted = Objects.equals(comment.getDeleted(), YesOrNoEnum.YES.getCode());
+        
+        // 管理员可以操作已删除评论，普通用户不能操作已删除评论
+        ExceptionUtil.errorIf(isDeleted && !isAdmin,
+                              ErrorCodeEnum.COMMENT_NOT_EXISTS, "评论已删除，无法操作");
+    }
+
+    /**
+     * 验证评论作者权限
+     *
+     * @param authorId 评论作者ID
+     */
+    private void validateCommentAuthorPermission(Long authorId) {
+        boolean isAdmin = ReqInfoContext.getContext().isAdmin();
+        boolean isAuthor = Objects.equals(authorId, ReqInfoContext.getContext().getUserId());
+        ExceptionUtil.errorIf(!isAdmin && !isAuthor,
+                              ErrorCodeEnum.FORBID_ERROR_MIXED,
+                              "非管理员无权限操作他人评论");
     }
 
     /**
      * 验证评论编辑权限
      *
      * @param comment 评论实体
-     * @param userId  用户ID
      */
-    private void validateCommentEditPermission(CommentDO comment, Long userId) {
+    private void validateCommentEditPermission(CommentDO comment) {
         // 验证是否为评论作者
-        ExceptionUtil.requireValid(Objects.equals(comment.getUserId(), userId),
-                                   ErrorCodeEnum.FORBID_ERROR_MIXED, "只能编辑自己的评论");
+        validateCommentAuthorPermission(comment.getUserId());
 
         // 验证编辑时间窗口（24小时内可编辑）
         Duration timeDiff = Duration.between(comment.getCreateTime(), LocalDateTime.now());
         ExceptionUtil.errorIf(timeDiff.toHours() > 24,
                               ErrorCodeEnum.FORBIDDEN_OPERATION, "评论发布超过24小时，不允许编辑");
+    }
+
+    /**
+     * 检查并删除评论
+     *
+     * @param comment 评论DO对象
+     * @return 是否执行了更新操作
+     */
+    private boolean checkAndDeleteComment(CommentDO comment) {
+        // 检查状态是否需要更新
+        if (Objects.equals(comment.getDeleted(), YesOrNoEnum.YES.getCode())) {
+            return false;
+        }
+
+        // 执行状态更新
+        comment.setDeleted(YesOrNoEnum.YES.getCode());
+        commentDAO.updateById(comment);
+        return true;
     }
 
     private CommentDO getParentComment(Long parentCommentId) {

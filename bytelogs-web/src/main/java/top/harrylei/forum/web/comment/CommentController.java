@@ -86,4 +86,18 @@ public class CommentController {
         commentService.updateComment(dto);
         return ResVO.ok();
     }
+
+    /**
+     * 删除评论
+     *
+     * @param commentId 评论ID
+     * @return 操作结果
+     */
+    @Operation(summary = "删除评论", description = "删除用户自己的评论")
+    @RequiresLogin
+    @DeleteMapping("/{commentId}")
+    public ResVO<Void> delete(@NotNull(message = "评论ID不能为空") @PathVariable Long commentId) {
+        commentService.deleteComment(commentId);
+        return ResVO.ok();
+    }
 }

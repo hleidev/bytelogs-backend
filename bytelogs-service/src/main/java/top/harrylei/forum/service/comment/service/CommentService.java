@@ -33,4 +33,11 @@ public interface CommentService {
      * @param dto 编辑数据传输对象
      */
     void updateComment(CommentDTO dto);
+
+    /**
+     * 删除评论
+     *
+     * @param commentId 评论ID
+     */
+    void deleteComment(Long commentId);
 }
