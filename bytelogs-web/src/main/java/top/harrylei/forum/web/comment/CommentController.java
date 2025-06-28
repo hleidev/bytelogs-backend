@@ -12,11 +12,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.comment.dto.CommentDTO;
-import top.harrylei.forum.api.model.vo.comment.dto.TopCommentDTO;
 import top.harrylei.forum.api.model.vo.comment.req.CommentQueryParam;
 import top.harrylei.forum.api.model.vo.comment.req.CommentSaveReq;
-import top.harrylei.forum.api.model.vo.comment.vo.CommentVO;
-import top.harrylei.forum.api.model.vo.page.PageHelper;
+import top.harrylei.forum.api.model.vo.comment.vo.TopCommentVO;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.security.permission.RequiresLogin;
@@ -63,9 +61,9 @@ public class CommentController {
      */
     @Operation(summary = "分页查询", description = "用户评论分页查询")
     @GetMapping("/page")
-    public ResVO<PageVO<CommentVO>> page(@Valid CommentQueryParam param) {
-        PageVO<TopCommentDTO> dto = commentService.pageQuery(param);
-        return ResVO.ok(PageHelper.map(dto, commentStructMapper::toVO));
+    public ResVO<PageVO<TopCommentVO>> page(@Valid CommentQueryParam param) {
+        PageVO<TopCommentVO> result = commentService.pageQuery(param);
+        return ResVO.ok(result);
     }
 
     /**

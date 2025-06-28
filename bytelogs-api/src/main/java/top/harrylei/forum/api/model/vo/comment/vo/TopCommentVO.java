@@ -1,4 +1,4 @@
-package top.harrylei.forum.api.model.vo.comment.dto;
+package top.harrylei.forum.api.model.vo.comment.vo;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -7,14 +7,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 评论树状结构
+ * 顶级评论视图对象
  *
- * @author louzai
- * @since 2022/7/19
+ * @author harry
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class TopCommentDTO extends BaseCommentDTO {
+public class TopCommentVO extends BaseCommentVO {
     /**
      * 评论数量
      */
@@ -23,9 +22,9 @@ public class TopCommentDTO extends BaseCommentDTO {
     /**
      * 子评论
      */
-    private List<SubCommentDTO> childComments;
+    private List<SubCommentVO> childComments;
 
-    public List<SubCommentDTO> getChildComments() {
+    public List<SubCommentVO> getChildComments() {
         if (childComments == null) {
             childComments = new ArrayList<>();
         }

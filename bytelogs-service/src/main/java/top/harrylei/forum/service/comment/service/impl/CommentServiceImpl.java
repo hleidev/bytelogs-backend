@@ -9,10 +9,10 @@ import org.springframework.transaction.annotation.Transactional;
 import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
 import top.harrylei.forum.api.model.enums.PraiseStatusEnum;
 import top.harrylei.forum.api.model.enums.comment.ContentTypeEnum;
-import top.harrylei.forum.api.model.vo.comment.dto.BaseCommentDTO;
 import top.harrylei.forum.api.model.vo.comment.dto.CommentDTO;
-import top.harrylei.forum.api.model.vo.comment.dto.SubCommentDTO;
-import top.harrylei.forum.api.model.vo.comment.dto.TopCommentDTO;
+import top.harrylei.forum.api.model.vo.comment.vo.BaseCommentVO;
+import top.harrylei.forum.api.model.vo.comment.vo.SubCommentVO;
+import top.harrylei.forum.api.model.vo.comment.vo.TopCommentVO;
 import top.harrylei.forum.api.model.vo.comment.req.CommentQueryParam;
 import top.harrylei.forum.api.model.vo.page.PageHelper;
 import top.harrylei.forum.api.model.vo.page.PageVO;
@@ -74,7 +74,7 @@ public class CommentServiceImpl implements CommentService {
      * @return 分页结果
      */
     @Override
-    public PageVO<TopCommentDTO> pageQuery(CommentQueryParam param) {
+    public PageVO<TopCommentVO> pageQuery(CommentQueryParam param) {
         // 1. 查询顶级评论
         IPage<CommentDO> page = new Page<>(param.getPageNum(), param.getPageSize());
         IPage<CommentDO> comments = commentDAO.pageQuery(param.getArticleId(), page);
@@ -84,10 +84,10 @@ public class CommentServiceImpl implements CommentService {
         }
 
         // 2. 处理所有数据
-        List<TopCommentDTO> resultData = buildTopCommentsWithSub(comments.getRecords(), param.getArticleId());
+        List<TopCommentVO> resultData = buildTopCommentsWithSub(comments.getRecords(), param.getArticleId());
 
         // 3. 直接构建结果
-        IPage<TopCommentDTO> resultPage = new Page<>(comments.getCurrent(), comments.getSize(), comments.getTotal());
+        IPage<TopCommentVO> resultPage = new Page<>(comments.getCurrent(), comments.getSize(), comments.getTotal());
         resultPage.setRecords(resultData);
 
         return PageHelper.build(resultPage);
@@ -96,7 +96,7 @@ public class CommentServiceImpl implements CommentService {
     /**
      * 编辑评论
      *
-     * @param dto       编辑数据传输对象
+     * @param dto 编辑数据传输对象
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -118,22 +118,22 @@ public class CommentServiceImpl implements CommentService {
     /**
      * 构建顶级评论列表
      */
-    private List<TopCommentDTO> buildTopCommentsWithSub(List<CommentDO> comments, Long articleId) {
+    private List<TopCommentVO> buildTopCommentsWithSub(List<CommentDO> comments, Long articleId) {
         // 顶级评论Map
-        Map<Long, TopCommentDTO> topCommentsMap = comments.stream()
+        Map<Long, TopCommentVO> topCommentsMap = comments.stream()
                 .filter(Objects::nonNull)
-                .collect(Collectors.toMap(CommentDO::getId, commentStructMapper::toTopDTO));
+                .collect(Collectors.toMap(CommentDO::getId, commentStructMapper::toTopVO));
 
         // 查询子评论列表
         List<CommentDO> subComments = commentDAO.listSubComments(articleId, topCommentsMap.keySet());
-        Map<Long, SubCommentDTO> subCommentsMap = subComments.stream()
+        Map<Long, SubCommentVO> subCommentsMap = subComments.stream()
                 .filter(Objects::nonNull)
-                .collect(Collectors.toMap(CommentDO::getId, commentStructMapper::toSubDTO));
+                .collect(Collectors.toMap(CommentDO::getId, commentStructMapper::toSubVO));
 
         // 构建顶级评论和子评论的关系
         subComments.forEach(comment -> {
-            TopCommentDTO topComment = topCommentsMap.get(comment.getTopCommentId());
-            SubCommentDTO subComment = subCommentsMap.get(comment.getId());
+            TopCommentVO topComment = topCommentsMap.get(comment.getTopCommentId());
+            SubCommentVO subComment = subCommentsMap.get(comment.getId());
 
             if (topComment != null && subComment != null) {
                 topComment.getChildComments().add(subComment);
@@ -141,7 +141,7 @@ public class CommentServiceImpl implements CommentService {
                 if (Objects.equals(comment.getTopCommentId(), comment.getParentCommentId())) {
                     return;
                 }
-                SubCommentDTO parentComment = subCommentsMap.get(comment.getParentCommentId());
+                SubCommentVO parentComment = subCommentsMap.get(comment.getParentCommentId());
                 if (parentComment != null) {
                     subComment.setParentContent(parentComment.getContent());
                 }
@@ -149,9 +149,9 @@ public class CommentServiceImpl implements CommentService {
         });
 
         // 填充用户信息
-        List<TopCommentDTO> result = new ArrayList<>(topCommentsMap.size());
+        List<TopCommentVO> result = new ArrayList<>(topCommentsMap.size());
         comments.forEach(comment -> {
-            TopCommentDTO topComment = topCommentsMap.get(comment.getId());
+            TopCommentVO topComment = topCommentsMap.get(comment.getId());
             fillCommentInfo(topComment);
             topComment.getChildComments().forEach(this::fillCommentInfo);
             // 设置评论数量为子评论数量
@@ -162,7 +162,7 @@ public class CommentServiceImpl implements CommentService {
         return result;
     }
 
-    private void fillCommentInfo(BaseCommentDTO comment) {
+    private void fillCommentInfo(BaseCommentVO comment) {
         // 填充用户信息
         UserInfoDetailDTO userInfo = userCacheService.getUserInfo(comment.getUserId());
         if (userInfo == null) {

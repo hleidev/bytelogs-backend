@@ -1,16 +1,16 @@
-package top.harrylei.forum.api.model.vo.comment.dto;
+package top.harrylei.forum.api.model.vo.comment.vo;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * 评论树状结构
+ * 子评论视图对象
  *
  * @author harry
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class SubCommentDTO extends BaseCommentDTO {
+public class SubCommentVO extends BaseCommentVO {
 
     /**
      * 父评论内容

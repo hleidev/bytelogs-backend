@@ -4,8 +4,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import top.harrylei.forum.api.model.vo.comment.dto.CommentDTO;
-import top.harrylei.forum.api.model.vo.comment.dto.SubCommentDTO;
-import top.harrylei.forum.api.model.vo.comment.dto.TopCommentDTO;
+import top.harrylei.forum.api.model.vo.comment.vo.SubCommentVO;
+import top.harrylei.forum.api.model.vo.comment.vo.TopCommentVO;
 import top.harrylei.forum.api.model.vo.comment.req.CommentSaveReq;
 import top.harrylei.forum.api.model.vo.comment.vo.CommentVO;
 import top.harrylei.forum.core.common.converter.EnumConverter;
@@ -38,27 +38,27 @@ public interface CommentStructMapper {
     @Mapping(target = "praiseCount", ignore = true)
     @Mapping(target = "commentCount", ignore = true)
     @Mapping(target = "childComments", ignore = true)
-    TopCommentDTO toTopDTO(CommentDO commentDO);
+    TopCommentVO toTopVO(CommentDO commentDO);
 
     @Mapping(target = "userName", ignore = true)
     @Mapping(target = "userAvatar", ignore = true)
     @Mapping(target = "praised", ignore = true)
     @Mapping(target = "praiseCount", ignore = true)
     @Mapping(target = "parentContent", ignore = true)
-    SubCommentDTO toSubDTO(CommentDO commentDO);
+    SubCommentVO toSubVO(CommentDO commentDO);
 
     @Mapping(target = "topCommentId", ignore = true)
     @Mapping(target = "parentCommentId", ignore = true)
     @Mapping(target = "childComments", source = "childComments", qualifiedByName = "SubCommentListToVOList")
-    CommentVO toVO(TopCommentDTO topCommentDTO);
+    CommentVO toVO(TopCommentVO topCommentVO);
 
     @Mapping(target = "topCommentId", ignore = true)
     @Mapping(target = "parentCommentId", ignore = true)
     @Mapping(target = "childComments", ignore = true)
-    CommentVO toVO(SubCommentDTO subCommentDTO);
+    CommentVO toVO(SubCommentVO subCommentVO);
 
     @Named("SubCommentListToVOList")
-    default List<CommentVO> subCommentListToVOList(List<SubCommentDTO> subComments) {
+    default List<CommentVO> subCommentListToVOList(List<SubCommentVO> subComments) {
         if (subComments == null) {
             return null;
         }

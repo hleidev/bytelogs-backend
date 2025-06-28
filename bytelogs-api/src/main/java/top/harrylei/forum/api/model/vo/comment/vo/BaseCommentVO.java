@@ -1,17 +1,17 @@
-package top.harrylei.forum.api.model.vo.comment.dto;
+package top.harrylei.forum.api.model.vo.comment.vo;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import top.harrylei.forum.api.model.entity.BaseDTO;
+import top.harrylei.forum.api.model.entity.BaseVO;
 
 /**
- * 评论树状结构
+ * 评论基础视图对象
  *
  * @author harry
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class BaseCommentDTO extends BaseDTO {
+public class BaseCommentVO extends BaseVO {
 
     /**
      * 用户ID
