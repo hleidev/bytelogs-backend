@@ -3,6 +3,9 @@ package top.harrylei.forum.web.comment;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -63,5 +66,26 @@ public class CommentController {
     public ResVO<PageVO<CommentVO>> page(@Valid CommentQueryParam param) {
         PageVO<TopCommentDTO> dto = commentService.pageQuery(param);
         return ResVO.ok(PageHelper.map(dto, commentStructMapper::toVO));
+    }
+
+    /**
+     * 编辑评论
+     *
+     * @param commentId      评论ID
+     * @param commentContent 编辑评论内容
+     * @return 操作结果
+     */
+    @Operation(summary = "编辑评论", description = "编辑自己的评论内容（限制编辑时间窗口）")
+    @RequiresLogin
+    @PutMapping("/{commentId}")
+    public ResVO<Void> update(@NotNull(message = "评论ID不能为空") @PathVariable Long commentId,
+                              @NotBlank(message = "评论内容不能为空")
+                              @Size(min = 1, max = 500, message = "评论内容长度必须在1-500字符之间")
+                              @RequestBody String commentContent) {
+        CommentDTO dto = new CommentDTO();
+        dto.setId(commentId);
+        dto.setContent(commentContent);
+        commentService.updateComment(dto);
+        return ResVO.ok();
     }
 }

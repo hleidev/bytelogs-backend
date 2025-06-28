@@ -36,4 +36,11 @@ public class CommentDAO extends ServiceImpl<CommentMapper, CommentDO> {
                 .orderByDesc(CommentDO::getCreateTime)
                 .list();
     }
+
+    public CommentDO getByCommentId(Long commentId) {
+        return lambdaQuery()
+                .eq(CommentDO::getId, commentId)
+                .eq(CommentDO::getDeleted, YesOrNoEnum.NO.getCode())
+                .one();
+    }
 }

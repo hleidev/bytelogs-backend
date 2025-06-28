@@ -26,4 +26,11 @@ public interface CommentService {
      * @return 分页结果
      */
     PageVO<TopCommentDTO> pageQuery(CommentQueryParam param);
+
+    /**
+     * 编辑评论
+     *
+     * @param dto 编辑数据传输对象
+     */
+    void updateComment(CommentDTO dto);
 }
