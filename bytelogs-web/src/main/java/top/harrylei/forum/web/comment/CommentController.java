@@ -6,13 +6,15 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.comment.dto.CommentDTO;
+import top.harrylei.forum.api.model.vo.comment.dto.TopCommentDTO;
+import top.harrylei.forum.api.model.vo.comment.req.CommentQueryParam;
 import top.harrylei.forum.api.model.vo.comment.req.CommentSaveReq;
+import top.harrylei.forum.api.model.vo.comment.vo.CommentVO;
+import top.harrylei.forum.api.model.vo.page.PageHelper;
+import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.security.permission.RequiresLogin;
 import top.harrylei.forum.service.comment.converted.CommentStructMapper;
@@ -48,5 +50,18 @@ public class CommentController {
         dto.setUserId(ReqInfoContext.getContext().getUserId());
         Long commentId = commentService.saveComment(dto);
         return ResVO.ok(commentId);
+    }
+
+    /**
+     * 分页查询
+     *
+     * @param param 分页查询参数
+     * @return 分页结果
+     */
+    @Operation(summary = "分页查询", description = "用户评论分页查询")
+    @GetMapping("/page")
+    public ResVO<PageVO<CommentVO>> page(@Valid CommentQueryParam param) {
+        PageVO<TopCommentDTO> dto = commentService.pageQuery(param);
+        return ResVO.ok(PageHelper.map(dto, commentStructMapper::toVO));
     }
 }
