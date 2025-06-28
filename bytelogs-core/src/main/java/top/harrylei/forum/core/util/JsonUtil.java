@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * JSON工具类 - 企业级封装
+ * JSON工具类
  *
  * <p>设计原则：</p>
  * <ul>
