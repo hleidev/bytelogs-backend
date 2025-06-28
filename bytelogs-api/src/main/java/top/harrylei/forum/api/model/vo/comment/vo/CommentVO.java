@@ -4,8 +4,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import top.harrylei.forum.api.model.entity.BaseVO;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -17,11 +15,6 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class CommentVO extends BaseVO {
-
-    /**
-     * 文章ID
-     */
-    private Long articleId;
 
     /**
      * 用户ID
@@ -44,11 +37,6 @@ public class CommentVO extends BaseVO {
     private String content;
 
     /**
-     * 评论时间
-     */
-    private LocalDateTime commentTime;
-
-    /**
      * 父评论ID，顶级评论为0
      */
     private Long parentCommentId;
@@ -61,15 +49,15 @@ public class CommentVO extends BaseVO {
     /**
      * 点赞数量
      */
-    private Integer praiseCount = 0;
+    private Integer praiseCount;
 
     /**
      * 是否已点赞
      */
-    private Boolean praised = false;
+    private Boolean praised;
 
     /**
      * 子评论列表
      */
-    private List<CommentVO> childComments = new ArrayList<>();
+    private List<CommentVO> childComments;
 }

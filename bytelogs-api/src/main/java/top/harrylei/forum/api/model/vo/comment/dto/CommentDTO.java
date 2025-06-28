@@ -2,6 +2,7 @@ package top.harrylei.forum.api.model.vo.comment.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import top.harrylei.forum.api.model.entity.BaseDTO;
 
 import java.io.Serial;
@@ -11,6 +12,7 @@ import java.io.Serial;
  *
  * @author harry
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 @AllArgsConstructor
 public class CommentDTO extends BaseDTO {

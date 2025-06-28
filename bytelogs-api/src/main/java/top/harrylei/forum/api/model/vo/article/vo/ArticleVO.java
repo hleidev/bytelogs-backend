@@ -22,12 +22,6 @@ import java.util.List;
 public class ArticleVO extends BaseVO {
 
     /**
-     * 文章ID
-     */
-    @Schema(description = "文章ID", example = "1")
-    private Long id;
-
-    /**
      * 用户ID
      */
     @Schema(description = "用户ID", example = "1001")

@@ -3,6 +3,12 @@ package top.harrylei.forum.api.model.vo.user.dto;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import top.harrylei.forum.api.model.entity.BaseDTO;
+import top.harrylei.forum.api.model.enums.CollectionStatusEnum;
+import top.harrylei.forum.api.model.enums.PraiseStatusEnum;
+import top.harrylei.forum.api.model.enums.ReadStatusEnum;
+import top.harrylei.forum.api.model.enums.YesOrNoEnum;
+import top.harrylei.forum.api.model.enums.comment.CommentStatusEnum;
+import top.harrylei.forum.api.model.enums.comment.ContentTypeEnum;
 
 /**
  * 用户足迹DTO
@@ -19,22 +25,42 @@ public class UserFootDTO extends BaseDTO {
     private Long userId;
 
     /**
-     * 文章ID
+     * 内容ID
      */
     private Long contentId;
 
     /**
-     * 内容所属的用户ID
-     */
-    private String contentUserId;
-
-    /**
      * 内容类型：1-文章，2-评论
      */
-    private Integer contentType;
+    private ContentTypeEnum contentType;
 
     /**
-     * 足迹类型：1-点赞，2-收藏，3-关注，4-阅读
+     * 内容所属用户ID
      */
-    private Integer footType;
+    private Long contentUserId;
+
+    /**
+     * 收藏状态
+     */
+    private CollectionStatusEnum collectionState;
+
+    /**
+     * 阅读状态
+     */
+    private ReadStatusEnum readState;
+
+    /**
+     * 评论状态
+     */
+    private CommentStatusEnum commentState;
+
+    /**
+     * 点赞状态
+     */
+    private PraiseStatusEnum praiseState;
+
+    /**
+     * 是否删除：0-未删除，1-已删除
+     */
+    private YesOrNoEnum deleted;
 }
