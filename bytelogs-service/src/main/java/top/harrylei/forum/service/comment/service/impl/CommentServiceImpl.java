@@ -14,7 +14,9 @@ import top.harrylei.forum.api.model.vo.comment.dto.CommentDTO;
 import top.harrylei.forum.api.model.vo.comment.vo.BaseCommentVO;
 import top.harrylei.forum.api.model.vo.comment.vo.SubCommentVO;
 import top.harrylei.forum.api.model.vo.comment.vo.TopCommentVO;
+import top.harrylei.forum.api.model.vo.comment.vo.CommentMyVO;
 import top.harrylei.forum.api.model.vo.comment.req.CommentQueryParam;
+import top.harrylei.forum.api.model.vo.comment.req.CommentMyQueryParam;
 import top.harrylei.forum.api.model.vo.page.PageHelper;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.user.dto.UserFootDTO;
@@ -33,10 +35,9 @@ import top.harrylei.forum.service.user.service.cache.UserCacheService;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -76,22 +77,10 @@ public class CommentServiceImpl implements CommentService {
      */
     @Override
     public PageVO<TopCommentVO> pageQuery(CommentQueryParam param) {
-        // 1. 查询顶级评论
-        IPage<CommentDO> page = new Page<>(param.getPageNum(), param.getPageSize());
-        IPage<CommentDO> comments = commentDAO.pageQuery(param.getArticleId(), page);
-
-        if (comments.getRecords().isEmpty()) {
-            return PageHelper.empty();
-        }
-
-        // 2. 处理所有数据
-        List<TopCommentVO> resultData = buildTopCommentsWithSub(comments.getRecords(), param.getArticleId());
-
-        // 3. 直接构建结果
-        IPage<TopCommentVO> resultPage = new Page<>(comments.getCurrent(), comments.getSize(), comments.getTotal());
-        resultPage.setRecords(resultData);
-
-        return PageHelper.build(resultPage);
+        return executePageQuery(
+                () -> commentDAO.pageQuery(param.getArticleId(), new Page<>(param.getPageNum(), param.getPageSize())),
+                records -> buildTopCommentsWithSub(records, param.getArticleId())
+        );
     }
 
     /**
@@ -138,6 +127,23 @@ public class CommentServiceImpl implements CommentService {
         } else {
             log.info("评论已处于删除状态，无需重复操作，commentId={}", commentId);
         }
+    }
+
+    /**
+     * 查询用户评论
+     *
+     * @param userId 用户ID
+     * @param param  分页查询参数
+     * @return 分页结果
+     */
+    @Override
+    public PageVO<CommentMyVO> queryUserComments(Long userId, CommentMyQueryParam param) {
+        return executePageQuery(
+                () -> commentDAO.pageQueryUserComments(
+                        userId,
+                        new Page<>(param.getPageNum(), param.getPageSize())),
+                this::buildMyComments
+        );
     }
 
     /**
@@ -276,7 +282,7 @@ public class CommentServiceImpl implements CommentService {
     private void validateCommentVisibility(CommentDO comment) {
         boolean isAdmin = ReqInfoContext.getContext().isAdmin();
         boolean isDeleted = Objects.equals(comment.getDeleted(), YesOrNoEnum.YES.getCode());
-        
+
         // 管理员可以操作已删除评论，普通用户不能操作已删除评论
         ExceptionUtil.errorIf(isDeleted && !isAdmin,
                               ErrorCodeEnum.COMMENT_NOT_EXISTS, "评论已删除，无法操作");
@@ -337,5 +343,68 @@ public class CommentServiceImpl implements CommentService {
 
         ExceptionUtil.requireValid(parent, ErrorCodeEnum.COMMENT_NOT_EXISTS, "parentCommentI=" + parentCommentId);
         return parent;
+    }
+
+    /**
+     * 构建用户评论列表
+     */
+    private List<CommentMyVO> buildMyComments(List<CommentDO> comments) {
+        List<CommentMyVO> result = new ArrayList<>(comments.size());
+
+        // 转换为CommentMyVO
+        for (CommentDO comment : comments) {
+            CommentMyVO commentMy = commentStructMapper.toMyVO(comment);
+
+            // 填充文章信息
+            try {
+                ArticleDO article = articleService.getArticleById(comment.getArticleId());
+                if (article != null) {
+                    commentMy.setArticleTitle(article.getTitle());
+                }
+            } catch (Exception e) {
+                log.warn("获取文章信息失败, articleId={}", comment.getArticleId(), e);
+                commentMy.setArticleTitle("文章已删除");
+            }
+
+            // 填充父评论内容
+            if (!NumUtil.nullOrZero(comment.getParentCommentId())) {
+                try {
+                    CommentDO parentComment = commentDAO.getById(comment.getParentCommentId());
+                    if (parentComment != null && !Objects.equals(parentComment.getDeleted(),
+                                                                 YesOrNoEnum.YES.getCode())) {
+                        commentMy.setParentContent(parentComment.getContent());
+                    }
+                    // 父评论已删除时，保持parentContent为null，由前端处理显示
+                } catch (Exception e) {
+                    log.warn("获取父评论信息失败, parentCommentId={}", comment.getParentCommentId(), e);
+                }
+            }
+
+            result.add(commentMy);
+        }
+
+        return result;
+    }
+
+    /**
+     * 通用分页查询方法
+     */
+    private <T> PageVO<T> executePageQuery(Supplier<IPage<CommentDO>> querySupplier,
+                                           Function<List<CommentDO>, List<T>> dataBuilder) {
+        // 1. 执行分页查询
+        IPage<CommentDO> comments = querySupplier.get();
+
+        if (comments.getRecords().isEmpty()) {
+            return PageHelper.empty();
+        }
+
+        // 2. 构建结果数据
+        List<T> resultData = dataBuilder.apply(comments.getRecords());
+
+        // 3. 构建分页结果
+        IPage<T> resultPage = new Page<>(comments.getCurrent(), comments.getSize(), comments.getTotal());
+        resultPage.setRecords(resultData);
+
+        return PageHelper.build(resultPage);
     }
 }

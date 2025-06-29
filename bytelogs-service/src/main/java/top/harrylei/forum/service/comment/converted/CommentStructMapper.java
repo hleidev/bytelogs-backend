@@ -6,6 +6,7 @@ import org.mapstruct.Named;
 import top.harrylei.forum.api.model.vo.comment.dto.CommentDTO;
 import top.harrylei.forum.api.model.vo.comment.vo.SubCommentVO;
 import top.harrylei.forum.api.model.vo.comment.vo.TopCommentVO;
+import top.harrylei.forum.api.model.vo.comment.vo.CommentMyVO;
 import top.harrylei.forum.api.model.vo.comment.req.CommentSaveReq;
 import top.harrylei.forum.api.model.vo.comment.vo.CommentVO;
 import top.harrylei.forum.core.common.converter.EnumConverter;
@@ -46,6 +47,10 @@ public interface CommentStructMapper {
     @Mapping(target = "praiseCount", ignore = true)
     @Mapping(target = "parentContent", ignore = true)
     SubCommentVO toSubVO(CommentDO commentDO);
+
+    @Mapping(target = "articleTitle", ignore = true)
+    @Mapping(target = "parentContent", ignore = true)
+    CommentMyVO toMyVO(CommentDO commentDO);
 
     @Mapping(target = "topCommentId", ignore = true)
     @Mapping(target = "parentCommentId", ignore = true)

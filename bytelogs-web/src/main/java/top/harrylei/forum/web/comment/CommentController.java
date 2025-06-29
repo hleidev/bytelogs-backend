@@ -10,11 +10,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
 import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.comment.dto.CommentDTO;
 import top.harrylei.forum.api.model.vo.comment.req.CommentQueryParam;
+import top.harrylei.forum.api.model.vo.comment.req.CommentMyQueryParam;
 import top.harrylei.forum.api.model.vo.comment.req.CommentSaveReq;
 import top.harrylei.forum.api.model.vo.comment.vo.TopCommentVO;
+import top.harrylei.forum.api.model.vo.comment.vo.CommentMyVO;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.security.permission.RequiresLogin;
@@ -59,10 +62,29 @@ public class CommentController {
      * @param param 分页查询参数
      * @return 分页结果
      */
-    @Operation(summary = "分页查询", description = "用户评论分页查询")
+    @Operation(summary = "分页查询", description = "查询指定文章的评论列表")
     @GetMapping("/page")
     public ResVO<PageVO<TopCommentVO>> page(@Valid CommentQueryParam param) {
+        if (param.getArticleId() == null) {
+            return ResVO.fail(ErrorCodeEnum.PARAM_MISSING, "文章ID不能为空");
+        }
         PageVO<TopCommentVO> result = commentService.pageQuery(param);
+        return ResVO.ok(result);
+    }
+
+    /**
+     * 我的评论
+     *
+     * @param param 分页查询参数
+     * @return 分页结果
+     */
+    @Operation(summary = "我的评论", description = "查询当前用户的评论列表（扁平化）")
+    @RequiresLogin
+    @GetMapping("/my")
+    public ResVO<PageVO<CommentMyVO>> myComments(@Valid CommentMyQueryParam param) {
+        // 从登录上下文获取当前用户ID
+        Long userId = ReqInfoContext.getContext().getUserId();
+        PageVO<CommentMyVO> result = commentService.queryUserComments(userId, param);
         return ResVO.ok(result);
     }
 
