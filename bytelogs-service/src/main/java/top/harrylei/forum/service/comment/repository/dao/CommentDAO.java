@@ -1,12 +1,11 @@
 package top.harrylei.forum.service.comment.repository.dao;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Repository;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
-import top.harrylei.forum.api.model.vo.comment.req.CommentQueryParam;
+import top.harrylei.forum.api.model.vo.comment.req.CommentManagementQueryParam;
+import top.harrylei.forum.api.model.vo.comment.vo.CommentManagementVO;
 import top.harrylei.forum.service.comment.repository.entity.CommentDO;
 import top.harrylei.forum.service.comment.repository.mapper.CommentMapper;
 
@@ -46,5 +45,10 @@ public class CommentDAO extends ServiceImpl<CommentMapper, CommentDO> {
                 .eq(CommentDO::getDeleted, YesOrNoEnum.NO.getCode())
                 .orderByDesc(CommentDO::getCreateTime)
                 .list();
+    }
+
+    public IPage<CommentManagementVO> pageQueryForManagement(CommentManagementQueryParam queryParam,
+                                                             IPage<CommentManagementVO> page) {
+        return baseMapper.pageQueryForManagement(page, queryParam);
     }
 }

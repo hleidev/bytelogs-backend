@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.harrylei.forum.service.comment.repository.mapper.CommentMapper">
+
+    <!-- 管理端评论VO映射 -->
+    <resultMap id="CommentManagementVOMap" type="top.harrylei.forum.api.model.vo.comment.vo.CommentManagementVO">
+        <id column="id" property="id"/>
+        <result column="content" property="content"/>
+        <result column="user_id" property="userId"/>
+        <result column="user_name" property="userName"/>
+        <result column="article_id" property="articleId"/>
+        <result column="article_title" property="articleTitle"/>
+        <result column="top_comment_id" property="topCommentId"/>
+        <result column="parent_comment_id" property="parentCommentId"/>
+        <result column="deleted" property="deleted"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <!-- 管理端分页查询评论 -->
+    <select id="pageQueryForManagement" resultMap="CommentManagementVOMap">
+        SELECT 
+            c.id,
+            c.content,
+            c.user_id,
+            ui.user_name,
+            c.article_id,
+            a.title AS article_title,
+            c.top_comment_id,
+            c.parent_comment_id,
+            c.deleted,
+            c.create_time,
+            c.update_time
+        FROM comment c
+        LEFT JOIN user_info ui ON c.user_id = ui.user_id AND ui.deleted = 0
+        LEFT JOIN article a ON c.article_id = a.id AND a.deleted = 0
+        <where>
+            <if test="query.keyword != null and query.keyword != ''">
+                AND (
+                    c.content LIKE CONCAT('%', #{query.keyword}, '%')
+                    OR ui.user_name LIKE CONCAT('%', #{query.keyword}, '%')
+                    OR a.title LIKE CONCAT('%', #{query.keyword}, '%')
+                )
+            </if>
+            <if test="query.deleted != null">
+                AND c.deleted = #{query.deleted.code}
+            </if>
+            <if test="query.topComment != null">
+                <choose>
+                    <when test="query.topComment.code == 1">
+                        AND c.top_comment_id = 0
+                    </when>
+                    <otherwise>
+                        AND c.top_comment_id != 0
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="query.createTimeStart != null">
+                AND c.create_time &gt;= #{query.createTimeStart}
+            </if>
+            <if test="query.createTimeEnd != null">
+                AND c.create_time &lt;= #{query.createTimeEnd}
+            </if>
+        </where>
+    </select>
+
+</mapper>
