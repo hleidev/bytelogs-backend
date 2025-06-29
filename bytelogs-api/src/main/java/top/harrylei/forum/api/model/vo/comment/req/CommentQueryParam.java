@@ -7,16 +7,16 @@ import lombok.EqualsAndHashCode;
 import top.harrylei.forum.api.model.entity.BasePage;
 
 /**
- * 评论分页查询参数
+ * 评论分页查询参数（按文章查询）
  *
  * @author harry
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@Schema(description = "评论分页查询参数")
+@Schema(description = "按文章查询评论的分页参数")
 public class CommentQueryParam extends BasePage {
 
+    @Schema(description = "文章ID", example = "1")
     @NotNull(message = "文章ID不能为空")
-    @Schema(description = "文章ID", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
-    public Long articleId;
+    private Long articleId;
 }
