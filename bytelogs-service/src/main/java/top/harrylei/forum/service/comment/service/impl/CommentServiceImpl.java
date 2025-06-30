@@ -11,12 +11,12 @@ import top.harrylei.forum.api.model.enums.PraiseStatusEnum;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.comment.ContentTypeEnum;
 import top.harrylei.forum.api.model.vo.comment.dto.CommentDTO;
+import top.harrylei.forum.api.model.vo.comment.req.CommentMyQueryParam;
+import top.harrylei.forum.api.model.vo.comment.req.CommentQueryParam;
 import top.harrylei.forum.api.model.vo.comment.vo.BaseCommentVO;
+import top.harrylei.forum.api.model.vo.comment.vo.CommentMyVO;
 import top.harrylei.forum.api.model.vo.comment.vo.SubCommentVO;
 import top.harrylei.forum.api.model.vo.comment.vo.TopCommentVO;
-import top.harrylei.forum.api.model.vo.comment.vo.CommentMyVO;
-import top.harrylei.forum.api.model.vo.comment.req.CommentQueryParam;
-import top.harrylei.forum.api.model.vo.comment.req.CommentMyQueryParam;
 import top.harrylei.forum.api.model.vo.page.PageHelper;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.user.dto.UserFootDTO;
@@ -35,7 +35,10 @@ import top.harrylei.forum.service.user.service.cache.UserCacheService;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -123,6 +126,8 @@ public class CommentServiceImpl implements CommentService {
 
         // 3. 检查并删除评论
         if (checkAndDeleteComment(comment)) {
+            // 4. 删除用户足迹记录
+            deleteCommentFootOnDelete(comment);
             log.info("评论删除成功，commentId={}", commentId);
         } else {
             log.info("评论已处于删除状态，无需重复操作，commentId={}", commentId);
@@ -260,6 +265,30 @@ public class CommentServiceImpl implements CommentService {
         userFootService.saveCommentFoot(comment, article.getUserId(), parentUserId);
 
         return comment;
+    }
+
+    /**
+     * 删除评论用户足迹
+     */
+    private void deleteCommentFootOnDelete(CommentDO comment) {
+        try {
+            // 获取文章信息
+            ArticleDO article = articleService.getArticleById(comment.getArticleId());
+
+            // 获取父评论作者ID
+            Long parentUserId = null;
+            if (!NumUtil.nullOrZero(comment.getParentCommentId())) {
+                CommentDO parent = commentDAO.getById(comment.getParentCommentId());
+                if (parent != null) {
+                    parentUserId = parent.getUserId();
+                }
+            }
+
+            // 删除用户足迹
+            userFootService.deleteCommentFoot(comment, article.getUserId(), parentUserId);
+        } catch (Exception e) {
+            log.error("删除评论用户足迹失败，commentId={}", comment.getId(), e);
+        }
     }
 
     /**

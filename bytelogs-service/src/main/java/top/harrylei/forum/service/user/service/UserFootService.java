@@ -21,6 +21,15 @@ public interface UserFootService {
     void saveCommentFoot(CommentDO comment, Long articleAuthorId, Long parentCommentAuthorId);
 
     /**
+     * 删除评论足迹
+     *
+     * @param comment               删除评论
+     * @param articleAuthorId       文章作者
+     * @param parentCommentAuthorId 父评论作者
+     */
+    void deleteCommentFoot(CommentDO comment, Long articleAuthorId, Long parentCommentAuthorId);
+
+    /**
      * 查询用户足迹
      *
      * @param userId          用户ID

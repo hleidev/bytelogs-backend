@@ -58,6 +58,32 @@ public class UserFootServiceImpl implements UserFootService {
     }
 
     /**
+     * 删除评论足迹
+     *
+     * @param comment               删除评论
+     * @param articleAuthorId       文章作者
+     * @param parentCommentAuthorId 父评论作者
+     */
+    @Override
+    public void deleteCommentFoot(CommentDO comment, Long articleAuthorId, Long parentCommentAuthorId) {
+        // 删除对文章的评论足迹
+        saveOrUpdateUserFoot(ContentTypeEnum.ARTICLE,
+                             comment.getArticleId(),
+                             articleAuthorId,
+                             comment.getUserId(),
+                             OperateTypeEnum.DELETE_COMMENT);
+
+        // 如果是回复评论，删除对父评论的回复足迹
+        if (!NumUtil.nullOrZero(comment.getParentCommentId()) && !NumUtil.nullOrZero(parentCommentAuthorId)) {
+            saveOrUpdateUserFoot(ContentTypeEnum.COMMENT,
+                                 comment.getParentCommentId(),
+                                 parentCommentAuthorId,
+                                 comment.getUserId(),
+                                 OperateTypeEnum.DELETE_COMMENT);
+        }
+    }
+
+    /**
      * 查询用户足迹
      *
      * @param userId          用户ID
