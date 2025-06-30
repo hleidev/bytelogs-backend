@@ -33,7 +33,7 @@ public class CommentManagementServiceImpl implements CommentManagementService {
     public PageVO<CommentManagementVO> pageQuery(CommentManagementQueryParam queryParam) {
         IPage<CommentManagementVO> page = queryParam.toPage();
         IPage<CommentManagementVO> result = commentDAO.pageQueryForManagement(queryParam, page);
-        
+
         return PageHelper.build(result);
     }
 
@@ -41,22 +41,41 @@ public class CommentManagementServiceImpl implements CommentManagementService {
     @Transactional(rollbackFor = Exception.class)
     public void deleteComments(List<Long> commentIds) {
         if (commentIds == null || commentIds.isEmpty()) {
-            log.warn("删除评论列表为空，无需处理");
             return;
         }
 
         log.info("管理员批量删除评论，commentIds={}", commentIds);
-        
+
         for (Long commentId : commentIds) {
             try {
                 commentService.deleteComment(commentId);
-                log.info("成功删除评论，commentId={}", commentId);
             } catch (Exception e) {
-                log.error("删除评论失败，commentId={}，错误信息：{}", commentId, e.getMessage(), e);
+                log.error("批量删除评论失败，commentId={}", commentId, e);
                 throw e;
             }
         }
-        
+
         log.info("批量删除评论完成，总数={}", commentIds.size());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void restoreComments(List<Long> commentIds) {
+        if (commentIds == null || commentIds.isEmpty()) {
+            return;
+        }
+
+        log.info("管理员批量恢复评论，commentIds={}", commentIds);
+
+        for (Long commentId : commentIds) {
+            try {
+                commentService.restoreComment(commentId);
+            } catch (Exception e) {
+                log.error("批量恢复评论失败，commentId={}", commentId, e);
+                throw e;
+            }
+        }
+
+        log.info("批量恢复评论完成，总数={}", commentIds.size());
     }
 }

@@ -27,4 +27,11 @@ public interface CommentManagementService {
      * @param commentIds 评论ID列表
      */
     void deleteComments(List<Long> commentIds);
+
+    /**
+     * 管理员恢复评论
+     *
+     * @param commentIds 评论ID列表
+     */
+    void restoreComments(List<Long> commentIds);
 }

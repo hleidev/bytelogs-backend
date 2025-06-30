@@ -52,4 +52,14 @@ public class CommentManagementController {
         commentManagementService.deleteComments(commentIds);
         return ResVO.ok();
     }
+
+    /**
+     * 恢复评论
+     */
+    @Operation(summary = "恢复评论", description = "管理员恢复已删除评论，支持单个和批量操作")
+    @PutMapping("/restore")
+    public ResVO<Void> restoreComments(@NotNull(message = "评论ID列表不能为空") @RequestBody List<Long> commentIds) {
+        commentManagementService.restoreComments(commentIds);
+        return ResVO.ok();
+    }
 }

@@ -44,6 +44,13 @@ public interface CommentService {
     void deleteComment(Long commentId);
 
     /**
+     * 恢复评论
+     *
+     * @param commentId 评论ID
+     */
+    void restoreComment(Long commentId);
+
+    /**
      * 查询用户评论
      *
      * @param userId 用户ID

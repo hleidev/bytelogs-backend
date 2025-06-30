@@ -118,20 +118,18 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteComment(Long commentId) {
-        // 1. 验证评论是否存在并获取
-        CommentDO comment = getCommentById(commentId);
+        updateCommentDeletedStatus(commentId, YesOrNoEnum.YES);
+    }
 
-        // 2. 验证删除权限
-        validateCommentAuthorPermission(comment.getUserId());
-
-        // 3. 检查并删除评论
-        if (checkAndDeleteComment(comment)) {
-            // 4. 删除用户足迹记录
-            deleteCommentFootOnDelete(comment);
-            log.info("评论删除成功，commentId={}", commentId);
-        } else {
-            log.info("评论已处于删除状态，无需重复操作，commentId={}", commentId);
-        }
+    /**
+     * 恢复评论
+     *
+     * @param commentId 评论ID
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void restoreComment(Long commentId) {
+        updateCommentDeletedStatus(commentId, YesOrNoEnum.NO);
     }
 
     /**
@@ -268,9 +266,12 @@ public class CommentServiceImpl implements CommentService {
     }
 
     /**
-     * 删除评论用户足迹
+     * 通用的足迹处理方法
+     *
+     * @param comment  评论对象
+     * @param isDelete 是否为删除操作（true: 删除足迹, false: 创建足迹）
      */
-    private void deleteCommentFootOnDelete(CommentDO comment) {
+    private void updateCommentFoot(CommentDO comment, boolean isDelete) {
         try {
             // 获取文章信息
             ArticleDO article = articleService.getArticleById(comment.getArticleId());
@@ -284,10 +285,15 @@ public class CommentServiceImpl implements CommentService {
                 }
             }
 
-            // 删除用户足迹
-            userFootService.deleteCommentFoot(comment, article.getUserId(), parentUserId);
+            // 执行足迹操作
+            if (isDelete) {
+                userFootService.deleteCommentFoot(comment, article.getUserId(), parentUserId);
+            } else {
+                userFootService.saveCommentFoot(comment, article.getUserId(), parentUserId);
+            }
         } catch (Exception e) {
-            log.error("删除评论用户足迹失败，commentId={}", comment.getId(), e);
+            String action = isDelete ? "删除" : "恢复";
+            log.error("{}评论用户足迹失败，commentId={}", action, comment.getId(), e);
         }
     }
 
@@ -330,6 +336,7 @@ public class CommentServiceImpl implements CommentService {
                               "非管理员无权限操作他人评论");
     }
 
+
     /**
      * 验证评论编辑权限
      *
@@ -346,19 +353,46 @@ public class CommentServiceImpl implements CommentService {
     }
 
     /**
-     * 检查并删除评论
+     * 通用的评论状态更新方法
      *
-     * @param comment 评论DO对象
+     * @param commentId    评论ID
+     * @param targetStatus 目标删除状态
+     */
+    private void updateCommentDeletedStatus(Long commentId, YesOrNoEnum targetStatus) {
+        // 1. 验证评论是否存在并获取
+        CommentDO comment = getCommentById(commentId);
+        Integer oldStatus = comment.getDeleted();
+
+        // 2. 验证权限
+        validateCommentAuthorPermission(comment.getUserId());
+
+        // 3. 检查并更新状态
+        if (checkAndUpdateCommentStatus(comment, targetStatus)) {
+            // 4. 处理用户足迹
+            boolean isDelete = targetStatus == YesOrNoEnum.YES;
+            updateCommentFoot(comment, isDelete);
+
+            log.info("评论状态更新成功，commentId={}, deleted={}", commentId, targetStatus);
+        } else {
+            log.info("评论状态无需更新，commentId={}, deleted={}", commentId, oldStatus);
+        }
+    }
+
+    /**
+     * 检查并更新评论状态
+     *
+     * @param comment      评论DO对象
+     * @param targetStatus 目标状态
      * @return 是否执行了更新操作
      */
-    private boolean checkAndDeleteComment(CommentDO comment) {
+    private boolean checkAndUpdateCommentStatus(CommentDO comment, YesOrNoEnum targetStatus) {
         // 检查状态是否需要更新
-        if (Objects.equals(comment.getDeleted(), YesOrNoEnum.YES.getCode())) {
+        if (Objects.equals(comment.getDeleted(), targetStatus.getCode())) {
             return false;
         }
 
         // 执行状态更新
-        comment.setDeleted(YesOrNoEnum.YES.getCode());
+        comment.setDeleted(targetStatus.getCode());
         commentDAO.updateById(comment);
         return true;
     }
