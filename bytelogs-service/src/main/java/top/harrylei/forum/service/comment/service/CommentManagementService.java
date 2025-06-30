@@ -4,6 +4,8 @@ import top.harrylei.forum.api.model.vo.comment.req.CommentManagementQueryParam;
 import top.harrylei.forum.api.model.vo.comment.vo.CommentManagementVO;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 
+import java.util.List;
+
 /**
  * 评论管理服务接口
  *
@@ -18,4 +20,11 @@ public interface CommentManagementService {
      * @return 分页结果
      */
     PageVO<CommentManagementVO> pageQuery(CommentManagementQueryParam queryParam);
+
+    /**
+     * 管理员删除评论
+     *
+     * @param commentIds 评论ID列表
+     */
+    void deleteComments(List<Long> commentIds);
 }

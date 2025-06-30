@@ -3,18 +3,19 @@ package top.harrylei.forum.web.admin;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.comment.req.CommentManagementQueryParam;
 import top.harrylei.forum.api.model.vo.comment.vo.CommentManagementVO;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.core.security.permission.RequiresAdmin;
 import top.harrylei.forum.service.comment.service.CommentManagementService;
+
+import java.util.List;
 
 /**
  * 评论管理控制器
@@ -40,5 +41,15 @@ public class CommentManagementController {
     public ResVO<PageVO<CommentManagementVO>> pageQuery(@Valid CommentManagementQueryParam queryParam) {
         PageVO<CommentManagementVO> result = commentManagementService.pageQuery(queryParam);
         return ResVO.ok(result);
+    }
+
+    /**
+     * 删除评论
+     */
+    @Operation(summary = "删除评论", description = "管理员删除评论，支持单个和批量操作")
+    @DeleteMapping
+    public ResVO<Void> deleteComments(@NotNull(message = "评论ID列表不能为空") @RequestBody List<Long> commentIds) {
+        commentManagementService.deleteComments(commentIds);
+        return ResVO.ok();
     }
 }
