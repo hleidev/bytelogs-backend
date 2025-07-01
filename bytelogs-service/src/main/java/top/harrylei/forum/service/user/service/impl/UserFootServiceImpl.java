@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import top.harrylei.forum.api.model.enums.OperateTypeEnum;
-import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.comment.ContentTypeEnum;
 import top.harrylei.forum.api.model.vo.user.dto.UserFootDTO;
 import top.harrylei.forum.core.util.NumUtil;
@@ -129,6 +128,19 @@ public class UserFootServiceImpl implements UserFootService {
     }
 
     /**
+     * 记录阅读
+     *
+     * @param userId          用户ID
+     * @param articleAuthorId 文章作者ID
+     * @param articleId       文章ID
+     * @return 是否成功操作
+     */
+    @Override
+    public Boolean recordRead(Long userId, Long articleAuthorId, Long articleId) {
+        return userFootAction(userId, OperateTypeEnum.READ, articleAuthorId, articleId, ContentTypeEnum.ARTICLE);
+    }
+
+    /**
      * 用户足迹操作的通用方法
      *
      * @param userId          用户ID
@@ -195,8 +207,9 @@ public class UserFootServiceImpl implements UserFootService {
     private boolean setUserFootState(UserFootDO userFoot, OperateTypeEnum operateTypeEnum) {
         switch (operateTypeEnum) {
             case READ -> {
-                userFoot.setReadState(YesOrNoEnum.YES.getCode());
-                return true;
+                return compareAndUpdate(userFoot::getReadState,
+                                        userFoot::setReadState,
+                                        operateTypeEnum.getStatusCode());
             }
             case COMMENT, DELETE_COMMENT -> {
                 return compareAndUpdate(userFoot::getCommentState,

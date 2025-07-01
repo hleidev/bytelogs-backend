@@ -108,6 +108,12 @@ public class ArticleController {
     @GetMapping("/{articleId}")
     public ResVO<ArticleDetailVO> detail(@PathVariable Long articleId) {
         ArticleDetailVO vo = articleService.getArticleDetail(articleId);
+        
+        // 记录阅读行为（仅限登录用户）
+        if (ReqInfoContext.getContext().isLoggedIn()) {
+            articleService.recordRead(articleId);
+        }
+        
         return ResVO.ok(vo);
     }
 

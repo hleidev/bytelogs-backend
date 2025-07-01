@@ -95,4 +95,11 @@ public interface ArticleService {
      * @param type      操作类型
      */
     void actionArticle(Long articleId, OperateTypeEnum type);
+
+    /**
+     * 记录文章阅读
+     *
+     * @param articleId 文章ID
+     */
+    void recordRead(Long articleId);
 }

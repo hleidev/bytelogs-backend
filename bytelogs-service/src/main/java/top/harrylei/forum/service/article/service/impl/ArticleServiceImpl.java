@@ -669,4 +669,22 @@ public class ArticleServiceImpl implements ArticleService {
         log.info("文章{}操作成功 articleId={} type={}", type.getLabel(), articleId, type);
     }
 
+    /**
+     * 记录文章阅读
+     *
+     * @param articleId 文章ID
+     */
+    @Override
+    public void recordRead(Long articleId) {
+        ArticleDO article = getArticleById(articleId);
+
+        Long currentUserId = ReqInfoContext.getContext().getUserId();
+        if (currentUserId != null) {
+            Boolean success = userFootService.recordRead(currentUserId, article.getUserId(), articleId);
+            if (success) {
+                log.info("文章阅读记录成功 articleId={} userId={}", articleId, currentUserId);
+            }
+        }
+    }
+
 }
