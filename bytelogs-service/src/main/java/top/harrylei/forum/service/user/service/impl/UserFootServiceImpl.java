@@ -41,19 +41,19 @@ public class UserFootServiceImpl implements UserFootService {
     @Override
     public void saveCommentFoot(CommentDO comment, Long articleAuthorId, Long parentCommentAuthorId) {
         // 保存对文章的评论足迹
-        saveOrUpdateUserFoot(ContentTypeEnum.ARTICLE,
-                             comment.getArticleId(),
+        saveOrUpdateUserFoot(comment.getUserId(),
+                             OperateTypeEnum.COMMENT,
                              articleAuthorId,
-                             comment.getUserId(),
-                             OperateTypeEnum.COMMENT);
+                             comment.getArticleId(),
+                             ContentTypeEnum.ARTICLE);
 
         // 如果是回复评论，保存对父评论的回复足迹
         if (!NumUtil.nullOrZero(comment.getParentCommentId()) && !NumUtil.nullOrZero(parentCommentAuthorId)) {
-            saveOrUpdateUserFoot(ContentTypeEnum.COMMENT,
-                                 comment.getParentCommentId(),
+            saveOrUpdateUserFoot(comment.getUserId(),
+                                 OperateTypeEnum.COMMENT,
                                  parentCommentAuthorId,
-                                 comment.getUserId(),
-                                 OperateTypeEnum.COMMENT);
+                                 comment.getParentCommentId(),
+                                 ContentTypeEnum.COMMENT);
         }
     }
 
@@ -67,19 +67,19 @@ public class UserFootServiceImpl implements UserFootService {
     @Override
     public void deleteCommentFoot(CommentDO comment, Long articleAuthorId, Long parentCommentAuthorId) {
         // 删除对文章的评论足迹
-        saveOrUpdateUserFoot(ContentTypeEnum.ARTICLE,
-                             comment.getArticleId(),
+        saveOrUpdateUserFoot(comment.getUserId(),
+                             OperateTypeEnum.DELETE_COMMENT,
                              articleAuthorId,
-                             comment.getUserId(),
-                             OperateTypeEnum.DELETE_COMMENT);
+                             comment.getArticleId(),
+                             ContentTypeEnum.ARTICLE);
 
         // 如果是回复评论，删除对父评论的回复足迹
         if (!NumUtil.nullOrZero(comment.getParentCommentId()) && !NumUtil.nullOrZero(parentCommentAuthorId)) {
-            saveOrUpdateUserFoot(ContentTypeEnum.COMMENT,
-                                 comment.getParentCommentId(),
+            saveOrUpdateUserFoot(comment.getUserId(),
+                                 OperateTypeEnum.DELETE_COMMENT,
                                  parentCommentAuthorId,
-                                 comment.getUserId(),
-                                 OperateTypeEnum.DELETE_COMMENT);
+                                 comment.getParentCommentId(),
+                                 ContentTypeEnum.COMMENT);
         }
     }
 
@@ -103,17 +103,17 @@ public class UserFootServiceImpl implements UserFootService {
     /**
      * 保存或更新状态信息
      *
-     * @param contentTypeEnum 内容类型：博文 + 评论
-     * @param contentId       内容id
-     * @param authorId        作者
      * @param userId          操作人
      * @param operateTypeEnum 操作类型：点赞，评论，收藏等
+     * @param authorId        作者
+     * @param contentId       内容id
+     * @param contentTypeEnum 内容类型：博文 + 评论
      */
-    public UserFootDO saveOrUpdateUserFoot(ContentTypeEnum contentTypeEnum,
-                                           Long contentId,
-                                           Long authorId,
-                                           Long userId,
-                                           OperateTypeEnum operateTypeEnum) {
+    public UserFootDO saveOrUpdateUserFoot(
+            Long userId,
+            OperateTypeEnum operateTypeEnum,
+            Long authorId,
+            Long contentId, ContentTypeEnum contentTypeEnum) {
         UserFootDO userFoot = userFootDAO.getByContentAndUserId(userId, contentId, contentTypeEnum.getCode());
         if (userFoot == null) {
             userFoot = new UserFootDO()
