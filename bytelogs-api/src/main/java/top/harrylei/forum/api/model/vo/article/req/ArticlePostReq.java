@@ -1,18 +1,22 @@
 package top.harrylei.forum.api.model.vo.article.req;
 
-import java.util.List;
-
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import top.harrylei.forum.api.validation.SecureContent.ContentSecurityType;
 import top.harrylei.forum.api.model.enums.article.ArticleSourceEnum;
 import top.harrylei.forum.api.model.enums.article.ArticleTypeEnum;
 import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
+import top.harrylei.forum.api.validation.SecureContent;
+
+import java.util.List;
 
 /**
  * 用户发布文章请求参数
+ *
+ * @author harry
  */
 @Data
 @Schema(description = "文章发布请求")
@@ -23,6 +27,7 @@ public class ArticlePostReq {
      */
     @NotBlank(message = "文章标题不能为空")
     @Size(min = 2, max = 200, message = "文章标题长度为2-200个字符")
+    @SecureContent(contentType = ContentSecurityType.PLAIN_TEXT, allowEmpty = false)
     @Schema(description = "文章标题", example = "深入理解Spring事务", requiredMode = Schema.RequiredMode.REQUIRED)
     private String title;
 
@@ -30,6 +35,7 @@ public class ArticlePostReq {
      * 短标题
      */
     @Size(max = 200, message = "短标题长度不能超过200个字符")
+    @SecureContent(contentType = ContentSecurityType.PLAIN_TEXT)
     @Schema(description = "短标题", example = "Spring事务", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String shortTitle;
 
@@ -44,6 +50,7 @@ public class ArticlePostReq {
      * 文章摘要
      */
     @Size(max = 512, message = "摘要长度不能超过512个字符")
+    @SecureContent(contentType = ContentSecurityType.PLAIN_TEXT)
     @Schema(description = "文章摘要", example = "本文深入讲解了Spring事务的实现机制", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String summary;
 
@@ -86,6 +93,7 @@ public class ArticlePostReq {
      * 文章内容
      */
     @NotBlank(message = "文章内容不能为空")
+    @SecureContent(contentType = ContentSecurityType.MARKDOWN, allowEmpty = false)
     @Schema(description = "文章内容", example = "本文详细介绍了……", requiredMode = Schema.RequiredMode.REQUIRED)
     private String content;
 
