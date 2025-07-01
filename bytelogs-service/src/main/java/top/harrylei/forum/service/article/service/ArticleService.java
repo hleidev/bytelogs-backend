@@ -2,6 +2,7 @@ package top.harrylei.forum.service.article.service;
 
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.article.ArticleStatusTypeEnum;
+import top.harrylei.forum.api.model.enums.OperateTypeEnum;
 import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.article.dto.ArticleDTO;
 import top.harrylei.forum.api.model.vo.article.req.ArticleQueryParam;
@@ -75,7 +76,7 @@ public interface ArticleService {
      *
      * @param articleId  文章ID
      * @param statusType 状态类型
-     * @param status    是否启用
+     * @param status     是否启用
      */
     void updateArticleProperty(Long articleId, ArticleStatusTypeEnum statusType, YesOrNoEnum status);
 
@@ -86,4 +87,12 @@ public interface ArticleService {
      * @return 文章DO对象
      */
     ArticleDO getArticleById(Long articleId);
+
+    /**
+     * 文章操作
+     *
+     * @param articleId 文章ID
+     * @param type      操作类型
+     */
+    void actionArticle(Long articleId, OperateTypeEnum type);
 }

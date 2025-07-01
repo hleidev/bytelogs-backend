@@ -9,6 +9,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.article.ArticleStatusTypeEnum;
+import top.harrylei.forum.api.model.enums.OperateTypeEnum;
 import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.article.dto.ArticleDTO;
 import top.harrylei.forum.api.model.vo.article.req.ArticleQueryParam;
@@ -29,6 +30,7 @@ import top.harrylei.forum.service.article.service.ArticleService;
 import top.harrylei.forum.service.article.service.ArticleTagService;
 import top.harrylei.forum.service.user.converted.UserStructMapper;
 import top.harrylei.forum.service.user.service.cache.UserCacheService;
+import top.harrylei.forum.service.user.service.UserFootService;
 
 import java.util.Collections;
 import java.util.List;
@@ -53,6 +55,7 @@ public class ArticleServiceImpl implements ArticleService {
     private final ArticleTagService articleTagService;
     private final UserStructMapper userStructMapper;
     private final UserCacheService userCacheService;
+    private final UserFootService userFootService;
 
     /**
      * 保存文章
@@ -643,6 +646,27 @@ public class ArticleServiceImpl implements ArticleService {
             // 标签填充失败不应该影响主要数据的返回
             articles.forEach(article -> article.setTags(Collections.emptyList()));
         }
+    }
+
+    /**
+     * 文章操作
+     *
+     * @param articleId 文章ID
+     * @param type      操作类型
+     */
+    @Override
+    public void actionArticle(Long articleId, OperateTypeEnum type) {
+        ArticleDO article = getArticleById(articleId);
+
+        Long currentUserId = ReqInfoContext.getContext().getUserId();
+
+        Boolean success = userFootService.actionArticle(currentUserId,
+                                                        type,
+                                                        article.getUserId(),
+                                                        articleId);
+        ExceptionUtil.errorIf(!success, ErrorCodeEnum.FORBIDDEN_OPERATION, "操作失败，请稍后重试");
+
+        log.info("文章{}操作成功 articleId={} type={}", type.getLabel(), articleId, type);
     }
 
 }

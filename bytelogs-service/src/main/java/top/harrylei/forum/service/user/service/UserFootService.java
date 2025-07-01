@@ -53,4 +53,18 @@ public interface UserFootService {
                           OperateTypeEnum type,
                           Long commentAuthorId,
                           Long commentId);
+
+    /**
+     * 文章操作
+     *
+     * @param userId         用户ID
+     * @param type           操作类型：点赞、收藏等
+     * @param articleAuthorId 文章作者ID
+     * @param articleId      文章ID
+     * @return 是否成功操作
+     */
+    Boolean actionArticle(Long userId,
+                          OperateTypeEnum type,
+                          Long articleAuthorId,
+                          Long articleId);
 }

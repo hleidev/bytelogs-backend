@@ -14,6 +14,7 @@ import top.harrylei.forum.api.model.vo.article.dto.ArticleDTO;
 import top.harrylei.forum.api.model.vo.article.req.ArticlePostReq;
 import top.harrylei.forum.api.model.vo.article.req.ArticleQueryParam;
 import top.harrylei.forum.api.model.vo.article.req.ArticleUpdateReq;
+import top.harrylei.forum.api.model.vo.article.req.ArticleActionReq;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleDetailVO;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
 import top.harrylei.forum.api.model.vo.page.PageVO;
@@ -142,5 +143,19 @@ public class ArticleController {
     public ResVO<PageVO<ArticleVO>> pageQuery(@Valid ArticleQueryParam queryParam) {
         PageVO<ArticleVO> page = articleService.pageQuery(queryParam);
         return ResVO.ok(page);
+    }
+
+    /**
+     * 文章操作
+     *
+     * @param req 文章操作请求
+     * @return 操作结果
+     */
+    @Operation(summary = "文章操作", description = "对文章进行点赞、收藏等操作")
+    @RequiresLogin
+    @PutMapping("/action")
+    public ResVO<Void> action(@Valid @RequestBody ArticleActionReq req) {
+        articleService.actionArticle(req.getArticleId(), req.getType());
+        return ResVO.ok();
     }
 }

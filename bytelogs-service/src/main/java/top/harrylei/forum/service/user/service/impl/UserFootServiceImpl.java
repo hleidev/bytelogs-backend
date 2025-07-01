@@ -110,11 +110,22 @@ public class UserFootServiceImpl implements UserFootService {
      * @return 是否成功操作
      */
     @Override
-    public Boolean actionComment(Long userId,
-                                 OperateTypeEnum type,
-                                 Long commentAuthorId,
-                                 Long commentId) {
-        return userFootAction(userId, type, commentAuthorId, commentId);
+    public Boolean actionComment(Long userId, OperateTypeEnum type, Long commentAuthorId, Long commentId) {
+        return userFootAction(userId, type, commentAuthorId, commentId, ContentTypeEnum.COMMENT);
+    }
+
+    /**
+     * 文章操作
+     *
+     * @param userId          用户ID
+     * @param type            操作类型：点赞、收藏等
+     * @param articleAuthorId 文章作者ID
+     * @param articleId       文章ID
+     * @return 是否成功操作
+     */
+    @Override
+    public Boolean actionArticle(Long userId, OperateTypeEnum type, Long articleAuthorId, Long articleId) {
+        return userFootAction(userId, type, articleAuthorId, articleId, ContentTypeEnum.ARTICLE);
     }
 
     /**
@@ -124,17 +135,19 @@ public class UserFootServiceImpl implements UserFootService {
      * @param type            操作类型
      * @param contentAuthorId 内容作者ID
      * @param contentId       内容ID
+     * @param contentType     内容类型
      * @return 是否成功操作
      */
     private Boolean userFootAction(Long userId,
                                    OperateTypeEnum type,
                                    Long contentAuthorId,
-                                   Long contentId) {
-        if (NumUtil.nullOrZero(userId) || type == null || NumUtil.nullOrZero(contentId) || NumUtil.nullOrZero(
-                contentAuthorId)) {
+                                   Long contentId,
+                                   ContentTypeEnum contentType) {
+        if (NumUtil.nullOrZero(userId) || type == null || NumUtil.nullOrZero(contentId) ||
+                NumUtil.nullOrZero(contentAuthorId)) {
             log.warn(
                     "执行{}操作参数无效: userId={} operateTypeEnum={} contentAuthorId={} contentId={}",
-                    ContentTypeEnum.COMMENT.getLabel(),
+                    contentType.getLabel(),
                     userId,
                     type,
                     contentAuthorId,
@@ -142,10 +155,10 @@ public class UserFootServiceImpl implements UserFootService {
             return false;
         }
 
-        UserFootDO userFoot = saveOrUpdateUserFoot(userId, type, contentAuthorId, contentId, ContentTypeEnum.COMMENT);
+        UserFootDO userFoot = saveOrUpdateUserFoot(userId, type, contentAuthorId, contentId, contentType);
         if (userFoot == null) {
             log.warn("保存或更新{}用户足迹失败: userId={} operateTypeEnum={} contentAuthorId={} contentId={}",
-                     ContentTypeEnum.COMMENT.getLabel(), userId, type, contentAuthorId, contentId);
+                     contentType.getLabel(), userId, type, contentAuthorId, contentId);
             return false;
         }
         return true;
