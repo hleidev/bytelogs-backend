@@ -101,6 +101,57 @@ public class UserFootServiceImpl implements UserFootService {
     }
 
     /**
+     * 评论操作
+     *
+     * @param userId          用户ID
+     * @param type            操作类型：点赞、收藏等
+     * @param commentAuthorId 评论作者ID
+     * @param commentId       评论ID
+     * @return 是否成功操作
+     */
+    @Override
+    public Boolean actionComment(Long userId,
+                                 OperateTypeEnum type,
+                                 Long commentAuthorId,
+                                 Long commentId) {
+        return userFootAction(userId, type, commentAuthorId, commentId);
+    }
+
+    /**
+     * 用户足迹操作的通用方法
+     *
+     * @param userId          用户ID
+     * @param type            操作类型
+     * @param contentAuthorId 内容作者ID
+     * @param contentId       内容ID
+     * @return 是否成功操作
+     */
+    private Boolean userFootAction(Long userId,
+                                   OperateTypeEnum type,
+                                   Long contentAuthorId,
+                                   Long contentId) {
+        if (NumUtil.nullOrZero(userId) || type == null || NumUtil.nullOrZero(contentId) || NumUtil.nullOrZero(
+                contentAuthorId)) {
+            log.warn(
+                    "执行{}操作参数无效: userId={} operateTypeEnum={} contentAuthorId={} contentId={}",
+                    ContentTypeEnum.COMMENT.getLabel(),
+                    userId,
+                    type,
+                    contentAuthorId,
+                    contentId);
+            return false;
+        }
+
+        UserFootDO userFoot = saveOrUpdateUserFoot(userId, type, contentAuthorId, contentId, ContentTypeEnum.COMMENT);
+        if (userFoot == null) {
+            log.warn("保存或更新{}用户足迹失败: userId={} operateTypeEnum={} contentAuthorId={} contentId={}",
+                     ContentTypeEnum.COMMENT.getLabel(), userId, type, contentAuthorId, contentId);
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * 保存或更新状态信息
      *
      * @param userId          操作人
@@ -109,11 +160,10 @@ public class UserFootServiceImpl implements UserFootService {
      * @param contentId       内容id
      * @param contentTypeEnum 内容类型：博文 + 评论
      */
-    public UserFootDO saveOrUpdateUserFoot(
-            Long userId,
-            OperateTypeEnum operateTypeEnum,
-            Long authorId,
-            Long contentId, ContentTypeEnum contentTypeEnum) {
+    public UserFootDO saveOrUpdateUserFoot(Long userId,
+                                           OperateTypeEnum operateTypeEnum,
+                                           Long authorId,
+                                           Long contentId, ContentTypeEnum contentTypeEnum) {
         UserFootDO userFoot = userFootDAO.getByContentAndUserId(userId, contentId, contentTypeEnum.getCode());
         if (userFoot == null) {
             userFoot = new UserFootDO()
@@ -148,7 +198,7 @@ public class UserFootServiceImpl implements UserFootService {
             case COLLECTION, CANCEL_COLLECTION -> {
                 return compareAndUpdate(userFoot::getCollectionState,
                                         userFoot::setCollectionState,
-                                        operateTypeEnum.getCode());
+                                        operateTypeEnum.getStatusCode());
             }
             default -> {
                 return false;

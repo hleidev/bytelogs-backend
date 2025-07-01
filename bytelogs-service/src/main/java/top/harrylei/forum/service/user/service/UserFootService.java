@@ -1,5 +1,6 @@
 package top.harrylei.forum.service.user.service;
 
+import top.harrylei.forum.api.model.enums.OperateTypeEnum;
 import top.harrylei.forum.api.model.enums.comment.ContentTypeEnum;
 import top.harrylei.forum.api.model.vo.user.dto.UserFootDTO;
 import top.harrylei.forum.service.comment.repository.entity.CommentDO;
@@ -38,4 +39,18 @@ public interface UserFootService {
      * @return 用户足迹传输对象
      */
     UserFootDTO getUserFoot(Long userId, Long contentId, ContentTypeEnum contentTypeEnum);
+
+    /**
+     * 评论操作
+     *
+     * @param userId          用户ID
+     * @param type            操作类型：点赞、收藏等
+     * @param commentAuthorId 评论作者ID
+     * @param commentId       评论ID
+     * @return 是否成功操作
+     */
+    Boolean actionComment(Long userId,
+                          OperateTypeEnum type,
+                          Long commentAuthorId,
+                          Long commentId);
 }

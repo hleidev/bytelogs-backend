@@ -16,6 +16,7 @@ import top.harrylei.forum.api.model.vo.comment.dto.CommentDTO;
 import top.harrylei.forum.api.model.vo.comment.req.CommentQueryParam;
 import top.harrylei.forum.api.model.vo.comment.req.CommentMyQueryParam;
 import top.harrylei.forum.api.model.vo.comment.req.CommentSaveReq;
+import top.harrylei.forum.api.model.vo.comment.req.CommentActionReq;
 import top.harrylei.forum.api.model.vo.comment.vo.TopCommentVO;
 import top.harrylei.forum.api.model.vo.comment.vo.CommentMyVO;
 import top.harrylei.forum.api.model.vo.page.PageVO;
@@ -120,6 +121,20 @@ public class CommentController {
     @DeleteMapping("/{commentId}")
     public ResVO<Void> delete(@NotNull(message = "评论ID不能为空") @PathVariable Long commentId) {
         commentService.deleteComment(commentId);
+        return ResVO.ok();
+    }
+
+    /**
+     * 评论操作
+     *
+     * @param req 评论操作请求
+     * @return 操作结果
+     */
+    @Operation(summary = "评论操作", description = "对评论进行点赞、收藏等操作")
+    @RequiresLogin
+    @PutMapping("/action")
+    public ResVO<Void> action(@Valid @RequestBody CommentActionReq req) {
+        commentService.actionComment(req.getCommentId(), req.getType());
         return ResVO.ok();
     }
 }

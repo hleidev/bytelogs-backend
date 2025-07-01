@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
+import top.harrylei.forum.api.model.enums.OperateTypeEnum;
 import top.harrylei.forum.api.model.enums.PraiseStatusEnum;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.comment.ContentTypeEnum;
@@ -147,6 +148,28 @@ public class CommentServiceImpl implements CommentService {
                         new Page<>(param.getPageNum(), param.getPageSize())),
                 this::buildMyComments
         );
+    }
+
+    /**
+     * 评论操作
+     *
+     * @param commentId 评论ID
+     * @param type      操作类型
+     */
+    @Override
+    public void actionComment(Long commentId, OperateTypeEnum type) {
+        CommentDO comment = getCommentById(commentId);
+        ExceptionUtil.requireValid(comment, ErrorCodeEnum.COMMENT_NOT_EXISTS, "评论不存在 commentId=" + commentId);
+
+        Long currentUserId = ReqInfoContext.getContext().getUserId();
+        
+        Boolean success = userFootService.actionComment(currentUserId,
+                                                        type,
+                                                        comment.getUserId(),
+                                                        commentId);
+        ExceptionUtil.errorIf(!success, ErrorCodeEnum.FORBIDDEN_OPERATION, "操作失败，请稍后重试");
+
+        log.info("评论{}操作成功 commentId={} type={}", type.getLabel(), commentId, type);
     }
 
     /**
