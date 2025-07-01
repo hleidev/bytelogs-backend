@@ -24,6 +24,12 @@ import java.util.Map;
 public class CommentManagementQueryParam extends BasePage {
 
     /**
+     * 用户ID
+     */
+    @Schema(description = "用户ID，查询指定用户的评论", example = "1")
+    private Long userId;
+
+    /**
      * 搜索关键词（全局模糊搜索）
      */
     @Schema(description = "搜索关键词，支持评论内容、用户名、文章标题的模糊搜索", example = "Spring Boot")

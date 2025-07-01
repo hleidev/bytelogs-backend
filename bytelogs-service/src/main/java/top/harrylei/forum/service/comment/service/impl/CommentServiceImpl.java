@@ -68,7 +68,7 @@ public class CommentServiceImpl implements CommentService {
     @Transactional(rollbackFor = Exception.class)
     public Long saveComment(CommentDTO dto) {
         CommentDO comment = insertComment(dto);
-        log.info("评论保存成功，commentId={}", comment.getId());
+        log.info("评论保存成功 commentId={}", comment.getId());
         return comment.getId();
     }
 
@@ -107,7 +107,7 @@ public class CommentServiceImpl implements CommentService {
         comment.setContent(dto.getContent());
         commentDAO.updateById(comment);
 
-        log.info("评论编辑成功，commentId={}", comment.getId());
+        log.info("评论编辑成功 commentId={}", comment.getId());
     }
 
     /**

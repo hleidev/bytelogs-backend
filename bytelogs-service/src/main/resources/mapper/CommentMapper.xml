@@ -35,6 +35,9 @@
         LEFT JOIN user_info ui ON c.user_id = ui.user_id AND ui.deleted = 0
         LEFT JOIN article a ON c.article_id = a.id AND a.deleted = 0
         <where>
+            <if test="query.userId != null">
+                AND c.user_id = #{query.userId}
+            </if>
             <if test="query.keyword != null and query.keyword != ''">
                 AND (
                     c.content LIKE CONCAT('%', #{query.keyword}, '%')
