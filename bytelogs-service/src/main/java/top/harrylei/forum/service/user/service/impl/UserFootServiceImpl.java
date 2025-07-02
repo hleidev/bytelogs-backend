@@ -7,6 +7,7 @@ import top.harrylei.forum.api.model.enums.OperateTypeEnum;
 import top.harrylei.forum.api.model.enums.comment.ContentTypeEnum;
 import top.harrylei.forum.api.model.vo.user.dto.UserFootDTO;
 import top.harrylei.forum.core.util.NumUtil;
+import top.harrylei.forum.core.util.RedisUtil;
 import top.harrylei.forum.service.comment.repository.entity.CommentDO;
 import top.harrylei.forum.service.user.converted.UserFootStructMapper;
 import top.harrylei.forum.service.user.repository.dao.UserFootDAO;
@@ -29,6 +30,18 @@ public class UserFootServiceImpl implements UserFootService {
 
     private final UserFootDAO userFootDAO;
     private final UserFootStructMapper userFootStructMapper;
+    private final RedisUtil redisUtil;
+
+    /**
+     * 分布式锁过期时间（秒）
+     */
+    private static final long LOCK_EXPIRE_TIME = 3;
+
+    /**
+     * 防重复提交锁过期时间（秒）
+     */
+    private static final long DUPLICATE_PREVENT_TIME = 2;
+
 
     /**
      * 保存评论足迹
@@ -141,7 +154,7 @@ public class UserFootServiceImpl implements UserFootService {
     }
 
     /**
-     * 用户足迹操作的通用方法
+     * 用户足迹操作的通用方法（添加防重复提交和并发安全控制）
      *
      * @param userId          用户ID
      * @param type            操作类型
@@ -167,7 +180,22 @@ public class UserFootServiceImpl implements UserFootService {
             return false;
         }
 
-        UserFootDO userFoot = saveOrUpdateUserFoot(userId, type, contentAuthorId, contentId, contentType);
+        // 防重复提交检查（只对点赞、收藏操作进行防重复提交控制）
+        if (isActionNeedDuplicateCheck(type)) {
+            String duplicateKey = buildDuplicateKey(userId, type, contentId, contentType);
+            if (!redisUtil.tryPreventDuplicate(duplicateKey, DUPLICATE_PREVENT_TIME)) {
+                log.warn("检测到重复提交: userId={} operateTypeEnum={} contentId={} contentType={}",
+                         userId, type, contentId, contentType.getLabel());
+                return false;
+            }
+        }
+
+        // 使用分布式锁保证并发安全
+        String lockKey = buildLockKey(userId, contentId, contentType);
+        UserFootDO userFoot = redisUtil.executeWithLock(lockKey, LOCK_EXPIRE_TIME, () ->
+                saveOrUpdateUserFoot(userId, type, contentAuthorId, contentId, contentType)
+        );
+
         if (userFoot == null) {
             log.warn("保存或更新{}用户足迹失败: userId={} operateTypeEnum={} contentAuthorId={} contentId={}",
                      contentType.getLabel(), userId, type, contentAuthorId, contentId);
@@ -238,5 +266,43 @@ public class UserFootServiceImpl implements UserFootService {
         }
         consumer.accept(input);
         return true;
+    }
+
+    /**
+     * 判断操作类型是否需要防重复提交检查
+     *
+     * @param type 操作类型
+     * @return 是否需要检查
+     */
+    private boolean isActionNeedDuplicateCheck(OperateTypeEnum type) {
+        return type == OperateTypeEnum.PRAISE ||
+                type == OperateTypeEnum.CANCEL_PRAISE ||
+                type == OperateTypeEnum.COLLECTION ||
+                type == OperateTypeEnum.CANCEL_COLLECTION;
+    }
+
+    /**
+     * 构建防重复提交锁的key
+     *
+     * @param userId      用户ID
+     * @param type        操作类型
+     * @param contentId   内容ID
+     * @param contentType 内容类型
+     * @return 锁的key
+     */
+    private String buildDuplicateKey(Long userId, OperateTypeEnum type, Long contentId, ContentTypeEnum contentType) {
+        return String.format("%d:%s:%d:%s", userId, type.name(), contentId, contentType.name());
+    }
+
+    /**
+     * 构建分布式锁的key
+     *
+     * @param userId      用户ID
+     * @param contentId   内容ID
+     * @param contentType 内容类型
+     * @return 锁的key
+     */
+    private String buildLockKey(Long userId, Long contentId, ContentTypeEnum contentType) {
+        return String.format("%d:%d:%s", userId, contentId, contentType.name());
     }
 }

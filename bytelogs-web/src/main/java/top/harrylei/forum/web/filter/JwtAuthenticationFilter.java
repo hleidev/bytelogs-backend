@@ -126,7 +126,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             // 从Redis获取存储的token
-            String redisToken = redisUtil.getObject(RedisKeyConstants.getUserTokenKey(userId), String.class);
+            String redisToken = redisUtil.get(RedisKeyConstants.getUserTokenKey(userId), String.class);
 
             // 验证token是否匹配
             if (StringUtils.isBlank(redisToken) || !token.equals(redisToken)) {
