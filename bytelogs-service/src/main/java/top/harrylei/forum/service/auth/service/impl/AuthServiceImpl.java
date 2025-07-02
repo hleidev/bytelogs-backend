@@ -138,7 +138,7 @@ public class AuthServiceImpl implements AuthService {
         ReqInfoContext.getContext().setUserId(userId).setUser(userInfoDTO);
 
         // 缓存token和用户信息
-        redisUtil.setObjectWithExpire(RedisKeyConstants.getUserTokenKey(userId), token, jwtUtil.getExpireSeconds());
+        redisUtil.set(RedisKeyConstants.getUserTokenKey(userId), token, jwtUtil.getExpireSeconds());
 
         // 安全相关事件保留日志
         log.info("用户登录成功 userId={}", userId);

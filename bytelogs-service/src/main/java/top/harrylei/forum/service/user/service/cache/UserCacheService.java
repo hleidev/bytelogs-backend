@@ -46,7 +46,7 @@ public class UserCacheService {
 
         // 2. 尝试从缓存获取
         UserInfoDetailDTO userInfoDTO =
-                redisUtil.getObject(RedisKeyConstants.getUserInfoKey(userId), UserInfoDetailDTO.class);
+                redisUtil.get(RedisKeyConstants.getUserInfoKey(userId), UserInfoDetailDTO.class);
 
         // 缓存命中，直接返回
         if (userInfoDTO != null) {
@@ -81,7 +81,7 @@ public class UserCacheService {
         }
 
         try {
-            redisUtil.setObjectWithExpire(RedisKeyConstants.getUserInfoKey(userId), userInfoDTO, jwtUtil.getExpireSeconds());
+            redisUtil.set(RedisKeyConstants.getUserInfoKey(userId), userInfoDTO, jwtUtil.getExpireSeconds());
             log.debug("用户信息已缓存: userId={}", userId);
         } catch (Exception e) {
             log.error("缓存用户信息失败: userId={}", userId, e);
