@@ -6,14 +6,13 @@ import org.springframework.data.redis.connection.RedisStringCommands;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.types.Expiration;
-import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.stereotype.Component;
+import top.harrylei.forum.core.common.constans.RedisKeyConstants;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Redis工具类
@@ -26,6 +25,9 @@ import java.util.concurrent.TimeUnit;
 public class RedisUtil {
 
     private static final Charset CHARSET = StandardCharsets.UTF_8;
+    private static final String UNLOCK_LUA_SCRIPT =
+            "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
+
     private final RedisTemplate<String, Object> redisTemplate;
 
     /**
@@ -37,7 +39,7 @@ public class RedisUtil {
     private static void validateNotNull(Object... args) {
         for (Object obj : args) {
             if (obj == null) {
-                throw new IllegalArgumentException("Redis operation argument cannot be null");
+                throw new IllegalArgumentException("Redis操作参数不能为空");
             }
         }
     }
@@ -72,7 +74,7 @@ public class RedisUtil {
             // 使用统一的JsonUtil进行序列化
             return JsonUtil.toBytes(value);
         } catch (Exception e) {
-            log.error("Failed to serialize object: type={}, error={}", value.getClass().getName(), e.getMessage(), e);
+            log.error("对象序列化失败: type={}, error={}", value.getClass().getName(), e.getMessage(), e);
             return null;
         }
     }
@@ -109,28 +111,40 @@ public class RedisUtil {
             // 使用统一的JsonUtil进行反序列化
             return JsonUtil.fromBytes(bytes, clazz);
         } catch (Exception e) {
-            log.error("Failed to deserialize object: targetType={}, error={}", clazz.getName(), e.getMessage(), e);
+            log.error("对象反序列化失败: targetType={}, error={}", clazz.getName(), e.getMessage(), e);
             return null;
         }
     }
 
     /**
-     * 设置对象值，带过期时间
+     * 设置值（不过期）
      *
-     * @param <T>     对象类型
+     * @param <T>   值类型
+     * @param key   键
+     * @param value 值
+     * @return 是否成功，操作异常时返回false
+     */
+    public <T> Boolean set(String key, T value) {
+        return set(key, value, 0);
+    }
+
+    /**
+     * 设置值，带过期时间
+     *
+     * @param <T>     值类型
      * @param key     键
      * @param value   值
      * @param seconds 过期时间（秒）
      * @return 是否成功，操作异常时返回false
      */
-    public <T> Boolean setObjectWithExpire(String key, T value, long seconds) {
+    public <T> Boolean set(String key, T value, long seconds) {
         validateNotNull(key, value);
         try {
             return redisTemplate.execute((RedisCallback<Boolean>) connection -> {
                 byte[] keyBytes = keyToBytes(key);
                 byte[] valueBytes = valueToBytes(value);
                 if (valueBytes == null) {
-                    log.warn("Failed to set object, serialization returned null: key={}", key);
+                    log.warn("设置值失败，序列化返回null: key={}", key);
                     return false;
                 }
                 if (seconds > 0) {
@@ -141,32 +155,117 @@ public class RedisUtil {
                 }
             });
         } catch (Exception e) {
-            log.error("Failed to set object: key={}, error={}", key, e.getMessage(), e);
+            log.error("设置值失败: key={}, error={}", key, e.getMessage(), e);
             return false;
         }
     }
 
     /**
-     * 设置对象值（不过期）
+     * 设置值，带过期时间（Duration版本）
      *
-     * @param <T>   对象类型
-     * @param key   键
-     * @param value 值
+     * @param <T>      值类型
+     * @param key      键
+     * @param value    值
+     * @param duration 过期时间
      * @return 是否成功，操作异常时返回false
      */
-    public <T> Boolean setObject(String key, T value) {
-        return setObjectWithExpire(key, value, 0);
+    public <T> Boolean set(String key, T value, Duration duration) {
+        validateNotNull(duration);
+        long seconds = duration.getSeconds();
+        if (seconds < 0) {
+            throw new IllegalArgumentException("Duration 不得为负数");
+        }
+        return set(key, value, seconds);
     }
 
     /**
-     * 获取对象值
+     * 仅当键不存在时设置值（不过期）
      *
-     * @param <T>   对象类型
+     * @param <T>   值类型
      * @param key   键
-     * @param clazz 对象类型
-     * @return 对象，键不存在或操作异常时返回null
+     * @param value 值
+     * @return 是否成功设置，键已存在或操作异常时返回false
      */
-    public <T> T getObject(String key, Class<T> clazz) {
+    public <T> Boolean setIfAbsent(String key, T value) {
+        validateNotNull(key, value);
+        try {
+            return redisTemplate.execute((RedisCallback<Boolean>) connection -> {
+                byte[] keyBytes = keyToBytes(key);
+                byte[] valueBytes = valueToBytes(value);
+                if (valueBytes == null) {
+                    log.warn("如果不存在，则设置值失败，序列化返回 null : key={}", key);
+                    return false;
+                }
+                return connection.stringCommands().set(keyBytes, valueBytes,
+                                                       Expiration.persistent(),
+                                                       RedisStringCommands.SetOption.SET_IF_ABSENT);
+            });
+        } catch (Exception e) {
+            log.error("setIfAbsent设置值失败: key={}, error={}", key, e.getMessage(), e);
+            return false;
+        }
+    }
+
+    /**
+     * 仅当键不存在时设置值，带过期时间
+     *
+     * @param <T>     值类型
+     * @param key     键
+     * @param value   值
+     * @param seconds 过期时间（秒）
+     * @return 是否成功设置，键已存在或操作异常时返回false
+     */
+    public <T> Boolean setIfAbsent(String key, T value, long seconds) {
+        validateNotNull(key, value);
+        if (seconds <= 0) {
+            throw new IllegalArgumentException("过期时间必须为正数");
+        }
+        try {
+            return redisTemplate.execute((RedisCallback<Boolean>) connection -> {
+                byte[] keyBytes = keyToBytes(key);
+                byte[] valueBytes = valueToBytes(value);
+                if (valueBytes == null) {
+                    log.warn("setIfAbsent带过期时间设置值失败，序列化返回null: key={}", key);
+                    return false;
+                }
+                return connection.stringCommands().set(keyBytes, valueBytes,
+                                                       Expiration.seconds(seconds),
+                                                       RedisStringCommands.SetOption.SET_IF_ABSENT);
+            });
+        } catch (Exception e) {
+            log.error("setIfAbsent带过期时间设置值失败: key={}, seconds={}, error={}",
+                      key, seconds, e.getMessage(), e);
+            return false;
+        }
+    }
+
+    /**
+     * 仅当键不存在时设置值，带过期时间（Duration版本）
+     *
+     * @param <T>      值类型
+     * @param key      键
+     * @param value    值
+     * @param duration 过期时间
+     * @return 是否成功设置，键已存在或操作异常时返回false
+     */
+    public <T> Boolean setIfAbsent(String key, T value, Duration duration) {
+        validateNotNull(duration);
+        long seconds = duration.getSeconds();
+        if (seconds <= 0) {
+            throw new IllegalArgumentException("setIfAbsent带过期时间的Duration必须为正数");
+        }
+        return setIfAbsent(key, value, seconds);
+    }
+
+    /**
+     * 获取值
+     *
+     * @param <T>   值类型
+     * @param key   键
+     * @param clazz 值类型
+     * @return 值，键不存在或操作异常时返回null
+     */
+    public <T> T get(String key, Class<T> clazz) {
         validateNotNull(key, clazz);
         try {
             return redisTemplate.execute((RedisCallback<T>) connection -> {
@@ -174,7 +273,7 @@ public class RedisUtil {
                 return bytesToObject(valueBytes, clazz);
             });
         } catch (Exception e) {
-            log.error("Failed to get object: key={}, error={}", key, e.getMessage(), e);
+            log.error("获取值失败: key={}, error={}", key, e.getMessage(), e);
             return null;
         }
     }
@@ -193,7 +292,7 @@ public class RedisUtil {
                 return result != null && result > 0;
             });
         } catch (Exception e) {
-            log.error("Failed to delete key: key={}, error={}", key, e.getMessage(), e);
+            log.error("删除键失败: key={}, error={}", key, e.getMessage(), e);
             return false;
         }
     }
@@ -204,7 +303,7 @@ public class RedisUtil {
      * @param keys 键集合
      * @return 删除的键数量，操作异常时返回0
      */
-    public Long deleteKeys(Collection<String> keys) {
+    public Long deleteAll(Collection<String> keys) {
         if (keys == null || keys.isEmpty()) {
             return 0L;
         }
@@ -217,7 +316,7 @@ public class RedisUtil {
                 return connection.keyCommands().del(keyByteArray);
             });
         } catch (Exception e) {
-            log.error("Failed to delete keys in batch: keys={}, error={}", keys, e.getMessage(), e);
+            log.error("批量删除键失败: keys={}, error={}", keys, e.getMessage(), e);
             return 0L;
         }
     }
@@ -232,7 +331,7 @@ public class RedisUtil {
         if (keys == null || keys.length == 0) {
             return 0L;
         }
-        return deleteKeys(Arrays.asList(keys));
+        return deleteAll(Arrays.asList(keys));
     }
 
     /**
@@ -247,7 +346,7 @@ public class RedisUtil {
             return redisTemplate.execute((RedisCallback<Boolean>) connection ->
                     connection.keyCommands().exists(keyToBytes(key)));
         } catch (Exception e) {
-            log.error("Failed to check key existence: key={}, error={}", key, e.getMessage(), e);
+            log.error("检查键是否存在失败: key={}, error={}", key, e.getMessage(), e);
             return false;
         }
     }
@@ -262,13 +361,13 @@ public class RedisUtil {
     public Boolean expire(String key, long seconds) {
         validateNotNull(key);
         if (seconds <= 0) {
-            throw new IllegalArgumentException("Expire seconds must be positive");
+            throw new IllegalArgumentException("过期时间必须为正数");
         }
         try {
             return redisTemplate.execute((RedisCallback<Boolean>) connection ->
                     connection.keyCommands().expire(keyToBytes(key), seconds));
         } catch (Exception e) {
-            log.error("Failed to set expiration: key={}, seconds={}, error={}", key, seconds, e.getMessage(), e);
+            log.error("设置过期时间失败: key={}, seconds={}, error={}", key, seconds, e.getMessage(), e);
             return false;
         }
     }
@@ -285,7 +384,7 @@ public class RedisUtil {
             return redisTemplate.execute((RedisCallback<Long>) connection ->
                     connection.keyCommands().ttl(keyToBytes(key)));
         } catch (Exception e) {
-            log.error("Failed to get TTL: key={}, error={}", key, e.getMessage(), e);
+            log.error("获取TTL失败: key={}, error={}", key, e.getMessage(), e);
             return -2L;
         }
     }
@@ -303,7 +402,7 @@ public class RedisUtil {
             return redisTemplate.execute((RedisCallback<Long>) connection ->
                     connection.stringCommands().incrBy(keyToBytes(key), delta));
         } catch (Exception e) {
-            log.error("Failed to increment by delta: key={}, delta={}, error={}", key, delta, e.getMessage(), e);
+            log.error("增量操作失败: key={}, delta={}, error={}", key, delta, e.getMessage(), e);
             return null;
         }
     }
@@ -356,7 +455,7 @@ public class RedisUtil {
                 return bytesToObject(valueBytes, clazz);
             });
         } catch (Exception e) {
-            log.error("Failed to get hash field: key={}, field={}, error={}", key, field, e.getMessage(), e);
+            log.error("获取哈希字段失败: key={}, field={}, error={}", key, field, e.getMessage(), e);
             return null;
         }
     }
@@ -375,14 +474,14 @@ public class RedisUtil {
         try {
             byte[] valueBytes = valueToBytes(value);
             if (valueBytes == null) {
-                log.warn("Failed to set hash field, serialization returned null: key={}, field={}", key, field);
+                log.warn("设置哈希字段失败，序列化返回null: key={}, field={}", key, field);
                 return false;
             }
 
             return redisTemplate.execute((RedisCallback<Boolean>) connection ->
                     connection.hashCommands().hSet(keyToBytes(key), field.getBytes(CHARSET), valueBytes));
         } catch (Exception e) {
-            log.error("Failed to set hash field: key={}, field={}, error={}", key, field, e.getMessage(), e);
+            log.error("设置哈希字段失败: key={}, field={}, error={}", key, field, e.getMessage(), e);
             return false;
         }
     }
@@ -390,21 +489,21 @@ public class RedisUtil {
     /**
      * 批量设置哈希表中的值
      *
-     * @param <T>           值的类型
-     * @param key           键
-     * @param fieldValueMap 字段值映射
+     * @param <T> 值的类型
+     * @param key 键
+     * @param map 字段值映射
      * @return 是否成功，操作异常时返回false
      */
-    public <T> Boolean hSetAll(String key, Map<String, T> fieldValueMap) {
+    public <T> Boolean hSetAll(String key, Map<String, T> map) {
         validateNotNull(key);
-        if (fieldValueMap == null || fieldValueMap.isEmpty()) {
+        if (map == null || map.isEmpty()) {
             return true;
         }
 
         try {
             return redisTemplate.execute((RedisCallback<Boolean>) connection -> {
-                Map<byte[], byte[]> byteMap = new HashMap<>(fieldValueMap.size());
-                for (Map.Entry<String, T> entry : fieldValueMap.entrySet()) {
+                Map<byte[], byte[]> byteMap = new HashMap<>(map.size());
+                for (Map.Entry<String, T> entry : map.entrySet()) {
                     byte[] fieldBytes = entry.getKey().getBytes(CHARSET);
                     byte[] valueBytes = valueToBytes(entry.getValue());
                     if (valueBytes != null) {
@@ -415,7 +514,7 @@ public class RedisUtil {
                 return true;
             });
         } catch (Exception e) {
-            log.error("Failed to set hash fields in batch: key={}, error={}", key, e.getMessage(), e);
+            log.error("批量设置哈希字段失败: key={}, error={}", key, e.getMessage(), e);
             return false;
         }
     }
@@ -442,7 +541,7 @@ public class RedisUtil {
                 return fields;
             });
         } catch (Exception e) {
-            log.error("Failed to get hash keys: key={}, error={}", key, e.getMessage(), e);
+            log.error("获取哈希键失败: key={}, error={}", key, e.getMessage(), e);
             return Set.of();
         }
     }
@@ -469,7 +568,7 @@ public class RedisUtil {
                 return connection.hashCommands().hDel(keyToBytes(key), fieldBytes);
             });
         } catch (Exception e) {
-            log.error("Failed to delete hash fields: key={}, fields={}, error={}",
+            log.error("删除哈希字段失败: key={}, fields={}, error={}",
                       key,
                       Arrays.toString(fields),
                       e.getMessage(),
@@ -491,7 +590,7 @@ public class RedisUtil {
             return redisTemplate.execute((RedisCallback<Boolean>) connection ->
                     connection.hashCommands().hExists(keyToBytes(key), field.getBytes(CHARSET)));
         } catch (Exception e) {
-            log.error("Failed to check hash field existence: key={}, field={}, error={}",
+            log.error("检查哈希字段是否存在失败: key={}, field={}, error={}",
                       key,
                       field,
                       e.getMessage(),
@@ -514,7 +613,7 @@ public class RedisUtil {
             return redisTemplate.execute((RedisCallback<Long>) connection ->
                     connection.hashCommands().hIncrBy(keyToBytes(key), field.getBytes(CHARSET), delta));
         } catch (Exception e) {
-            log.error("Failed to increment hash field: key={}, field={}, delta={}, error={}",
+            log.error("哈希字段自增失败: key={}, field={}, delta={}, error={}",
                       key, field, delta, e.getMessage(), e);
             return null;
         }
@@ -554,64 +653,6 @@ public class RedisUtil {
         return hIncrementBy(key, field, -1);
     }
 
-    /**
-     * 设置缓存对象（使用高级API）
-     *
-     * @param key     键
-     * @param value   值
-     * @param timeout 过期时间
-     * @param unit    时间单位
-     * @return 是否成功，操作异常时返回false
-     */
-    public Boolean set(String key, Object value, long timeout, TimeUnit unit) {
-        validateNotNull(key, value, unit);
-        if (timeout <= 0) {
-            throw new IllegalArgumentException("Timeout must be positive");
-        }
-        try {
-            redisTemplate.opsForValue().set(key, value, timeout, unit);
-            return true;
-        } catch (Exception e) {
-            log.error("Failed to set value with timeout: key={}, error={}", key, e.getMessage(), e);
-            return false;
-        }
-    }
-
-    /**
-     * 设置缓存对象（使用高级API，不过期）
-     *
-     * @param key   键
-     * @param value 值
-     * @return 是否成功，操作异常时返回false
-     */
-    public Boolean set(String key, Object value) {
-        validateNotNull(key, value);
-        try {
-            redisTemplate.opsForValue().set(key, value);
-            return true;
-        } catch (Exception e) {
-            log.error("Failed to set value: key={}, error={}", key, e.getMessage(), e);
-            return false;
-        }
-    }
-
-    /**
-     * 获取缓存对象（使用高级API）
-     *
-     * @param <T> 返回类型
-     * @param key 键
-     * @return 值，键不存在或操作异常时返回null
-     */
-    @SuppressWarnings("unchecked")
-    public <T> T get(String key) {
-        validateNotNull(key);
-        try {
-            return (T) redisTemplate.opsForValue().get(key);
-        } catch (Exception e) {
-            log.error("Failed to get value: key={}, error={}", key, e.getMessage(), e);
-            return null;
-        }
-    }
 
     /**
      * 获取字符串值
@@ -620,7 +661,7 @@ public class RedisUtil {
      * @return 字符串值，键不存在或操作异常时返回null
      */
     public String getString(String key) {
-        return getObject(key, String.class);
+        return get(key, String.class);
     }
 
     /**
@@ -631,7 +672,7 @@ public class RedisUtil {
      * @return 是否成功，操作异常时返回false
      */
     public Boolean setString(String key, String value) {
-        return setObject(key, value);
+        return set(key, value);
     }
 
     /**
@@ -642,38 +683,26 @@ public class RedisUtil {
      * @param seconds 过期时间（秒）
      * @return 是否成功，操作异常时返回false
      */
-    public Boolean setStringWithExpire(String key, String value, long seconds) {
-        return setObjectWithExpire(key, value, seconds);
+    public Boolean setString(String key, String value, long seconds) {
+        return set(key, value, seconds);
     }
 
-    /**
-     * 使用Duration设置过期时间
-     *
-     * @param key      键
-     * @param value    值
-     * @param duration 过期时间
-     * @return 是否成功
-     */
-    public <T> Boolean setObjectWithExpire(String key, T value, Duration duration) {
-        validateNotNull(duration);
-        return setObjectWithExpire(key, value, duration.getSeconds());
-    }
 
     /**
-     * 批量获取对象
+     * 批量获取值
      *
      * @param keys  键集合
-     * @param clazz 对象类型
+     * @param clazz 值类型
      * @return 键值对映射
      */
-    public <T> Map<String, T> getObjects(Collection<String> keys, Class<T> clazz) {
+    public <T> Map<String, T> getAll(Collection<String> keys, Class<T> clazz) {
         if (keys == null || keys.isEmpty()) {
             return Map.of();
         }
 
         Map<String, T> result = new HashMap<>(keys.size());
         for (String key : keys) {
-            T value = getObject(key, clazz);
+            T value = get(key, clazz);
             if (value != null) {
                 result.put(key, value);
             }
@@ -682,19 +711,19 @@ public class RedisUtil {
     }
 
     /**
-     * 批量设置对象
+     * 批量设置值
      *
-     * @param keyValueMap 键值对映射
+     * @param map 键值对映射
      * @return 成功设置的数量
      */
-    public <T> Long setObjects(Map<String, T> keyValueMap) {
-        if (keyValueMap == null || keyValueMap.isEmpty()) {
+    public <T> Long setAll(Map<String, T> map) {
+        if (map == null || map.isEmpty()) {
             return 0L;
         }
 
         long successCount = 0;
-        for (Map.Entry<String, T> entry : keyValueMap.entrySet()) {
-            if (Boolean.TRUE.equals(setObject(entry.getKey(), entry.getValue()))) {
+        for (Map.Entry<String, T> entry : map.entrySet()) {
+            if (Boolean.TRUE.equals(set(entry.getKey(), entry.getValue()))) {
                 successCount++;
             }
         }
@@ -707,7 +736,7 @@ public class RedisUtil {
      * @param keys 键集合
      * @return 存在的键集合
      */
-    public Set<String> existsKeys(Collection<String> keys) {
+    public Set<String> existsAll(Collection<String> keys) {
         if (keys == null || keys.isEmpty()) {
             return Set.of();
         }
@@ -736,8 +765,230 @@ public class RedisUtil {
                 return dataType != null ? dataType.name() : "none";
             });
         } catch (Exception e) {
-            log.error("Failed to get key type: key={}, error={}", key, e.getMessage(), e);
+            log.error("获取键类型失败: key={}, error={}", key, e.getMessage(), e);
             return "unknown";
         }
+    }
+
+    /**
+     * 尝试获取分布式锁
+     *
+     * @param lockKey 锁的key
+     * @param seconds 锁过期时间（秒）
+     * @return 锁标识符，获取失败返回null
+     */
+    public String tryLock(String lockKey, long seconds) {
+        validateNotNull(lockKey);
+        String lockValue = UUID.randomUUID().toString();
+        String key = RedisKeyConstants.getDistributedLockKey(lockKey);
+
+        Boolean success = setIfAbsent(key, lockValue, seconds);
+        if (Boolean.TRUE.equals(success)) {
+            log.debug("获取分布式锁成功: key={}, value={}", key, lockValue);
+            return lockValue;
+        }
+
+        log.debug("获取分布式锁失败: key={}", key);
+        return null;
+    }
+
+
+    /**
+     * 释放分布式锁
+     *
+     * @param lockKey   锁的key
+     * @param lockValue 锁的值
+     * @return 是否释放成功
+     */
+    public boolean releaseLock(String lockKey, String lockValue) {
+        validateNotNull(lockKey, lockValue);
+        String key = RedisKeyConstants.getDistributedLockKey(lockKey);
+
+        try {
+            // 执行Lua脚本
+            return Boolean.TRUE.equals(redisTemplate.execute((RedisCallback<Boolean>) connection -> {
+                // 使用与设置锁相同的字节数组方式
+                byte[] keyBytes = keyToBytes(key);
+                byte[] valueBytes = valueToBytes(lockValue);
+
+                // 执行Lua脚本
+                Long result = connection.scriptingCommands().eval(
+                        UNLOCK_LUA_SCRIPT.getBytes(CHARSET),
+                        org.springframework.data.redis.connection.ReturnType.INTEGER,
+                        1,
+                        keyBytes,
+                        valueBytes
+                );
+
+                boolean success = Long.valueOf(1).equals(result);
+                if (success) {
+                    log.debug("释放分布式锁成功: key={}, value={}", key, lockValue);
+                } else {
+                    log.debug("释放分布式锁失败（锁可能已过期或值不匹配）: key={}, value={}", key, lockValue);
+                }
+
+                return success;
+            }));
+        } catch (Exception e) {
+            log.error("释放分布式锁异常: key={}, value={}, error={}", key, lockValue, e.getMessage(), e);
+            return false;
+        }
+    }
+
+    /**
+     * 执行带锁的操作
+     *
+     * @param lockKey 锁的key
+     * @param seconds 锁过期时间（秒）
+     * @param action  要执行的操作
+     * @param <T>     返回值类型
+     * @return 操作结果，获取锁失败时返回null
+     */
+    public <T> T executeWithLock(String lockKey, long seconds, LockAction<T> action) {
+        validateNotNull(lockKey, action);
+        String lockValue = tryLock(lockKey, seconds);
+        if (lockValue == null) {
+            log.debug("获取锁失败，无法执行操作: lockKey={}", lockKey);
+            return null;
+        }
+
+        try {
+            return action.execute();
+        } catch (Exception e) {
+            log.error("执行带锁操作异常: lockKey={}, error={}", lockKey, e.getMessage(), e);
+            throw e;
+        } finally {
+            releaseLock(lockKey, lockValue);
+        }
+    }
+
+
+    /**
+     * 执行带锁的操作（无返回值）
+     *
+     * @param lockKey 锁的key
+     * @param seconds 锁过期时间（秒）
+     * @param action  要执行的操作
+     * @return 是否执行成功
+     */
+    public boolean executeWithLock(String lockKey, long seconds, Runnable action) {
+        validateNotNull(lockKey, action);
+        String lockValue = tryLock(lockKey, seconds);
+        if (lockValue == null) {
+            log.debug("获取锁失败，无法执行操作: lockKey={}", lockKey);
+            return false;
+        }
+
+        try {
+            action.run();
+            return true;
+        } catch (Exception e) {
+            log.error("执行带锁操作异常: lockKey={}, error={}", lockKey, e.getMessage(), e);
+            return false;
+        } finally {
+            releaseLock(lockKey, lockValue);
+        }
+    }
+
+    /**
+     * 防重复提交锁（自动过期，无需手动释放）
+     *
+     * @param lockKey 锁的key
+     * @param seconds 锁过期时间（秒）
+     * @return 是否获取锁成功（false表示重复提交）
+     */
+    public boolean tryPreventDuplicate(String lockKey, long seconds) {
+        validateNotNull(lockKey);
+        if (seconds <= 0) {
+            throw new IllegalArgumentException("防重复提交的过期时间必须为正数");
+        }
+
+        String lockValue = UUID.randomUUID().toString();
+        String key = RedisKeyConstants.getDuplicateLockKey(lockKey);
+
+        Boolean success = setIfAbsent(key, lockValue, seconds);
+        if (Boolean.TRUE.equals(success)) {
+            log.debug("获取防重复提交锁成功: key={}, expireSeconds={}", key, seconds);
+            return true;
+        }
+
+        log.debug("获取防重复提交锁失败，检测到重复提交: key={}", key);
+        return false;
+    }
+
+
+    /**
+     * 尝试获取分布式锁（Duration版本）
+     *
+     * @param lockKey  锁的key
+     * @param duration 锁过期时间
+     * @return 锁标识符，获取失败返回null
+     */
+    public String tryLock(String lockKey, Duration duration) {
+        validateNotNull(duration);
+        long seconds = duration.getSeconds();
+        if (seconds <= 0) {
+            throw new IllegalArgumentException("分布式锁的Duration必须为正数");
+        }
+        return tryLock(lockKey, seconds);
+    }
+
+    /**
+     * 执行带锁的操作（Duration版本）
+     *
+     * @param lockKey  锁的key
+     * @param duration 锁过期时间
+     * @param action   要执行的操作
+     * @param <T>      返回值类型
+     * @return 操作结果，获取锁失败时返回null
+     */
+    public <T> T executeWithLock(String lockKey, Duration duration, LockAction<T> action) {
+        validateNotNull(duration);
+        long seconds = duration.getSeconds();
+        if (seconds <= 0) {
+            throw new IllegalArgumentException("分布式锁的Duration必须为正数");
+        }
+        return executeWithLock(lockKey, seconds, action);
+    }
+
+    /**
+     * 执行带锁的操作（Duration版本，无返回值）
+     *
+     * @param lockKey  锁的key
+     * @param duration 锁过期时间
+     * @param action   要执行的操作
+     * @return 是否执行成功
+     */
+    public boolean executeWithLock(String lockKey, Duration duration, Runnable action) {
+        validateNotNull(duration);
+        long seconds = duration.getSeconds();
+        if (seconds <= 0) {
+            throw new IllegalArgumentException("分布式锁的Duration必须为正数");
+        }
+        return executeWithLock(lockKey, seconds, action);
+    }
+
+    /**
+     * 防重复提交锁（Duration版本）
+     *
+     * @param lockKey  锁的key
+     * @param duration 锁过期时间
+     * @return 是否获取锁成功（false表示重复提交）
+     */
+    public boolean tryPreventDuplicate(String lockKey, Duration duration) {
+        validateNotNull(duration);
+        long seconds = duration.getSeconds();
+        if (seconds <= 0) {
+            throw new IllegalArgumentException("防重复提交的Duration必须为正数");
+        }
+        return tryPreventDuplicate(lockKey, seconds);
+    }
+
+    /**
+     * 带锁的操作接口
+     */
+    @FunctionalInterface
+    public interface LockAction<T> {
+        T execute();
     }
 }
