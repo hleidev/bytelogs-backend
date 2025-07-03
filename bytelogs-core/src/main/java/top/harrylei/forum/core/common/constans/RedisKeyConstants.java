@@ -12,11 +12,13 @@ public class RedisKeyConstants {
 
     // 模块前缀
     public static final String USER = GLOBAL_PREFIX + "user:";
+    public static final String ARTICLE = GLOBAL_PREFIX + "article:";
     public static final String LOCK = GLOBAL_PREFIX + "lock:";
 
     // 功能分类
     public static final String USER_TOKEN = USER + "token:";
     public static final String USER_INFO = USER + "info:";
+    public static final String ARTICLE_EDIT_LOCK = ARTICLE + "edit_lock:";
     public static final String DISTRIBUTED_LOCK = LOCK + "distributed:";
     public static final String DUPLICATE_LOCK = LOCK + "duplicate:";
 
@@ -59,5 +61,15 @@ public class RedisKeyConstants {
      */
     public static String getDuplicateLockKey(String lockKey) {
         return DUPLICATE_LOCK + lockKey;
+    }
+
+    /**
+     * 构建文章编辑锁key
+     *
+     * @param articleId 文章ID
+     * @return 文章编辑锁key
+     */
+    public static String getArticleEditLockKey(Long articleId) {
+        return ARTICLE_EDIT_LOCK + articleId;
     }
 }

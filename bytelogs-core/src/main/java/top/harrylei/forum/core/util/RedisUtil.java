@@ -373,6 +373,22 @@ public class RedisUtil {
     }
 
     /**
+     * 设置键的过期时间（Duration版本）
+     *
+     * @param key      键
+     * @param duration 过期时间
+     * @return 是否成功，操作异常时返回false
+     */
+    public Boolean expire(String key, Duration duration) {
+        validateNotNull(duration);
+        long seconds = duration.getSeconds();
+        if (seconds <= 0) {
+            throw new IllegalArgumentException("过期时间Duration必须为正数");
+        }
+        return expire(key, seconds);
+    }
+
+    /**
      * 获取键的剩余生存时间
      *
      * @param key 键
