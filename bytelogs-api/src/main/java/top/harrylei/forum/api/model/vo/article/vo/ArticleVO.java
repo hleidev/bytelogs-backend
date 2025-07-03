@@ -110,7 +110,7 @@ public class ArticleVO extends BaseVO {
      * 当前发布版本号
      */
     @Schema(description = "当前发布版本号", example = "1")
-    private Integer currentVersion;
+    private Long currentVersion;
 
     /**
      * 文章内容

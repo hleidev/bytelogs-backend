@@ -102,4 +102,18 @@ public class ArticleUpdateReq {
     @NotNull(message = "文章状态不能为空")
     @Schema(description = "文章状态，0-未发布，1-已发布", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
     private PublishStatusEnum status;
+
+    /**
+     * 编辑令牌
+     */
+    @NotBlank(message = "编辑令牌不能为空")
+    @Schema(description = "编辑令牌", example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String editToken;
+
+    /**
+     * 版本号
+     */
+    @NotNull(message = "版本号不能为空")
+    @Schema(description = "版本号", example = "2", requiredMode = Schema.RequiredMode.REQUIRED)
+    private Long version;
 }
