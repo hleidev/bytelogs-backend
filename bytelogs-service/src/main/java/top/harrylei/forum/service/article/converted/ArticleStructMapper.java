@@ -2,16 +2,18 @@ package top.harrylei.forum.service.article.converted;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-
 import org.mapstruct.Named;
 import top.harrylei.forum.api.model.enums.article.ArticleSourceEnum;
 import top.harrylei.forum.api.model.enums.article.ArticleTypeEnum;
 import top.harrylei.forum.api.model.vo.article.dto.ArticleDTO;
 import top.harrylei.forum.api.model.vo.article.req.ArticlePostReq;
 import top.harrylei.forum.api.model.vo.article.req.ArticleUpdateReq;
+import top.harrylei.forum.api.model.vo.article.vo.ArticleEditVO;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
 import top.harrylei.forum.core.common.converter.EnumConverter;
 import top.harrylei.forum.service.article.repository.entity.ArticleDO;
+
+import java.time.LocalDateTime;
 
 /**
  * 文章对象转换映射器
@@ -83,4 +85,13 @@ public interface ArticleStructMapper {
     @Mapping(target = "tags", ignore = true)
     @Mapping(target = "category", ignore = true)
     ArticleVO toVO(ArticleDTO article);
+
+    default ArticleEditVO toEditVO(String editToken,
+                                   LocalDateTime expiresAt,
+                                   ArticleVO article) {
+        return new ArticleEditVO()
+                .setEditToken(editToken)
+                .setExpiresAt(expiresAt)
+                .setArticle(article);
+    }
 }
