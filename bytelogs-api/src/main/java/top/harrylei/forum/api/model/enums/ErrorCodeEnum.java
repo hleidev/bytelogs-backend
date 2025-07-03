@@ -70,6 +70,8 @@ public enum ErrorCodeEnum {
     ARTICLE_PUBLISH_FAILED(50003, "文章发布失败: %s"),
     ARTICLE_ALREADY_EXISTS(50004, "文章已存在: %s"),
     ARTICLE_CONTENT_INVALID(50005, "文章内容不符合规范: %s"),
+    ARTICLE_VERSION_CONFLICT(50006, "文章内容已被修改，请刷新页面获取最新内容"),
+    ARTICLE_EDIT_LOCK_EXPIRED(50007, "编辑权限已过期，请重新获取编辑权限"),
 
     // ========== 评论相关 60000-69999 ==========
     COMMENT_NOT_EXISTS(60001, "评论不存在: %s"),

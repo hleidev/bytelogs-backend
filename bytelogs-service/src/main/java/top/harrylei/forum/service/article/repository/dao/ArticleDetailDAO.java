@@ -13,8 +13,8 @@ import top.harrylei.forum.service.article.repository.mapper.ArticleDetailMapper;
 @Repository
 public class ArticleDetailDAO extends ServiceImpl<ArticleDetailMapper, ArticleDetailDO> {
 
-    public void updateArticleContent(Long articleId, String content, Long version) {
-        this.getBaseMapper().updateArticleContent(articleId, content, version);
+    public int updateArticleContent(Long articleId, String content, Long version) {
+        return getBaseMapper().updateArticleContent(articleId, content, version);
     }
 
     public ArticleDetailDO getLatestContentAndVersionByArticleId(Long articleId) {
