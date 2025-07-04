@@ -86,11 +86,9 @@ public interface ArticleStructMapper {
     @Mapping(target = "category", ignore = true)
     ArticleVO toVO(ArticleDTO article);
 
-    default ArticleEditVO toEditVO(String editToken,
-                                   LocalDateTime expiresAt,
+    default ArticleEditVO toEditVO(LocalDateTime expiresAt,
                                    ArticleVO article) {
         return new ArticleEditVO()
-                .setEditToken(editToken)
                 .setExpiresAt(expiresAt)
                 .setArticle(article);
     }

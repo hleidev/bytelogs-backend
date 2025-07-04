@@ -18,12 +18,6 @@ import java.time.LocalDateTime;
 @Schema(description = "文章发布请求")
 public class ArticlePublishReq {
 
-    /**
-     * 编辑令牌
-     */
-    @NotBlank(message = "编辑令牌不能为空")
-    @Schema(description = "编辑令牌", example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String editToken;
 
     /**
      * 版本号

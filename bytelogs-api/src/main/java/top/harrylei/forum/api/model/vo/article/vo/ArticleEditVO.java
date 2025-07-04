@@ -18,12 +18,6 @@ import java.time.LocalDateTime;
 public class ArticleEditVO {
 
     /**
-     * 编辑令牌
-     */
-    @Schema(description = "编辑令牌", example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String editToken;
-
-    /**
      * 编辑权限过期时间
      */
     @Schema(description = "编辑权限过期时间", example = "2024-01-01 15:30:00", requiredMode = Schema.RequiredMode.REQUIRED)
