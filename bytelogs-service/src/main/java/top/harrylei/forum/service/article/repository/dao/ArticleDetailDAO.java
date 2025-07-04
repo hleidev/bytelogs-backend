@@ -9,11 +9,13 @@ import top.harrylei.forum.service.article.repository.mapper.ArticleDetailMapper;
 
 /**
  * 文章详细访问对象
+ *
+ * @author harry
  */
 @Repository
 public class ArticleDetailDAO extends ServiceImpl<ArticleDetailMapper, ArticleDetailDO> {
 
-    public int updateArticleContent(Long articleId, String content, Long version) {
+    public int updateArticleContent(Long articleId, String content, Integer version) {
         return getBaseMapper().updateArticleContent(articleId, content, version);
     }
 

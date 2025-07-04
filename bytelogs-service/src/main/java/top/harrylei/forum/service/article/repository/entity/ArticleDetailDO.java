@@ -1,16 +1,17 @@
 package top.harrylei.forum.service.article.repository.entity;
 
-import java.io.Serial;
-
 import com.baomidou.mybatisplus.annotation.TableName;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 import top.harrylei.forum.api.model.entity.BaseDO;
 
+import java.io.Serial;
+
 /**
  * 文章详情实体对象
+ *
+ * @author harry
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -29,27 +30,13 @@ public class ArticleDetailDO extends BaseDO {
     /**
      * 版本号
      */
-    private Long version;
+    private Integer version;
 
     /**
      * 文章内容
      */
     private String content;
 
-    /**
-     * 是否为最新版本：1-是，0-否
-     */
-    private Integer latest;
-
-    /**
-     * 是否为发布版本：1-是，0-否
-     */
-    private Integer published;
-
-    /**
-     * 编辑操作令牌（防止并发编辑）
-     */
-    private String editToken;
 
     /**
      * 是否删除：0-未删除，1-已删除

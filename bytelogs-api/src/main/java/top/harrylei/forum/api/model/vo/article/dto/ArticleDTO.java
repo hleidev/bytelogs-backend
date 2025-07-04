@@ -88,9 +88,14 @@ public class ArticleDTO extends BaseDTO {
     private PublishStatusEnum status;
 
     /**
-     * 当前发布版本号
+     * 当前最大版本号（用于生成新版本）
      */
     private Integer currentVersion;
+
+    /**
+     * 已发布版本号（0表示未发布）
+     */
+    private Integer publishedVersion;
 
     /**
      * 文章内容（详情专有）

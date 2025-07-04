@@ -48,6 +48,7 @@ public interface ArticleStructMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "currentVersion", ignore = true)
+    @Mapping(target = "publishedVersion", ignore = true)
     @Mapping(target = "createTime", ignore = true)
     @Mapping(target = "cream", ignore = true)
     ArticleDTO toDTO(ArticlePostReq articlePostReq);
@@ -78,6 +79,7 @@ public interface ArticleStructMapper {
     @Mapping(target = "official", ignore = true)
     @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "currentVersion", ignore = true)
+    @Mapping(target = "publishedVersion", ignore = true)
     @Mapping(target = "createTime", ignore = true)
     @Mapping(target = "cream", ignore = true)
     ArticleDTO toDTO(ArticleUpdateReq articleUpdateReq);
