@@ -26,4 +26,12 @@ public class ArticleDetailDAO extends ServiceImpl<ArticleDetailMapper, ArticleDe
     public void updateDeleted(Long articleId, Integer deleted) {
         getBaseMapper().updateDeleted(articleId, deleted);
     }
+
+    public ArticleDetailDO getByArticleIdAndVersion(Long articleId, Integer version) {
+        return getBaseMapper().getByArticleIdAndVersion(articleId, version);
+    }
+
+    public int updateContentByVersion(Long articleId, String content, Integer version) {
+        return getBaseMapper().updateContentByVersion(articleId, content, version);
+    }
 }

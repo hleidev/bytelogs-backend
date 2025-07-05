@@ -5,11 +5,11 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.transaction.annotation.Transactional;
 import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
+import top.harrylei.forum.api.model.enums.OperateTypeEnum;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.article.ArticleStatusTypeEnum;
-import top.harrylei.forum.api.model.enums.OperateTypeEnum;
 import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.article.dto.ArticleDTO;
 import top.harrylei.forum.api.model.vo.article.req.ArticleQueryParam;
@@ -29,8 +29,8 @@ import top.harrylei.forum.service.article.service.ArticleDetailService;
 import top.harrylei.forum.service.article.service.ArticleService;
 import top.harrylei.forum.service.article.service.ArticleTagService;
 import top.harrylei.forum.service.user.converted.UserStructMapper;
-import top.harrylei.forum.service.user.service.cache.UserCacheService;
 import top.harrylei.forum.service.user.service.UserFootService;
+import top.harrylei.forum.service.user.service.cache.UserCacheService;
 
 import java.util.Collections;
 import java.util.List;
@@ -48,7 +48,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ArticleServiceImpl implements ArticleService {
 
-    private final TransactionTemplate transactionTemplate;
     private final ArticleDAO articleDAO;
     private final ArticleStructMapper articleStructMapper;
     private final ArticleDetailService articleDetailService;
@@ -64,35 +63,58 @@ public class ArticleServiceImpl implements ArticleService {
      * @return 文章ID
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Long saveArticle(ArticleDTO articleDTO) {
         ArticleDO article = articleStructMapper.toDO(articleDTO);
-        return transactionTemplate.execute(status -> {
-            Long articleId;
-            articleId = insertArticle(article, articleDTO.getContent(), articleDTO.getTagIds());
-            log.info("新建文章成功 title={}", article.getTitle());
-            return articleId;
-        });
+
+        // 设置初始版本信息
+        article.setCurrentVersion(1);
+        article.setPublishedVersion(0);
+
+        // 插入文章主表
+        Long articleId = articleDAO.insertArticle(article);
+
+        // 文章处理逻辑
+        articleDTO.setId(articleId);
+        processArticleContent(articleDTO, null, 1);
+
+        log.info("新建文章成功 title={}", article.getTitle());
+        return articleId;
     }
 
     /**
-     * 编辑文章
+     * 更新文章
      *
      * @param articleDTO 文章传输对象
      * @return 文章VO
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public ArticleVO updateArticle(ArticleDTO articleDTO) {
         Long articleId = articleDTO.getId();
         ExceptionUtil.requireValid(articleId, ErrorCodeEnum.PARAM_ERROR, "文章ID不能为空");
 
         // 权限校验并获取文章信息
-        ArticleDO existingArticle = getArticleWithPermissionCheck(articleId);
+        ArticleDO currentArticle = getArticleWithPermissionCheck(articleId);
 
-        articleDTO.setUserId(existingArticle.getUserId());
         ArticleDO articleDO = articleStructMapper.toDO(articleDTO);
 
-        ArticleVO article = transactionTemplate
-                .execute(status -> updateArticle(articleDO, articleDTO.getContent(), articleDTO.getTagIds()));
+        // 版本冲突检查
+        if (!Objects.equals(currentArticle.getCurrentVersion(), articleDO.getCurrentVersion())) {
+            log.warn("文章版本冲突: articleId={}, currentVersion={}, clientVersion={}",
+                     currentArticle.getId(), currentArticle.getCurrentVersion(), articleDO.getCurrentVersion());
+            ExceptionUtil.error(ErrorCodeEnum.ARTICLE_VERSION_CONFLICT);
+        }
+
+        // 根据当前状态和目标状态确定版本控制策略
+        PublishStatusEnum currentStatus = PublishStatusEnum.fromCode(currentArticle.getStatus());
+        PublishStatusEnum targetStatus = articleDTO.getStatus();
+        Integer targetVersion = determineTargetVersion(currentArticle, currentStatus, targetStatus);
+
+        // 文章处理逻辑
+        processArticleContent(articleDTO, currentArticle, targetVersion);
+
+        ArticleVO article = getCompleteArticleVO(articleDTO.getId());
 
         log.info("编辑文章成功 editor={} articleId={}", ReqInfoContext.getContext().getUserId(), articleDTO.getId());
         return article;
@@ -143,9 +165,37 @@ public class ArticleServiceImpl implements ArticleService {
         validateViewPermission(completeArticleVO.getUserId(), completeArticleVO.getDeleted(),
                                completeArticleVO.getStatus());
 
+        // 根据用户权限获取对应版本的内容
+        String content = getContentByUserPermission(articleId, completeArticleVO);
+        completeArticleVO.setContent(content);
+
         UserInfoDetailDTO user = userCacheService.getUserInfo(completeArticleVO.getUserId());
 
         return new ArticleDetailVO().setArticle(completeArticleVO).setAuthor(userStructMapper.toVO(user));
+    }
+
+    /**
+     * 根据用户权限获取文章内容
+     *
+     * @param articleId         文章ID
+     * @param completeArticleVO 文章信息
+     * @return 文章内容
+     */
+    private String getContentByUserPermission(Long articleId, ArticleVO completeArticleVO) {
+        Long currentUserId = ReqInfoContext.getContext().getUserId();
+
+        // 如果是作者本人，返回最新版本（草稿或已发布）
+        if (Objects.equals(currentUserId, completeArticleVO.getUserId())) {
+            return articleDetailService.getContentByVersion(articleId, completeArticleVO.getCurrentVersion());
+        } else {
+            // 非作者，只能看已发布版本
+            if (completeArticleVO.getPublishedVersion() != null && completeArticleVO.getPublishedVersion() > 0) {
+                return articleDetailService.getContentByVersion(articleId, completeArticleVO.getPublishedVersion());
+            } else {
+                ExceptionUtil.error(ErrorCodeEnum.ARTICLE_NOT_EXISTS, "文章未发布");
+                return "";
+            }
+        }
     }
 
     /**
@@ -550,19 +600,6 @@ public class ArticleServiceImpl implements ArticleService {
         }
     }
 
-    private Long insertArticle(ArticleDO article, String content, List<Long> tagIds) {
-        if (needToReview(article.getStatus())) {
-            article.setStatus(PublishStatusEnum.REVIEW.getCode());
-        }
-        Long articleId = articleDAO.insertArticle(article);
-        articleDetailService.saveArticleContent(articleId, content);
-
-        if (tagIds != null && !tagIds.isEmpty()) {
-            articleTagService.saveBatch(articleId, tagIds);
-        }
-
-        return articleId;
-    }
 
     private boolean needToReview(Integer status) {
         ExceptionUtil.requireValid(status, ErrorCodeEnum.PARAM_MISSING, "状态码");
@@ -577,18 +614,96 @@ public class ArticleServiceImpl implements ArticleService {
         return Objects.equals(status, PublishStatusEnum.PUBLISHED);
     }
 
-    private ArticleVO updateArticle(ArticleDO article, String content, List<Long> tagIds) {
-        PublishStatusEnum targetStatus = PublishStatusEnum.fromCode(article.getStatus());
-        if (needToReview(targetStatus)) {
-            article.setStatus(PublishStatusEnum.REVIEW.getCode());
+
+    /**
+     * 根据当前状态和目标状态确定版本控制策略
+     *
+     * @param currentArticle 当前文章
+     * @param currentStatus  当前状态
+     * @param targetStatus   目标状态
+     * @return 目标版本号
+     */
+    private Integer determineTargetVersion(ArticleDO currentArticle,
+                                           PublishStatusEnum currentStatus,
+                                           PublishStatusEnum targetStatus) {
+        Integer currentVersion = currentArticle.getCurrentVersion();
+
+        // 草稿 -> 草稿：保持当前版本（不创建新版本）
+        if (PublishStatusEnum.DRAFT.equals(currentStatus) && PublishStatusEnum.DRAFT.equals(targetStatus)) {
+            return currentVersion;
         }
 
-        articleDAO.updateById(article);
+        // 草稿 -> 发布：保持当前版本并设为发布版本
+        if (PublishStatusEnum.DRAFT.equals(currentStatus) && PublishStatusEnum.PUBLISHED.equals(targetStatus)) {
+            return currentVersion;
+        }
 
-        articleDetailService.updateArticleContent(article.getId(), content);
-        articleTagService.updateTags(article.getId(), tagIds);
+        // 已发布状态的任何修改：创建新版本
+        if (PublishStatusEnum.PUBLISHED.equals(currentStatus)) {
+            return currentVersion + 1;
+        }
 
-        return getCompleteArticleVO(article.getId());
+        // 其他状态（审核中等）默认保持当前版本
+        return currentVersion;
+    }
+
+    /**
+     * 通用的文章内容处理逻辑
+     *
+     * @param articleDTO     文章DTO
+     * @param currentArticle 当前文章（编辑时传入，新建时传null）
+     * @param version        版本号
+     */
+    private void processArticleContent(ArticleDTO articleDTO, ArticleDO currentArticle, Integer version) {
+        Long articleId = articleDTO.getId();
+        String content = articleDTO.getContent();
+        List<Long> tagIds = articleDTO.getTagIds();
+        PublishStatusEnum status = articleDTO.getStatus();
+
+        // 1. 处理状态和审核逻辑
+        PublishStatusEnum finalStatus = status;
+        if (needToReview(status)) {
+            finalStatus = PublishStatusEnum.REVIEW;
+        }
+
+        // 2. 处理内容版本
+        if (currentArticle == null) {
+            // 新建文章：保存新内容
+            articleDetailService.saveArticleContent(articleId, content, version);
+        } else {
+            // 编辑文章：根据版本策略判断是更新还是创建
+            if (Objects.equals(version, currentArticle.getCurrentVersion())) {
+                // 版本未变：更新现有版本内容
+                articleDetailService.updateContentByVersion(articleId, content, version);
+            } else {
+                // 版本增加：保存新版本内容
+                articleDetailService.saveArticleContent(articleId, content, version);
+            }
+        }
+
+        // 3. 处理标签
+        if (tagIds != null && !tagIds.isEmpty()) {
+            if (currentArticle == null) {
+                // 新建文章：批量保存标签
+                articleTagService.saveBatch(articleId, tagIds);
+            } else {
+                // 编辑文章：更新标签
+                articleTagService.updateTags(articleId, tagIds);
+            }
+        }
+
+        // 4. 更新文章状态
+        ArticleDO updateArticle = new ArticleDO();
+        updateArticle.setId(articleId);
+        updateArticle.setCurrentVersion(version);
+        updateArticle.setStatus(finalStatus.getCode());
+
+        // 如果是发布状态，更新发布版本
+        if (PublishStatusEnum.PUBLISHED.equals(finalStatus)) {
+            updateArticle.setPublishedVersion(version);
+        }
+
+        articleDAO.updateById(updateArticle);
     }
 
     /**

@@ -46,7 +46,7 @@ public class ArticleController {
      * @return 新建文章ID
      */
     @RequiresLogin
-    @Operation(summary = "新建文章", description = "用户新建文章（支持草稿/提交审核）")
+    @Operation(summary = "新建文章", description = "用户保存文章（支持草稿/提交审核）")
     @PostMapping
     public ResVO<Long> create(@Valid @RequestBody ArticlePostReq articlePostReq) {
         ArticleDTO articleDTO = articleStructMapper.toDTO(articlePostReq);
@@ -62,10 +62,11 @@ public class ArticleController {
      * @return 文章VO
      */
     @RequiresLogin
-    @Operation(summary = "编辑文章", description = "用户编辑文章")
+    @Operation(summary = "编辑文章", description = "用户编辑文章（支持保存草稿和发布）")
     @PutMapping
     public ResVO<ArticleVO> update(@Valid @RequestBody ArticleUpdateReq articleUpdateReq) {
         ArticleDTO articleDTO = articleStructMapper.toDTO(articleUpdateReq);
+        articleDTO.setUserId(ReqInfoContext.getContext().getUserId());
         ArticleVO article = articleService.updateArticle(articleDTO);
         return ResVO.ok(article);
     }
@@ -108,12 +109,12 @@ public class ArticleController {
     @GetMapping("/{articleId}")
     public ResVO<ArticleDetailVO> detail(@PathVariable Long articleId) {
         ArticleDetailVO vo = articleService.getArticleDetail(articleId);
-        
+
         // 记录阅读行为（仅限登录用户）
         if (ReqInfoContext.getContext().isLoggedIn()) {
             articleService.recordRead(articleId);
         }
-        
+
         return ResVO.ok(vo);
     }
 

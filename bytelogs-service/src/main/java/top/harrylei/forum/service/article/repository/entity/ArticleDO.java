@@ -87,9 +87,14 @@ public class ArticleDO extends BaseDO {
     private Integer status;
 
     /**
-     * 当前发布版本号
+     * 当前最大版本号（用于生成新版本）
      */
     private Integer currentVersion;
+
+    /**
+     * 已发布版本号（0表示未发布）
+     */
+    private Integer publishedVersion;
 
     /**
      * 是否删除：0-未删除，1-已删除

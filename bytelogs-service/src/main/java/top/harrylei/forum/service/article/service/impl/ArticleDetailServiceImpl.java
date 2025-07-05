@@ -25,22 +25,6 @@ public class ArticleDetailServiceImpl implements ArticleDetailService {
     private final ArticleDetailDAO articleDetailDAO;
 
     /**
-     * 保存文章详细
-     *
-     * @param articleId 文章ID
-     * @param content   文章内容
-     * @return 文章详细ID
-     */
-    @Override
-    public Long saveArticleContent(Long articleId, String content) {
-        ArticleDetailDO articleDetail = new ArticleDetailDO()
-                .setArticleId(articleId)
-                .setContent(content);
-        articleDetailDAO.save(articleDetail);
-        return articleDetail.getId();
-    }
-
-    /**
      * 更新文章内容
      *
      * @param articleId 文章ID
@@ -63,18 +47,6 @@ public class ArticleDetailServiceImpl implements ArticleDetailService {
     }
 
     /**
-     * 查询文章内容
-     *
-     * @param articleId 文章ID
-     * @return 文章内容
-     */
-    @Override
-    public String getContentByArticleId(Long articleId) {
-        ArticleDetailDO articleDetailDO = articleDetailDAO.getLatestContentAndVersionByArticleId(articleId);
-        return articleDetailDO.getContent();
-    }
-
-    /**
      * 删除文章内容
      *
      * @param articleId 文章ID
@@ -92,5 +64,50 @@ public class ArticleDetailServiceImpl implements ArticleDetailService {
     @Override
     public void restoreByArticleId(Long articleId) {
         articleDetailDAO.updateDeleted(articleId, YesOrNoEnum.NO.getCode());
+    }
+
+    /**
+     * 保存文章内容
+     *
+     * @param articleId 文章ID
+     * @param content   文章内容
+     * @param version   版本号
+     * @return 文章详细ID
+     */
+    @Override
+    public Long saveArticleContent(Long articleId, String content, Integer version) {
+        ArticleDetailDO articleDetail = new ArticleDetailDO()
+                .setArticleId(articleId)
+                .setContent(content)
+                .setVersion(version);
+        articleDetailDAO.save(articleDetail);
+        return articleDetail.getId();
+    }
+
+    /**
+     * 根据版本获取文章内容
+     *
+     * @param articleId 文章ID
+     * @param version   版本号
+     * @return 文章内容
+     */
+    @Override
+    public String getContentByVersion(Long articleId, Integer version) {
+        ArticleDetailDO detail = articleDetailDAO.getByArticleIdAndVersion(articleId, version);
+        return detail != null ? detail.getContent() : "";
+    }
+
+    /**
+     * 更新指定版本的文章内容
+     *
+     * @param articleId 文章ID
+     * @param content   文章内容
+     * @param version   版本号
+     */
+    @Override
+    public void updateContentByVersion(Long articleId, String content, Integer version) {
+        int updateCount = articleDetailDAO.updateContentByVersion(articleId, content, version);
+        ExceptionUtil.errorIf(updateCount == 0, ErrorCodeEnum.ARTICLE_NOT_EXISTS, 
+                "更新文章内容失败: articleId=" + articleId + ", version=" + version);
     }
 }

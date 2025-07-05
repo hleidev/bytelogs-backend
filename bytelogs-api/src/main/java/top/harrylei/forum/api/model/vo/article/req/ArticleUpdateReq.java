@@ -109,5 +109,5 @@ public class ArticleUpdateReq {
      */
     @NotNull(message = "版本号不能为空")
     @Schema(description = "版本号", example = "2", requiredMode = Schema.RequiredMode.REQUIRED)
-    private Long version;
+    private Integer version;
 }
