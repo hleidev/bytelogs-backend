@@ -224,14 +224,22 @@ public class ArticleServiceImpl implements ArticleService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateArticleStatus(Long articleId, PublishStatusEnum status) {
-        // 获取文章
-        ArticleDO article = getArticleById(articleId);
+        // 获取文章并校验权限
+        ArticleDO article = getArticleWithPermissionCheck(articleId);
 
-        // 状态变更业务逻辑处理
-        PublishStatusEnum finalStatus = processStatusTransition(article, status);
+        // 状态转换权限校验
+        boolean isAdmin = ReqInfoContext.getContext().isAdmin();
+        // 审核状态只有管理员可以设置
+        if (status == PublishStatusEnum.REJECTED && !isAdmin) {
+            ExceptionUtil.error(ErrorCodeEnum.FORBID_ERROR_MIXED, "只有管理员可以审核文章");
+        }
+
+        // 应用业务规则：非管理员发布需要审核
+        PublishStatusEnum finalStatus = applyReviewPolicy(status);
 
         // 获取当前最新版本
         ArticleDetailDO latestDetail = articleDetailService.getLatestVersion(articleId);
+        ExceptionUtil.requireValid(latestDetail, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "文章最新版本不存在");
 
         // 如果状态没有变化，直接返回
         if (PublishStatusEnum.fromCode(latestDetail.getStatus()).equals(finalStatus)) {
@@ -239,48 +247,29 @@ public class ArticleServiceImpl implements ArticleService {
             return;
         }
 
-        // 创建新版本用于状态变更
-        Integer newVersion = article.getVersionCount() + 1;
-        ArticleDetailDO newDetail = new ArticleDetailDO();
-
-        // 复制内容字段
-        newDetail.setArticleId(articleId);
-        newDetail.setVersion(newVersion);
-        newDetail.setTitle(latestDetail.getTitle());
-        newDetail.setShortTitle(latestDetail.getShortTitle());
-        newDetail.setPicture(latestDetail.getPicture());
-        newDetail.setSummary(latestDetail.getSummary());
-        newDetail.setCategoryId(latestDetail.getCategoryId());
-        newDetail.setSource(latestDetail.getSource());
-        newDetail.setSourceUrl(latestDetail.getSourceUrl());
-        newDetail.setContent(latestDetail.getContent());
-
-        // 设置新状态和标记
-        newDetail.setStatus(finalStatus.getCode());
-        newDetail.setLatest(YesOrNoEnum.YES.getCode());
-        newDetail.setDeleted(YesOrNoEnum.NO.getCode());
+        // 直接更新最新版本的状态，不创建新版本
+        latestDetail.setStatus(finalStatus.getCode());
 
         // 处理发布逻辑
         if (PublishStatusEnum.PUBLISHED.equals(finalStatus)) {
-            // 清除旧的发布标记
+            // 清除旧的发布标记，设置当前版本为发布版本
             articleDetailService.clearPublishedFlag(articleId);
-            newDetail.setPublished(YesOrNoEnum.YES.getCode());
-            newDetail.setPublishTime(java.time.LocalDateTime.now());
+            latestDetail.setPublished(YesOrNoEnum.YES.getCode());
+            latestDetail.setPublishTime(java.time.LocalDateTime.now());
         } else {
-            newDetail.setPublished(YesOrNoEnum.NO.getCode());
+            // 非发布状态，只清除当前版本的发布标记，不影响其他版本
+            latestDetail.setPublished(YesOrNoEnum.NO.getCode());
+            latestDetail.setPublishTime(null);
         }
 
-        // 事务性更新
-        // 1. 清除旧的最新标记
-        articleDetailService.clearLatestFlag(articleId);
-        // 2. 插入新版本
-        articleDetailService.save(newDetail);
-        // 3. 更新版本计数
-        article.setVersionCount(newVersion);
-        articleDAO.updateById(article);
+        // 更新最新版本
+        boolean updated = articleDetailService.updateById(latestDetail);
+        ExceptionUtil.errorIf(!updated, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "更新文章状态失败");
 
         log.info("文章状态更新成功 articleId={} -> {} operatorId={}",
-                 articleId, finalStatus, ReqInfoContext.getContext().getUserId());
+                 articleId,
+                 finalStatus,
+                 ReqInfoContext.getContext().getUserId());
     }
 
     /**
@@ -593,38 +582,6 @@ public class ArticleServiceImpl implements ArticleService {
         ExceptionUtil.errorIf(updated == 0, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "articleId=" + article.getId());
         return true;
     }
-
-    /**
-     * 处理文章状态转换业务逻辑
-     *
-     * @param article      文章DO对象
-     * @param targetStatus 目标状态
-     * @return 最终状态
-     */
-    private PublishStatusEnum processStatusTransition(ArticleDO article, PublishStatusEnum targetStatus) {
-        // 状态转换权限校验
-        validateOperatePermission(article.getUserId());
-        validateStatusTransitionPermission(targetStatus);
-
-        // 应用业务规则：非管理员发布需要审核
-        return applyReviewPolicy(targetStatus);
-    }
-
-    /**
-     * 校验状态转换权限
-     *
-     * @param targetStatus 目标状态
-     */
-    private void validateStatusTransitionPermission(PublishStatusEnum targetStatus) {
-        boolean isAdmin = ReqInfoContext.getContext().isAdmin();
-
-        // 业务规则：审核状态只有管理员可以设置
-        if ((targetStatus == PublishStatusEnum.PUBLISHED || targetStatus == PublishStatusEnum.REJECTED)
-                && !isAdmin) {
-            ExceptionUtil.error(ErrorCodeEnum.FORBID_ERROR_MIXED, "只有管理员可以审核文章");
-        }
-    }
-
 
     private void updateArticleDeletedStatus(Long articleId, YesOrNoEnum deletedStatus) {
         articleDAO.updateDeleted(articleId, deletedStatus.getCode());
