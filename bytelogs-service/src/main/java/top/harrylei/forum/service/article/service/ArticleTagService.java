@@ -6,6 +6,8 @@ import java.util.List;
 
 /**
  * 文章标签绑定接口类
+ *
+ * @author harry
  */
 public interface ArticleTagService {
 

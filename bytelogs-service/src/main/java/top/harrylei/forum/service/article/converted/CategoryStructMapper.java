@@ -18,13 +18,11 @@ import top.harrylei.forum.service.article.repository.entity.CategoryDO;
 public interface CategoryStructMapper {
 
     @Mapping(target = "updateTime", ignore = true)
-    @Mapping(target = "id", ignore = true)
     @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "createTime", ignore = true)
     @Mapping(target = "status", source = "status", qualifiedByName = "PublishStatusEnumToCode")
     void updateDOFromDTO(CategoryDTO categoryDTO, @MappingTarget CategoryDO category);
 
-    @Mapping(target = "categoryId", source = "id")
     @Mapping(target = "status", source = "status", qualifiedByName = "PublishStatusEnumToCode")
     CategoryVO toVO(CategoryDTO categoryDTO);
 

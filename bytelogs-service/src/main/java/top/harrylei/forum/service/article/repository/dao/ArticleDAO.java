@@ -25,10 +25,6 @@ public class ArticleDAO extends ServiceImpl<ArticleMapper, ArticleDO> {
         getBaseMapper().updateDeleted(articleId, deleted);
     }
 
-    public int updateStatus(Long articleId, Integer status) {
-        return getBaseMapper().updateStatus(articleId, status);
-    }
-
     public IPage<ArticleVO> pageArticleVO(ArticleQueryParam queryParam, IPage<ArticleVO> page) {
         // 联表查询，返回包含分类和标签的ArticleVO
         return this.getBaseMapper().pageArticleVO(queryParam, page);
