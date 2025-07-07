@@ -107,16 +107,10 @@ public class ArticleVO extends BaseVO {
     private PublishStatusEnum status;
 
     /**
-     * 当前最大版本号（用于生成新版本）
+     * 版本总数
      */
-    @Schema(description = "当前最大版本号", example = "1")
-    private Integer currentVersion;
-
-    /**
-     * 已发布版本号（0表示未发布）
-     */
-    @Schema(description = "已发布版本号", example = "1")
-    private Integer publishedVersion;
+    @Schema(description = "版本总数", example = "5")
+    private Integer versionCount;
 
     /**
      * 文章内容

@@ -1,7 +1,5 @@
 package top.harrylei.forum.api.model.vo.article.req;
 
-import java.util.List;
-
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -11,8 +9,12 @@ import top.harrylei.forum.api.model.enums.article.ArticleSourceEnum;
 import top.harrylei.forum.api.model.enums.article.ArticleTypeEnum;
 import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 
+import java.util.List;
+
 /**
  * 用户更新文章请求参数
+ *
+ * @author harry
  */
 @Data
 @Schema(description = "文章更新请求")
@@ -102,12 +104,4 @@ public class ArticleUpdateReq {
     @NotNull(message = "文章状态不能为空")
     @Schema(description = "文章状态，0-未发布，1-已发布", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
     private PublishStatusEnum status;
-
-
-    /**
-     * 版本号
-     */
-    @NotNull(message = "版本号不能为空")
-    @Schema(description = "版本号", example = "2", requiredMode = Schema.RequiredMode.REQUIRED)
-    private Integer version;
 }

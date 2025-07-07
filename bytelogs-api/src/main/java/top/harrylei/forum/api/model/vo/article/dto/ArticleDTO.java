@@ -1,7 +1,5 @@
 package top.harrylei.forum.api.model.vo.article.dto;
 
-import java.util.List;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import top.harrylei.forum.api.model.entity.BaseDTO;
@@ -10,8 +8,12 @@ import top.harrylei.forum.api.model.enums.article.ArticleSourceEnum;
 import top.harrylei.forum.api.model.enums.article.ArticleTypeEnum;
 import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 
+import java.util.List;
+
 /**
  * 文章详情传输对象
+ *
+ * @author harry
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -88,14 +90,9 @@ public class ArticleDTO extends BaseDTO {
     private PublishStatusEnum status;
 
     /**
-     * 当前最大版本号（用于生成新版本）
+     * 版本总数
      */
-    private Integer currentVersion;
-
-    /**
-     * 已发布版本号（0表示未发布）
-     */
-    private Integer publishedVersion;
+    private Integer versionCount;
 
     /**
      * 文章内容（详情专有）
