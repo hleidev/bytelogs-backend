@@ -1,9 +1,8 @@
 package top.harrylei.forum.service.article.repository.dao;
 
-import org.springframework.stereotype.Repository;
-
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-
+import org.springframework.stereotype.Repository;
+import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.service.article.repository.entity.ArticleDetailDO;
 import top.harrylei.forum.service.article.repository.mapper.ArticleDetailMapper;
 
@@ -15,23 +14,69 @@ import top.harrylei.forum.service.article.repository.mapper.ArticleDetailMapper;
 @Repository
 public class ArticleDetailDAO extends ServiceImpl<ArticleDetailMapper, ArticleDetailDO> {
 
-    public int updateArticleContent(Long articleId, String content, Integer version) {
-        return getBaseMapper().updateArticleContent(articleId, content, version);
-    }
-
-    public ArticleDetailDO getLatestContentAndVersionByArticleId(Long articleId) {
-        return getBaseMapper().getLatestContentAndVersionByArticleId(articleId);
-    }
-
     public void updateDeleted(Long articleId, Integer deleted) {
         getBaseMapper().updateDeleted(articleId, deleted);
     }
 
-    public ArticleDetailDO getByArticleIdAndVersion(Long articleId, Integer version) {
-        return getBaseMapper().getByArticleIdAndVersion(articleId, version);
+
+    public String getPublishedTitle(Long articleId) {
+        return getBaseMapper().getPublishedTitle(articleId);
     }
 
-    public int updateContentByVersion(Long articleId, String content, Integer version) {
-        return getBaseMapper().updateContentByVersion(articleId, content, version);
+    /**
+     * 获取最新版本（编辑时使用）
+     */
+    public ArticleDetailDO getLatestVersion(Long articleId) {
+        return lambdaQuery()
+                .eq(ArticleDetailDO::getArticleId, articleId)
+                .eq(ArticleDetailDO::getLatest, YesOrNoEnum.YES.getCode())
+                .eq(ArticleDetailDO::getDeleted, YesOrNoEnum.NO.getCode())
+                .one();
+    }
+
+    /**
+     * 获取发布版本（读者查看）
+     */
+    public ArticleDetailDO getPublishedVersion(Long articleId) {
+        return lambdaQuery()
+                .eq(ArticleDetailDO::getArticleId, articleId)
+                .eq(ArticleDetailDO::getPublished, YesOrNoEnum.YES.getCode())
+                .eq(ArticleDetailDO::getDeleted, YesOrNoEnum.NO.getCode())
+                .one();
+    }
+
+    /**
+     * 清除最新版本标记
+     */
+    public void clearLatestFlag(Long articleId) {
+        lambdaUpdate()
+                .eq(ArticleDetailDO::getArticleId, articleId)
+                .eq(ArticleDetailDO::getLatest, YesOrNoEnum.YES.getCode())
+                .eq(ArticleDetailDO::getDeleted, YesOrNoEnum.NO.getCode())
+                .set(ArticleDetailDO::getLatest, YesOrNoEnum.NO.getCode())
+                .update();
+    }
+
+    /**
+     * 清除发布版本标记
+     */
+    public void clearPublishedFlag(Long articleId) {
+        lambdaUpdate()
+                .eq(ArticleDetailDO::getArticleId, articleId)
+                .eq(ArticleDetailDO::getPublished, YesOrNoEnum.YES.getCode())
+                .eq(ArticleDetailDO::getDeleted, YesOrNoEnum.NO.getCode())
+                .set(ArticleDetailDO::getPublished, YesOrNoEnum.NO.getCode())
+                .update();
+    }
+
+    /**
+     * 获取版本历史列表
+     */
+    public java.util.List<ArticleDetailDO> getVersionHistory(Long articleId) {
+        return lambdaQuery()
+                .eq(ArticleDetailDO::getArticleId, articleId)
+                .eq(ArticleDetailDO::getDeleted, YesOrNoEnum.NO.getCode())
+                .orderByDesc(ArticleDetailDO::getVersion)
+                .list();
     }
 }

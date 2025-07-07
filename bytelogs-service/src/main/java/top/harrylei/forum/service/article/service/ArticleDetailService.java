@@ -1,14 +1,23 @@
 package top.harrylei.forum.service.article.service;
 
+import top.harrylei.forum.service.article.repository.entity.ArticleDetailDO;
+
+import java.util.List;
+
+/**
+ * 文章详细服务层
+ *
+ * @author harry
+ */
 public interface ArticleDetailService {
 
     /**
-     * 更新文章内容
+     * 保存文章详细信息
      *
-     * @param articleId 文章ID
-     * @param content   文章内容
+     * @param articleDetailDO 文章详细信息
+     * @return 文章详细ID
      */
-    void updateArticleContent(Long articleId, String content);
+    Long save(ArticleDetailDO articleDetailDO);
 
     /**
      * 删除文章内容
@@ -25,30 +34,48 @@ public interface ArticleDetailService {
     void restoreByArticleId(Long articleId);
 
     /**
-     * 保存文章内容
+     * 获取文章已发布版本的标题
      *
      * @param articleId 文章ID
-     * @param content   文章内容
-     * @param version   版本号
-     * @return 文章详细ID
+     * @return 文章标题，如果没有已发布版本则返回 null
      */
-    Long saveArticleContent(Long articleId, String content, Integer version);
+    String getPublishedTitle(Long articleId);
 
     /**
-     * 根据版本获取文章内容
+     * 获取最新版本（编辑时使用）
      *
      * @param articleId 文章ID
-     * @param version   版本号
-     * @return 文章内容
+     * @return 最新版本详情
      */
-    String getContentByVersion(Long articleId, Integer version);
+    ArticleDetailDO getLatestVersion(Long articleId);
 
     /**
-     * 更新指定版本的文章内容
+     * 获取发布版本（读者查看）
      *
      * @param articleId 文章ID
-     * @param content   文章内容
-     * @param version   版本号
+     * @return 发布版本详情
      */
-    void updateContentByVersion(Long articleId, String content, Integer version);
+    ArticleDetailDO getPublishedVersion(Long articleId);
+
+    /**
+     * 清除最新版本标记
+     *
+     * @param articleId 文章ID
+     */
+    void clearLatestFlag(Long articleId);
+
+    /**
+     * 清除发布版本标记
+     *
+     * @param articleId 文章ID
+     */
+    void clearPublishedFlag(Long articleId);
+
+    /**
+     * 获取版本历史列表
+     *
+     * @param articleId 文章ID
+     * @return 版本历史列表
+     */
+    List<ArticleDetailDO> getVersionHistory(Long articleId);
 }
