@@ -26,6 +26,7 @@ import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.core.util.NumUtil;
 import top.harrylei.forum.service.article.repository.entity.ArticleDO;
+import top.harrylei.forum.service.article.service.ArticleDetailService;
 import top.harrylei.forum.service.article.service.ArticleService;
 import top.harrylei.forum.service.comment.converted.CommentStructMapper;
 import top.harrylei.forum.service.comment.repository.dao.CommentDAO;
@@ -36,10 +37,7 @@ import top.harrylei.forum.service.user.service.cache.UserCacheService;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -57,6 +55,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentDAO commentDAO;
     private final CommentStructMapper commentStructMapper;
     private final ArticleService articleService;
+    private final ArticleDetailService articleDetailService;
     private final UserFootService userFootService;
     private final UserCacheService userCacheService;
 
@@ -162,7 +161,7 @@ public class CommentServiceImpl implements CommentService {
         ExceptionUtil.requireValid(comment, ErrorCodeEnum.COMMENT_NOT_EXISTS, "评论不存在 commentId=" + commentId);
 
         Long currentUserId = ReqInfoContext.getContext().getUserId();
-        
+
         Boolean success = userFootService.actionComment(currentUserId,
                                                         type,
                                                         comment.getUserId(),
@@ -443,10 +442,8 @@ public class CommentServiceImpl implements CommentService {
 
             // 填充文章信息
             try {
-                ArticleDO article = articleService.getArticleById(comment.getArticleId());
-                if (article != null) {
-                    commentMy.setArticleTitle(article.getTitle());
-                }
+                String articleTitle = articleDetailService.getPublishedTitle(comment.getArticleId());
+                commentMy.setArticleTitle(Optional.ofNullable(articleTitle).orElse("文章未发布或已删除"));
             } catch (Exception e) {
                 log.warn("获取文章信息失败, articleId={}", comment.getArticleId(), e);
                 commentMy.setArticleTitle("文章已删除");

@@ -27,6 +27,8 @@ import java.util.Objects;
 
 /**
  * 登录注册服务实现类
+ *
+ * @author harry
  */
 @Slf4j
 @Service
@@ -49,10 +51,6 @@ public class AuthServiceImpl implements AuthService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void register(String username, String password, UserRoleEnum userRole) {
-        // 参数校验
-        ExceptionUtil.requireNonEmpty(username, ErrorCodeEnum.PARAM_MISSING, "用户名");
-        ExceptionUtil.requireNonEmpty(password, ErrorCodeEnum.PARAM_MISSING, "密码");
-
         // 密码格式校验
         ExceptionUtil.errorIf(!PasswordUtil.isValid(password), ErrorCodeEnum.USER_PASSWORD_INVALID);
 
@@ -71,10 +69,15 @@ public class AuthServiceImpl implements AuthService {
         // 创建用户信息
         UserInfoDO newUserInfo = new UserInfoDO().setUserId(newUser.getId()).setUserName(username).setAvatar("");
 
-        if (UserRoleEnum.ADMIN.equals(userRole) && ReqInfoContext.getContext().isAdmin()) {
+        if (UserRoleEnum.ADMIN.equals(userRole)) {
+            // 创建管理员账号需要管理员权限
+            if (!ReqInfoContext.getContext().isAdmin()) {
+                ExceptionUtil.error(ErrorCodeEnum.FORBID_ERROR_MIXED, "当前用户没有管理员权限");
+            }
             newUserInfo.setUserRole(userRole.getCode());
         } else {
-            ExceptionUtil.error(ErrorCodeEnum.FORBID_ERROR_MIXED, "当前用户没有管理员权限");
+            // 创建普通用户
+            newUserInfo.setUserRole(UserRoleEnum.NORMAL.getCode());
         }
 
         userInfoDAO.save(newUserInfo);
@@ -105,21 +108,17 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public String login(String username, String password, UserRoleEnum userRole) {
-        // 参数校验
-        ExceptionUtil.requireNonEmpty(username, ErrorCodeEnum.PARAM_MISSING, "用户名");
-        ExceptionUtil.requireNonEmpty(password, ErrorCodeEnum.PARAM_MISSING, "密码");
-
         // 查找用户
         UserDO user = userDAO.getUserByUserName(username);
         ExceptionUtil.requireValid(user, ErrorCodeEnum.USER_NOT_EXISTS, username);
 
         // 校验账号是否启用
         ExceptionUtil.errorIf(!Objects.equals(user.getStatus(), UserStatusEnum.ENABLED.getCode()),
-            ErrorCodeEnum.USER_DISABLED);
+                              ErrorCodeEnum.USER_DISABLED);
 
         // 校验密码
         ExceptionUtil.errorIf(!BCryptUtil.matches(password, user.getPassword()),
-            ErrorCodeEnum.USER_USERNAME_OR_PASSWORD_ERROR);
+                              ErrorCodeEnum.USER_USERNAME_OR_PASSWORD_ERROR);
 
         // 获取用户ID和信息
         Long userId = user.getId();
@@ -128,7 +127,7 @@ public class AuthServiceImpl implements AuthService {
         // 校验角色权限
         if (userRole != null && ReqInfoContext.getContext().isAdmin()) {
             ExceptionUtil.errorIf(!Objects.equals(userInfoDTO.getRole(), userRole), ErrorCodeEnum.FORBID_ERROR_MIXED,
-                "当前用户无管理员权限");
+                                  "当前用户无管理员权限");
         }
 
         // 生成token
@@ -152,8 +151,6 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public void logout(Long userId) {
-        ExceptionUtil.requireValid(userId, ErrorCodeEnum.PARAM_MISSING, "用户ID");
-
         try {
             boolean result = redisUtil.delete(RedisKeyConstants.getUserTokenKey(userId));
             userCacheService.clearUserInfoCache(userId);

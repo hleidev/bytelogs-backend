@@ -66,7 +66,6 @@ public class ArticleController {
     @PutMapping
     public ResVO<ArticleVO> update(@Valid @RequestBody ArticleUpdateReq articleUpdateReq) {
         ArticleDTO articleDTO = articleStructMapper.toDTO(articleUpdateReq);
-        articleDTO.setUserId(ReqInfoContext.getContext().getUserId());
         ArticleVO article = articleService.updateArticle(articleDTO);
         return ResVO.ok(article);
     }
