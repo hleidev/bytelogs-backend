@@ -13,9 +13,6 @@ public interface ArticleMapper extends BaseMapper<ArticleDO> {
     @Update("update article set deleted = #{deleted} where id = #{articleId}")
     void updateDeleted(Long articleId, Integer deleted);
 
-    @Update("update article set status = #{status} where id = #{articleId} and deleted = 0")
-    Integer updateStatus(Long articleId, Integer status);
-
     @Update("update article set topping = #{value} where id = #{articleId} and deleted = 0")
     Integer updateTopping(Long articleId, Integer value);
 
@@ -25,20 +22,7 @@ public interface ArticleMapper extends BaseMapper<ArticleDO> {
     @Update("update article set official = #{value} where id = #{articleId} and deleted = 0")
     Integer updateOfficial(Long articleId, Integer value);
 
-    /**
-     * 联表查询完整文章VO（包含分类和标签对象）
-     *
-     * @param articleId 文章ID
-     * @return 完整文章VO
-     */
     ArticleVO getArticleVoById(Long articleId);
 
-    /**
-     * 联表分页查询文章
-     *
-     * @param page  分页参数
-     * @param query 查询条件
-     * @return 分页结果
-     */
     IPage<ArticleVO> pageArticleVO(@Param("query") ArticleQueryParam query, IPage<ArticleVO> page);
 }
