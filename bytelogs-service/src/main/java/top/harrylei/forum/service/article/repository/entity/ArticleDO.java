@@ -32,41 +32,6 @@ public class ArticleDO extends BaseDO {
     private Integer articleType;
 
     /**
-     * 文章标题
-     */
-    private String title;
-
-    /**
-     * 短标题
-     */
-    private String shortTitle;
-
-    /**
-     * 文章头图
-     */
-    private String picture;
-
-    /**
-     * 文章摘要
-     */
-    private String summary;
-
-    /**
-     * 类目ID
-     */
-    private Long categoryId;
-
-    /**
-     * 来源：1-转载，2-原创，3-翻译
-     */
-    private Integer source;
-
-    /**
-     * 原文链接
-     */
-    private String sourceUrl;
-
-    /**
      * 官方状态：0-非官方，1-官方
      */
     private Integer official;
@@ -82,19 +47,9 @@ public class ArticleDO extends BaseDO {
     private Integer cream;
 
     /**
-     * 状态：0-未发布，1-已发布，2-待审核
+     * 版本总数
      */
-    private Integer status;
-
-    /**
-     * 当前最大版本号（用于生成新版本）
-     */
-    private Integer currentVersion;
-
-    /**
-     * 已发布版本号（0表示未发布）
-     */
-    private Integer publishedVersion;
+    private Integer versionCount;
 
     /**
      * 是否删除：0-未删除，1-已删除
