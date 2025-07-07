@@ -20,6 +20,14 @@ public interface ArticleDetailService {
     Long save(ArticleDetailDO articleDetailDO);
 
     /**
+     * 更新文章详细信息
+     *
+     * @param articleDetailDO 文章详细信息
+     * @return 是否更新成功
+     */
+    boolean updateById(ArticleDetailDO articleDetailDO);
+
+    /**
      * 删除文章内容
      *
      * @param articleId 文章ID
