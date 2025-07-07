@@ -126,49 +126,55 @@ CREATE TABLE `tag`
 -- 文章表
 CREATE TABLE `article`
 (
-    `id`                bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-    `user_id`           bigint unsigned NOT NULL DEFAULT 0 COMMENT '用户ID',
-    `article_type`      tinyint         NOT NULL DEFAULT 1 COMMENT '文章类型：1-博文，2-问答',
-    `title`             varchar(200)    NOT NULL DEFAULT '' COMMENT '文章标题',
-    `short_title`       varchar(200)    NOT NULL DEFAULT '' COMMENT '短标题',
-    `picture`           varchar(512)    NOT NULL DEFAULT '' COMMENT '文章头图',
-    `summary`           varchar(512)    NOT NULL DEFAULT '' COMMENT '文章摘要',
-    `category_id`       bigint unsigned NOT NULL DEFAULT 0 COMMENT '类目ID',
-    `source`            tinyint         NOT NULL DEFAULT 1 COMMENT '来源：1-转载，2-原创，3-翻译',
-    `source_url`        varchar(512)    NOT NULL DEFAULT '' COMMENT '原文链接',
-    `official`          tinyint         NOT NULL DEFAULT 0 COMMENT '官方状态：0-非官方，1-官方',
-    `topping`           tinyint         NOT NULL DEFAULT 0 COMMENT '置顶状态：0-不置顶，1-置顶',
-    `cream`             tinyint         NOT NULL DEFAULT 0 COMMENT '加精状态：0-不加精，1-加精',
-    `status`            tinyint         NOT NULL DEFAULT 0 COMMENT '状态：0-草稿，1-已发布，2-待审核',
-    `current_version`   int unsigned    NOT NULL DEFAULT 1 COMMENT '当前最大版本号（用于生成新版本）',
-    `published_version` int unsigned    NOT NULL DEFAULT 0 COMMENT '已发布版本号（0表示未发布）',
-    `deleted`           tinyint         NOT NULL DEFAULT 0 COMMENT '是否删除：0-未删除，1-已删除',
-    `create_time`       timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `update_time`       timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
+    `id`            bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    `user_id`       bigint unsigned NOT NULL DEFAULT 0 COMMENT '用户ID',
+    `article_type`  tinyint         NOT NULL DEFAULT 1 COMMENT '文章类型：1-博文，2-问答',
+    `official`      tinyint         NOT NULL DEFAULT 0 COMMENT '官方状态：0-非官方，1-官方',
+    `topping`       tinyint         NOT NULL DEFAULT 0 COMMENT '置顶状态：0-不置顶，1-置顶',
+    `cream`         tinyint         NOT NULL DEFAULT 0 COMMENT '加精状态：0-不加精，1-加精',
+    `version_count` int unsigned    NOT NULL DEFAULT 0 COMMENT '版本总数',
+    `deleted`       tinyint         NOT NULL DEFAULT 0 COMMENT '是否删除：0-未删除，1-已删除',
+    `create_time`   timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time`   timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
     PRIMARY KEY (`id`),
-    KEY `idx_category_id` (`category_id`) COMMENT '类目ID索引'
+    KEY `idx_user_id` (`user_id`) COMMENT '用户ID索引',
+    KEY `idx_create_time` (`create_time`) COMMENT '创建时间索引'
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci
-    COMMENT = '文章表';
+    COMMENT = '文章基础表';
 
--- 文章详情表
+-- 文章详细表
 CREATE TABLE `article_detail`
 (
-    `id`          bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-    `article_id`  bigint unsigned NOT NULL DEFAULT 0 COMMENT '文章ID',
-    `version`     int unsigned    NOT NULL DEFAULT 1 COMMENT '版本号',
-    `content`     longtext COMMENT '文章内容',
-    `edit_token`  varchar(36)     NOT NULL DEFAULT '' COMMENT '编辑操作令牌（防止并发编辑）',
-    `deleted`     tinyint         NOT NULL DEFAULT 0 COMMENT '是否删除：0-未删除，1-已删除',
-    `create_time` timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `update_time` timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
+    `id`           bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    `article_id`   bigint unsigned NOT NULL DEFAULT 0 COMMENT '文章ID',
+    `version`      int unsigned    NOT NULL DEFAULT 1 COMMENT '版本号',
+    `title`        varchar(200)    NOT NULL DEFAULT '' COMMENT '文章标题',
+    `short_title`  varchar(200)    NOT NULL DEFAULT '' COMMENT '短标题',
+    `picture`      varchar(512)    NOT NULL DEFAULT '' COMMENT '文章头图',
+    `summary`      varchar(512)    NOT NULL DEFAULT '' COMMENT '文章摘要',
+    `category_id`  bigint unsigned NOT NULL DEFAULT 0 COMMENT '类目ID',
+    `source`       tinyint         NOT NULL DEFAULT 1 COMMENT '来源：1-转载，2-原创，3-翻译',
+    `source_url`   varchar(512)    NOT NULL DEFAULT '' COMMENT '原文链接',
+    `content`      longtext        NOT NULL COMMENT '文章内容',
+    `status`       tinyint         NOT NULL DEFAULT 0 COMMENT '状态：0-草稿，1-已发布，2-待审核，3-审核拒绝',
+    `latest`       tinyint         NOT NULL DEFAULT 0 COMMENT '最新版本标记：0-否，1-是',
+    `published`    tinyint         NOT NULL DEFAULT 0 COMMENT '发布版本标记：0-否，1-是',
+    `publish_time` timestamp       NULL DEFAULT NULL COMMENT '发布时间',
+    `deleted`      tinyint         NOT NULL DEFAULT 0 COMMENT '是否删除：0-未删除，1-已删除',
+    `create_time`  timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time`  timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_article_version` (`article_id`, `version`) COMMENT '文章版本唯一约束'
+    UNIQUE KEY `uk_article_version` (`article_id`, `version`) COMMENT '文章版本唯一索引',
+    KEY `idx_article_latest` (`article_id`, `latest`) COMMENT '文章最新版本索引',
+    KEY `idx_article_published` (`article_id`, `published`) COMMENT '文章发布版本索引',
+    KEY `idx_status` (`status`) COMMENT '状态索引',
+    KEY `idx_category` (`category_id`) COMMENT '类目索引'
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci
-    COMMENT = '文章详情表';
+    COMMENT = '文章详细表';
 
 -- 文章标签映射表
 CREATE TABLE `article_tag`
