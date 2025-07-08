@@ -66,7 +66,7 @@ public class ArticleServiceImpl implements ArticleService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Long saveArticle(ArticleDTO articleDTO) {
+    public Long     saveArticle(ArticleDTO articleDTO) {
         // 1. 处理审核逻辑
         PublishStatusEnum finalStatus = applyReviewPolicy(articleDTO.getStatus());
 
