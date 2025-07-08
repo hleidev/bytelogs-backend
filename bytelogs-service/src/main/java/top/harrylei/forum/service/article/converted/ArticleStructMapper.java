@@ -9,6 +9,7 @@ import top.harrylei.forum.api.model.vo.article.dto.ArticleDTO;
 import top.harrylei.forum.api.model.vo.article.req.ArticlePostReq;
 import top.harrylei.forum.api.model.vo.article.req.ArticleUpdateReq;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
+import top.harrylei.forum.api.model.vo.article.vo.ArticleVersionVO;
 import top.harrylei.forum.core.common.converter.EnumConverter;
 import top.harrylei.forum.service.article.repository.entity.ArticleDO;
 import top.harrylei.forum.service.article.repository.entity.ArticleDetailDO;
@@ -125,4 +126,9 @@ public interface ArticleStructMapper {
     @Mapping(target = "tags", ignore = true)
     @Mapping(target = "category", ignore = true)
     ArticleVO buildArticleVO(ArticleDO article, ArticleDetailDO detail);
+
+    @Mapping(target = "status", source = "status", qualifiedByName = "CodeToPublishStatusEnum")
+    @Mapping(target = "latest", source = "latest", qualifiedByName = "CodeToYesOrNoEnum")
+    @Mapping(target = "published", source = "published", qualifiedByName = "CodeToYesOrNoEnum")
+    ArticleVersionVO toVersionVO(ArticleDetailDO detail);
 }

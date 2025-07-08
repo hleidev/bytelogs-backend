@@ -17,11 +17,15 @@ import top.harrylei.forum.api.model.vo.article.req.ArticleUpdateReq;
 import top.harrylei.forum.api.model.vo.article.req.ArticleActionReq;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleDetailVO;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
+import top.harrylei.forum.api.model.vo.article.vo.ArticleVersionVO;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.security.permission.RequiresLogin;
 import top.harrylei.forum.service.article.converted.ArticleStructMapper;
 import top.harrylei.forum.service.article.service.ArticleService;
+import top.harrylei.forum.service.article.service.ArticleVersionService;
+
+import java.util.List;
 
 /**
  * 文章相关模块
@@ -38,6 +42,7 @@ public class ArticleController {
 
     private final ArticleService articleService;
     private final ArticleStructMapper articleStructMapper;
+    private final ArticleVersionService articleVersionService;
 
     /**
      * 用户新建文章
@@ -163,5 +168,19 @@ public class ArticleController {
     public ResVO<Void> action(@Valid @RequestBody ArticleActionReq req) {
         articleService.actionArticle(req.getArticleId(), req.getType());
         return ResVO.ok();
+    }
+
+    /**
+     * 获取文章版本历史
+     *
+     * @param articleId 文章ID
+     * @return 版本历史列表
+     */
+    @Operation(summary = "版本历史", description = "获取文章的版本历史记录")
+    @RequiresLogin
+    @GetMapping("/{articleId}/versions")
+    public ResVO<List<ArticleVersionVO>> getVersionHistory(@NotNull(message = "文章ID不能为空") @PathVariable Long articleId) {
+        List<ArticleVersionVO> versions = articleVersionService.getVersionHistory(articleId);
+        return ResVO.ok(versions);
     }
 }
