@@ -4,13 +4,9 @@ import lombok.Getter;
 
 /**
  * 官方状态枚举
- *
- * @author louzai
- * @since 2022/7/19
  */
 @Getter
 public enum OfficalStatEnum {
-
     NOT_OFFICAL(0, "非官方"),
     OFFICAL(1, "官方");
 

@@ -4,13 +4,9 @@ import lombok.Getter;
 
 /**
  * 关注用户枚举
- *
- * @author louzai
- * @since 2022/7/19
  */
 @Getter
 public enum FollowSelectEnum {
-
     FOLLOW("follow", "关注列表"),
     FANS("fans", "粉丝列表");
 

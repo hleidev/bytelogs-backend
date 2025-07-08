@@ -4,13 +4,9 @@ import lombok.Getter;
 
 /**
  * 关注状态枚举
- *
- * @author louzai
- * @since 2022/7/19
  */
 @Getter
 public enum FollowStateEnum {
-
     EMPTY(0, ""),
     FOLLOW(1, "关注"),
     CANCEL_FOLLOW(2, "取消关注");

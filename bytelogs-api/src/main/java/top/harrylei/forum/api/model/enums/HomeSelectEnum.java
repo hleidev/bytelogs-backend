@@ -4,13 +4,9 @@ import lombok.Getter;
 
 /**
  * 用户页面选择枚举
- *
- * @author louzai
- * @since 2022/7/19
  */
 @Getter
 public enum HomeSelectEnum {
-
     ARTICLE("article", "文章"),
     READ("read", "浏览记录"),
     FOLLOW("follow", "关注"),

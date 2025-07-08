@@ -6,10 +6,6 @@ import org.apache.commons.lang3.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-/**
- * @author yihui
- * @date 2022/7/6
- */
 public class CrossUtil {
     /**
      * 支持跨域

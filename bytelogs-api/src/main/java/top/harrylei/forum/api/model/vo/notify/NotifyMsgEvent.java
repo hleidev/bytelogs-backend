@@ -7,10 +7,6 @@ import lombok.Setter;
 import lombok.ToString;
 import org.springframework.context.ApplicationEvent;
 
-/**
- * @author YiHui
- * @date 2022/9/3
- */
 @Getter
 @Setter
 @ToString

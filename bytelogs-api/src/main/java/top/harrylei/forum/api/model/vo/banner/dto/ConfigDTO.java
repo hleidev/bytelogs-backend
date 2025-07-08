@@ -7,9 +7,6 @@ import lombok.Data;
 
 /**
  * Banner
- *
- * @author louzai
- * @date 2022-09-17
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
