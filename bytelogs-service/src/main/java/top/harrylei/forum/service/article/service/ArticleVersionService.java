@@ -2,6 +2,7 @@ package top.harrylei.forum.service.article.service;
 
 import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleVersionVO;
+import top.harrylei.forum.api.model.vo.article.vo.VersionDiffVO;
 
 import java.util.List;
 
@@ -28,4 +29,14 @@ public interface ArticleVersionService {
      * @return 版本详情
      */
     ArticleVO getVersionDetail(Long articleId, Integer version);
+
+    /**
+     * 对比两个版本
+     *
+     * @param articleId 文章ID
+     * @param version1  版本1
+     * @param version2  版本2
+     * @return 版本对比结果
+     */
+    VersionDiffVO compareVersions(Long articleId, Integer version1, Integer version2);
 }

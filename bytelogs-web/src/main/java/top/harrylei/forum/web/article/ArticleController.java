@@ -11,13 +11,11 @@ import org.springframework.web.bind.annotation.*;
 import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.article.dto.ArticleDTO;
-import top.harrylei.forum.api.model.vo.article.req.ArticlePostReq;
-import top.harrylei.forum.api.model.vo.article.req.ArticleQueryParam;
-import top.harrylei.forum.api.model.vo.article.req.ArticleUpdateReq;
-import top.harrylei.forum.api.model.vo.article.req.ArticleActionReq;
+import top.harrylei.forum.api.model.vo.article.req.*;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleDetailVO;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleVersionVO;
+import top.harrylei.forum.api.model.vo.article.vo.VersionDiffVO;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.security.permission.RequiresLogin;
@@ -199,5 +197,23 @@ public class ArticleController {
             @NotNull(message = "版本号不能为空") @PathVariable Integer version) {
         ArticleVO detail = articleVersionService.getVersionDetail(articleId, version);
         return ResVO.ok(detail);
+    }
+
+    /**
+     * 对比两个版本
+     *
+     * @param articleId  文章ID
+     * @param compareReq 版本对比请求参数
+     * @return 版本对比结果
+     */
+    @Operation(summary = "版本对比", description = "对比文章的两个版本，显示差异内容（仅作者和管理员可用）")
+    @RequiresLogin
+    @GetMapping("/{articleId}/versions/compare")
+    public ResVO<VersionDiffVO> compareVersions(
+            @NotNull(message = "文章ID不能为空") @PathVariable Long articleId, @Valid VersionCompareReq compareReq) {
+        VersionDiffVO diff = articleVersionService.compareVersions(articleId,
+                                                                   compareReq.getVersion1(),
+                                                                   compareReq.getVersion2());
+        return ResVO.ok(diff);
     }
 }
