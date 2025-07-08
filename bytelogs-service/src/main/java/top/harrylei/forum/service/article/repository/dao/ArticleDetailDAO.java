@@ -79,4 +79,19 @@ public class ArticleDetailDAO extends ServiceImpl<ArticleDetailMapper, ArticleDe
                 .orderByDesc(ArticleDetailDO::getVersion)
                 .list();
     }
+
+    /**
+     * 根据文章ID和版本号获取特定版本
+     *
+     * @param articleId 文章ID
+     * @param version   版本号
+     * @return 文章版本详情
+     */
+    public ArticleDetailDO getByArticleIdAndVersion(Long articleId, Integer version) {
+        return lambdaQuery()
+                .eq(ArticleDetailDO::getArticleId, articleId)
+                .eq(ArticleDetailDO::getVersion, version)
+                .eq(ArticleDetailDO::getDeleted, YesOrNoEnum.NO.getCode())
+                .one();
+    }
 }

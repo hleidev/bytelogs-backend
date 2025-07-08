@@ -85,6 +85,11 @@ public class ArticleDetailServiceImpl implements ArticleDetailService {
     }
 
     @Override
+    public ArticleDetailDO getByArticleIdAndVersion(Long articleId, Integer version) {
+        return articleDetailDAO.getByArticleIdAndVersion(articleId, version);
+    }
+
+    @Override
     public boolean updateById(ArticleDetailDO articleDetailDO) {
         return articleDetailDAO.updateById(articleDetailDO);
     }

@@ -86,4 +86,13 @@ public interface ArticleDetailService {
      * @return 版本历史列表
      */
     List<ArticleDetailDO> getVersionHistory(Long articleId);
+
+    /**
+     * 根据文章ID和版本号获取特定版本
+     *
+     * @param articleId 文章ID
+     * @param version   版本号
+     * @return 文章版本详情
+     */
+    ArticleDetailDO getByArticleIdAndVersion(Long articleId, Integer version);
 }

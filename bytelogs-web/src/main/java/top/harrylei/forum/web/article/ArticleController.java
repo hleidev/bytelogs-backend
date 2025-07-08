@@ -183,4 +183,21 @@ public class ArticleController {
         List<ArticleVersionVO> versions = articleVersionService.getVersionHistory(articleId);
         return ResVO.ok(versions);
     }
+
+    /**
+     * 获取特定版本详情
+     *
+     * @param articleId 文章ID
+     * @param version   版本号
+     * @return 版本详情
+     */
+    @Operation(summary = "版本详情", description = "获取文章指定版本的完整内容")
+    @RequiresLogin
+    @GetMapping("/{articleId}/versions/{version}")
+    public ResVO<ArticleVO> getVersionDetail(
+            @NotNull(message = "文章ID不能为空") @PathVariable Long articleId,
+            @NotNull(message = "版本号不能为空") @PathVariable Integer version) {
+        ArticleVO detail = articleVersionService.getVersionDetail(articleId, version);
+        return ResVO.ok(detail);
+    }
 }
