@@ -102,4 +102,13 @@ public interface ArticleService {
      * @param articleId 文章ID
      */
     void recordRead(Long articleId);
+
+    /**
+     * 回滚到指定版本
+     *
+     * @param articleId 文章ID
+     * @param version   目标版本号
+     * @return 回滚后的文章VO
+     */
+    ArticleVO rollbackToVersion(Long articleId, Integer version);
 }

@@ -66,7 +66,7 @@ public class ArticleServiceImpl implements ArticleService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Long     saveArticle(ArticleDTO articleDTO) {
+    public Long saveArticle(ArticleDTO articleDTO) {
         // 1. 处理审核逻辑
         PublishStatusEnum finalStatus = applyReviewPolicy(articleDTO.getStatus());
 
@@ -718,6 +718,86 @@ public class ArticleServiceImpl implements ArticleService {
             ExceptionUtil.error(ErrorCodeEnum.ARTICLE_NOT_EXISTS, "文章未发布");
         }
         return published;
+    }
+
+    /**
+     * 回滚到指定版本
+     *
+     * @param articleId 文章ID
+     * @param version   目标版本号
+     * @return 回滚后的文章VO
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ArticleVO rollbackToVersion(Long articleId, Integer version) {
+        // 1. 权限校验并获取文章
+        ArticleDO article = getArticleWithPermissionCheck(articleId);
+
+        // 2. 版本范围验证
+        ExceptionUtil.errorIf(version > article.getVersionCount(),
+                              ErrorCodeEnum.PARAM_VALIDATE_FAILED,
+                              "目标版本不存在: version=" + version);
+
+        // 3. 检查是否回滚到当前版本
+        ArticleDetailDO currentLatest = articleDetailService.getLatestVersion(articleId);
+        ExceptionUtil.requireValid(currentLatest, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "文章当前版本不存在");
+        ExceptionUtil.errorIf(Objects.equals(currentLatest.getVersion(), version),
+                              ErrorCodeEnum.PARAM_VALIDATE_FAILED,
+                              "不能回滚到当前版本");
+
+        // 4. 获取目标版本
+        ArticleDetailDO targetDetail = articleDetailService.getByArticleIdAndVersion(articleId, version);
+        ExceptionUtil.requireValid(targetDetail,
+                                   ErrorCodeEnum.ARTICLE_NOT_EXISTS,
+                                   "目标版本不存在: version=" + version);
+
+        // 5. 创建回滚版本
+        ArticleDetailDO rollbackDetail = createRollbackVersion(article, targetDetail);
+
+        // 6. 更新版本计数
+        article.setVersionCount(article.getVersionCount() + 1);
+        articleDAO.updateById(article);
+
+        // 7. 重新获取更新后的文章信息并返回
+        article = articleDAO.getById(articleId);
+        ArticleVO result = articleStructMapper.buildArticleVO(article, rollbackDetail);
+
+        log.info("文章版本回滚成功 articleId={} targetVersion={} newVersion={} operatorId={}",
+                 articleId,
+                 version,
+                 rollbackDetail.getVersion(),
+                 ReqInfoContext.getContext().getUserId());
+
+        return result;
+    }
+
+    /**
+     * 创建回滚版本
+     *
+     * @param article      文章DO对象
+     * @param sourceDetail 源版本详情
+     * @return 新创建的回滚版本
+     */
+    private ArticleDetailDO createRollbackVersion(ArticleDO article, ArticleDetailDO sourceDetail) {
+        // 复制内容字段，排除版本元数据
+        ArticleDetailDO rollbackDetail = articleStructMapper.copyForRollback(sourceDetail);
+
+        // 设置新版本的元数据
+        rollbackDetail.setVersion(article.getVersionCount() + 1);
+        rollbackDetail.setLatest(YesOrNoEnum.YES.getCode());
+        rollbackDetail.setPublished(YesOrNoEnum.NO.getCode());
+        rollbackDetail.setStatus(PublishStatusEnum.DRAFT.getCode());
+        rollbackDetail.setPublishTime(null);
+
+        // 先保存新版本，再清除旧的最新标记
+        articleDetailService.save(rollbackDetail);
+        articleDetailService.clearLatestFlag(article.getId());
+
+        // 确保新版本的latest标记正确设置
+        rollbackDetail.setLatest(YesOrNoEnum.YES.getCode());
+        articleDetailService.updateById(rollbackDetail);
+
+        return rollbackDetail;
     }
 
 }

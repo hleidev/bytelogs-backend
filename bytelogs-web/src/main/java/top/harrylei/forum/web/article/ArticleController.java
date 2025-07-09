@@ -206,7 +206,7 @@ public class ArticleController {
      * @param compareReq 版本对比请求参数
      * @return 版本对比结果
      */
-    @Operation(summary = "版本对比", description = "对比文章的两个版本，显示差异内容（仅作者和管理员可用）")
+    @Operation(summary = "版本对比", description = "对比文章的两个版本，显示差异内容")
     @RequiresLogin
     @GetMapping("/{articleId}/versions/compare")
     public ResVO<VersionDiffVO> compareVersions(
@@ -215,5 +215,22 @@ public class ArticleController {
                                                                    compareReq.getVersion1(),
                                                                    compareReq.getVersion2());
         return ResVO.ok(diff);
+    }
+
+    /**
+     * 回滚到指定版本
+     *
+     * @param articleId 文章ID
+     * @param version   目标版本号
+     * @return 回滚后的文章详情
+     */
+    @Operation(summary = "版本回滚", description = "将文章回滚到指定历史版本作为新的草稿")
+    @RequiresLogin
+    @PostMapping("/{articleId}/versions/{version}/rollback")
+    public ResVO<ArticleVO> rollbackVersion(
+            @NotNull(message = "文章ID不能为空") @PathVariable Long articleId,
+            @NotNull(message = "版本号不能为空") @PathVariable Integer version) {
+        ArticleVO result = articleService.rollbackToVersion(articleId, version);
+        return ResVO.ok(result);
     }
 }
