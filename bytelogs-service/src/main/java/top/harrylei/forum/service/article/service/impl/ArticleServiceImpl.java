@@ -216,6 +216,30 @@ public class ArticleServiceImpl implements ArticleService {
 
 
     /**
+     * 发布文章
+     *
+     * @param articleId 文章ID
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void publishArticle(Long articleId) {
+        updateArticleStatus(articleId, PublishStatusEnum.PUBLISHED);
+        log.info("文章发布成功 articleId={}", articleId);
+    }
+
+    /**
+     * 撤销发布
+     *
+     * @param articleId 文章ID
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void unpublishArticle(Long articleId) {
+        updateArticleStatus(articleId, PublishStatusEnum.DRAFT);
+        log.info("文章撤销发布成功 articleId={}", articleId);
+    }
+
+    /**
      * 更新文章状态
      *
      * @param articleId 文章ID
@@ -265,11 +289,6 @@ public class ArticleServiceImpl implements ArticleService {
         // 更新最新版本
         boolean updated = articleDetailService.updateById(latestDetail);
         ExceptionUtil.errorIf(!updated, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "更新文章状态失败");
-
-        log.info("文章状态更新成功 articleId={} -> {} operatorId={}",
-                 articleId,
-                 finalStatus,
-                 ReqInfoContext.getContext().getUserId());
     }
 
     /**

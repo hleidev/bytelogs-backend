@@ -57,9 +57,24 @@ public interface ArticleService {
     ArticleDetailVO getArticleDetail(Long articleId);
 
     /**
-     * 更新状态
+     * 发布文章
      *
-     * @param status 修改状态
+     * @param articleId 文章ID
+     */
+    void publishArticle(Long articleId);
+
+    /**
+     * 撤销发布
+     *
+     * @param articleId 文章ID
+     */
+    void unpublishArticle(Long articleId);
+
+    /**
+     * 更新文章状态
+     *
+     * @param articleId 文章ID
+     * @param status    目标状态
      */
     void updateArticleStatus(Long articleId, PublishStatusEnum status);
 

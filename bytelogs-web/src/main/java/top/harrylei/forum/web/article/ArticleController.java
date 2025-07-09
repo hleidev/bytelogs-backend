@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.article.dto.ArticleDTO;
 import top.harrylei.forum.api.model.vo.article.req.*;
@@ -121,19 +120,33 @@ public class ArticleController {
     }
 
     /**
-     * 修改状态
+     * 发布文章
      *
-     * @param status 修改状态
+     * @param articleId 文章ID
      * @return 操作结果
      */
     @RequiresLogin
-    @Operation(summary = "修改状态", description = "用户修改文章状态")
-    @PutMapping("/{articleId}/status")
-    public ResVO<Void> updateStatus(@NotNull(message = "文章ID不能为空") @PathVariable Long articleId,
-                                    @NotNull(message = "文章状态不能为空") @RequestBody PublishStatusEnum status) {
-        articleService.updateArticleStatus(articleId, status);
+    @Operation(summary = "发布文章", description = "用户发布文章")
+    @PostMapping("/{articleId}/publish")
+    public ResVO<Void> publish(@NotNull(message = "文章ID不能为空") @PathVariable Long articleId) {
+        articleService.publishArticle(articleId);
         return ResVO.ok();
     }
+
+    /**
+     * 撤销发布
+     *
+     * @param articleId 文章ID
+     * @return 操作结果
+     */
+    @RequiresLogin
+    @Operation(summary = "撤销发布", description = "用户撤销文章发布")
+    @PostMapping("/{articleId}/unpublish")
+    public ResVO<Void> unpublish(@NotNull(message = "文章ID不能为空") @PathVariable Long articleId) {
+        articleService.unpublishArticle(articleId);
+        return ResVO.ok();
+    }
+
 
     /**
      * 文章分页查询
