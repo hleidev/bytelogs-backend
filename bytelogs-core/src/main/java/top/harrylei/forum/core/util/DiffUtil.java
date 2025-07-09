@@ -101,19 +101,19 @@ public class DiffUtil {
         }
 
         // 回溯构建差异结果
-        List<DiffLine> result = new ArrayList<>();
+        LinkedList<DiffLine> result = new LinkedList<>();
         int i = m, j = n;
 
         while (i > 0 || j > 0) {
             if (i > 0 && j > 0 && lines1[i - 1].equals(lines2[j - 1])) {
-                result.add(0, new DiffLine(DiffType.EQUAL, lines1[i - 1]));
+                result.addFirst(new DiffLine(DiffType.EQUAL, lines1[i - 1]));
                 i--;
                 j--;
             } else if (j > 0 && (i == 0 || dp[i][j - 1] >= dp[i - 1][j])) {
-                result.add(0, new DiffLine(DiffType.INSERT, lines2[j - 1]));
+                result.addFirst(new DiffLine(DiffType.INSERT, lines2[j - 1]));
                 j--;
             } else {
-                result.add(0, new DiffLine(DiffType.DELETE, lines1[i - 1]));
+                result.addFirst(new DiffLine(DiffType.DELETE, lines1[i - 1]));
                 i--;
             }
         }
