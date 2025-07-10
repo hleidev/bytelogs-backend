@@ -32,10 +32,6 @@ public class UserFootServiceImpl implements UserFootService {
     private final UserFootStructMapper userFootStructMapper;
     private final RedisUtil redisUtil;
 
-    /**
-     * 分布式锁过期时间（秒）
-     */
-    private static final long LOCK_EXPIRE_TIME = 3;
 
     /**
      * 防重复提交锁过期时间（秒）
@@ -154,7 +150,7 @@ public class UserFootServiceImpl implements UserFootService {
     }
 
     /**
-     * 用户足迹操作的通用方法（添加防重复提交和并发安全控制）
+     * 用户足迹操作的通用方法（添加防重复提交控制）
      *
      * @param userId          用户ID
      * @param type            操作类型
@@ -190,11 +186,7 @@ public class UserFootServiceImpl implements UserFootService {
             }
         }
 
-        // 使用分布式锁保证并发安全
-        String lockKey = buildLockKey(userId, contentId, contentType);
-        UserFootDO userFoot = redisUtil.executeWithLock(lockKey, LOCK_EXPIRE_TIME, () ->
-                saveOrUpdateUserFoot(userId, type, contentAuthorId, contentId, contentType)
-        );
+        UserFootDO userFoot = saveOrUpdateUserFoot(userId, type, contentAuthorId, contentId, contentType);
 
         if (userFoot == null) {
             log.warn("保存或更新{}用户足迹失败: userId={} operateTypeEnum={} contentAuthorId={} contentId={}",
@@ -294,15 +286,4 @@ public class UserFootServiceImpl implements UserFootService {
         return String.format("%d:%s:%d:%s", userId, type.name(), contentId, contentType.name());
     }
 
-    /**
-     * 构建分布式锁的key
-     *
-     * @param userId      用户ID
-     * @param contentId   内容ID
-     * @param contentType 内容类型
-     * @return 锁的key
-     */
-    private String buildLockKey(Long userId, Long contentId, ContentTypeEnum contentType) {
-        return String.format("%d:%d:%s", userId, contentId, contentType.name());
-    }
 }
