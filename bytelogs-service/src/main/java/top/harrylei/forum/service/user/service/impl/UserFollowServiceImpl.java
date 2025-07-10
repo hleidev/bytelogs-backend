@@ -15,6 +15,7 @@ import top.harrylei.forum.api.model.vo.user.req.UserFollowQueryParam;
 import top.harrylei.forum.api.model.vo.user.vo.UserFollowVO;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
+import top.harrylei.forum.core.util.RedisUtil;
 import top.harrylei.forum.service.user.repository.dao.UserDAO;
 import top.harrylei.forum.service.user.repository.dao.UserFollowDAO;
 import top.harrylei.forum.service.user.repository.entity.UserDO;
@@ -35,6 +36,12 @@ public class UserFollowServiceImpl implements UserFollowService {
 
     private final UserFollowDAO userFollowDAO;
     private final UserDAO userDAO;
+    private final RedisUtil redisUtil;
+
+    /**
+     * 防重复提交锁过期时间（秒）
+     */
+    private static final long DUPLICATE_PREVENT_TIME = 2;
 
     /**
      * 关注用户
@@ -55,6 +62,13 @@ public class UserFollowServiceImpl implements UserFollowService {
         // 不能关注自己
         if (Objects.equals(currentUserId, followUserId)) {
             ExceptionUtil.error(ErrorCodeEnum.PARAM_VALIDATE_FAILED, "不能关注自己");
+        }
+
+        // 防重复提交检查
+        String duplicateKey = buildFollowDuplicateKey(currentUserId, followUserId, "FOLLOW");
+        if (!redisUtil.tryPreventDuplicate(duplicateKey, DUPLICATE_PREVENT_TIME)) {
+            log.warn("检测到重复提交: userId={} followUserId={} operation=FOLLOW", currentUserId, followUserId);
+            return;
         }
 
         // 查询是否已有关注关系
@@ -98,9 +112,17 @@ public class UserFollowServiceImpl implements UserFollowService {
 
         // 检查是否已关注
         UserFollowDO relation = userFollowDAO.getFollowRelation(currentUserId, followUserId);
-        ExceptionUtil.errorIf(!Objects.equals(relation.getFollowState(), UserFollowStatusEnum.FOLLOWED.getCode()),
+        ExceptionUtil.errorIf(relation == null || !Objects.equals(relation.getFollowState(),
+                                                                  UserFollowStatusEnum.FOLLOWED.getCode()),
                               ErrorCodeEnum.PARAM_VALIDATE_FAILED,
                               "未关注该用户，无法取消关注");
+
+        // 防重复提交检查
+        String duplicateKey = buildFollowDuplicateKey(currentUserId, followUserId, "UNFOLLOW");
+        if (!redisUtil.tryPreventDuplicate(duplicateKey, DUPLICATE_PREVENT_TIME)) {
+            log.warn("检测到重复提交: userId={} followUserId={} operation=UNFOLLOW", currentUserId, followUserId);
+            return;
+        }
 
         // 更新关注状态为未关注
         boolean updated = userFollowDAO.updateFollowStatus(currentUserId,
@@ -167,5 +189,17 @@ public class UserFollowServiceImpl implements UserFollowService {
         // 检查被关注者是否存在
         UserDO followUser = userDAO.getUserById(followUserId);
         ExceptionUtil.requireValid(followUser, ErrorCodeEnum.USER_NOT_EXISTS, "被关注者不存在");
+    }
+
+    /**
+     * 构建关注操作的防重复提交Key
+     *
+     * @param userId       用户ID
+     * @param followUserId 被关注用户ID
+     * @param operation    操作类型（FOLLOW/UNFOLLOW）
+     * @return 防重复提交Key
+     */
+    private String buildFollowDuplicateKey(Long userId, Long followUserId, String operation) {
+        return String.format("%d:%s:%d", userId, operation, followUserId);
     }
 }
