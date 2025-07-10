@@ -21,8 +21,7 @@ import java.util.stream.Collectors;
 public enum CollectionStatusEnum {
 
     NOT_COLLECTION(0, "未收藏"),
-    COLLECTION(1, "已收藏"),
-    CANCEL_COLLECTION(2, "取消收藏");
+    COLLECTION(1, "已收藏");
 
     // 编码（唯一标识）
     @EnumValue

@@ -21,8 +21,7 @@ import java.util.stream.Collectors;
 public enum PraiseStatusEnum {
 
     NOT_PRAISE(0, "未点赞"),
-    PRAISE(1, "已点赞"),
-    CANCEL_PRAISE(2, "取消点赞");
+    PRAISE(1, "已点赞");
 
     // 编码（唯一标识）
     @EnumValue

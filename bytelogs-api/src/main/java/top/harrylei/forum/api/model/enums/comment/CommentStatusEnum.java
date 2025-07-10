@@ -21,8 +21,7 @@ import java.util.stream.Collectors;
 public enum CommentStatusEnum {
 
     NOT_COMMENT(0, "未评论"),
-    COMMENT(1, "已评论"),
-    DELETE_COMMENT(2, "删除评论");
+    COMMENT(1, "已评论");
 
     // 编码（唯一标识）
     @EnumValue

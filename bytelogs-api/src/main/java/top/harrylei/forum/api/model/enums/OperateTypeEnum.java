@@ -112,10 +112,10 @@ public enum OperateTypeEnum implements CodeLabelEnum {
             case READ -> ReadStatusEnum.READ.getCode();
             case PRAISE -> PraiseStatusEnum.PRAISE.getCode();
             case COLLECTION -> CollectionStatusEnum.COLLECTION.getCode();
-            case CANCEL_PRAISE -> PraiseStatusEnum.CANCEL_PRAISE.getCode();
-            case CANCEL_COLLECTION -> CollectionStatusEnum.CANCEL_COLLECTION.getCode();
+            case CANCEL_PRAISE -> PraiseStatusEnum.NOT_PRAISE.getCode();
+            case CANCEL_COLLECTION -> CollectionStatusEnum.NOT_COLLECTION.getCode();
             case COMMENT -> CommentStatusEnum.COMMENT.getCode();
-            case DELETE_COMMENT -> CommentStatusEnum.DELETE_COMMENT.getCode();
+            case DELETE_COMMENT -> CommentStatusEnum.NOT_COMMENT.getCode();
             default -> 0;
         };
     }
