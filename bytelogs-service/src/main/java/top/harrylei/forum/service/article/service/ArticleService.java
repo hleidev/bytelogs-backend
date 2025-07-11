@@ -112,13 +112,6 @@ public interface ArticleService {
     void actionArticle(Long articleId, OperateTypeEnum type);
 
     /**
-     * 记录文章阅读
-     *
-     * @param articleId 文章ID
-     */
-    void recordRead(Long articleId);
-
-    /**
      * 回滚到指定版本
      *
      * @param articleId 文章ID

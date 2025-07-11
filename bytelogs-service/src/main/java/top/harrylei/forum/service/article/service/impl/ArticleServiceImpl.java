@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
 import top.harrylei.forum.api.model.enums.OperateTypeEnum;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
+import top.harrylei.forum.api.model.enums.comment.ContentTypeEnum;
 import top.harrylei.forum.api.model.enums.article.ArticleStatusTypeEnum;
 import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.article.dto.ArticleDTO;
@@ -16,6 +17,7 @@ import top.harrylei.forum.api.model.vo.article.req.ArticleQueryParam;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleDetailVO;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
 import top.harrylei.forum.api.model.vo.article.vo.TagSimpleVO;
+import top.harrylei.forum.api.model.vo.statistics.StatisticsVO;
 import top.harrylei.forum.api.model.vo.page.PageHelper;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.user.dto.UserInfoDetailDTO;
@@ -29,6 +31,7 @@ import top.harrylei.forum.service.article.repository.entity.ArticleDetailDO;
 import top.harrylei.forum.service.article.service.ArticleDetailService;
 import top.harrylei.forum.service.article.service.ArticleService;
 import top.harrylei.forum.service.article.service.ArticleTagService;
+import top.harrylei.forum.service.statistics.service.ReadCountService;
 import top.harrylei.forum.service.user.converted.UserStructMapper;
 import top.harrylei.forum.service.user.service.UserFootService;
 import top.harrylei.forum.service.user.service.cache.UserCacheService;
@@ -57,6 +60,7 @@ public class ArticleServiceImpl implements ArticleService {
     private final UserStructMapper userStructMapper;
     private final UserCacheService userCacheService;
     private final UserFootService userFootService;
+    private final ReadCountService readCountService;
 
     /**
      * 保存文章
@@ -207,13 +211,45 @@ public class ArticleServiceImpl implements ArticleService {
         ArticleVO articleVO = articleStructMapper.buildArticleVO(article, detail);
 
         // 填充标签信息
-        fillArticleTags(java.util.List.of(articleVO));
+        fillArticleTags(List.of(articleVO));
+
+        // 构建统计信息
+        Integer readCount = readCountService.getReadCount(articleId, ContentTypeEnum.ARTICLE);
+        StatisticsVO statistics = new StatisticsVO().setReadCount(readCount);
 
         UserInfoDetailDTO user = userCacheService.getUserInfo(article.getUserId());
 
-        return new ArticleDetailVO().setArticle(articleVO).setAuthor(userStructMapper.toVO(user));
+        // 记录阅读行为
+        recordReadBehavior(articleId);
+
+        return new ArticleDetailVO()
+                .setArticle(articleVO)
+                .setAuthor(userStructMapper.toVO(user))
+                .setStatistics(statistics);
     }
 
+    /**
+     * 记录阅读行为
+     *
+     * @param articleId 文章ID
+     */
+    private void recordReadBehavior(Long articleId) {
+        // 异步增加阅读量（所有用户）
+        readCountService.incrementReadCount(articleId, ContentTypeEnum.ARTICLE);
+        
+        // 记录用户阅读行为（仅登录用户）
+        if (ReqInfoContext.getContext().isLoggedIn()) {
+            ArticleDO article = getArticleById(articleId);
+
+            Long currentUserId = ReqInfoContext.getContext().getUserId();
+            if (currentUserId != null) {
+                Boolean success = userFootService.recordRead(currentUserId, article.getUserId(), articleId);
+                if (success) {
+                    log.info("文章阅读记录成功 articleId={} userId={}", articleId, currentUserId);
+                }
+            }
+        }
+    }
 
     /**
      * 发布文章
@@ -700,25 +736,6 @@ public class ArticleServiceImpl implements ArticleService {
 
         log.info("文章{}操作成功 articleId={} type={}", type.getLabel(), articleId, type);
     }
-
-    /**
-     * 记录文章阅读
-     *
-     * @param articleId 文章ID
-     */
-    @Override
-    public void recordRead(Long articleId) {
-        ArticleDO article = getArticleById(articleId);
-
-        Long currentUserId = ReqInfoContext.getContext().getUserId();
-        if (currentUserId != null) {
-            Boolean success = userFootService.recordRead(currentUserId, article.getUserId(), articleId);
-            if (success) {
-                log.info("文章阅读记录成功 articleId={} userId={}", articleId, currentUserId);
-            }
-        }
-    }
-
 
     /**
      * 智能获取版本：作者看最新，读者看发布
