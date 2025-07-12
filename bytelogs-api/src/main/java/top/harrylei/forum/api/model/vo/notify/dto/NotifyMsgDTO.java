@@ -1,13 +1,17 @@
 package top.harrylei.forum.api.model.vo.notify.dto;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import top.harrylei.forum.api.model.entity.BaseDTO;
 
-import java.io.Serializable;
-import java.sql.Timestamp;
-
+/**
+ * 通知消息数据传输对象
+ *
+ * @author harry
+ */
 @Data
-public class NotifyMsgDTO implements Serializable {
-    private static final long serialVersionUID = 3833777672628522348L;
+@EqualsAndHashCode(callSuper = true)
+public class NotifyMsgDTO extends BaseDTO {
 
     private Long msgId;
 
@@ -51,8 +55,4 @@ public class NotifyMsgDTO implements Serializable {
      */
     private Integer state;
 
-    /**
-     * 消息产生时间
-     */
-    private Timestamp createTime;
 }
