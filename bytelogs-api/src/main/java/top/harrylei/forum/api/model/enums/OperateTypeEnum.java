@@ -130,22 +130,4 @@ public enum OperateTypeEnum implements CodeLabelEnum {
         return (type == COMMENT || type == DELETE_COMMENT) ? ContentTypeEnum.COMMENT : ContentTypeEnum.ARTICLE;
     }
 
-    /**
-     * 根据操作类型获取对应的通知类型
-     *
-     * @param type 操作类型
-     * @return 对应的通知类型，若无匹配则返回 null
-     */
-    public static NotifyTypeEnum getNotifyType(OperateTypeEnum type) {
-        if (type == null) {
-            return null;
-        }
-        return switch (type) {
-            case PRAISE -> NotifyTypeEnum.PRAISE;
-            case CANCEL_PRAISE -> NotifyTypeEnum.CANCEL_PRAISE;
-            case COLLECTION -> NotifyTypeEnum.COLLECT;
-            case CANCEL_COLLECTION -> NotifyTypeEnum.CANCEL_COLLECT;
-            default -> null;
-        };
-    }
 }
