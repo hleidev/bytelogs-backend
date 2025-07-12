@@ -11,7 +11,9 @@ spring:
   application:
     name: bytelogs # 应用名称，用于服务发现或日志标识
   config:
-    import: application-dal.yml # 引入数据库相关配置文件
+    import: 
+      - application-dal.yml # 引入数据库相关配置文件
+      - application-mq.yml # 引入消息队列相关配置文件
 
 mybatis-plus:
   configuration:
