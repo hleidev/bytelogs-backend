@@ -1,18 +1,29 @@
 package top.harrylei.forum.api.model.enums;
 
+import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import top.harrylei.forum.api.model.enums.base.CodeLabelEnum;
+import top.harrylei.forum.api.model.enums.base.EnumCodeLabelJsonSerializer;
 
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * 通知类型枚举
  *
  * @author harry
  */
-
 @Getter
-public enum NotifyTypeEnum {
+@AllArgsConstructor
+@JsonSerialize(using = EnumCodeLabelJsonSerializer.class)
+public enum NotifyTypeEnum implements CodeLabelEnum {
+
     // 用户互动通知（正向行为，值得通知）
     COMMENT(1, "评论"),
     REPLY(2, "回复"),
@@ -26,36 +37,38 @@ public enum NotifyTypeEnum {
     LOGIN(8, "用户登录"),
 
     // 扩展通知类型（预留）
-    ARTICLE_PUBLISH(9, "文章发布"),
-    COMMENT_REPLY(10, "评论被回复"),
-    ;
+    ARTICLE_PUBLISH(9, "文章发布");
 
+    // 编码（唯一标识）
+    @EnumValue
+    private final Integer code;
+
+    // 描述（用于展示）
+    private final String label;
+
+    // 根据编码快速定位枚举实例
+    private static final Map<Integer, NotifyTypeEnum> CODE_MAP =
+            Arrays.stream(values()).collect(Collectors.toMap(NotifyTypeEnum::getCode, Function.identity()));
 
     /**
-     * 表示消息类型： 1-6 对应的时评论/回复/点赞/关注消息/系统消息等
+     * 获取编码
+     *
+     * @return 编码
      */
-    private int type;
-    private String msg;
-
-    private static Map<Integer, NotifyTypeEnum> mapper;
-
-    static {
-        mapper = new HashMap<>();
-        for (NotifyTypeEnum type : values()) {
-            mapper.put(type.type, type);
-        }
+    @JsonValue
+    @Override
+    public Integer getCode() {
+        return code;
     }
 
-    NotifyTypeEnum(int type, String msg) {
-        this.type = type;
-        this.msg = msg;
-    }
-
-    public static NotifyTypeEnum typeOf(int type) {
-        return mapper.get(type);
-    }
-
-    public static NotifyTypeEnum typeOf(String type) {
-        return valueOf(type.toUpperCase().trim());
+    /**
+     * 根据编码获取枚举对象
+     *
+     * @param code 编码
+     * @return 对应的枚举，若无匹配则返回 null
+     */
+    @JsonCreator
+    public static NotifyTypeEnum fromCode(Integer code) {
+        return code == null ? null : CODE_MAP.get(code);
     }
 }
