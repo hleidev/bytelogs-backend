@@ -236,7 +236,7 @@ public class ArticleServiceImpl implements ArticleService {
     private void recordReadBehavior(Long articleId) {
         // 异步增加阅读量（所有用户）
         readCountService.incrementReadCount(articleId, ContentTypeEnum.ARTICLE);
-        
+
         // 记录用户阅读行为（仅登录用户）
         if (ReqInfoContext.getContext().isLoggedIn()) {
             ArticleDO article = getArticleById(articleId);
