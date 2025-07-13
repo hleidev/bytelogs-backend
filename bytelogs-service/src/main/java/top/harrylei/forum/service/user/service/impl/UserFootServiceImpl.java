@@ -3,9 +3,11 @@ package top.harrylei.forum.service.user.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import top.harrylei.forum.api.model.enums.NotifyTypeEnum;
 import top.harrylei.forum.api.model.enums.OperateTypeEnum;
 import top.harrylei.forum.api.model.enums.comment.ContentTypeEnum;
 import top.harrylei.forum.api.model.vo.user.dto.UserFootDTO;
+import top.harrylei.forum.core.util.KafkaEventPublisher;
 import top.harrylei.forum.core.util.NumUtil;
 import top.harrylei.forum.core.util.RedisUtil;
 import top.harrylei.forum.service.comment.repository.entity.CommentDO;
@@ -31,6 +33,7 @@ public class UserFootServiceImpl implements UserFootService {
     private final UserFootDAO userFootDAO;
     private final UserFootStructMapper userFootStructMapper;
     private final RedisUtil redisUtil;
+    private final KafkaEventPublisher kafkaEventPublisher;
 
 
     /**
@@ -193,6 +196,10 @@ public class UserFootServiceImpl implements UserFootService {
                      contentType.getLabel(), userId, type, contentAuthorId, contentId);
             return false;
         }
+
+        // 发布通知事件
+        publishNotificationEvent(userId, type, contentAuthorId, contentId, contentType);
+
         return true;
     }
 
@@ -284,6 +291,59 @@ public class UserFootServiceImpl implements UserFootService {
      */
     private String buildDuplicateKey(Long userId, OperateTypeEnum type, Long contentId, ContentTypeEnum contentType) {
         return String.format("%d:%s:%d:%s", userId, type.name(), contentId, contentType.name());
+    }
+
+    /**
+     * 发布通知事件
+     *
+     * @param userId          操作用户ID
+     * @param type            操作类型
+     * @param contentAuthorId 内容作者ID
+     * @param contentId       内容ID
+     * @param contentType     内容类型
+     */
+    private void publishNotificationEvent(Long userId,
+                                          OperateTypeEnum type,
+                                          Long contentAuthorId,
+                                          Long contentId,
+                                          ContentTypeEnum contentType) {
+        try {
+            NotifyTypeEnum notifyType = getNotifyTypeFromOperateType(type);
+            if (notifyType == null) {
+                // 不是需要通知的操作类型，跳过
+                return;
+            }
+
+            // 发布通知事件
+            kafkaEventPublisher.publishUserBehaviorEvent(userId, contentAuthorId, contentId, contentType, notifyType);
+
+            log.debug("发布{}通知事件成功: userId={}, targetUserId={}, contentId={}",
+                      notifyType.getLabel(),
+                      userId,
+                      contentAuthorId,
+                      contentId);
+
+        } catch (Exception e) {
+            // 事件发布失败不影响主业务流程
+            log.error("发布通知事件失败: userId={}, type={}, contentId={}", userId, type, contentId, e);
+        }
+    }
+
+    /**
+     * 将操作类型转换为通知类型
+     *
+     * @param operateType 操作类型
+     * @return 通知类型，如果不需要通知则返回null
+     */
+    private NotifyTypeEnum getNotifyTypeFromOperateType(OperateTypeEnum operateType) {
+        return switch (operateType) {
+            case PRAISE -> NotifyTypeEnum.PRAISE;
+            case COLLECTION -> NotifyTypeEnum.COLLECT;
+            // 取消操作不发送通知
+            case CANCEL_PRAISE, CANCEL_COLLECTION -> null;
+            // 其他操作类型不在此处处理
+            default -> null;
+        };
     }
 
 }

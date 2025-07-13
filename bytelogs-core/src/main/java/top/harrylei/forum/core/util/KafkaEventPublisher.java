@@ -64,12 +64,13 @@ public class KafkaEventPublisher {
      * @param operateUserId 操作用户ID
      * @param targetUserId  目标用户ID（接收通知的用户）
      * @param relatedId     关联内容ID
-     * @param notifyType    通知类型
      * @param contentType   内容类型
+     * @param notifyType    通知类型
      */
-    public void publishUserBehaviorEvent(Long operateUserId, Long targetUserId, Long relatedId,
-                                         NotifyTypeEnum notifyType, ContentTypeEnum contentType) {
-        publishUserBehaviorEvent(operateUserId, targetUserId, relatedId, notifyType, contentType, null);
+    public void publishUserBehaviorEvent(Long operateUserId, Long targetUserId,
+                                         Long relatedId, ContentTypeEnum contentType,
+                                         NotifyTypeEnum notifyType) {
+        publishUserBehaviorEvent(operateUserId, targetUserId, relatedId, contentType, notifyType, null);
     }
 
     /**
@@ -78,12 +79,13 @@ public class KafkaEventPublisher {
      * @param operateUserId 操作用户ID
      * @param targetUserId  目标用户ID（接收通知的用户）
      * @param relatedId     关联内容ID
-     * @param notifyType    通知类型
      * @param contentType   内容类型
+     * @param notifyType    通知类型
      * @param extra         扩展信息
      */
-    public void publishUserBehaviorEvent(Long operateUserId, Long targetUserId, Long relatedId,
-                                         NotifyTypeEnum notifyType, ContentTypeEnum contentType, String extra) {
+    public void publishUserBehaviorEvent(Long operateUserId, Long targetUserId,
+                                         Long relatedId, ContentTypeEnum contentType,
+                                         NotifyTypeEnum notifyType, String extra) {
         NotificationEvent event = NotificationEvent.builder()
                 .operateUserId(operateUserId)
                 .targetUserId(targetUserId)

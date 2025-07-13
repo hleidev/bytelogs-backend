@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
+import top.harrylei.forum.api.model.enums.NotifyTypeEnum;
 import top.harrylei.forum.api.model.enums.OperateTypeEnum;
 import top.harrylei.forum.api.model.enums.PraiseStatusEnum;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
@@ -24,6 +25,7 @@ import top.harrylei.forum.api.model.vo.user.dto.UserFootDTO;
 import top.harrylei.forum.api.model.vo.user.dto.UserInfoDetailDTO;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
+import top.harrylei.forum.core.util.KafkaEventPublisher;
 import top.harrylei.forum.core.util.NumUtil;
 import top.harrylei.forum.service.article.repository.entity.ArticleDO;
 import top.harrylei.forum.service.article.service.ArticleDetailService;
@@ -58,6 +60,7 @@ public class CommentServiceImpl implements CommentService {
     private final ArticleDetailService articleDetailService;
     private final UserFootService userFootService;
     private final UserCacheService userCacheService;
+    private final KafkaEventPublisher kafkaEventPublisher;
 
     /**
      * 保存评论
@@ -284,6 +287,9 @@ public class CommentServiceImpl implements CommentService {
         Long parentUserId = parent != null ? parent.getUserId() : null;
         userFootService.saveCommentFoot(comment, article.getUserId(), parentUserId);
 
+        // 发布通知事件
+        publishCommentNotificationEvent(comment, article, parent);
+
         return comment;
     }
 
@@ -489,5 +495,42 @@ public class CommentServiceImpl implements CommentService {
         resultPage.setRecords(resultData);
 
         return PageHelper.build(resultPage);
+    }
+
+    /**
+     * 发布评论通知事件
+     *
+     * @param comment 评论对象
+     * @param article 文章对象
+     * @param parent  父评论对象（如果是回复）
+     */
+    private void publishCommentNotificationEvent(CommentDO comment, ArticleDO article, CommentDO parent) {
+        try {
+            // 1. 对文章的评论通知
+            if (!comment.getUserId().equals(article.getUserId())) {
+                kafkaEventPublisher.publishUserBehaviorEvent(comment.getUserId(),
+                                                             article.getUserId(),
+                                                             article.getId(),
+                                                             ContentTypeEnum.ARTICLE,
+                                                             NotifyTypeEnum.COMMENT);
+                log.debug("发布评论文章通知事件: commentUserId={}, articleAuthorId={}, articleId={}",
+                          comment.getUserId(), article.getUserId(), article.getId());
+            }
+
+            // 2. 对父评论的回复通知
+            if (parent != null && !comment.getUserId().equals(parent.getUserId())) {
+                kafkaEventPublisher.publishUserBehaviorEvent(comment.getUserId(),
+                                                             parent.getUserId(),
+                                                             parent.getId(),
+                                                             ContentTypeEnum.COMMENT,
+                                                             NotifyTypeEnum.REPLY);
+                log.debug("发布回复评论通知事件: replyUserId={}, parentCommentAuthorId={}, parentCommentId={}",
+                          comment.getUserId(), parent.getUserId(), parent.getId());
+            }
+
+        } catch (Exception e) {
+            // 事件发布失败不影响主业务流程
+            log.error("发布评论通知事件失败: commentId={}, articleId={}", comment.getId(), article.getId(), e);
+        }
     }
 }

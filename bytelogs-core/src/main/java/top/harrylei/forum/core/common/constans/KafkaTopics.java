@@ -18,11 +18,11 @@ public class KafkaTopics {
      * 通知事件 Topic
      * 用于处理用户行为通知（点赞、评论、关注等）
      */
-    public static final String NOTIFICATION_EVENTS = "notification-events";
+    public static final String NOTIFICATION_EVENTS = "bytelogs-notification-events";
 
     /**
      * 系统事件 Topic
      * 用于处理系统级事件（注册、登录等）
      */
-    public static final String SYSTEM_EVENTS = "system-events";
+    public static final String SYSTEM_EVENTS = "bytelogs-system-events";
 }
