@@ -14,7 +14,6 @@ import top.harrylei.forum.service.notify.repository.entity.NotifyMsgDO;
 public interface NotifyMsgStructMapper {
 
     @Mapping(target = "msgId", source = "id")
-    @Mapping(target = "relatedId", source = "relatedId", defaultValue = "")
     @Mapping(target = "relatedInfo", ignore = true)
     @Mapping(target = "operateUserName", ignore = true)
     @Mapping(target = "operateUserAvatar", ignore = true)

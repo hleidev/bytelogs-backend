@@ -40,6 +40,7 @@ public class NotifyMsgDAO extends ServiceImpl<NotifyMsgMapper, NotifyMsgDO> {
     public Long countUnreadByUserId(Long userId) {
         return lambdaQuery()
                 .eq(NotifyMsgDO::getNotifyUserId, userId)
+                .eq(NotifyMsgDO::getState, 0)
                 .count();
     }
 
