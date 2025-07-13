@@ -18,7 +18,7 @@ public class NotifyMsgDTO extends BaseDTO {
     /**
      * 消息关联的主体，如文章、评论
      */
-    private String relatedId;
+    private Long relatedId;
 
     /**
      * 关联信息
