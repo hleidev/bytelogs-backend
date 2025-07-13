@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
         "top.harrylei.forum.service.article.repository.mapper",
         "top.harrylei.forum.service.comment.repository.mapper",
         "top.harrylei.forum.service.statistics.repository.mapper",
+        "top.harrylei.forum.service.notify.repository.mapper",
 })
 public class ForumServiceAutoConfig {
 }

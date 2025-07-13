@@ -10,7 +10,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 import top.harrylei.forum.api.model.event.NotificationEvent;
 import top.harrylei.forum.core.common.constans.KafkaTopics;
-import top.harrylei.forum.service.notify.service.NotificationService;
+import top.harrylei.forum.service.notify.service.NotifyMsgService;
 
 /**
  * 通知事件消费者
@@ -22,7 +22,7 @@ import top.harrylei.forum.service.notify.service.NotificationService;
 @Slf4j
 public class NotificationEventConsumer {
 
-    private final NotificationService notificationService;
+    private final NotifyMsgService notifyMsgService;
 
     /**
      * 处理通知事件
@@ -43,7 +43,7 @@ public class NotificationEventConsumer {
 
         try {
             // 处理通知事件
-            notificationService.processNotificationEvent(event);
+            notifyMsgService.saveNotificationFromEvent(event);
 
             // 手动确认消息
             if (ack != null) {
@@ -78,7 +78,7 @@ public class NotificationEventConsumer {
 
         try {
             // 系统事件也通过通知服务处理
-            notificationService.processNotificationEvent(event);
+            notifyMsgService.saveNotificationFromEvent(event);
 
             // 手动确认消息
             if (ack != null) {

@@ -1,30 +1,40 @@
 package top.harrylei.forum.service.notify.service.impl;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import top.harrylei.forum.api.model.event.NotificationEvent;
+import top.harrylei.forum.api.model.vo.notify.dto.NotifyMsgDTO;
+import top.harrylei.forum.api.model.vo.page.PageHelper;
+import top.harrylei.forum.api.model.vo.notify.req.NotifyMsgQueryParam;
+import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.user.dto.UserInfoDetailDTO;
+import top.harrylei.forum.service.notify.converted.NotifyMsgStructMapper;
 import top.harrylei.forum.service.notify.repository.dao.NotifyMsgDAO;
 import top.harrylei.forum.service.notify.repository.entity.NotifyMsgDO;
-import top.harrylei.forum.service.notify.service.NotificationService;
+import top.harrylei.forum.service.notify.service.NotifyMsgService;
 import top.harrylei.forum.service.user.service.cache.UserCacheService;
 
+import java.util.List;
+
 /**
- * 通知服务实现
+ * 通知消息服务实现
  *
  * @author harry
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class NotificationServiceImpl implements NotificationService {
+public class NotifyMsgServiceImpl implements NotifyMsgService {
 
     private final NotifyMsgDAO notifyMsgDAO;
     private final UserCacheService userCacheService;
+    private final NotifyMsgStructMapper notifyMsgStructMapper;
 
     @Override
-    public void processNotificationEvent(NotificationEvent event) {
+    public void saveNotificationFromEvent(NotificationEvent event) {
         try {
             // 1. 业务过滤：检查是否需要保存通知
             if (!shouldSaveNotification(event)) {
@@ -118,5 +128,71 @@ public class NotificationServiceImpl implements NotificationService {
             case LOGIN -> String.format("%s 登录了系统", operateUserName);
             case ARTICLE_PUBLISH -> String.format("%s 发布了新文章", operateUserName);
         };
+    }
+
+    @Override
+    public PageVO<NotifyMsgDTO> getMyNotifications(Long userId, NotifyMsgQueryParam param) {
+        // TODO: 根据查询参数构建查询条件（状态、类型过滤）
+        Page<NotifyMsgDO> page = notifyMsgDAO.pageByUserId(
+                userId,
+                (long) param.getPageNum(),
+                (long) param.getPageSize()
+        );
+
+        if (page.getRecords().isEmpty()) {
+            return PageHelper.empty();
+        }
+
+        // 转换为DTO并填充用户信息
+        List<NotifyMsgDTO> dtoList = page.getRecords().stream()
+                .map(this::enrichNotifyMsgDTO)
+                .toList();
+        
+        // 构建分页结果
+        IPage<NotifyMsgDTO> resultPage = new Page<>(page.getCurrent(), page.getSize(), page.getTotal());
+        resultPage.setRecords(dtoList);
+        
+        return PageHelper.build(resultPage);
+    }
+
+    @Override
+    public void markAsRead(Long msgId) {
+        // TODO: 从当前登录用户上下文获取userId，这里暂时传null
+        // notifyMsgDAO.markAsRead(msgId, getCurrentUserId());
+        log.warn("markAsRead方法需要传入userId参数进行权限控制: msgId={}", msgId);
+    }
+
+    @Override
+    public void markAllAsRead(Long userId) {
+        notifyMsgDAO.markAllAsRead(userId);
+        log.info("标记用户所有消息为已读: userId={}", userId);
+    }
+
+    @Override
+    public Long getUnreadCount(Long userId) {
+        return notifyMsgDAO.countUnreadByUserId(userId);
+    }
+
+    /**
+     * 丰富通知消息DTO信息
+     *
+     * @param notifyMsg 通知消息DO
+     * @return 通知消息DTO
+     */
+    private NotifyMsgDTO enrichNotifyMsgDTO(NotifyMsgDO notifyMsg) {
+        NotifyMsgDTO dto = notifyMsgStructMapper.toDTO(notifyMsg);
+
+        // 填充操作用户信息
+        if (notifyMsg.getOperateUserId() != null) {
+            UserInfoDetailDTO operateUser = userCacheService.getUserInfo(notifyMsg.getOperateUserId());
+            if (operateUser != null) {
+                dto.setOperateUserName(operateUser.getUserName());
+                dto.setOperateUserAvatar(operateUser.getAvatar());
+            }
+        }
+
+        // TODO: 根据需要填充 relatedInfo（文章标题、评论内容等）
+
+        return dto;
     }
 }
