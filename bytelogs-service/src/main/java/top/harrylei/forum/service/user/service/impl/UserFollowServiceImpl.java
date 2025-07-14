@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
 import top.harrylei.forum.api.model.enums.NotifyTypeEnum;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
+import top.harrylei.forum.api.model.enums.comment.ContentTypeEnum;
 import top.harrylei.forum.api.model.enums.user.UserFollowStatusEnum;
 import top.harrylei.forum.api.model.vo.page.PageHelper;
 import top.harrylei.forum.api.model.vo.page.PageVO;
@@ -227,7 +228,7 @@ public class UserFollowServiceImpl implements UserFollowService {
             kafkaEventPublisher.publishUserBehaviorEvent(currentUserId,
                                                          followUserId,
                                                          followUserId,
-                                                         null,
+                                                         ContentTypeEnum.EMPTY,
                                                          NotifyTypeEnum.FOLLOW);
 
             log.debug("发布关注通知事件成功: currentUserId={}, followUserId={}", currentUserId, followUserId);
