@@ -48,6 +48,11 @@ public class NotifyMsgDO extends BaseDO {
     private Integer type;
 
     /**
+     * 内容类型：0-不适用，1-文章，2-评论
+     */
+    private Integer contentType;
+
+    /**
      * 阅读状态：0-未读，1-已读
      */
     private Integer state;

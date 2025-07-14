@@ -106,6 +106,7 @@ public class NotifyMsgServiceImpl implements NotifyMsgService {
                 .setOperateUserId(event.getOperateUserId())
                 .setMsg(message)
                 .setType(event.getNotifyType().getCode())
+                .setContentType(event.getContentType().getCode())
                 .setState(0);
     }
 
@@ -147,11 +148,11 @@ public class NotifyMsgServiceImpl implements NotifyMsgService {
         List<NotifyMsgDTO> dtoList = page.getRecords().stream()
                 .map(this::enrichNotifyMsgDTO)
                 .toList();
-        
+
         // 构建分页结果
         IPage<NotifyMsgDTO> resultPage = new Page<>(page.getCurrent(), page.getSize(), page.getTotal());
         resultPage.setRecords(dtoList);
-        
+
         return PageHelper.build(resultPage);
     }
 

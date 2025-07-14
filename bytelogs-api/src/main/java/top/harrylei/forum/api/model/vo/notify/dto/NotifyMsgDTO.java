@@ -46,6 +46,11 @@ public class NotifyMsgDTO extends BaseDTO {
     private Integer type;
 
     /**
+     * 内容类型：0-不适用，1-文章，2-评论
+     */
+    private Integer contentType;
+
+    /**
      * 消息正文
      */
     private String msg;
