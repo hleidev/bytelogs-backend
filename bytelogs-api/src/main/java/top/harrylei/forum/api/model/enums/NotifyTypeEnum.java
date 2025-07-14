@@ -71,4 +71,13 @@ public enum NotifyTypeEnum implements CodeLabelEnum {
     public static NotifyTypeEnum fromCode(Integer code) {
         return code == null ? null : CODE_MAP.get(code);
     }
+
+    /**
+     * 判断是否为系统通知类型
+     *
+     * @return true-系统通知，false-用户行为通知
+     */
+    public boolean isSystemNotification() {
+        return this == SYSTEM || this == REGISTER || this == LOGIN;
+    }
 }

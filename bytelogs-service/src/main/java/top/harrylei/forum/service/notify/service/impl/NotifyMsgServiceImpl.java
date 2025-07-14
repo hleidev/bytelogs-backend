@@ -69,7 +69,7 @@ public class NotifyMsgServiceImpl implements NotifyMsgService {
         }
 
         // 2. 系统通知总是发送
-        if (event.getNotifyType().getCode() >= 6) {
+        if (event.getNotifyType().isSystemNotification()) {
             return true;
         }
 
