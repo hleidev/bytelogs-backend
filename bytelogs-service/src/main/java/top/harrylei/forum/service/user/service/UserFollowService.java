@@ -4,6 +4,8 @@ import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.user.req.UserFollowQueryParam;
 import top.harrylei.forum.api.model.vo.user.vo.UserFollowVO;
 
+import java.util.List;
+
 /**
  * 用户关注服务接口
  *
@@ -40,4 +42,12 @@ public interface UserFollowService {
      * @return 粉丝列表
      */
     PageVO<UserFollowVO> pageFollowersList(UserFollowQueryParam queryParam);
+
+    /**
+     * 获取用户的关注者ID列表
+     *
+     * @param userId 用户ID
+     * @return 关注者ID列表
+     */
+    List<Long> getFollowerIds(Long userId);
 }

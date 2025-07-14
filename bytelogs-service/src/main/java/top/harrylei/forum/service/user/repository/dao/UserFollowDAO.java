@@ -11,6 +11,8 @@ import top.harrylei.forum.api.model.vo.user.vo.UserFollowVO;
 import top.harrylei.forum.service.user.repository.entity.UserFollowDO;
 import top.harrylei.forum.service.user.repository.mapper.UserFollowMapper;
 
+import java.util.List;
+
 /**
  * 用户关注数据访问对象
  *
@@ -79,5 +81,18 @@ public class UserFollowDAO extends ServiceImpl<UserFollowMapper, UserFollowDO> {
                 .eq(UserFollowDO::getDeleted, YesOrNoEnum.NO.getCode())
                 .set(UserFollowDO::getFollowState, status.getCode())
                 .update();
+    }
+
+    /**
+     * 获取用户的关注者ID列表
+     *
+     * @param userId 用户ID
+     * @return 关注者ID列表
+     */
+    public List<Long> getFollowerIds(Long userId) {
+        if (userId == null) {
+            return List.of();
+        }
+        return getBaseMapper().getFollowerIds(userId);
     }
 }
