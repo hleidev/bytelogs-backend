@@ -3,6 +3,8 @@ package top.harrylei.forum.api.model.vo.notify.dto;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import top.harrylei.forum.api.model.entity.BaseDTO;
+import top.harrylei.forum.api.model.enums.NotifyTypeEnum;
+import top.harrylei.forum.api.model.enums.comment.ContentTypeEnum;
 
 /**
  * 通知消息数据传输对象
@@ -12,8 +14,6 @@ import top.harrylei.forum.api.model.entity.BaseDTO;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class NotifyMsgDTO extends BaseDTO {
-
-    private Long msgId;
 
     /**
      * 消息关联的主体，如文章、评论
@@ -43,12 +43,12 @@ public class NotifyMsgDTO extends BaseDTO {
     /**
      * 消息类型
      */
-    private Integer type;
+    private NotifyTypeEnum type;
 
     /**
-     * 内容类型：0-不适用，1-文章，2-评论
+     * 内容类型
      */
-    private Integer contentType;
+    private ContentTypeEnum contentType;
 
     /**
      * 消息正文

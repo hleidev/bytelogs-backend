@@ -8,6 +8,8 @@ import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 
 /**
  * 通用枚举转换器
+ *
+ * @author harry
  */
 @Component
 public class EnumConverter {
@@ -41,4 +43,5 @@ public class EnumConverter {
     public YesOrNoEnum codeToYesOrNoEnum(Integer code) {
         return code == null ? null : YesOrNoEnum.fromCode(code);
     }
+
 }
