@@ -1,6 +1,5 @@
 package top.harrylei.forum.service.notify.service.impl;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,8 +16,6 @@ import top.harrylei.forum.service.notify.repository.dao.NotifyMsgDAO;
 import top.harrylei.forum.service.notify.repository.entity.NotifyMsgDO;
 import top.harrylei.forum.service.notify.service.NotifyMsgService;
 import top.harrylei.forum.service.user.service.cache.UserCacheService;
-
-import java.util.List;
 
 /**
  * 通知消息服务实现
@@ -136,21 +133,7 @@ public class NotifyMsgServiceImpl implements NotifyMsgService {
     public PageVO<NotifyMsgVO> getMyNotifications(Long userId, NotifyMsgQueryParam param) {
         // TODO: 根据查询参数构建查询条件（状态、类型过滤）
         Page<NotifyMsgDO> page = notifyMsgDAO.pageByUserId(userId, param.getPageNum(), param.getPageSize());
-
-        if (page.getRecords().isEmpty()) {
-            return PageHelper.empty();
-        }
-
-        // 转换为VO并填充用户信息
-        List<NotifyMsgVO> voList = page.getRecords().stream()
-                .map(this::fillNotifyMsgVO)
-                .toList();
-
-        // 构建分页结果
-        IPage<NotifyMsgVO> resultPage = new Page<>(page.getCurrent(), page.getSize(), page.getTotal());
-        resultPage.setRecords(voList);
-
-        return PageHelper.build(resultPage);
+        return PageHelper.buildAndMap(page, this::fillNotifyMsgVO);
     }
 
     @Override

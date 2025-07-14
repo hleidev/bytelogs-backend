@@ -139,4 +139,34 @@ public class PageHelper {
 
         return result;
     }
+
+    /**
+     * 根据MyBatis-Plus对象构建分页结果并进行数据转换
+     *
+     * @param iPage     MyBatis-Plus IPage对象
+     * @param converter 数据转换函数
+     * @param <T>       原始数据类型
+     * @param <R>       目标数据类型
+     * @return 转换后的分页结果
+     */
+    public static <T, R> PageVO<R> buildAndMap(IPage<T> iPage, Function<T, R> converter) {
+        if (iPage == null) {
+            return empty();
+        }
+
+        // 转换数据
+        List<R> convertedRecords = iPage.getRecords().stream()
+                .map(converter)
+                .toList();
+
+        // 创建新的IPage对象，复制分页信息
+        // Fixme: 这里使用了MyBatis-Plus的Page实现，与之前的实现冲突，暂时使用了全限定名
+        IPage<R> convertedPage = new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(iPage.getCurrent(),
+                                                                                                  iPage.getSize(),
+                                                                                                  iPage.getTotal());
+        convertedPage.setRecords(convertedRecords);
+
+        // 复用现有的build方法
+        return build(convertedPage);
+    }
 }
