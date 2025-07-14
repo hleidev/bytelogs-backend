@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
+import top.harrylei.forum.api.model.enums.NotifyTypeEnum;
 import top.harrylei.forum.api.model.enums.OperateTypeEnum;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.comment.ContentTypeEnum;
@@ -23,6 +24,7 @@ import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.user.dto.UserInfoDetailDTO;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
+import top.harrylei.forum.core.util.KafkaEventPublisher;
 import top.harrylei.forum.core.util.NumUtil;
 import top.harrylei.forum.service.article.converted.ArticleStructMapper;
 import top.harrylei.forum.service.article.repository.dao.ArticleDAO;
@@ -33,6 +35,7 @@ import top.harrylei.forum.service.article.service.ArticleService;
 import top.harrylei.forum.service.article.service.ArticleTagService;
 import top.harrylei.forum.service.statistics.service.ReadCountService;
 import top.harrylei.forum.service.user.converted.UserStructMapper;
+import top.harrylei.forum.service.user.service.UserFollowService;
 import top.harrylei.forum.service.user.service.UserFootService;
 import top.harrylei.forum.service.user.service.cache.UserCacheService;
 
@@ -60,7 +63,9 @@ public class ArticleServiceImpl implements ArticleService {
     private final UserStructMapper userStructMapper;
     private final UserCacheService userCacheService;
     private final UserFootService userFootService;
+    private final UserFollowService userFollowService;
     private final ReadCountService readCountService;
+    private final KafkaEventPublisher kafkaEventPublisher;
 
     /**
      * 保存文章
@@ -325,6 +330,11 @@ public class ArticleServiceImpl implements ArticleService {
         // 更新最新版本
         boolean updated = articleDetailService.updateById(latestDetail);
         ExceptionUtil.errorIf(!updated, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "更新文章状态失败");
+
+        // 如果是发布状态，发送文章发布通知给关注者
+        if (PublishStatusEnum.PUBLISHED.equals(finalStatus)) {
+            publishArticleNotificationEvent(article);
+        }
     }
 
     /**
@@ -834,6 +844,38 @@ public class ArticleServiceImpl implements ArticleService {
         articleDetailService.updateById(rollbackDetail);
 
         return rollbackDetail;
+    }
+
+    /**
+     * 发布文章通知事件给关注者
+     *
+     * @param article 文章信息
+     */
+    private void publishArticleNotificationEvent(ArticleDO article) {
+        try {
+            Long authorId = article.getUserId();
+            Long articleId = article.getId();
+
+            List<Long> followerIds = userFollowService.getFollowerIds(authorId);
+            if (followerIds.isEmpty()) {
+                log.debug("作者无关注者，跳过文章发布通知: authorId={}, articleId={}", authorId, articleId);
+                return;
+            }
+
+            for (Long followerId : followerIds) {
+                kafkaEventPublisher.publishUserBehaviorEvent(authorId,
+                                                             followerId,
+                                                             articleId,
+                                                             ContentTypeEnum.ARTICLE,
+                                                             NotifyTypeEnum.ARTICLE_PUBLISH);
+            }
+
+            log.debug("发布文章通知事件成功: authorId={}, articleId={}, followerCount={}",
+                      authorId, articleId, followerIds.size());
+
+        } catch (Exception e) {
+            log.error("发布文章通知事件失败: articleId={}", article.getId(), e);
+        }
     }
 
 }
