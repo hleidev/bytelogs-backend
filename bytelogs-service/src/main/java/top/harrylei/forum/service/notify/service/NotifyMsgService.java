@@ -1,7 +1,7 @@
 package top.harrylei.forum.service.notify.service;
 
 import top.harrylei.forum.api.model.event.NotificationEvent;
-import top.harrylei.forum.api.model.vo.notify.dto.NotifyMsgDTO;
+import top.harrylei.forum.api.model.vo.notify.vo.NotifyMsgVO;
 import top.harrylei.forum.api.model.vo.notify.req.NotifyMsgQueryParam;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 
@@ -26,7 +26,7 @@ public interface NotifyMsgService {
      * @param param  查询参数
      * @return 通知消息分页结果
      */
-    PageVO<NotifyMsgDTO> getMyNotifications(Long userId, NotifyMsgQueryParam param);
+    PageVO<NotifyMsgVO> getMyNotifications(Long userId, NotifyMsgQueryParam param);
 
     /**
      * 标记消息为已读

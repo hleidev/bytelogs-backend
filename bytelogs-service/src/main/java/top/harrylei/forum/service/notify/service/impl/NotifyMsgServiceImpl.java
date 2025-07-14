@@ -7,8 +7,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import top.harrylei.forum.api.model.event.NotificationEvent;
 import top.harrylei.forum.api.model.vo.notify.dto.NotifyMsgDTO;
-import top.harrylei.forum.api.model.vo.page.PageHelper;
 import top.harrylei.forum.api.model.vo.notify.req.NotifyMsgQueryParam;
+import top.harrylei.forum.api.model.vo.notify.vo.NotifyMsgVO;
+import top.harrylei.forum.api.model.vo.page.PageHelper;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.user.dto.UserInfoDetailDTO;
 import top.harrylei.forum.service.notify.converted.NotifyMsgStructMapper;
@@ -132,26 +133,22 @@ public class NotifyMsgServiceImpl implements NotifyMsgService {
     }
 
     @Override
-    public PageVO<NotifyMsgDTO> getMyNotifications(Long userId, NotifyMsgQueryParam param) {
+    public PageVO<NotifyMsgVO> getMyNotifications(Long userId, NotifyMsgQueryParam param) {
         // TODO: 根据查询参数构建查询条件（状态、类型过滤）
-        Page<NotifyMsgDO> page = notifyMsgDAO.pageByUserId(
-                userId,
-                (long) param.getPageNum(),
-                (long) param.getPageSize()
-        );
+        Page<NotifyMsgDO> page = notifyMsgDAO.pageByUserId(userId, param.getPageNum(), param.getPageSize());
 
         if (page.getRecords().isEmpty()) {
             return PageHelper.empty();
         }
 
-        // 转换为DTO并填充用户信息
-        List<NotifyMsgDTO> dtoList = page.getRecords().stream()
-                .map(this::enrichNotifyMsgDTO)
+        // 转换为VO并填充用户信息
+        List<NotifyMsgVO> voList = page.getRecords().stream()
+                .map(this::fillNotifyMsgVO)
                 .toList();
 
         // 构建分页结果
-        IPage<NotifyMsgDTO> resultPage = new Page<>(page.getCurrent(), page.getSize(), page.getTotal());
-        resultPage.setRecords(dtoList);
+        IPage<NotifyMsgVO> resultPage = new Page<>(page.getCurrent(), page.getSize(), page.getTotal());
+        resultPage.setRecords(voList);
 
         return PageHelper.build(resultPage);
     }
@@ -175,12 +172,12 @@ public class NotifyMsgServiceImpl implements NotifyMsgService {
     }
 
     /**
-     * 丰富通知消息DTO信息
+     * 填充通知消息VO信息
      *
      * @param notifyMsg 通知消息DO
-     * @return 通知消息DTO
+     * @return 通知消息VO
      */
-    private NotifyMsgDTO enrichNotifyMsgDTO(NotifyMsgDO notifyMsg) {
+    private NotifyMsgVO fillNotifyMsgVO(NotifyMsgDO notifyMsg) {
         NotifyMsgDTO dto = notifyMsgStructMapper.toDTO(notifyMsg);
 
         // 填充操作用户信息
@@ -192,8 +189,7 @@ public class NotifyMsgServiceImpl implements NotifyMsgService {
             }
         }
 
-        // TODO: 根据需要填充 relatedInfo（文章标题、评论内容等）
-
-        return dto;
+        // 转换为VO
+        return notifyMsgStructMapper.toVO(dto);
     }
 }

@@ -24,7 +24,7 @@ public class NotifyMsgDAO extends ServiceImpl<NotifyMsgMapper, NotifyMsgDO> {
      * @param pageSize 页大小
      * @return 通知列表
      */
-    public Page<NotifyMsgDO> pageByUserId(Long userId, Long pageNum, Long pageSize) {
+    public Page<NotifyMsgDO> pageByUserId(Long userId, Integer pageNum, Integer pageSize) {
         return lambdaQuery()
                 .eq(NotifyMsgDO::getNotifyUserId, userId)
                 .orderByDesc(NotifyMsgDO::getId)
