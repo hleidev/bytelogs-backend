@@ -2,14 +2,14 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/${database.name}?useUnicode=true&allowPublicKeyRetrieval=true&autoReconnect=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai
     username: root
-    password: Lyhswbba
+    password: your_mysql_password
 
   data:
     redis:
       host: 127.0.0.1
       port: 6379
       database: 12
-      password: Lyhswbba
+      password: your_redis_password
       timeout: 10s
       lettuce:
         pool:

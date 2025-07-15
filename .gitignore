@@ -41,3 +41,7 @@ build/
 prompt.md
 update.md
 .java-version
+
+### Configuration Files with Sensitive Data ###
+**/resources-env/**/application-dal.yml
+**/resources-env/**/application-mq.yml
