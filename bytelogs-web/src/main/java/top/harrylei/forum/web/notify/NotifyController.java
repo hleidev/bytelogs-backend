@@ -44,4 +44,44 @@ public class NotifyController {
         PageVO<NotifyMsgVO> notifications = notifyMsgService.getMyNotifications(userId, param);
         return ResVO.ok(notifications);
     }
+
+    /**
+     * 标记指定通知为已读
+     *
+     * @param msgId 通知消息ID
+     * @return 操作结果
+     */
+    @Operation(summary = "标记通知为已读", description = "将指定的通知消息标记为已读状态")
+    @PostMapping("/read/{msgId}")
+    public ResVO<Void> markAsRead(@PathVariable Long msgId) {
+        Long userId = ReqInfoContext.getContext().getUserId();
+        notifyMsgService.markAsRead(msgId, userId);
+        return ResVO.ok();
+    }
+
+    /**
+     * 标记所有通知为已读
+     *
+     * @return 操作结果
+     */
+    @Operation(summary = "标记所有通知为已读", description = "将当前用户的所有通知消息标记为已读状态")
+    @PostMapping("/read/all")
+    public ResVO<Void> markAllAsRead() {
+        Long userId = ReqInfoContext.getContext().getUserId();
+        notifyMsgService.markAllAsRead(userId);
+        return ResVO.ok();
+    }
+
+    /**
+     * 获取未读通知数量
+     *
+     * @return 未读通知数量
+     */
+    @Operation(summary = "获取未读通知数量", description = "获取当前用户的未读通知消息数量")
+    @GetMapping("/unread/count")
+    public ResVO<Long> getUnreadCount() {
+        Long userId = ReqInfoContext.getContext().getUserId();
+        Long count = notifyMsgService.getUnreadCount(userId);
+        return ResVO.ok(count);
+    }
 }

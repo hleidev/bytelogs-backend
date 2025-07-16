@@ -31,9 +31,10 @@ public interface NotifyMsgService {
     /**
      * 标记消息为已读
      *
-     * @param msgId 消息ID
+     * @param msgId  消息ID
+     * @param userId 用户ID（权限控制）
      */
-    void markAsRead(Long msgId);
+    void markAsRead(Long msgId, Long userId);
 
     /**
      * 标记用户所有消息为已读

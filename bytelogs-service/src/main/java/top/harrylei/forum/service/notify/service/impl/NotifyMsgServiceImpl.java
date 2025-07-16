@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import top.harrylei.forum.api.model.enums.NotifyMsgStateEnum;
+import top.harrylei.forum.api.model.enums.NotifyTypeEnum;
 import top.harrylei.forum.api.model.event.NotificationEvent;
 import top.harrylei.forum.api.model.vo.notify.dto.NotifyMsgDTO;
 import top.harrylei.forum.api.model.vo.notify.req.NotifyMsgQueryParam;
@@ -46,7 +48,6 @@ public class NotifyMsgServiceImpl implements NotifyMsgService {
             // 3. 保存到数据库
             notifyMsgDAO.save(notifyMsg);
 
-            log.info("通知消息保存成功: eventId={}, msgId={}", event.getEventId(), notifyMsg.getId());
 
         } catch (Exception e) {
             log.error("处理通知事件失败: eventId={}", event.getEventId(), e);
@@ -67,7 +68,8 @@ public class NotifyMsgServiceImpl implements NotifyMsgService {
         }
 
         // 2. 系统通知总是发送
-        if (event.getNotifyType().isSystemNotification()) {
+        NotifyTypeEnum notifyType = NotifyTypeEnum.fromCode(event.getNotifyType());
+        if (notifyType != null && notifyType.isSystemNotification()) {
             return true;
         }
 
@@ -103,9 +105,9 @@ public class NotifyMsgServiceImpl implements NotifyMsgService {
                 .setNotifyUserId(event.getTargetUserId())
                 .setOperateUserId(event.getOperateUserId())
                 .setMsg(message)
-                .setType(event.getNotifyType().getCode())
-                .setContentType(event.getContentType().getCode())
-                .setState(0);
+                .setType(event.getNotifyType())
+                .setContentType(event.getContentType())
+                .setState(NotifyMsgStateEnum.UNREAD.getCode());
     }
 
     /**
@@ -116,7 +118,9 @@ public class NotifyMsgServiceImpl implements NotifyMsgService {
      * @return 消息内容
      */
     private String buildMessageContent(NotificationEvent event, String operateUserName) {
-        return switch (event.getNotifyType()) {
+        NotifyTypeEnum notifyType = NotifyTypeEnum.fromCode(event.getNotifyType());
+        
+        return switch (notifyType) {
             case PRAISE -> String.format("%s 赞了你的文章", operateUserName);
             case COMMENT -> String.format("%s 评论了你的文章", operateUserName);
             case REPLY -> String.format("%s 回复了你的评论", operateUserName);
@@ -137,16 +141,23 @@ public class NotifyMsgServiceImpl implements NotifyMsgService {
     }
 
     @Override
-    public void markAsRead(Long msgId) {
-        // TODO: 从当前登录用户上下文获取userId，这里暂时传null
-        // notifyMsgDAO.markAsRead(msgId, getCurrentUserId());
-        log.warn("markAsRead方法需要传入userId参数进行权限控制: msgId={}", msgId);
+    public void markAsRead(Long msgId, Long userId) {
+        boolean success = notifyMsgDAO.markAsRead(msgId, userId);
+        if (success) {
+            log.info("标记消息为已读: msgId={}, userId={}", msgId, userId);
+        } else {
+            log.warn("标记消息为已读失败: msgId={}, userId={}", msgId, userId);
+        }
     }
 
     @Override
     public void markAllAsRead(Long userId) {
-        notifyMsgDAO.markAllAsRead(userId);
-        log.info("标记用户所有消息为已读: userId={}", userId);
+        boolean success = notifyMsgDAO.markAllAsRead(userId);
+        if (success) {
+            log.info("标记全部消息为已读: userId={}", userId);
+        } else {
+            log.warn("标记全部消息为已读失败: userId={}", userId);
+        }
     }
 
     @Override

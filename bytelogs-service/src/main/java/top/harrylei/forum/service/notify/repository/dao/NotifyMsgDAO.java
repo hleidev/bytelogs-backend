@@ -3,10 +3,9 @@ package top.harrylei.forum.service.notify.repository.dao;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Repository;
+import top.harrylei.forum.api.model.enums.NotifyMsgStateEnum;
 import top.harrylei.forum.service.notify.repository.entity.NotifyMsgDO;
 import top.harrylei.forum.service.notify.repository.mapper.NotifyMsgMapper;
-
-import java.util.List;
 
 /**
  * 通知消息访问对象
@@ -40,7 +39,7 @@ public class NotifyMsgDAO extends ServiceImpl<NotifyMsgMapper, NotifyMsgDO> {
     public Long countUnreadByUserId(Long userId) {
         return lambdaQuery()
                 .eq(NotifyMsgDO::getNotifyUserId, userId)
-                .eq(NotifyMsgDO::getState, 0)
+                .eq(NotifyMsgDO::getState, NotifyMsgStateEnum.UNREAD.getCode())
                 .count();
     }
 
@@ -55,7 +54,7 @@ public class NotifyMsgDAO extends ServiceImpl<NotifyMsgMapper, NotifyMsgDO> {
         return lambdaUpdate()
                 .eq(NotifyMsgDO::getId, notifyId)
                 .eq(NotifyMsgDO::getNotifyUserId, userId)
-                .set(NotifyMsgDO::getState, 1)
+                .set(NotifyMsgDO::getState, NotifyMsgStateEnum.READ.getCode())
                 .update();
     }
 
@@ -68,23 +67,8 @@ public class NotifyMsgDAO extends ServiceImpl<NotifyMsgMapper, NotifyMsgDO> {
     public boolean markAllAsRead(Long userId) {
         return lambdaUpdate()
                 .eq(NotifyMsgDO::getNotifyUserId, userId)
-                .eq(NotifyMsgDO::getState, 0)
-                .set(NotifyMsgDO::getState, 1)
+                .eq(NotifyMsgDO::getState, NotifyMsgStateEnum.UNREAD.getCode())
+                .set(NotifyMsgDO::getState, NotifyMsgStateEnum.READ.getCode())
                 .update();
-    }
-
-    /**
-     * 查询用户最近的通知列表（不分页）
-     *
-     * @param userId 用户ID
-     * @param limit  数量限制
-     * @return 通知列表
-     */
-    public List<NotifyMsgDO> listRecentByUserId(Long userId, Integer limit) {
-        return lambdaQuery()
-                .eq(NotifyMsgDO::getNotifyUserId, userId)
-                .orderByDesc(NotifyMsgDO::getId)
-                .last("LIMIT " + limit)
-                .list();
     }
 }
