@@ -2,6 +2,7 @@ package top.harrylei.forum.service.notify.converted;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import top.harrylei.forum.api.model.enums.NotifyMsgStateEnum;
 import top.harrylei.forum.api.model.enums.NotifyTypeEnum;
 import top.harrylei.forum.api.model.enums.comment.ContentTypeEnum;
 import top.harrylei.forum.api.model.vo.notify.dto.NotifyMsgDTO;
@@ -23,12 +24,15 @@ public interface NotifyMsgStructMapper {
 
     NotifyMsgVO toVO(NotifyMsgDTO dto);
 
-
-    default NotifyTypeEnum map(Integer code) {
+    default NotifyTypeEnum mapType(Integer code) {
         return code != null ? NotifyTypeEnum.fromCode(code) : null;
     }
 
     default ContentTypeEnum mapContentType(Integer code) {
         return code != null ? ContentTypeEnum.fromCode(code) : null;
+    }
+
+    default NotifyMsgStateEnum mapState(Integer code) {
+        return code != null ? NotifyMsgStateEnum.fromCode(code) : null;
     }
 }

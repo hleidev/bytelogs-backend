@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import top.harrylei.forum.api.model.entity.BaseVO;
+import top.harrylei.forum.api.model.enums.NotifyMsgStateEnum;
 import top.harrylei.forum.api.model.enums.NotifyTypeEnum;
 import top.harrylei.forum.api.model.enums.comment.ContentTypeEnum;
 
@@ -66,8 +67,8 @@ public class NotifyMsgVO extends BaseVO {
     private String msg;
 
     /**
-     * 阅读状态：0-未读，1-已读
+     * 阅读状态
      */
-    @Schema(description = "阅读状态", example = "0")
-    private Integer state;
+    @Schema(description = "阅读状态")
+    private NotifyMsgStateEnum state;
 }

@@ -45,11 +45,7 @@ public class KafkaEventPublisher {
                     kafkaTemplate.send(KafkaTopics.NOTIFICATION_EVENTS, event.getEventId(), event);
 
             future.whenComplete((result, ex) -> {
-                if (ex == null) {
-                    log.info("通知事件发送成功: eventId={}, type={}, operateUser={}, targetUser={}",
-                             event.getEventId(), event.getNotifyType(),
-                             event.getOperateUserId(), event.getTargetUserId());
-                } else {
+                if (ex != null) {
                     log.error("通知事件发送失败: eventId={}, event={}", event.getEventId(), event, ex);
                 }
             });
@@ -90,8 +86,8 @@ public class KafkaEventPublisher {
                 .operateUserId(operateUserId)
                 .targetUserId(targetUserId)
                 .relatedId(relatedId)
-                .notifyType(notifyType)
-                .contentType(contentType)
+                .notifyType(notifyType.getCode())
+                .contentType(contentType.getCode())
                 .extra(extra)
                 .source("user-behavior")
                 .build();
@@ -121,10 +117,7 @@ public class KafkaEventPublisher {
                     kafkaTemplate.send(KafkaTopics.SYSTEM_EVENTS, event.getEventId(), event);
 
             future.whenComplete((result, ex) -> {
-                if (ex == null) {
-                    log.info("系统事件发送成功: eventId={}, type={}",
-                             event.getEventId(), event.getNotifyType());
-                } else {
+                if (ex != null) {
                     log.error("系统事件发送失败: eventId={}, event={}", event.getEventId(), event, ex);
                 }
             });

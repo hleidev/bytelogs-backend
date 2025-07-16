@@ -127,8 +127,15 @@
     <!-- 第三方库日志级别 -->
     <logger name="org.springframework" level="INFO"/>
     <logger name="org.hibernate" level="INFO"/>
-    <logger name="org.apache" level="INFO"/>
+    <logger name="org.apache" level="WARN"/>
     <logger name="com.zaxxer.hikari" level="INFO"/>
+    
+    <!-- Kafka相关日志级别 -->
+    <logger name="org.apache.kafka" level="WARN"/>
+    <logger name="org.springframework.kafka" level="INFO"/>
+    <logger name="kafka.coordinator" level="WARN"/>
+    <logger name="kafka.consumer" level="WARN"/>
+    <logger name="kafka.producer" level="WARN"/>
 
     <!-- 根日志配置 -->
     <root level="INFO">

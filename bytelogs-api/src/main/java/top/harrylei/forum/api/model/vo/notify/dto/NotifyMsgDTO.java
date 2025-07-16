@@ -3,6 +3,7 @@ package top.harrylei.forum.api.model.vo.notify.dto;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import top.harrylei.forum.api.model.entity.BaseDTO;
+import top.harrylei.forum.api.model.enums.NotifyMsgStateEnum;
 import top.harrylei.forum.api.model.enums.NotifyTypeEnum;
 import top.harrylei.forum.api.model.enums.comment.ContentTypeEnum;
 
@@ -56,8 +57,8 @@ public class NotifyMsgDTO extends BaseDTO {
     private String msg;
 
     /**
-     * 1 已读/ 0 未读
+     * 阅读状态
      */
-    private Integer state;
+    private NotifyMsgStateEnum state;
 
 }
