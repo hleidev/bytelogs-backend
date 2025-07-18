@@ -12,14 +12,15 @@ public class RedisKeyConstants {
 
     // 模块前缀
     public static final String USER = GLOBAL_PREFIX + "user:";
-    public static final String STATISTICS = GLOBAL_PREFIX + "statistics:";
     public static final String LOCK = GLOBAL_PREFIX + "lock:";
+    public static final String KAFKA = GLOBAL_PREFIX + "kafka:";
 
     // 功能分类
     public static final String USER_TOKEN = USER + "token:";
     public static final String USER_INFO = USER + "info:";
     public static final String DISTRIBUTED_LOCK = LOCK + "distributed:";
     public static final String DUPLICATE_LOCK = LOCK + "duplicate:";
+    public static final String KAFKA_IDEMPOTENCY = KAFKA + "idempotency:";
 
 
     /**
@@ -60,6 +61,16 @@ public class RedisKeyConstants {
      */
     public static String getDuplicateLockKey(String lockKey) {
         return DUPLICATE_LOCK + lockKey;
+    }
+
+    /**
+     * 构建Kafka幂等性检查key
+     *
+     * @param eventId 事件ID
+     * @return Kafka幂等性检查key
+     */
+    public static String getKafkaIdempotencyKey(String eventId) {
+        return KAFKA_IDEMPOTENCY + eventId;
     }
 
 }

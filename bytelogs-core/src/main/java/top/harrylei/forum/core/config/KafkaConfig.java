@@ -13,7 +13,9 @@ import org.springframework.kafka.core.*;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
+import org.springframework.util.backoff.ExponentialBackOff;
 import top.harrylei.forum.api.model.event.NotificationEvent;
+import top.harrylei.forum.core.exception.NonRetryableException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,9 +41,29 @@ public class KafkaConfig {
     @Bean
     public ProducerFactory<String, NotificationEvent> producerFactory() {
         Map<String, Object> configProps = new HashMap<>();
+
+        // 基础连接配置
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+
+        // 序列化配置
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+
+        // 性能优化配置
+        configProps.put(ProducerConfig.BATCH_SIZE_CONFIG, 16384);
+        configProps.put(ProducerConfig.LINGER_MS_CONFIG, 50);
+        configProps.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "snappy");
+
+        // 可靠性配置
+        configProps.put(ProducerConfig.ACKS_CONFIG, "all");
+        configProps.put(ProducerConfig.RETRIES_CONFIG, Integer.MAX_VALUE);
+        configProps.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
+        configProps.put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, 5);
+
+        // 超时配置
+        configProps.put(ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG, 30000);
+        configProps.put(ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG, 120000);
+
         return new DefaultKafkaProducerFactory<>(configProps);
     }
 
@@ -59,12 +81,25 @@ public class KafkaConfig {
     @Bean
     public ConsumerFactory<String, NotificationEvent> consumerFactory() {
         Map<String, Object> props = new HashMap<>();
+
+        // 基础连接配置
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+
+        // 反序列化配置
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+
+        // 消费策略配置
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, true);
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
+
+        // 性能优化配置
+        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 100);
+        props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, 30000);
+        props.put(ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG, 10000);
+        props.put(ConsumerConfig.FETCH_MIN_BYTES_CONFIG, 1024);
+        props.put(ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG, 5000);
 
         // JSON反序列化配置
         props.put(JsonDeserializer.TRUSTED_PACKAGES,
@@ -76,14 +111,43 @@ public class KafkaConfig {
     }
 
     /**
+     * 错误处理器配置
+     */
+    @Bean
+    public DefaultErrorHandler errorHandler() {
+        // 指数退避重试策略
+        ExponentialBackOff backOff = new ExponentialBackOff(1000L, 2.0);
+        backOff.setMaxInterval(16000L);
+        backOff.setMaxElapsedTime(60000L);
+
+        DefaultErrorHandler handler = new DefaultErrorHandler(backOff);
+
+        // 不重试的异常类型
+        handler.addNotRetryableExceptions(IllegalArgumentException.class, NonRetryableException.class);
+
+        return handler;
+    }
+
+    /**
      * 监听器容器工厂
      */
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, NotificationEvent> kafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, NotificationEvent> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
+
+        // 基础配置
         factory.setConsumerFactory(consumerFactory());
-        factory.setCommonErrorHandler(new DefaultErrorHandler());
+        factory.setCommonErrorHandler(errorHandler());
+
+        // 并发配置
+        factory.setConcurrency(3);
+
+        // 消息确认模式
+        factory.getContainerProperties().setAckMode(
+                org.springframework.kafka.listener.ContainerProperties.AckMode.MANUAL_IMMEDIATE
+        );
+
         return factory;
     }
 }
