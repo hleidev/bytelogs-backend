@@ -1,5 +1,6 @@
 package top.harrylei.forum.core.config;
 
+import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -8,13 +9,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
+import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.*;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.springframework.util.backoff.ExponentialBackOff;
 import top.harrylei.forum.api.model.event.NotificationEvent;
+import top.harrylei.forum.core.config.properties.KafkaProperties;
 import top.harrylei.forum.core.exception.NonRetryableException;
 
 import java.util.HashMap;
@@ -27,7 +31,10 @@ import java.util.Map;
  */
 @Configuration
 @EnableKafka
+@RequiredArgsConstructor
 public class KafkaConfig {
+
+    private final KafkaProperties kafkaProperties;
 
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
@@ -50,8 +57,8 @@ public class KafkaConfig {
         configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
 
         // 性能优化配置
-        configProps.put(ProducerConfig.BATCH_SIZE_CONFIG, 16384);
-        configProps.put(ProducerConfig.LINGER_MS_CONFIG, 50);
+        configProps.put(ProducerConfig.BATCH_SIZE_CONFIG, kafkaProperties.getBatchSize());
+        configProps.put(ProducerConfig.LINGER_MS_CONFIG, kafkaProperties.getLingerMs());
         configProps.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "snappy");
 
         // 可靠性配置
@@ -61,8 +68,8 @@ public class KafkaConfig {
         configProps.put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, 5);
 
         // 超时配置
-        configProps.put(ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG, 30000);
-        configProps.put(ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG, 120000);
+        configProps.put(ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG, kafkaProperties.getRequestTimeoutMs());
+        configProps.put(ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG, kafkaProperties.getDeliveryTimeoutMs());
 
         return new DefaultKafkaProducerFactory<>(configProps);
     }
@@ -95,11 +102,11 @@ public class KafkaConfig {
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
 
         // 性能优化配置
-        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 100);
-        props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, 30000);
-        props.put(ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG, 10000);
-        props.put(ConsumerConfig.FETCH_MIN_BYTES_CONFIG, 1024);
-        props.put(ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG, 5000);
+        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, kafkaProperties.getMaxPollRecords());
+        props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, kafkaProperties.getSessionTimeoutMs());
+        props.put(ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG, kafkaProperties.getHeartbeatIntervalMs());
+        props.put(ConsumerConfig.FETCH_MIN_BYTES_CONFIG, kafkaProperties.getFetchMinBytes());
+        props.put(ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG, kafkaProperties.getFetchMaxWaitMs());
 
         // JSON反序列化配置
         props.put(JsonDeserializer.TRUSTED_PACKAGES,
@@ -116,9 +123,9 @@ public class KafkaConfig {
     @Bean
     public DefaultErrorHandler errorHandler() {
         // 指数退避重试策略
-        ExponentialBackOff backOff = new ExponentialBackOff(1000L, 2.0);
-        backOff.setMaxInterval(16000L);
-        backOff.setMaxElapsedTime(60000L);
+        ExponentialBackOff backOff = new ExponentialBackOff(kafkaProperties.getRetryInitialInterval(), 2.0);
+        backOff.setMaxInterval(kafkaProperties.getRetryMaxInterval());
+        backOff.setMaxElapsedTime(kafkaProperties.getRetryMaxElapsedTime());
 
         DefaultErrorHandler handler = new DefaultErrorHandler(backOff);
 
@@ -141,7 +148,7 @@ public class KafkaConfig {
         factory.setCommonErrorHandler(errorHandler());
 
         // 并发配置
-        factory.setConcurrency(3);
+        factory.setConcurrency(kafkaProperties.getConcurrency());
 
         // 消息确认模式
         factory.getContainerProperties().setAckMode(
@@ -149,5 +156,27 @@ public class KafkaConfig {
         );
 
         return factory;
+    }
+
+    /**
+     * 通知事件Topic
+     */
+    @Bean
+    public NewTopic notificationTopic() {
+        return TopicBuilder.name("bytelogs-notification-events")
+                .partitions(kafkaProperties.getPartitions())
+                .replicas(kafkaProperties.getReplicas())
+                .build();
+    }
+
+    /**
+     * 系统事件Topic
+     */
+    @Bean
+    public NewTopic systemTopic() {
+        return TopicBuilder.name("bytelogs-system-events")
+                .partitions(kafkaProperties.getPartitions())
+                .replicas(kafkaProperties.getReplicas())
+                .build();
     }
 }
