@@ -106,6 +106,11 @@ public class ArticleServiceImpl implements ArticleService {
             articleTagService.saveBatch(articleId, tagIds);
         }
 
+        // 如果是发布状态，发送文章发布通知给关注者
+        if (PublishStatusEnum.PUBLISHED.equals(finalStatus)) {
+            publishArticleNotificationEvent(article);
+        }
+
         log.info("新建文章成功 articleId={} title={}", articleId, articleDTO.getTitle());
         return articleId;
     }
