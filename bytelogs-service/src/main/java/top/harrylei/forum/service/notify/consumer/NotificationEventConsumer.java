@@ -73,7 +73,8 @@ public class NotificationEventConsumer {
             // 参数错误，不重试，释放处理权限
             log.error("通知事件参数错误: eventId={}, error={}", event.getEventId(), e.getMessage());
             kafkaIdempotencyService.releaseProcessingPermission(event.getEventId());
-            acknowledgment.acknowledge(); // 确认消息，避免重复处理
+            // 确认消息，避免重复处理
+            acknowledgment.acknowledge();
             throw new NonRetryableException("通知事件参数错误", e);
 
         } catch (Exception e) {
@@ -130,7 +131,8 @@ public class NotificationEventConsumer {
             // 参数错误，不重试，释放处理权限
             log.error("系统事件参数错误: eventId={}, error={}", event.getEventId(), e.getMessage());
             kafkaIdempotencyService.releaseProcessingPermission(event.getEventId());
-            acknowledgment.acknowledge(); // 确认消息，避免重复处理
+            // 确认消息，避免重复处理
+            acknowledgment.acknowledge();
             throw new NonRetryableException("系统事件参数错误", e);
 
         } catch (Exception e) {

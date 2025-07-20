@@ -73,15 +73,8 @@ public class NotifyMsgServiceImpl implements NotifyMsgService {
             return true;
         }
 
-        // 3. 检查目标用户是否存在（防御性编程，理论上不应该发生）
-        UserInfoDetailDTO targetUser = userCacheService.getUserInfo(event.getTargetUserId());
-        if (targetUser == null) {
-            log.error("目标用户不存在，数据异常: userId={}, eventId={}", event.getTargetUserId(), event.getEventId());
-            return false;
-        }
-
-        // 4. 可以在这里添加用户通知偏好设置检查
-        // 例如：用户是否关闭了某类型通知
+        // 3. 可以在这里添加用户通知偏好设置检查
+        // TODO 例如：用户是否关闭了某类型通知
 
         return true;
     }
@@ -119,7 +112,7 @@ public class NotifyMsgServiceImpl implements NotifyMsgService {
      */
     private String buildMessageContent(NotificationEvent event, String operateUserName) {
         NotifyTypeEnum notifyType = NotifyTypeEnum.fromCode(event.getNotifyType());
-        
+
         return switch (notifyType) {
             case PRAISE -> String.format("%s 赞了你的文章", operateUserName);
             case COMMENT -> String.format("%s 评论了你的文章", operateUserName);
