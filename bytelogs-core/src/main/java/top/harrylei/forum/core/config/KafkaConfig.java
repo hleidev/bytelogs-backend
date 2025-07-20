@@ -1,6 +1,7 @@
 package top.harrylei.forum.core.config;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -9,15 +10,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
-import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.*;
+import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.springframework.util.backoff.ExponentialBackOff;
 import top.harrylei.forum.api.model.event.NotificationEvent;
+import top.harrylei.forum.core.common.constans.KafkaTopics;
 import top.harrylei.forum.core.config.properties.KafkaProperties;
 import top.harrylei.forum.core.exception.NonRetryableException;
 
@@ -140,8 +142,7 @@ public class KafkaConfig {
      */
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, NotificationEvent> kafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, NotificationEvent> factory =
-                new ConcurrentKafkaListenerContainerFactory<>();
+        ConcurrentKafkaListenerContainerFactory<String, NotificationEvent> factory = new ConcurrentKafkaListenerContainerFactory<>();
 
         // 基础配置
         factory.setConsumerFactory(consumerFactory());
@@ -151,9 +152,7 @@ public class KafkaConfig {
         factory.setConcurrency(kafkaProperties.getConcurrency());
 
         // 消息确认模式
-        factory.getContainerProperties().setAckMode(
-                org.springframework.kafka.listener.ContainerProperties.AckMode.MANUAL_IMMEDIATE
-        );
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
 
         return factory;
     }
@@ -163,7 +162,7 @@ public class KafkaConfig {
      */
     @Bean
     public NewTopic notificationTopic() {
-        return TopicBuilder.name("bytelogs-notification-events")
+        return TopicBuilder.name(KafkaTopics.NOTIFICATION_EVENTS)
                 .partitions(kafkaProperties.getPartitions())
                 .replicas(kafkaProperties.getReplicas())
                 .build();
@@ -174,7 +173,7 @@ public class KafkaConfig {
      */
     @Bean
     public NewTopic systemTopic() {
-        return TopicBuilder.name("bytelogs-system-events")
+        return TopicBuilder.name(KafkaTopics.SYSTEM_EVENTS)
                 .partitions(kafkaProperties.getPartitions())
                 .replicas(kafkaProperties.getReplicas())
                 .build();
