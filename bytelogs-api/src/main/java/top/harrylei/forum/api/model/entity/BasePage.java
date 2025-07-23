@@ -78,7 +78,7 @@ public class BasePage implements Serializable {
                 if (parts.length == 2) {
                     String field = parts[0].trim();
                     String direction = parts[1].trim();
-                    
+
                     String column = fieldMapping.get(field);
                     if (column != null && StringUtils.hasText(direction)) {
                         boolean isAsc = "asc".equalsIgnoreCase(direction);
