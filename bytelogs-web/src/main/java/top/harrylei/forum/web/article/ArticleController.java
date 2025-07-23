@@ -19,7 +19,8 @@ import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.security.permission.RequiresLogin;
 import top.harrylei.forum.service.article.converted.ArticleStructMapper;
-import top.harrylei.forum.service.article.service.ArticleService;
+import top.harrylei.forum.service.article.service.ArticleCommandService;
+import top.harrylei.forum.service.article.service.ArticleQueryService;
 import top.harrylei.forum.service.article.service.ArticleVersionService;
 
 import java.util.List;
@@ -37,23 +38,24 @@ import java.util.List;
 @Validated
 public class ArticleController {
 
-    private final ArticleService articleService;
+    private final ArticleCommandService articleCommandService;
+    private final ArticleQueryService articleQueryService;
     private final ArticleStructMapper articleStructMapper;
     private final ArticleVersionService articleVersionService;
 
     /**
      * 用户新建文章
      *
-     * @param articlePostReq 文章信息请求
+     * @param articleSaveReq 文章信息请求
      * @return 新建文章ID
      */
     @RequiresLogin
     @Operation(summary = "新建文章", description = "用户保存文章（支持草稿/提交审核）")
     @PostMapping
-    public ResVO<Long> create(@Valid @RequestBody ArticlePostReq articlePostReq) {
-        ArticleDTO articleDTO = articleStructMapper.toDTO(articlePostReq);
+    public ResVO<Long> save(@Valid @RequestBody ArticleSaveReq articleSaveReq) {
+        ArticleDTO articleDTO = articleStructMapper.toDTO(articleSaveReq);
         articleDTO.setUserId(ReqInfoContext.getContext().getUserId());
-        Long articleId = articleService.saveArticle(articleDTO);
+        Long articleId = articleCommandService.saveArticle(articleDTO);
         return ResVO.ok(articleId);
     }
 
@@ -68,7 +70,7 @@ public class ArticleController {
     @PutMapping
     public ResVO<ArticleVO> update(@Valid @RequestBody ArticleUpdateReq articleUpdateReq) {
         ArticleDTO articleDTO = articleStructMapper.toDTO(articleUpdateReq);
-        ArticleVO article = articleService.updateArticle(articleDTO);
+        ArticleVO article = articleCommandService.updateArticle(articleDTO);
         return ResVO.ok(article);
     }
 
@@ -82,7 +84,7 @@ public class ArticleController {
     @Operation(summary = "删除文章", description = "用户删除文章")
     @DeleteMapping("/{articleId}")
     public ResVO<Void> delete(@PathVariable Long articleId) {
-        articleService.deleteArticle(articleId);
+        articleCommandService.deleteArticle(articleId);
         return ResVO.ok();
     }
 
@@ -96,7 +98,7 @@ public class ArticleController {
     @Operation(summary = "恢复文章", description = "用户恢复文章")
     @PutMapping("/{articleId}/restore")
     public ResVO<Void> restore(@PathVariable Long articleId) {
-        articleService.restoreArticle(articleId);
+        articleCommandService.restoreArticle(articleId);
         return ResVO.ok();
     }
 
@@ -109,7 +111,21 @@ public class ArticleController {
     @Operation(summary = "文章详细", description = "查询文章详细（支持未登录用户访问已发布文章）")
     @GetMapping("/{articleId}")
     public ResVO<ArticleDetailVO> detail(@PathVariable Long articleId) {
-        ArticleDetailVO vo = articleService.getArticleDetail(articleId);
+        ArticleDetailVO vo = articleQueryService.getArticleDetail(articleId);
+        return ResVO.ok(vo);
+    }
+
+    /**
+     * 文章草稿
+     *
+     * @param articleId 文章ID
+     * @return 文章草稿内容
+     */
+    @RequiresLogin
+    @Operation(summary = "文章草稿", description = "获取文章草稿内容（用于编辑，仅作者可访问）")
+    @GetMapping("/{articleId}/draft")
+    public ResVO<ArticleVO> draft(@NotNull(message = "文章ID不能为空") @PathVariable Long articleId) {
+        ArticleVO vo = articleCommandService.getArticleDraft(articleId);
         return ResVO.ok(vo);
     }
 
@@ -123,7 +139,7 @@ public class ArticleController {
     @Operation(summary = "发布文章", description = "用户发布文章")
     @PostMapping("/{articleId}/publish")
     public ResVO<Void> publish(@NotNull(message = "文章ID不能为空") @PathVariable Long articleId) {
-        articleService.publishArticle(articleId);
+        articleCommandService.publishArticle(articleId);
         return ResVO.ok();
     }
 
@@ -137,7 +153,7 @@ public class ArticleController {
     @Operation(summary = "撤销发布", description = "用户撤销文章发布")
     @PostMapping("/{articleId}/unpublish")
     public ResVO<Void> unpublish(@NotNull(message = "文章ID不能为空") @PathVariable Long articleId) {
-        articleService.unpublishArticle(articleId);
+        articleCommandService.unpublishArticle(articleId);
         return ResVO.ok();
     }
 
@@ -157,7 +173,7 @@ public class ArticleController {
     @Operation(summary = "分页查询", description = "智能分页查询，支持公开查询、我的文章、指定用户文章等多种模式")
     @GetMapping("/page")
     public ResVO<PageVO<ArticleVO>> pageQuery(@Valid ArticleQueryParam queryParam) {
-        PageVO<ArticleVO> page = articleService.pageQuery(queryParam);
+        PageVO<ArticleVO> page = articleQueryService.pageQuery(queryParam);
         return ResVO.ok(page);
     }
 
@@ -171,7 +187,8 @@ public class ArticleController {
     @RequiresLogin
     @PutMapping("/action")
     public ResVO<Void> action(@Valid @RequestBody ArticleActionReq req) {
-        articleService.actionArticle(req.getArticleId(), req.getType());
+        Long userId = ReqInfoContext.getContext().getUserId();
+        articleCommandService.actionArticle(userId, req.getArticleId(), req.getType());
         return ResVO.ok();
     }
 
@@ -237,7 +254,7 @@ public class ArticleController {
     public ResVO<ArticleVO> rollbackVersion(
             @NotNull(message = "文章ID不能为空") @PathVariable Long articleId,
             @NotNull(message = "版本号不能为空") @PathVariable Integer version) {
-        ArticleVO result = articleService.rollbackToVersion(articleId, version);
+        ArticleVO result = articleCommandService.rollbackToVersion(articleId, version);
         return ResVO.ok(result);
     }
 }

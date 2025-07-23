@@ -10,7 +10,7 @@ import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.service.article.service.ArticleManagementService;
-import top.harrylei.forum.service.article.service.ArticleService;
+import top.harrylei.forum.service.article.service.ArticleCommandService;
 
 import java.util.List;
 
@@ -24,7 +24,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ArticleManagementServiceImpl implements ArticleManagementService {
 
-    private final ArticleService articleService;
+    private final ArticleCommandService articleCommandService;
 
     /**
      * 审核文章
@@ -42,7 +42,7 @@ public class ArticleManagementServiceImpl implements ArticleManagementService {
         // 批量处理文章状态更新
         for (Long articleId : articleIds) {
             try {
-                articleService.updateArticleStatus(articleId, status);
+                articleCommandService.updateArticleStatus(articleId, status);
             } catch (Exception e) {
                 log.error("审核文章失败 articleId={} status={} operatorId={} error={}",
                           articleId, status, operatorId, e.getMessage(), e);
@@ -65,7 +65,7 @@ public class ArticleManagementServiceImpl implements ArticleManagementService {
         // 批量处理文章删除
         for (Long articleId : articleIds) {
             try {
-                articleService.deleteArticle(articleId);
+                articleCommandService.deleteArticle(articleId);
             } catch (Exception e) {
                 log.error("删除文章失败 articleId={} operatorId={} error={}",
                           articleId, operatorId, e.getMessage(), e);
@@ -88,7 +88,7 @@ public class ArticleManagementServiceImpl implements ArticleManagementService {
         // 批量处理文章恢复
         for (Long articleId : articleIds) {
             try {
-                articleService.restoreArticle(articleId);
+                articleCommandService.restoreArticle(articleId);
             } catch (Exception e) {
                 log.error("恢复文章失败 articleId={} operatorId={} error={}",
                           articleId, operatorId, e.getMessage(), e);
@@ -113,7 +113,7 @@ public class ArticleManagementServiceImpl implements ArticleManagementService {
         // 批量处理文章属性更新
         for (Long articleId : articleIds) {
             try {
-                articleService.updateArticleProperty(articleId, statusType, status);
+                articleCommandService.updateArticleProperty(articleId, statusType, status);
             } catch (Exception e) {
                 log.error("更新文章{}属性失败 articleId={} enabled={} operatorId={} error={}",
                           statusType.name(), articleId, status, operatorId, e.getMessage(), e);

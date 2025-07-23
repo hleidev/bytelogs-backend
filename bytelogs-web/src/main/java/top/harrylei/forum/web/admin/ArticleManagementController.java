@@ -17,7 +17,7 @@ import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.core.security.permission.RequiresAdmin;
 import top.harrylei.forum.service.article.service.ArticleManagementService;
-import top.harrylei.forum.service.article.service.ArticleService;
+import top.harrylei.forum.service.article.service.ArticleQueryService;
 
 import java.util.List;
 
@@ -35,7 +35,7 @@ import java.util.List;
 @Validated
 public class ArticleManagementController {
 
-    private final ArticleService articleService;
+    private final ArticleQueryService articleQueryService;
     private final ArticleManagementService articleManagementService;
 
     /**
@@ -47,7 +47,7 @@ public class ArticleManagementController {
     @Operation(summary = "分页查询", description = "管理端分页查询")
     @GetMapping("/page")
     public ResVO<PageVO<ArticleVO>> pageQuery(@Valid ArticleQueryParam queryParam) {
-        PageVO<ArticleVO> page = articleService.pageQuery(queryParam);
+        PageVO<ArticleVO> page = articleQueryService.pageQuery(queryParam);
         return ResVO.ok(page);
     }
 
@@ -59,7 +59,7 @@ public class ArticleManagementController {
     @Operation(summary = "文章详细", description = "管理端文章详细信息")
     @GetMapping("/{articleId}")
     public ResVO<ArticleDetailVO> detail(@NotNull(message = "文章ID不能为空") @PathVariable Long articleId) {
-        ArticleDetailVO articleDetail = articleService.getArticleDetail(articleId);
+        ArticleDetailVO articleDetail = articleQueryService.getArticleDetail(articleId);
         return ResVO.ok(articleDetail);
     }
 
