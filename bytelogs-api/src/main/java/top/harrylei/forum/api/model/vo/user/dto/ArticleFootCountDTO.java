@@ -3,9 +3,9 @@ package top.harrylei.forum.api.model.vo.user.dto;
 import lombok.Data;
 
 /**
- * 文章足迹计数
+ * 文章足迹统计
  *
- * @date 2022-07-18
+ * @author harry
  */
 @Data
 public class ArticleFootCountDTO {
@@ -13,27 +13,15 @@ public class ArticleFootCountDTO {
     /**
      * 文章点赞数
      */
-    private Integer  praiseCount;
-
-    /**
-     * 文章被阅读数
-     */
-    private Integer  readCount;
+    private Long praiseCount;
 
     /**
      * 文章被收藏数
      */
-    private Integer  collectionCount;
-
-    /**
-     * 评论数
-     */
-    private Integer commentCount;
+    private Long collectionCount;
 
     public ArticleFootCountDTO() {
-        praiseCount = 0;
-        readCount = 0;
-        collectionCount = 0;
-        commentCount = 0;
+        this.praiseCount = 0L;
+        this.collectionCount = 0L;
     }
 }

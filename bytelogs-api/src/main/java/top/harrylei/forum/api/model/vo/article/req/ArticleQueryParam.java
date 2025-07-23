@@ -57,14 +57,14 @@ public class ArticleQueryParam extends BasePage {
     /**
      * 文章状态
      */
-    @Schema(description = "文章状态")
-    private PublishStatusEnum status;
+    @Schema(description = "文章状态", example = "1")
+    private Integer status;
 
     /**
      * 删除标识（管理员功能）
      */
     @Schema(description = "删除标识", example = "0")
-    private YesOrNoEnum deleted;
+    private Integer deleted;
 
     /**
      * 是否只查询我的文章

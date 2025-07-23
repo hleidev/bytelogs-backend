@@ -6,7 +6,7 @@ import org.mapstruct.Named;
 import top.harrylei.forum.api.model.enums.article.ArticleSourceEnum;
 import top.harrylei.forum.api.model.enums.article.ArticleTypeEnum;
 import top.harrylei.forum.api.model.vo.article.dto.ArticleDTO;
-import top.harrylei.forum.api.model.vo.article.req.ArticlePostReq;
+import top.harrylei.forum.api.model.vo.article.req.ArticleSaveReq;
 import top.harrylei.forum.api.model.vo.article.req.ArticleUpdateReq;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleVersionVO;
@@ -52,7 +52,7 @@ public interface ArticleStructMapper {
     @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "createTime", ignore = true)
     @Mapping(target = "cream", ignore = true)
-    ArticleDTO toDTO(ArticlePostReq articlePostReq);
+    ArticleDTO toDTO(ArticleSaveReq articleSaveReq);
 
     @Mapping(target = "articleType", source = "articleType", qualifiedByName = "ArticleTypeEnumToCode")
     @Mapping(target = "official", source = "official", qualifiedByName = "YesOrNoEnumToCode")
@@ -131,15 +131,4 @@ public interface ArticleStructMapper {
     @Mapping(target = "latest", source = "latest", qualifiedByName = "CodeToYesOrNoEnum")
     @Mapping(target = "published", source = "published", qualifiedByName = "CodeToYesOrNoEnum")
     ArticleVersionVO toVersionVO(ArticleDetailDO detail);
-
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "createTime", ignore = true)
-    @Mapping(target = "updateTime", ignore = true)
-    @Mapping(target = "version", ignore = true)
-    @Mapping(target = "latest", ignore = true)
-    @Mapping(target = "published", ignore = true)
-    @Mapping(target = "status", ignore = true)
-    @Mapping(target = "publishTime", ignore = true)
-    @Mapping(target = "deleted", ignore = true)
-    ArticleDetailDO copyForRollback(ArticleDetailDO source);
 }

@@ -14,13 +14,13 @@ import top.harrylei.forum.api.validation.SecureContent;
 import java.util.List;
 
 /**
- * 用户发布文章请求参数
+ * 用户保存文章请求参数
  *
  * @author harry
  */
 @Data
-@Schema(description = "文章发布请求")
-public class ArticlePostReq {
+@Schema(description = "文章保存请求")
+public class ArticleSaveReq {
 
     /**
      * 文章标题

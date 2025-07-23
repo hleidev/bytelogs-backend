@@ -21,5 +21,15 @@ public class StatisticsVO implements Serializable {
     /**
      * 阅读量
      */
-    private Integer readCount;
+    private Long readCount;
+
+    /**
+     * 点赞数
+     */
+    private Long praiseCount;
+
+    /**
+     * 收藏数
+     */
+    private Long collectionCount;
 }
