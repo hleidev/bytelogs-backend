@@ -10,9 +10,6 @@ import top.harrylei.forum.service.article.repository.entity.ArticleDO;
 
 public interface ArticleMapper extends BaseMapper<ArticleDO> {
 
-    @Update("update article set deleted = #{deleted} where id = #{articleId}")
-    void updateDeleted(Long articleId, Integer deleted);
-
     @Update("update article set topping = #{value} where id = #{articleId} and deleted = 0")
     Integer updateTopping(Long articleId, Integer value);
 

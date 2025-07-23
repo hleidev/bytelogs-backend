@@ -22,12 +22,15 @@ public class ArticleDAO extends ServiceImpl<ArticleMapper, ArticleDO> {
     }
 
     public void updateDeleted(Long articleId, Integer deleted) {
-        getBaseMapper().updateDeleted(articleId, deleted);
+        lambdaUpdate()
+                .eq(ArticleDO::getId, articleId)
+                .set(ArticleDO::getDeleted, deleted)
+                .update();
     }
 
     public IPage<ArticleVO> pageArticleVO(ArticleQueryParam queryParam, IPage<ArticleVO> page) {
         // 联表查询，返回包含分类和标签的ArticleVO
-        return this.getBaseMapper().pageArticleVO(queryParam, page);
+        return getBaseMapper().pageArticleVO(queryParam, page);
     }
 
     /**

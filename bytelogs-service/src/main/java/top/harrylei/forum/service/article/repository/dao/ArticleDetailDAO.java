@@ -6,6 +6,8 @@ import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.service.article.repository.entity.ArticleDetailDO;
 import top.harrylei.forum.service.article.repository.mapper.ArticleDetailMapper;
 
+import java.util.List;
+
 /**
  * 文章详细访问对象
  *
@@ -15,9 +17,11 @@ import top.harrylei.forum.service.article.repository.mapper.ArticleDetailMapper;
 public class ArticleDetailDAO extends ServiceImpl<ArticleDetailMapper, ArticleDetailDO> {
 
     public void updateDeleted(Long articleId, Integer deleted) {
-        getBaseMapper().updateDeleted(articleId, deleted);
+        lambdaUpdate()
+                .eq(ArticleDetailDO::getArticleId, articleId)
+                .set(ArticleDetailDO::getDeleted, deleted)
+                .update();
     }
-
 
     public String getPublishedTitle(Long articleId) {
         return getBaseMapper().getPublishedTitle(articleId);
@@ -72,7 +76,7 @@ public class ArticleDetailDAO extends ServiceImpl<ArticleDetailMapper, ArticleDe
     /**
      * 获取版本历史列表
      */
-    public java.util.List<ArticleDetailDO> getVersionHistory(Long articleId) {
+    public List<ArticleDetailDO> getVersionHistory(Long articleId) {
         return lambdaQuery()
                 .eq(ArticleDetailDO::getArticleId, articleId)
                 .eq(ArticleDetailDO::getDeleted, YesOrNoEnum.NO.getCode())
