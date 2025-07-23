@@ -14,8 +14,8 @@ import top.harrylei.forum.core.util.DiffUtil;
 import top.harrylei.forum.service.article.converted.ArticleStructMapper;
 import top.harrylei.forum.service.article.repository.entity.ArticleDO;
 import top.harrylei.forum.service.article.repository.entity.ArticleDetailDO;
-import top.harrylei.forum.service.article.service.ArticleDetailService;
-import top.harrylei.forum.service.article.service.ArticleService;
+import top.harrylei.forum.service.article.repository.dao.ArticleDetailDAO;
+import top.harrylei.forum.service.article.service.ArticleQueryService;
 import top.harrylei.forum.service.article.service.ArticleTagService;
 import top.harrylei.forum.service.article.service.ArticleVersionService;
 
@@ -34,21 +34,21 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ArticleVersionServiceImpl implements ArticleVersionService {
 
-    private final ArticleService articleService;
-    private final ArticleDetailService articleDetailService;
+    private final ArticleQueryService articleQueryService;
+    private final ArticleDetailDAO articleDetailDAO;
     private final ArticleStructMapper articleStructMapper;
     private final ArticleTagService articleTagService;
 
     @Override
     public List<ArticleVersionVO> getVersionHistory(Long articleId) {
         // 1. 验证文章存在性
-        ArticleDO article = articleService.getArticleById(articleId);
+        ArticleDO article = articleQueryService.getArticleById(articleId);
 
         // 2. 权限校验：只有作者和管理员可以访问版本管理功能
         validateAuthorPermission(article.getUserId());
 
         // 3. 获取所有版本（作者和管理员可以看到所有版本）
-        List<ArticleDetailDO> allVersions = articleDetailService.getVersionHistory(articleId);
+        List<ArticleDetailDO> allVersions = articleDetailDAO.getVersionHistory(articleId);
 
         // 4. 转换为VO并返回
         return allVersions.stream()
@@ -67,7 +67,7 @@ public class ArticleVersionServiceImpl implements ArticleVersionService {
     @Override
     public ArticleVO getVersionDetail(Long articleId, Integer version) {
         // 1. 验证文章存在性
-        ArticleDO article = articleService.getArticleById(articleId);
+        ArticleDO article = articleQueryService.getArticleById(articleId);
 
         // 2. 权限校验：只有作者和管理员可以查看版本详情
         validateAuthorPermission(article.getUserId());
@@ -109,7 +109,7 @@ public class ArticleVersionServiceImpl implements ArticleVersionService {
     @Override
     public VersionDiffVO compareVersions(Long articleId, Integer version1, Integer version2) {
         // 1. 验证文章存在性
-        ArticleDO article = articleService.getArticleById(articleId);
+        ArticleDO article = articleQueryService.getArticleById(articleId);
 
         // 2. 权限校验
         validateAuthorPermission(article.getUserId());
@@ -126,7 +126,7 @@ public class ArticleVersionServiceImpl implements ArticleVersionService {
      * 获取版本并进行存在性检查
      */
     private ArticleDetailDO getArticleVersion(Long articleId, Integer version) {
-        ArticleDetailDO detail = articleDetailService.getByArticleIdAndVersion(articleId, version);
+        ArticleDetailDO detail = articleDetailDAO.getByArticleIdAndVersion(articleId, version);
         ExceptionUtil.requireValid(detail, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "请求的版本不存在，请检查版本号是否正确");
         return detail;
     }

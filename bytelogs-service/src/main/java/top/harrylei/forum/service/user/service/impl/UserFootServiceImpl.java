@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import top.harrylei.forum.api.model.enums.NotifyTypeEnum;
 import top.harrylei.forum.api.model.enums.OperateTypeEnum;
 import top.harrylei.forum.api.model.enums.comment.ContentTypeEnum;
+import top.harrylei.forum.api.model.vo.user.dto.ArticleFootCountDTO;
 import top.harrylei.forum.api.model.vo.user.dto.UserFootDTO;
 import top.harrylei.forum.core.util.KafkaEventPublisher;
 import top.harrylei.forum.core.util.NumUtil;
@@ -344,6 +345,14 @@ public class UserFootServiceImpl implements UserFootService {
             // 其他操作类型不在此处处理
             default -> null;
         };
+    }
+
+    @Override
+    public ArticleFootCountDTO getArticleFootCount(Long articleId) {
+        ArticleFootCountDTO countDTO = new ArticleFootCountDTO();
+        countDTO.setPraiseCount(userFootDAO.countPraiseByArticleId(articleId));
+        countDTO.setCollectionCount(userFootDAO.countCollectionByArticleId(articleId));
+        return countDTO;
     }
 
 }

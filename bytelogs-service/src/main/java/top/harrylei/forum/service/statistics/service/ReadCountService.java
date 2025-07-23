@@ -24,5 +24,5 @@ public interface ReadCountService {
      * @param contentType 内容类型
      * @return 阅读量
      */
-    Integer getReadCount(Long contentId, ContentTypeEnum contentType);
+    Long getReadCount(Long contentId, ContentTypeEnum contentType);
 }

@@ -69,8 +69,8 @@ public class ReadCountDAO extends ServiceImpl<ReadCountMapper, ReadCountDO> {
      * @param contentType 内容类型
      * @return 阅读量
      */
-    public Integer getReadCount(Long contentId, Integer contentType) {
+    public Long getReadCount(Long contentId, Integer contentType) {
         ReadCountDO readCount = getByContentIdAndType(contentId, contentType);
-        return readCount != null ? readCount.getCnt() : 0;
+        return readCount != null ? readCount.getCnt().longValue() : 0L;
     }
 }

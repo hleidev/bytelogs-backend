@@ -28,8 +28,8 @@ import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.core.util.KafkaEventPublisher;
 import top.harrylei.forum.core.util.NumUtil;
 import top.harrylei.forum.service.article.repository.entity.ArticleDO;
-import top.harrylei.forum.service.article.service.ArticleDetailService;
-import top.harrylei.forum.service.article.service.ArticleService;
+import top.harrylei.forum.service.article.repository.dao.ArticleDetailDAO;
+import top.harrylei.forum.service.article.service.ArticleQueryService;
 import top.harrylei.forum.service.comment.converted.CommentStructMapper;
 import top.harrylei.forum.service.comment.repository.dao.CommentDAO;
 import top.harrylei.forum.service.comment.repository.entity.CommentDO;
@@ -56,8 +56,8 @@ public class CommentServiceImpl implements CommentService {
 
     private final CommentDAO commentDAO;
     private final CommentStructMapper commentStructMapper;
-    private final ArticleService articleService;
-    private final ArticleDetailService articleDetailService;
+    private final ArticleQueryService articleQueryService;
+    private final ArticleDetailDAO articleDetailDAO;
     private final UserFootService userFootService;
     private final UserCacheService userCacheService;
     private final KafkaEventPublisher kafkaEventPublisher;
@@ -257,7 +257,7 @@ public class CommentServiceImpl implements CommentService {
      */
     private CommentDO insertComment(CommentDTO dto) {
         // 验证文章是否存在
-        ArticleDO article = articleService.getArticleById(dto.getArticleId());
+        ArticleDO article = articleQueryService.getArticleById(dto.getArticleId());
         ExceptionUtil.requireValid(article, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "articleId=" + dto.getArticleId());
 
         // 验证父评论是否存在
@@ -302,7 +302,7 @@ public class CommentServiceImpl implements CommentService {
     private void updateCommentFoot(CommentDO comment, boolean isDelete) {
         try {
             // 获取文章信息
-            ArticleDO article = articleService.getArticleById(comment.getArticleId());
+            ArticleDO article = articleQueryService.getArticleById(comment.getArticleId());
 
             // 获取父评论作者ID
             Long parentUserId = null;
@@ -448,7 +448,7 @@ public class CommentServiceImpl implements CommentService {
 
             // 填充文章信息
             try {
-                String articleTitle = articleDetailService.getPublishedTitle(comment.getArticleId());
+                String articleTitle = articleDetailDAO.getPublishedTitle(comment.getArticleId());
                 commentMy.setArticleTitle(Optional.ofNullable(articleTitle).orElse("文章未发布或已删除"));
             } catch (Exception e) {
                 log.warn("获取文章信息失败, articleId={}", comment.getArticleId(), e);

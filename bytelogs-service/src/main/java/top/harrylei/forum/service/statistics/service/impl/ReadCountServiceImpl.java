@@ -44,7 +44,7 @@ public class ReadCountServiceImpl implements ReadCountService {
     }
 
     @Override
-    public Integer getReadCount(Long contentId, ContentTypeEnum contentType) {
+    public Long getReadCount(Long contentId, ContentTypeEnum contentType) {
         return readCountDAO.getReadCount(contentId, contentType.getCode());
     }
 
@@ -52,10 +52,9 @@ public class ReadCountServiceImpl implements ReadCountService {
      * 构建防重复锁Key
      */
     private String buildLockKey(Long contentId, Integer contentType) {
-        Long userId = ReqInfoContext.getContext().getUserId();
-
-        if (userId != null) {
+        if (ReqInfoContext.getContext().isLoggedIn()) {
             // 登录用户：精确到用户
+            Long userId = ReqInfoContext.getContext().getUserId();
             return "read_lock:" + contentId + ":" + contentType + ":user:" + userId;
         } else {
             // 未登录用户：按IP粗粒度控制
@@ -68,9 +67,7 @@ public class ReadCountServiceImpl implements ReadCountService {
      * 获取锁过期时间
      */
     private Duration getLockExpiration() {
-        Long userId = ReqInfoContext.getContext().getUserId();
-        
-        if (userId != null) {
+        if (ReqInfoContext.getContext().isLoggedIn()) {
             return Duration.ofHours(24);
         } else {
             return Duration.ofMinutes(10);

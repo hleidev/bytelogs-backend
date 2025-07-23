@@ -14,8 +14,8 @@ import top.harrylei.forum.core.util.JwtUtil;
 
 /**
  * 用户缓存服务
- * <p>
- * 提供用户信息的缓存管理，包括获取、缓存和清除用户信息 作为解决循环依赖问题的共享服务
+ *
+ * @author harry
  */
 @Slf4j
 @Service
@@ -72,7 +72,7 @@ public class UserCacheService {
     /**
      * 缓存用户信息
      *
-     * @param userId 用户ID
+     * @param userId      用户ID
      * @param userInfoDTO 用户信息DTO
      */
     public void cacheUserInfo(Long userId, UserInfoDetailDTO userInfoDTO) {
@@ -90,7 +90,7 @@ public class UserCacheService {
 
     /**
      * 更新缓存中的用户信息
-     * 
+     *
      * @param userInfoDTO 更新后的用户信息
      */
     public void updateUserInfoCache(UserInfoDetailDTO userInfoDTO) {
