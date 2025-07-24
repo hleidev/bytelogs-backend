@@ -1,9 +1,14 @@
 package top.harrylei.forum.api.model.vo.page;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.metadata.OrderItem;
+import top.harrylei.forum.api.model.entity.BasePage;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -160,7 +165,6 @@ public class PageHelper {
                 .toList();
 
         // 创建新的IPage对象，复制分页信息
-        // Fixme: 这里使用了MyBatis-Plus的Page实现，与之前的实现冲突，暂时使用了全限定名
         IPage<R> convertedPage = new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(iPage.getCurrent(),
                                                                                                   iPage.getSize(),
                                                                                                   iPage.getTotal());
@@ -168,5 +172,84 @@ public class PageHelper {
 
         // 复用现有的build方法
         return build(convertedPage);
+    }
+
+    /**
+     * 根据 BasePage 创建 MyBatis-Plus 分页对象
+     *
+     * @param basePage 分页参数
+     * @param <T>      分页数据类型
+     * @return MyBatis-Plus 分页对象
+     */
+    public static <T> IPage<T> createPage(BasePage basePage) {
+        return new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(
+                basePage.getPageNum(),
+                basePage.getPageSize()
+        );
+    }
+
+    /**
+     * 根据 BasePage 创建 MyBatis-Plus 分页对象
+     * 默认按 create_time 降序排列
+     *
+     * @param basePage     分页参数
+     * @param fieldMapping 字段映射关系
+     * @param <T>          分页数据类型
+     * @return MyBatis-Plus 分页对象
+     */
+    public static <T> IPage<T> createPage(BasePage basePage, Map<String, String> fieldMapping) {
+        String defaultSortField = BasePage.DEFAULT_SORT_MAPPING.get("createTime");
+        return createPage(basePage, fieldMapping, OrderItem.desc(defaultSortField));
+    }
+
+    /**
+     * 根据 BasePage 创建 MyBatis-Plus 分页对象
+     *
+     * @param basePage      分页参数
+     * @param fieldMapping  字段映射关系
+     * @param defaultOrders 默认排序项
+     * @param <T>           分页数据类型
+     * @return MyBatis-Plus 分页对象
+     */
+    public static <T> IPage<T> createPage(BasePage basePage,
+                                          Map<String, String> fieldMapping,
+                                          OrderItem... defaultOrders) {
+        // FIXME: 为避免类冲突，暂时使用分页类全限定名
+        com.baomidou.mybatisplus.extension.plugins.pagination.Page<T> page = new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(
+                basePage.getPageNum(),
+                basePage.getPageSize());
+
+        // 解析并设置排序
+        List<OrderItem> orderItems = parseOrderItems(basePage, fieldMapping);
+        if (orderItems.isEmpty() && defaultOrders.length > 0) {
+            page.addOrder(Arrays.asList(defaultOrders));
+        } else if (!orderItems.isEmpty()) {
+            page.addOrder(orderItems);
+        }
+
+        return page;
+    }
+
+    /**
+     * 解析排序项
+     *
+     * @param basePage     分页参数
+     * @param fieldMapping 字段映射关系
+     * @return 有效的排序项列表
+     */
+    private static List<OrderItem> parseOrderItems(BasePage basePage, Map<String, String> fieldMapping) {
+        List<OrderItem> orderItems = new ArrayList<>();
+        List<BasePage.SortInfo> sortInfos = basePage.parseSortFields();
+
+        for (BasePage.SortInfo sortInfo : sortInfos) {
+            // 只有在映射表中存在的字段才允许排序，防止SQL注入
+            String column = fieldMapping.get(sortInfo.getField());
+            if (column != null) {
+                OrderItem orderItem = sortInfo.isAsc() ? OrderItem.asc(column) : OrderItem.desc(column);
+                orderItems.add(orderItem);
+            }
+        }
+
+        return orderItems;
     }
 }

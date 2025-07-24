@@ -1,17 +1,17 @@
 package top.harrylei.forum.api.model.entity;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.metadata.OrderItem;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.util.StringUtils;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -41,6 +41,13 @@ public class BasePage implements Serializable {
      */
     public static final int MAX_PAGE_SIZE = 100;
 
+    /**
+     * 默认排序映射
+     */
+    public static final Map<String, String> DEFAULT_SORT_MAPPING = Map.of(
+            "createTime", "create_time"
+    );
+
     @Schema(description = "页码，从1开始", defaultValue = "1", example = "1")
     @NotNull(message = "页码不能为空")
     @Min(value = 1, message = "页码最小为1")
@@ -60,18 +67,14 @@ public class BasePage implements Serializable {
     private String sortField;
 
     /**
-     * 创建带排序的分页对象
+     * 解析排序字段
      *
-     * @param fieldMapping 字段映射关系
-     * @param <T>          分页数据类型
-     * @return 带排序的分页对象
+     * @return 有效的排序信息列表
      */
-    public <T> IPage<T> toPage(Map<String, String> fieldMapping) {
-        Page<T> page = new Page<>(this.pageNum, this.pageSize);
+    public List<SortInfo> parseSortFields() {
+        List<SortInfo> sortInfos = new ArrayList<>();
 
         if (StringUtils.hasText(sortField)) {
-            // 解析排序字符串，格式：field,direction;field,direction
-            boolean hasValidOrder = false;
             String[] sortItems = sortField.split(";");
             for (String sortItem : sortItems) {
                 String[] parts = sortItem.trim().split(",");
@@ -79,24 +82,39 @@ public class BasePage implements Serializable {
                     String field = parts[0].trim();
                     String direction = parts[1].trim();
 
-                    String column = fieldMapping.get(field);
-                    if (column != null && StringUtils.hasText(direction)) {
-                        boolean isAsc = "asc".equalsIgnoreCase(direction);
-                        page.addOrder(isAsc ? OrderItem.asc(column) : OrderItem.desc(column));
-                        hasValidOrder = true;
+                    // 验证方向参数的有效性
+                    if (StringUtils.hasText(field) && isValidDirection(direction)) {
+                        sortInfos.add(new SortInfo(field, direction));
                     }
                 }
             }
-
-            // 如果没有有效排序，使用默认排序
-            if (!hasValidOrder) {
-                page.addOrder(OrderItem.desc("create_time"));
-            }
-        } else {
-            // 默认排序：创建时间倒序
-            page.addOrder(OrderItem.desc("create_time"));
         }
 
-        return page;
+        return sortInfos;
+    }
+
+    /**
+     * 验证排序方向是否有效
+     */
+    private boolean isValidDirection(String direction) {
+        return "asc".equalsIgnoreCase(direction) || "desc".equalsIgnoreCase(direction);
+    }
+
+    /**
+     * 排序信息
+     */
+    @Data
+    @AllArgsConstructor
+    public static class SortInfo {
+        private String field;
+        private String direction;
+
+        public boolean isAsc() {
+            return "asc".equalsIgnoreCase(direction);
+        }
+
+        public boolean isDesc() {
+            return "desc".equalsIgnoreCase(direction);
+        }
     }
 }
