@@ -43,7 +43,7 @@
                 and ua.user_name like concat('%',#{queryParam.userName},'%')
             </if>
         </where>
-        order by ur.create_time desc
+        ORDER BY ur.create_time DESC
     </select>
 
     <!-- 分页查询用户粉丝列表 -->
@@ -79,7 +79,7 @@
                 and ua.user_name like concat('%',#{queryParam.userName},'%')
             </if>
         </where>
-        order by ur.create_time desc
+        ORDER BY ur.create_time DESC
     </select>
 
 </mapper>

@@ -120,6 +120,5 @@
                 AND a.create_time &lt;= #{query.createTimeEnd}
             </if>
         </where>
-        ORDER BY a.create_time DESC
     </select>
 </mapper>
