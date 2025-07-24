@@ -38,9 +38,10 @@ public class UserFollowQueryParam extends BasePage {
     /**
      * 字段映射关系
      */
+    // FIXME: 连表 createTime 会出现冲突，暂时改为别名
     private static final Map<String, String> FIELD_MAPPING = Map.of(
-            "createTime", "create_time",
-            "updateTime", "update_time",
+            "createTime", "follow_time",
+            "updateTime", "ur_update_time",
             "userId", "user_id",
             "followUserId", "follow_user_id",
             "userName", "user_name"
