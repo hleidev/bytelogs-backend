@@ -31,7 +31,7 @@ public class CommentManagementServiceImpl implements CommentManagementService {
 
     @Override
     public PageVO<CommentManagementVO> pageQuery(CommentManagementQueryParam queryParam) {
-        IPage<CommentManagementVO> page = queryParam.toPage();
+        IPage<CommentManagementVO> page = PageHelper.createPage(queryParam, queryParam.getFieldMapping());
         IPage<CommentManagementVO> result = commentDAO.pageQueryForManagement(queryParam, page);
 
         return PageHelper.build(result);

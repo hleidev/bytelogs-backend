@@ -157,7 +157,7 @@ public class UserFollowServiceImpl implements UserFollowService {
     @Override
     public PageVO<UserFollowVO> pageFollowingList(UserFollowQueryParam queryParam) {
         // 创建分页对象
-        Page<UserFollowVO> page = new Page<>(queryParam.getPageNum(), queryParam.getPageSize());
+        IPage<UserFollowVO> page = PageHelper.createPage(queryParam, queryParam.getFieldMapping());
 
         // 查询关注列表
         IPage<UserFollowVO> result = userFollowDAO.pageFollowingList(queryParam, page);
@@ -175,7 +175,7 @@ public class UserFollowServiceImpl implements UserFollowService {
     @Override
     public PageVO<UserFollowVO> pageFollowersList(UserFollowQueryParam queryParam) {
         // 创建分页对象
-        Page<UserFollowVO> page = new Page<>(queryParam.getPageNum(), queryParam.getPageSize());
+        IPage<UserFollowVO> page = PageHelper.createPage(queryParam, queryParam.getFieldMapping());
 
         // 查询粉丝列表
         IPage<UserFollowVO> result = userFollowDAO.pageFollowersList(queryParam, page);

@@ -89,7 +89,7 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
         processQueryPermissions(queryParam);
 
         // 创建MyBatis-Plus分页对象
-        IPage<ArticleVO> page = new Page<>(queryParam.getPageNum(), queryParam.getPageSize());
+        IPage<ArticleVO> page = PageHelper.createPage(queryParam, queryParam.getFieldMapping());
 
         // 第一步：分页查询文章基础信息（避免JOIN标签表导致的重复记录）
         IPage<ArticleVO> result = articleDAO.pageArticleVO(queryParam, page);
