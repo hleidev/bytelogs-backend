@@ -200,17 +200,9 @@ public class ArticleCommandServiceImpl implements ArticleCommandService {
 
         // 创建新版本（基于目标版本的内容）
         Integer newVersion = article.getVersionCount() + 1;
-        ArticleDetailDO newDetail = new ArticleDetailDO();
+        ArticleDetailDO newDetail = articleStructMapper.copyForNewVersion(targetVersion);
         newDetail.setArticleId(articleId);
         newDetail.setVersion(newVersion);
-        newDetail.setTitle(targetVersion.getTitle());
-        newDetail.setShortTitle(targetVersion.getShortTitle());
-        newDetail.setContent(targetVersion.getContent());
-        newDetail.setSummary(targetVersion.getSummary());
-        newDetail.setPicture(targetVersion.getPicture());
-        newDetail.setLatest(YesOrNoEnum.YES.getCode());
-        newDetail.setStatus(PublishStatusEnum.DRAFT.getCode());
-        newDetail.setPublished(YesOrNoEnum.NO.getCode());
 
         // 清除旧的最新版本标记
         articleDetailDAO.clearLatestFlag(articleId);

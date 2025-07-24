@@ -12,9 +12,9 @@ import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.core.util.DiffUtil;
 import top.harrylei.forum.service.article.converted.ArticleStructMapper;
+import top.harrylei.forum.service.article.repository.dao.ArticleDetailDAO;
 import top.harrylei.forum.service.article.repository.entity.ArticleDO;
 import top.harrylei.forum.service.article.repository.entity.ArticleDetailDO;
-import top.harrylei.forum.service.article.repository.dao.ArticleDetailDAO;
 import top.harrylei.forum.service.article.service.ArticleQueryService;
 import top.harrylei.forum.service.article.service.ArticleTagService;
 import top.harrylei.forum.service.article.service.ArticleVersionService;
@@ -22,7 +22,6 @@ import top.harrylei.forum.service.article.service.ArticleVersionService;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * 文章版本管理服务实现
@@ -53,7 +52,7 @@ public class ArticleVersionServiceImpl implements ArticleVersionService {
         // 4. 转换为VO并返回
         return allVersions.stream()
                 .map(articleStructMapper::toVersionVO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private void validateAuthorPermission(Long authorId) {

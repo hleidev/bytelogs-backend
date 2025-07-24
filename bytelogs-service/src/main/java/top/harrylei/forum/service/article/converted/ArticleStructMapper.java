@@ -131,4 +131,16 @@ public interface ArticleStructMapper {
     @Mapping(target = "latest", source = "latest", qualifiedByName = "CodeToYesOrNoEnum")
     @Mapping(target = "published", source = "published", qualifiedByName = "CodeToYesOrNoEnum")
     ArticleVersionVO toVersionVO(ArticleDetailDO detail);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "articleId", ignore = true)
+    @Mapping(target = "version", ignore = true)
+    @Mapping(target = "createTime", ignore = true)
+    @Mapping(target = "updateTime", ignore = true)
+    @Mapping(target = "latest", constant = "1")
+    @Mapping(target = "published", constant = "0")
+    @Mapping(target = "status", constant = "0")
+    @Mapping(target = "publishTime", ignore = true)
+    @Mapping(target = "deleted", constant = "0")
+    ArticleDetailDO copyForNewVersion(ArticleDetailDO source);
 }
