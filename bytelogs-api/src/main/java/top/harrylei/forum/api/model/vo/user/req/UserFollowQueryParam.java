@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import top.harrylei.forum.api.model.entity.BasePage;
 
+import java.util.Map;
+
 /**
  * 用户关注查询参数
  *
@@ -32,4 +34,22 @@ public class UserFollowQueryParam extends BasePage {
      */
     @Schema(description = "用户名关键词", example = "张三")
     private String userName;
+
+    /**
+     * 字段映射关系
+     */
+    private static final Map<String, String> FIELD_MAPPING = Map.of(
+            "createTime", "create_time",
+            "updateTime", "update_time",
+            "userId", "user_id",
+            "followUserId", "follow_user_id",
+            "userName", "user_name"
+    );
+
+    /**
+     * 获取字段映射关系
+     */
+    public Map<String, String> getFieldMapping() {
+        return FIELD_MAPPING;
+    }
 }

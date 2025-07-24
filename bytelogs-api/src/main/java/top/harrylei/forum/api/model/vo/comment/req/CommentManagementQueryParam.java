@@ -82,10 +82,4 @@ public class CommentManagementQueryParam extends BasePage {
         return mapping;
     }
 
-    /**
-     * 创建带排序的分页对象
-     */
-    public <T> IPage<T> toPage() {
-        return super.toPage(getFieldMapping());
-    }
 }

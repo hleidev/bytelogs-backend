@@ -6,13 +6,12 @@ import lombok.EqualsAndHashCode;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.util.StringUtils;
 import top.harrylei.forum.api.model.entity.BasePage;
-import top.harrylei.forum.api.model.enums.YesOrNoEnum;
-import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 文章分页查询参数
@@ -110,5 +109,27 @@ public class ArticleQueryParam extends BasePage {
         return Collections.emptyList();
     }
 
-    // TODO 排序相关逻辑
+    /**
+     * 字段映射关系
+     */
+    private static final Map<String, String> FIELD_MAPPING = Map.ofEntries(
+            Map.entry("id", "id"),
+            Map.entry("createTime", "create_time"),
+            Map.entry("updateTime", "update_time"),
+            Map.entry("title", "title"),
+            Map.entry("userId", "user_id"),
+            Map.entry("userName", "user_name"),
+            Map.entry("categoryId", "category_id"),
+            Map.entry("status", "status"),
+            Map.entry("deleted", "deleted"),
+            Map.entry("topping", "topping"),
+            Map.entry("cream", "cream")
+    );
+
+    /**
+     * 获取字段映射关系
+     */
+    public Map<String, String> getFieldMapping() {
+        return FIELD_MAPPING;
+    }
 }
