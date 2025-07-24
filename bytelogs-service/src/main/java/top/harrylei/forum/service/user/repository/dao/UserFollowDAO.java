@@ -47,7 +47,7 @@ public class UserFollowDAO extends ServiceImpl<UserFollowMapper, UserFollowDO> {
      * @param page       分页参数
      * @return 关注列表
      */
-    public IPage<UserFollowVO> pageFollowingList(UserFollowQueryParam queryParam, Page<UserFollowVO> page) {
+    public IPage<UserFollowVO> pageFollowingList(UserFollowQueryParam queryParam, IPage<UserFollowVO> page) {
         return getBaseMapper().pageFollowingList(queryParam, page);
     }
 
@@ -58,7 +58,7 @@ public class UserFollowDAO extends ServiceImpl<UserFollowMapper, UserFollowDO> {
      * @param page       分页参数
      * @return 粉丝列表
      */
-    public IPage<UserFollowVO> pageFollowersList(UserFollowQueryParam queryParam, Page<UserFollowVO> page) {
+    public IPage<UserFollowVO> pageFollowersList(UserFollowQueryParam queryParam, IPage<UserFollowVO> page) {
         return getBaseMapper().pageFollowersList(queryParam, page);
     }
 

@@ -25,7 +25,7 @@ public interface UserFollowMapper extends BaseMapper<UserFollowDO> {
      * @param page       分页参数
      * @return 关注列表
      */
-    IPage<UserFollowVO> pageFollowingList(UserFollowQueryParam queryParam, Page<UserFollowVO> page);
+    IPage<UserFollowVO> pageFollowingList(UserFollowQueryParam queryParam, IPage<UserFollowVO> page);
 
     /**
      * 分页查询用户粉丝列表
@@ -34,7 +34,7 @@ public interface UserFollowMapper extends BaseMapper<UserFollowDO> {
      * @param page       分页参数
      * @return 粉丝列表
      */
-    IPage<UserFollowVO> pageFollowersList(UserFollowQueryParam queryParam, Page<UserFollowVO> page);
+    IPage<UserFollowVO> pageFollowersList(UserFollowQueryParam queryParam, IPage<UserFollowVO> page);
 
     /**
      * 获取用户的关注者ID列表
