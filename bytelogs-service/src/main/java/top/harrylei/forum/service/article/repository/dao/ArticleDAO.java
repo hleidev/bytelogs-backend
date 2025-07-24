@@ -3,6 +3,7 @@ package top.harrylei.forum.service.article.repository.dao;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Repository;
+import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.vo.article.req.ArticleQueryParam;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
 import top.harrylei.forum.service.article.repository.entity.ArticleDO;
@@ -33,25 +34,27 @@ public class ArticleDAO extends ServiceImpl<ArticleMapper, ArticleDO> {
         return getBaseMapper().pageArticleVO(queryParam, page);
     }
 
-    /**
-     * 联表查询完整文章VO（包含分类和标签对象）
-     *
-     * @param articleId 文章ID
-     * @return 完整文章VO
-     */
-    public ArticleVO getArticleVoByArticleId(Long articleId) {
-        return this.getBaseMapper().getArticleVoById(articleId);
+    public boolean updateTopping(Long articleId, Integer intValue) {
+        return lambdaUpdate()
+                .eq(ArticleDO::getId, articleId)
+                .eq(ArticleDO::getDeleted, YesOrNoEnum.NO.getCode())
+                .set(ArticleDO::getTopping, intValue)
+                .update();
     }
 
-    public Integer updateTopping(Long articleId, Integer intValue) {
-        return getBaseMapper().updateTopping(articleId, intValue);
+    public boolean updateCream(Long articleId, Integer intValue) {
+        return lambdaUpdate()
+                .eq(ArticleDO::getId, articleId)
+                .eq(ArticleDO::getDeleted, YesOrNoEnum.NO.getCode())
+                .set(ArticleDO::getCream, intValue)
+                .update();
     }
 
-    public Integer updateCream(Long articleId, Integer intValue) {
-        return getBaseMapper().updateCream(articleId, intValue);
-    }
-
-    public Integer updateOfficial(Long articleId, Integer intValue) {
-        return getBaseMapper().updateOfficial(articleId, intValue);
+    public boolean updateOfficial(Long articleId, Integer intValue) {
+        return lambdaUpdate()
+                .eq(ArticleDO::getId, articleId)
+                .eq(ArticleDO::getDeleted, YesOrNoEnum.NO.getCode())
+                .set(ArticleDO::getOfficial, intValue)
+                .update();
     }
 }
