@@ -1,28 +1,27 @@
 package top.harrylei.forum.web.admin;
 
-import java.util.List;
-
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.article.dto.TagDTO;
 import top.harrylei.forum.api.model.vo.article.req.TagReq;
 import top.harrylei.forum.api.model.vo.article.vo.TagVO;
-import top.harrylei.forum.core.util.PageHelper;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.TagQueryParam;
 import top.harrylei.forum.core.security.permission.RequiresAdmin;
+import top.harrylei.forum.core.util.PageHelper;
 import top.harrylei.forum.service.article.converted.TagStructMapper;
 import top.harrylei.forum.service.article.service.TagService;
+
+import java.util.List;
 
 /**
  * 标签管理模块
@@ -41,7 +40,7 @@ public class TagManagementController {
 
     /**
      * 新建标签
-     * 
+     *
      * @param tagReq 参数
      * @return 操作结果
      */
@@ -62,14 +61,14 @@ public class TagManagementController {
     @Operation(summary = "分页查询", description = "支持按名称、状态、时间等多条件分页查询")
     @GetMapping("/page")
     public ResVO<PageVO<TagVO>> page(TagQueryParam queryParam) {
-        PageVO<TagDTO> page = tagService.page(queryParam);
+        PageVO<TagDTO> page = tagService.pageQuery(queryParam);
         return ResVO.ok(PageHelper.map(page, tagStructMapper::toVO));
     }
 
     /**
      * 编辑标签
-     * 
-     * @param tagId 标签ID
+     *
+     * @param tagId  标签ID
      * @param tagReq 标签编辑请求
      * @return 标签详细信息
      */
@@ -87,7 +86,7 @@ public class TagManagementController {
 
     /**
      * 删除标签
-     * 
+     *
      * @param tagId 标签ID
      * @return 操作结果
      */
@@ -113,7 +112,7 @@ public class TagManagementController {
 
     /**
      * 已删标签
-     * 
+     *
      * @return 已经删除的标签详细信息列表
      */
     @Operation(summary = "已删标签", description = "后台查看已删除的标签")
@@ -126,15 +125,15 @@ public class TagManagementController {
 
     /**
      * 修改状态
-     * 
-     * @param tagId 标签ID
+     *
+     * @param tagId  标签ID
      * @param status 发布状态
      * @return 操作结果
      */
     @Operation(summary = "修改状态", description = "后台修改发布标签状态")
     @PutMapping("/{tagId}/status")
     public ResVO<Void> updateStatus(@NotNull(message = "标签ID为空") @PathVariable Long tagId,
-        @NotNull(message = "发布状态为空") @RequestBody PublishStatusEnum status) {
+                                    @NotNull(message = "发布状态为空") @RequestBody PublishStatusEnum status) {
         tagService.updateStatus(tagId, status);
         return ResVO.ok();
     }

@@ -22,10 +22,13 @@ import top.harrylei.forum.api.model.vo.user.vo.UserDetailVO;
 import top.harrylei.forum.api.model.vo.user.vo.UserListItemVO;
 import top.harrylei.forum.core.security.permission.RequiresAdmin;
 import top.harrylei.forum.service.user.service.UserManagementService;
+import top.harrylei.forum.service.user.service.UserService;
 import top.harrylei.forum.service.user.converted.UserStructMapper;
 
 /**
  * 用户管理模块
+ *
+ * @author harry
  */
 @Tag(name = "用户管理模块", description = "提供用户查询、创建、状态管理等功能")
 @Slf4j
@@ -37,6 +40,7 @@ import top.harrylei.forum.service.user.converted.UserStructMapper;
 public class UserManagementController {
 
     private final UserManagementService userManagementService;
+    private final UserService userService;
     private final UserStructMapper userStructMapper;
 
     /**
@@ -46,9 +50,9 @@ public class UserManagementController {
      * @return 用户列表的分页响应对象
      */
     @Operation(summary = "查询用户列表", description = "分页查询用户列表，支持多条件筛选和多字段排序")
-    @GetMapping
-    public ResVO<PageVO<UserListItemVO>> list(UserQueryParam queryParam) {
-        PageVO<UserDetailDTO> pageVO = userManagementService.list(queryParam);
+    @GetMapping("/page")
+    public ResVO<PageVO<UserListItemVO>> page(UserQueryParam queryParam) {
+        PageVO<UserDetailDTO> pageVO = userService.pageQuery(queryParam);
         return ResVO.ok(PageHelper.map(pageVO, userStructMapper::toUserDetailVO));
     }
 
@@ -61,8 +65,8 @@ public class UserManagementController {
     @Operation(summary = "获取用户详情", description = "根据用户ID获取用户详细信息")
     @GetMapping("/{userId}")
     public ResVO<UserDetailVO> getUserDetail(@NotNull(message = "用户ID为空") @PathVariable Long userId) {
-        UserDetailDTO UserDetailDTO = userManagementService.getUserDetail(userId);
-        return ResVO.ok(userStructMapper.toUserDetailVO(UserDetailDTO));
+        UserDetailDTO userDetailDTO = userManagementService.getUserDetail(userId);
+        return ResVO.ok(userStructMapper.toUserDetailVO(userDetailDTO));
     }
 
     /**
@@ -75,7 +79,7 @@ public class UserManagementController {
     @Operation(summary = "修改用户状态", description = "启用或禁用指定用户")
     @PutMapping("/{userId}/status")
     public ResVO<Void> updateStatus(@NotNull(message = "用户ID为空") @PathVariable Long userId,
-        @NotNull(message = "状态为空") @RequestBody UserStatusEnum status) {
+                                    @NotNull(message = "状态为空") @RequestBody UserStatusEnum status) {
         userManagementService.updateStatus(userId, status);
         return ResVO.ok();
     }
@@ -97,13 +101,13 @@ public class UserManagementController {
      * 修改用户邮箱
      *
      * @param userId 用户ID
-     * @param email 新邮箱地址
+     * @param email  新邮箱地址
      * @return 操作结果
      */
     @Operation(summary = "修改用户邮箱", description = "更新用户的邮箱地址")
     @PutMapping("/{userId}/email")
     public ResVO<Void> updateEmail(@NotNull(message = "用户ID为空") @PathVariable Long userId,
-        @NotBlank(message = "邮箱为空") @RequestBody String email) {
+                                   @NotBlank(message = "邮箱为空") @RequestBody String email) {
         // TODO userManagementService.updateEmail(userId, email);
         return ResVO.ok();
     }
@@ -138,13 +142,13 @@ public class UserManagementController {
      * 修改用户角色
      *
      * @param userId 用户ID
-     * @param role 角色编码
+     * @param role   角色编码
      * @return 操作结果
      */
     @Operation(summary = "修改用户角色", description = "修改用户的系统角色")
     @PutMapping("/{userId}/role")
     public ResVO<Void> updateUserRole(@NotNull(message = "用户ID为空") @PathVariable Long userId,
-        @NotNull(message = "角色为空") @RequestBody UserRoleEnum role) {
+                                      @NotNull(message = "角色为空") @RequestBody UserRoleEnum role) {
         userManagementService.updateUserRole(userId, role);
         return ResVO.ok();
     }
