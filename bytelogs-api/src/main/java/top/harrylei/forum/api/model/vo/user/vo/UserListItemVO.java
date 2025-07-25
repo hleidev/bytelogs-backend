@@ -1,17 +1,16 @@
 package top.harrylei.forum.api.model.vo.user.vo;
 
-import java.time.LocalDateTime;
-
-import org.springframework.format.annotation.DateTimeFormat;
-
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
+import java.time.LocalDateTime;
+
 /**
  * 用户列表项展示对象
- * <p>
- * 用于管理界面的用户列表展示，包含用户账号和基本信息
+ *
+ * @author harry
  */
 @Data
 @Schema(description = "用户列表项展示对象")
@@ -64,13 +63,13 @@ public class UserListItemVO {
      * 创建时间
      */
     @Schema(description = "注册时间", example = "2023-04-01T12:00:00")
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
 
     /**
      * 最后更新时间
      */
     @Schema(description = "最后更新时间", example = "2023-04-01T15:30:00")
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updateTime;
 }

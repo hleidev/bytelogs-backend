@@ -8,8 +8,8 @@ import top.harrylei.forum.api.model.entity.BaseDTO;
 
 /**
  * 用户完整信息DTO
- * <p>
- * 聚合 user_account 和 user_info 表的所有主要字段， 用于用户联表查询后的数据传输。
+ *
+ * @author harry
  */
 @Data
 @Schema(description = "用户完整信息DTO")

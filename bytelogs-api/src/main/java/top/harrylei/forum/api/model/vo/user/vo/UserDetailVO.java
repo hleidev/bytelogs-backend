@@ -7,8 +7,8 @@ import lombok.experimental.Accessors;
 
 /**
  * 用户详情展示对象
- * <p>
- * 用于管理后台“查看详情”功能，展示用户完整信息
+ *
+ * @author harry
  */
 @Data
 @Accessors(chain = true)
