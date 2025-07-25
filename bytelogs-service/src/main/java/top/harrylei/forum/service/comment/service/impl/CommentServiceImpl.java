@@ -19,7 +19,7 @@ import top.harrylei.forum.api.model.vo.comment.vo.BaseCommentVO;
 import top.harrylei.forum.api.model.vo.comment.vo.CommentMyVO;
 import top.harrylei.forum.api.model.vo.comment.vo.SubCommentVO;
 import top.harrylei.forum.api.model.vo.comment.vo.TopCommentVO;
-import top.harrylei.forum.core.util.PageHelper;
+import top.harrylei.forum.core.util.PageUtils;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.user.dto.UserFootDTO;
 import top.harrylei.forum.api.model.vo.user.dto.UserInfoDetailDTO;
@@ -484,7 +484,7 @@ public class CommentServiceImpl implements CommentService {
         IPage<CommentDO> comments = querySupplier.get();
 
         if (comments.getRecords().isEmpty()) {
-            return PageHelper.empty();
+            return PageUtils.empty();
         }
 
         // 2. 构建结果数据
@@ -494,7 +494,7 @@ public class CommentServiceImpl implements CommentService {
         IPage<T> resultPage = new Page<>(comments.getCurrent(), comments.getSize(), comments.getTotal());
         resultPage.setRecords(resultData);
 
-        return PageHelper.build(resultPage);
+        return PageUtils.from(resultPage);
     }
 
     /**

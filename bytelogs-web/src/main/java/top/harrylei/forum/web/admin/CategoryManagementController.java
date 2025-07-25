@@ -16,7 +16,7 @@ import top.harrylei.forum.api.model.vo.article.vo.CategoryVO;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.CategoryQueryParam;
 import top.harrylei.forum.core.security.permission.RequiresAdmin;
-import top.harrylei.forum.core.util.PageHelper;
+import top.harrylei.forum.core.util.PageUtils;
 import top.harrylei.forum.service.article.converted.CategoryStructMapper;
 import top.harrylei.forum.service.article.service.CategoryManagementService;
 import top.harrylei.forum.service.article.service.CategoryService;
@@ -79,7 +79,7 @@ public class CategoryManagementController {
     @GetMapping("/page")
     public ResVO<PageVO<CategoryVO>> page(CategoryQueryParam queryParam) {
         PageVO<CategoryDTO> page = categoryService.pageQuery(queryParam);
-        return ResVO.ok(PageHelper.map(page, categoryStructMapper::toVO));
+        return ResVO.ok(PageUtils.map(page, categoryStructMapper::toVO));
     }
 
     /**

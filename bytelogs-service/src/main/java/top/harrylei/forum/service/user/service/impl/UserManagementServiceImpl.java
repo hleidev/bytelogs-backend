@@ -1,6 +1,5 @@
 package top.harrylei.forum.service.user.service.impl;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,11 +9,8 @@ import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
 import top.harrylei.forum.api.model.vo.auth.UserCreateReq;
-import top.harrylei.forum.api.model.vo.page.PageVO;
-import top.harrylei.forum.api.model.vo.page.param.UserQueryParam;
 import top.harrylei.forum.api.model.vo.user.dto.UserDetailDTO;
 import top.harrylei.forum.core.exception.ExceptionUtil;
-import top.harrylei.forum.core.util.PageHelper;
 import top.harrylei.forum.service.user.service.UserManagementService;
 import top.harrylei.forum.service.user.service.UserService;
 

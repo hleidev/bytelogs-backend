@@ -17,7 +17,7 @@ import top.harrylei.forum.api.model.vo.article.vo.TagVO;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.TagQueryParam;
 import top.harrylei.forum.core.security.permission.RequiresAdmin;
-import top.harrylei.forum.core.util.PageHelper;
+import top.harrylei.forum.core.util.PageUtils;
 import top.harrylei.forum.service.article.converted.TagStructMapper;
 import top.harrylei.forum.service.article.service.TagService;
 
@@ -62,7 +62,7 @@ public class TagManagementController {
     @GetMapping("/page")
     public ResVO<PageVO<TagVO>> page(TagQueryParam queryParam) {
         PageVO<TagDTO> page = tagService.pageQuery(queryParam);
-        return ResVO.ok(PageHelper.map(page, tagStructMapper::toVO));
+        return ResVO.ok(PageUtils.map(page, tagStructMapper::toVO));
     }
 
     /**

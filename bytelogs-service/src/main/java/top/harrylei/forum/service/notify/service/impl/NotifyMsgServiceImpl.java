@@ -10,7 +10,7 @@ import top.harrylei.forum.api.model.event.NotificationEvent;
 import top.harrylei.forum.api.model.vo.notify.dto.NotifyMsgDTO;
 import top.harrylei.forum.api.model.vo.notify.req.NotifyMsgQueryParam;
 import top.harrylei.forum.api.model.vo.notify.vo.NotifyMsgVO;
-import top.harrylei.forum.core.util.PageHelper;
+import top.harrylei.forum.core.util.PageUtils;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.user.dto.UserInfoDetailDTO;
 import top.harrylei.forum.service.notify.converted.NotifyMsgStructMapper;
@@ -130,7 +130,7 @@ public class NotifyMsgServiceImpl implements NotifyMsgService {
     public PageVO<NotifyMsgVO> getMyNotifications(Long userId, NotifyMsgQueryParam param) {
         // TODO: 根据查询参数构建查询条件（状态、类型过滤）
         Page<NotifyMsgDO> page = notifyMsgDAO.pageByUserId(userId, param.getPageNum(), param.getPageSize());
-        return PageHelper.buildAndMap(page, this::fillNotifyMsgVO);
+        return PageUtils.from(page, this::fillNotifyMsgVO);
     }
 
     @Override

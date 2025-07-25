@@ -18,7 +18,7 @@ import top.harrylei.forum.core.common.constans.RedisKeyConstants;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.core.util.BCryptUtil;
-import top.harrylei.forum.core.util.PageHelper;
+import top.harrylei.forum.core.util.PageUtils;
 import top.harrylei.forum.core.util.PasswordUtil;
 import top.harrylei.forum.core.util.RedisUtil;
 import top.harrylei.forum.service.auth.service.AuthService;
@@ -156,9 +156,9 @@ public class UserServiceImpl implements UserService {
         ExceptionUtil.requireValid(queryParam, ErrorCodeEnum.PARAM_MISSING, "请求参数");
 
         try {
-            IPage<UserDetailDTO> page = PageHelper.createPage(queryParam, true);
+            IPage<UserDetailDTO> page = PageUtils.of(queryParam);
             IPage<UserDetailDTO> result = userDAO.pageUsers(queryParam, page);
-            return PageHelper.build(result);
+            return PageUtils.from(result);
         } catch (Exception e) {
             ExceptionUtil.error(ErrorCodeEnum.SYSTEM_ERROR, "查询用户列表异常", e);
             return null;

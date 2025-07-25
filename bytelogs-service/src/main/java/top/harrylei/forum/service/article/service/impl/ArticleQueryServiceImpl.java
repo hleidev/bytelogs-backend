@@ -13,7 +13,7 @@ import top.harrylei.forum.api.model.vo.article.req.ArticleQueryParam;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleDetailVO;
 import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
 import top.harrylei.forum.api.model.vo.article.vo.TagSimpleVO;
-import top.harrylei.forum.core.util.PageHelper;
+import top.harrylei.forum.core.util.PageUtils;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.statistics.StatisticsVO;
 import top.harrylei.forum.api.model.vo.user.dto.ArticleFootCountDTO;
@@ -88,7 +88,7 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
         processQueryPermissions(queryParam);
 
         // 创建MyBatis-Plus分页对象
-        IPage<ArticleVO> page = PageHelper.createPage(queryParam, true);
+        IPage<ArticleVO> page = PageUtils.of(queryParam);
 
         // 第一步：分页查询文章基础信息（避免JOIN标签表导致的重复记录）
         IPage<ArticleVO> result = articleDAO.pageArticleVO(queryParam, page);
@@ -97,7 +97,7 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
         fillArticleTags(result.getRecords());
 
         // 使用PageHelper.build构建分页结果
-        return PageHelper.build(result);
+        return PageUtils.from(result);
     }
 
     @Override

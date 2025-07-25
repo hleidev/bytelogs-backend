@@ -10,7 +10,7 @@ import top.harrylei.forum.api.model.enums.NotifyTypeEnum;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.comment.ContentTypeEnum;
 import top.harrylei.forum.api.model.enums.user.UserFollowStatusEnum;
-import top.harrylei.forum.core.util.PageHelper;
+import top.harrylei.forum.core.util.PageUtils;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.user.req.UserFollowQueryParam;
 import top.harrylei.forum.api.model.vo.user.vo.UserFollowVO;
@@ -156,13 +156,13 @@ public class UserFollowServiceImpl implements UserFollowService {
     @Override
     public PageVO<UserFollowVO> pageFollowingList(UserFollowQueryParam queryParam) {
         // 创建分页对象
-        IPage<UserFollowVO> page = PageHelper.createPage(queryParam, true);
+        IPage<UserFollowVO> page = PageUtils.of(queryParam);
 
         // 查询关注列表
         IPage<UserFollowVO> result = userFollowDAO.pageFollowingList(queryParam, page);
 
         // 使用PageHelper构建分页结果
-        return PageHelper.build(result);
+        return PageUtils.from(result);
     }
 
     /**
@@ -174,13 +174,13 @@ public class UserFollowServiceImpl implements UserFollowService {
     @Override
     public PageVO<UserFollowVO> pageFollowersList(UserFollowQueryParam queryParam) {
         // 创建分页对象
-        IPage<UserFollowVO> page = PageHelper.createPage(queryParam, true);
+        IPage<UserFollowVO> page = PageUtils.of(queryParam);
 
         // 查询粉丝列表
         IPage<UserFollowVO> result = userFollowDAO.pageFollowersList(queryParam, page);
 
         // 使用PageHelper构建分页结果
-        return PageHelper.build(result);
+        return PageUtils.from(result);
     }
 
     /**

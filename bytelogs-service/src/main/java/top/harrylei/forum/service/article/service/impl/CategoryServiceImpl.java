@@ -13,7 +13,7 @@ import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.CategoryQueryParam;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
-import top.harrylei.forum.core.util.PageHelper;
+import top.harrylei.forum.core.util.PageUtils;
 import top.harrylei.forum.service.article.converted.CategoryStructMapper;
 import top.harrylei.forum.service.article.repository.dao.CategoryDAO;
 import top.harrylei.forum.service.article.repository.entity.CategoryDO;
@@ -92,11 +92,11 @@ public class CategoryServiceImpl implements CategoryService {
     public PageVO<CategoryDTO> pageQuery(CategoryQueryParam queryParam) {
         ExceptionUtil.requireValid(queryParam, ErrorCodeEnum.PARAM_MISSING, "分页请求参数");
         // 分页查询
-        IPage<CategoryDO> page = PageHelper.createPage(queryParam, true);
+        IPage<CategoryDO> page = PageUtils.of(queryParam);
         IPage<CategoryDO> result = categoryDAO.pageQuery(queryParam, page);
 
         // 转换为DTO并构建返回结果
-        return PageHelper.buildAndMap(result, categoryStructMapper::toDTO);
+        return PageUtils.from(result, categoryStructMapper::toDTO);
     }
 
     /**

@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import top.harrylei.forum.api.model.vo.comment.req.CommentManagementQueryParam;
 import top.harrylei.forum.api.model.vo.comment.vo.CommentManagementVO;
-import top.harrylei.forum.core.util.PageHelper;
+import top.harrylei.forum.core.util.PageUtils;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.service.comment.repository.dao.CommentDAO;
 import top.harrylei.forum.service.comment.service.CommentManagementService;
@@ -31,10 +31,10 @@ public class CommentManagementServiceImpl implements CommentManagementService {
 
     @Override
     public PageVO<CommentManagementVO> pageQuery(CommentManagementQueryParam queryParam) {
-        IPage<CommentManagementVO> page = PageHelper.createPage(queryParam, true);
+        IPage<CommentManagementVO> page = PageUtils.of(queryParam);
         IPage<CommentManagementVO> result = commentDAO.pageQueryForManagement(queryParam, page);
 
-        return PageHelper.build(result);
+        return PageUtils.from(result);
     }
 
     @Override

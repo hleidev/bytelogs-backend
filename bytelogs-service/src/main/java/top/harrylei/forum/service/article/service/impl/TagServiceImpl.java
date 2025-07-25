@@ -12,7 +12,7 @@ import top.harrylei.forum.api.model.vo.article.vo.TagSimpleVO;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.TagQueryParam;
 import top.harrylei.forum.core.exception.ExceptionUtil;
-import top.harrylei.forum.core.util.PageHelper;
+import top.harrylei.forum.core.util.PageUtils;
 import top.harrylei.forum.service.article.converted.TagStructMapper;
 import top.harrylei.forum.service.article.repository.dao.TagDAO;
 import top.harrylei.forum.service.article.repository.entity.TagDO;
@@ -65,11 +65,11 @@ public class TagServiceImpl implements TagService {
         ExceptionUtil.requireValid(queryParam, ErrorCodeEnum.PARAM_MISSING, "分页请求参数");
 
         // 使用新的MyBatis-Plus分页
-        IPage<TagDO> page = PageHelper.createPage(queryParam, true);
+        IPage<TagDO> page = PageUtils.of(queryParam);
         IPage<TagDO> result = tagDAO.pageQuery(queryParam, page);
 
         // 转换为DTO并构建返回结果
-        return PageHelper.buildAndMap(result, tagStructMapper::toDTO);
+        return PageUtils.from(result, tagStructMapper::toDTO);
     }
 
     /**
