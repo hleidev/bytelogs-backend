@@ -1,7 +1,6 @@
 package top.harrylei.forum.service.user.service.impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -11,7 +10,7 @@ import top.harrylei.forum.api.model.enums.NotifyTypeEnum;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.comment.ContentTypeEnum;
 import top.harrylei.forum.api.model.enums.user.UserFollowStatusEnum;
-import top.harrylei.forum.api.model.vo.page.PageHelper;
+import top.harrylei.forum.core.util.PageHelper;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.user.req.UserFollowQueryParam;
 import top.harrylei.forum.api.model.vo.user.vo.UserFollowVO;
@@ -157,7 +156,7 @@ public class UserFollowServiceImpl implements UserFollowService {
     @Override
     public PageVO<UserFollowVO> pageFollowingList(UserFollowQueryParam queryParam) {
         // 创建分页对象
-        IPage<UserFollowVO> page = PageHelper.createPage(queryParam, queryParam.getFieldMapping());
+        IPage<UserFollowVO> page = PageHelper.createPage(queryParam, true);
 
         // 查询关注列表
         IPage<UserFollowVO> result = userFollowDAO.pageFollowingList(queryParam, page);
@@ -175,7 +174,7 @@ public class UserFollowServiceImpl implements UserFollowService {
     @Override
     public PageVO<UserFollowVO> pageFollowersList(UserFollowQueryParam queryParam) {
         // 创建分页对象
-        IPage<UserFollowVO> page = PageHelper.createPage(queryParam, queryParam.getFieldMapping());
+        IPage<UserFollowVO> page = PageHelper.createPage(queryParam, true);
 
         // 查询粉丝列表
         IPage<UserFollowVO> result = userFollowDAO.pageFollowersList(queryParam, page);

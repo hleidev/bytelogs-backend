@@ -1,14 +1,13 @@
-package top.harrylei.forum.api.model.vo.page;
+package top.harrylei.forum.core.util;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
+import org.springframework.util.StringUtils;
 import top.harrylei.forum.api.model.entity.BasePage;
+import top.harrylei.forum.api.model.vo.page.Page;
+import top.harrylei.forum.api.model.vo.page.PageVO;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -190,41 +189,57 @@ public class PageHelper {
 
     /**
      * 根据 BasePage 创建 MyBatis-Plus 分页对象
-     * 默认按 create_time 降序排列
      *
-     * @param basePage     分页参数
-     * @param fieldMapping 字段映射关系
-     * @param <T>          分页数据类型
+     * @param basePage   分页参数
+     * @param enableSort 是否启用排序
+     * @param <T>        分页数据类型
      * @return MyBatis-Plus 分页对象
      */
-    public static <T> IPage<T> createPage(BasePage basePage, Map<String, String> fieldMapping) {
+    public static <T> IPage<T> createPage(BasePage basePage, boolean enableSort) {
         String defaultSortField = BasePage.DEFAULT_SORT_MAPPING.get("createTime");
-        return createPage(basePage, fieldMapping, OrderItem.desc(defaultSortField));
+        return createPage(basePage, enableSort, OrderItem.desc(defaultSortField));
     }
 
     /**
      * 根据 BasePage 创建 MyBatis-Plus 分页对象
      *
      * @param basePage      分页参数
-     * @param fieldMapping  字段映射关系
-     * @param defaultOrders 默认排序项
+     * @param enableSort    是否启用排序
+     * @param defaultOrders 默认排序项（当没有指定排序时使用）
      * @param <T>           分页数据类型
      * @return MyBatis-Plus 分页对象
      */
-    public static <T> IPage<T> createPage(BasePage basePage,
-                                          Map<String, String> fieldMapping,
-                                          OrderItem... defaultOrders) {
-        // FIXME: 为避免类冲突，暂时使用分页类全限定名
-        com.baomidou.mybatisplus.extension.plugins.pagination.Page<T> page = new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(
-                basePage.getPageNum(),
-                basePage.getPageSize());
+    public static <T> IPage<T> createPage(BasePage basePage, boolean enableSort, OrderItem... defaultOrders) {
+        com.baomidou.mybatisplus.extension.plugins.pagination.Page<T> page =
+                new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(
+                        basePage.getPageNum(),
+                        basePage.getPageSize());
 
-        // 解析并设置排序
-        List<OrderItem> orderItems = parseOrderItems(basePage, fieldMapping);
-        if (orderItems.isEmpty() && defaultOrders.length > 0) {
-            page.addOrder(Arrays.asList(defaultOrders));
-        } else if (!orderItems.isEmpty()) {
-            page.addOrder(orderItems);
+        if (enableSort) {
+            // 使用BasePage对象的字段映射进行排序解析
+            Map<String, String> fieldMapping = basePage.getFieldMapping();
+            List<OrderItem> orderItems = parseOrderItems(basePage, fieldMapping);
+
+            if (orderItems.isEmpty()) {
+                // 如果没有指定排序，使用传入的默认排序或系统默认排序
+                if (defaultOrders != null && defaultOrders.length > 0) {
+                    // 过滤掉null的OrderItem，防止NullPointerException
+                    List<OrderItem> validOrders = Arrays.stream(defaultOrders)
+                            .filter(Objects::nonNull)
+                            .toList();
+                    if (!validOrders.isEmpty()) {
+                        page.addOrder(validOrders);
+                    }
+                } else {
+                    // 使用系统默认排序：按创建时间降序
+                    String defaultSortField = fieldMapping.get("createTime");
+                    if (defaultSortField != null) {
+                        page.addOrder(OrderItem.desc(defaultSortField));
+                    }
+                }
+            } else {
+                page.addOrder(orderItems);
+            }
         }
 
         return page;
@@ -239,17 +254,37 @@ public class PageHelper {
      */
     private static List<OrderItem> parseOrderItems(BasePage basePage, Map<String, String> fieldMapping) {
         List<OrderItem> orderItems = new ArrayList<>();
-        List<BasePage.SortInfo> sortInfos = basePage.parseSortFields();
+        String sortField = basePage.getSortField();
 
-        for (BasePage.SortInfo sortInfo : sortInfos) {
-            // 只有在映射表中存在的字段才允许排序，防止SQL注入
-            String column = fieldMapping.get(sortInfo.getField());
-            if (column != null) {
-                OrderItem orderItem = sortInfo.isAsc() ? OrderItem.asc(column) : OrderItem.desc(column);
-                orderItems.add(orderItem);
+        if (StringUtils.hasText(sortField)) {
+            String[] sortItems = sortField.split(";");
+            for (String sortItem : sortItems) {
+                String[] parts = sortItem.trim().split(",");
+                if (parts.length == 2) {
+                    String field = parts[0].trim();
+                    String direction = parts[1].trim();
+
+                    // 验证方向参数的有效性和字段映射存在性
+                    if (StringUtils.hasText(field) && isValidDirection(direction)) {
+                        String column = fieldMapping.get(field);
+                        if (column != null) {
+                            OrderItem orderItem = "asc".equalsIgnoreCase(direction)
+                                    ? OrderItem.asc(column)
+                                    : OrderItem.desc(column);
+                            orderItems.add(orderItem);
+                        }
+                    }
+                }
             }
         }
 
         return orderItems;
+    }
+
+    /**
+     * 验证排序方向是否有效
+     */
+    private static boolean isValidDirection(String direction) {
+        return "asc".equalsIgnoreCase(direction) || "desc".equalsIgnoreCase(direction);
     }
 }

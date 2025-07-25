@@ -1,6 +1,5 @@
 package top.harrylei.forum.api.model.vo.comment.req;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -64,6 +63,7 @@ public class CommentManagementQueryParam extends BasePage {
     /**
      * 获取字段映射关系（前端字段 -> 数据库字段）
      */
+    @Override
     public Map<String, String> getFieldMapping() {
         Map<String, String> mapping = new HashMap<>();
         // 基础字段

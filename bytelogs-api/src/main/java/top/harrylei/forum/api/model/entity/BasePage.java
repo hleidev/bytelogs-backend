@@ -4,14 +4,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.springframework.util.StringUtils;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -62,59 +58,15 @@ public class BasePage implements Serializable {
     /**
      * 排序字符串，格式：field,direction;field,direction
      */
-    @Schema(description = "排序字符串，格式：field,direction;field,direction",
-            example = "createTime,desc;userId,asc")
+    @Schema(description = "排序字符串，格式：field,direction;field,direction", example = "createTime,desc;userId,asc")
     private String sortField;
 
     /**
-     * 解析排序字段
+     * 获取字段映射关系
      *
-     * @return 有效的排序信息列表
+     * @return 字段映射关系
      */
-    public List<SortInfo> parseSortFields() {
-        List<SortInfo> sortInfos = new ArrayList<>();
-
-        if (StringUtils.hasText(sortField)) {
-            String[] sortItems = sortField.split(";");
-            for (String sortItem : sortItems) {
-                String[] parts = sortItem.trim().split(",");
-                if (parts.length == 2) {
-                    String field = parts[0].trim();
-                    String direction = parts[1].trim();
-
-                    // 验证方向参数的有效性
-                    if (StringUtils.hasText(field) && isValidDirection(direction)) {
-                        sortInfos.add(new SortInfo(field, direction));
-                    }
-                }
-            }
-        }
-
-        return sortInfos;
-    }
-
-    /**
-     * 验证排序方向是否有效
-     */
-    private boolean isValidDirection(String direction) {
-        return "asc".equalsIgnoreCase(direction) || "desc".equalsIgnoreCase(direction);
-    }
-
-    /**
-     * 排序信息
-     */
-    @Data
-    @AllArgsConstructor
-    public static class SortInfo {
-        private String field;
-        private String direction;
-
-        public boolean isAsc() {
-            return "asc".equalsIgnoreCase(direction);
-        }
-
-        public boolean isDesc() {
-            return "desc".equalsIgnoreCase(direction);
-        }
+    public Map<String, String> getFieldMapping() {
+        return DEFAULT_SORT_MAPPING;
     }
 }

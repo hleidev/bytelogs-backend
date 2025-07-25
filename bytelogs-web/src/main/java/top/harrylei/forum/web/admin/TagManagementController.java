@@ -17,7 +17,7 @@ import top.harrylei.forum.api.model.vo.ResVO;
 import top.harrylei.forum.api.model.vo.article.dto.TagDTO;
 import top.harrylei.forum.api.model.vo.article.req.TagReq;
 import top.harrylei.forum.api.model.vo.article.vo.TagVO;
-import top.harrylei.forum.api.model.vo.page.PageHelper;
+import top.harrylei.forum.core.util.PageHelper;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.TagQueryParam;
 import top.harrylei.forum.core.security.permission.RequiresAdmin;

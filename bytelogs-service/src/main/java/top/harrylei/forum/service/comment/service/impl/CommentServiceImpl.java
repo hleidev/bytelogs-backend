@@ -19,7 +19,7 @@ import top.harrylei.forum.api.model.vo.comment.vo.BaseCommentVO;
 import top.harrylei.forum.api.model.vo.comment.vo.CommentMyVO;
 import top.harrylei.forum.api.model.vo.comment.vo.SubCommentVO;
 import top.harrylei.forum.api.model.vo.comment.vo.TopCommentVO;
-import top.harrylei.forum.api.model.vo.page.PageHelper;
+import top.harrylei.forum.core.util.PageHelper;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.user.dto.UserFootDTO;
 import top.harrylei.forum.api.model.vo.user.dto.UserInfoDetailDTO;

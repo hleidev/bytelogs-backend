@@ -10,7 +10,7 @@ import top.harrylei.forum.api.model.event.NotificationEvent;
 import top.harrylei.forum.api.model.vo.notify.dto.NotifyMsgDTO;
 import top.harrylei.forum.api.model.vo.notify.req.NotifyMsgQueryParam;
 import top.harrylei.forum.api.model.vo.notify.vo.NotifyMsgVO;
-import top.harrylei.forum.api.model.vo.page.PageHelper;
+import top.harrylei.forum.core.util.PageHelper;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.user.dto.UserInfoDetailDTO;
 import top.harrylei.forum.service.notify.converted.NotifyMsgStructMapper;

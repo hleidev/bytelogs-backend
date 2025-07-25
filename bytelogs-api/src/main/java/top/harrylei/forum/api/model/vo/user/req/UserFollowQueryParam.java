@@ -50,6 +50,7 @@ public class UserFollowQueryParam extends BasePage {
     /**
      * 获取字段映射关系
      */
+    @Override
     public Map<String, String> getFieldMapping() {
         return FIELD_MAPPING;
     }
