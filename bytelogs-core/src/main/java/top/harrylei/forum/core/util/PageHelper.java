@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import org.springframework.util.StringUtils;
 import top.harrylei.forum.api.model.entity.BasePage;
-import top.harrylei.forum.api.model.vo.page.Page;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 
 import java.util.*;
@@ -68,27 +67,6 @@ public class PageHelper {
         return result;
     }
 
-    /**
-     * 创建分页请求
-     *
-     * @param pageNum  页码
-     * @param pageSize 每页大小
-     * @return 分页请求
-     */
-    @Deprecated
-    public static Page createPage(Integer pageNum, Integer pageSize) {
-        if (pageNum == null || pageNum < 1) {
-            pageNum = Page.DEFAULT_PAGE_NUM;
-        }
-
-        if (pageSize == null || pageSize < 1) {
-            pageSize = Page.DEFAULT_PAGE_SIZE;
-        } else if (pageSize > Page.MAX_PAGE_SIZE) {
-            pageSize = Page.MAX_PAGE_SIZE;
-        }
-
-        return Page.of(pageNum, pageSize);
-    }
 
     /**
      * 构建分页结果
