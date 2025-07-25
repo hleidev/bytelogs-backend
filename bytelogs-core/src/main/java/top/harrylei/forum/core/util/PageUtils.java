@@ -2,13 +2,13 @@ package top.harrylei.forum.core.util;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.util.StringUtils;
 import top.harrylei.forum.api.model.entity.BasePage;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * 分页工具类
@@ -53,7 +53,7 @@ public class PageHelper {
             return empty();
         }
 
-        List<R> convertedContent = pageVO.getContent().stream().map(converter).collect(Collectors.toList());
+        List<R> convertedContent = pageVO.getContent().stream().map(converter).toList();
 
         PageVO<R> result = new PageVO<>();
         result.setContent(convertedContent);
@@ -78,7 +78,7 @@ public class PageHelper {
      * @param <T>           数据类型
      * @return 分页结果
      */
-    public static <T> PageVO<T> build(List<T> content, long pageNum, long pageSize, long totalElements) {
+    public static <T> PageVO<T> from(List<T> content, long pageNum, long pageSize, long totalElements) {
         PageVO<T> result = new PageVO<>();
         result.setContent(content != null ? content : Collections.emptyList());
         result.setPageNum(pageNum);
@@ -103,7 +103,7 @@ public class PageHelper {
      * @param <T>   数据类型
      * @return 分页结果
      */
-    public static <T> PageVO<T> build(IPage<T> iPage) {
+    public static <T> PageVO<T> from(IPage<T> iPage) {
         if (iPage == null) {
             return empty();
         }
@@ -131,7 +131,7 @@ public class PageHelper {
      * @param <R>       目标数据类型
      * @return 转换后的分页结果
      */
-    public static <T, R> PageVO<R> buildAndMap(IPage<T> iPage, Function<T, R> converter) {
+    public static <T, R> PageVO<R> from(IPage<T> iPage, Function<T, R> converter) {
         if (iPage == null) {
             return empty();
         }
@@ -142,13 +142,11 @@ public class PageHelper {
                 .toList();
 
         // 创建新的IPage对象，复制分页信息
-        IPage<R> convertedPage = new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(iPage.getCurrent(),
-                                                                                                  iPage.getSize(),
-                                                                                                  iPage.getTotal());
+        IPage<R> convertedPage = new Page<>(iPage.getCurrent(), iPage.getSize(), iPage.getTotal());
         convertedPage.setRecords(convertedRecords);
 
         // 复用现有的build方法
-        return build(convertedPage);
+        return from(convertedPage);
     }
 
     /**
@@ -158,8 +156,8 @@ public class PageHelper {
      * @param <T>      分页数据类型
      * @return MyBatis-Plus 分页对象
      */
-    public static <T> IPage<T> createPage(BasePage basePage) {
-        return new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(
+    public static <T> IPage<T> of(BasePage basePage) {
+        return new Page<>(
                 basePage.getPageNum(),
                 basePage.getPageSize()
         );
@@ -173,9 +171,9 @@ public class PageHelper {
      * @param <T>        分页数据类型
      * @return MyBatis-Plus 分页对象
      */
-    public static <T> IPage<T> createPage(BasePage basePage, boolean enableSort) {
+    public static <T> IPage<T> of(BasePage basePage, boolean enableSort) {
         String defaultSortField = BasePage.DEFAULT_SORT_MAPPING.get("createTime");
-        return createPage(basePage, enableSort, OrderItem.desc(defaultSortField));
+        return of(basePage, enableSort, OrderItem.desc(defaultSortField));
     }
 
     /**
@@ -187,11 +185,8 @@ public class PageHelper {
      * @param <T>           分页数据类型
      * @return MyBatis-Plus 分页对象
      */
-    public static <T> IPage<T> createPage(BasePage basePage, boolean enableSort, OrderItem... defaultOrders) {
-        com.baomidou.mybatisplus.extension.plugins.pagination.Page<T> page =
-                new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(
-                        basePage.getPageNum(),
-                        basePage.getPageSize());
+    public static <T> IPage<T> of(BasePage basePage, boolean enableSort, OrderItem... defaultOrders) {
+        Page<T> page = new Page<>(basePage.getPageNum(), basePage.getPageSize());
 
         if (enableSort) {
             // 使用BasePage对象的字段映射进行排序解析
@@ -233,7 +228,6 @@ public class PageHelper {
     private static List<OrderItem> parseOrderItems(BasePage basePage, Map<String, String> fieldMapping) {
         List<OrderItem> orderItems = new ArrayList<>();
         String sortField = basePage.getSortField();
-
         if (StringUtils.hasText(sortField)) {
             String[] sortItems = sortField.split(";");
             for (String sortItem : sortItems) {
