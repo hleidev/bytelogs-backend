@@ -1,5 +1,6 @@
 package top.harrylei.forum.service.user.service.impl;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -9,7 +10,7 @@ import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
 import top.harrylei.forum.api.model.vo.auth.UserCreateReq;
-import top.harrylei.forum.api.model.vo.page.Page;
+import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.UserQueryParam;
 import top.harrylei.forum.api.model.vo.user.dto.UserDetailDTO;
 import top.harrylei.forum.api.model.vo.user.dto.UserInfoDetailDTO;
@@ -17,6 +18,7 @@ import top.harrylei.forum.core.common.constans.RedisKeyConstants;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.core.util.BCryptUtil;
+import top.harrylei.forum.core.util.PageHelper;
 import top.harrylei.forum.core.util.PasswordUtil;
 import top.harrylei.forum.core.util.RedisUtil;
 import top.harrylei.forum.service.auth.service.AuthService;
@@ -28,13 +30,12 @@ import top.harrylei.forum.service.user.repository.entity.UserInfoDO;
 import top.harrylei.forum.service.user.service.UserService;
 import top.harrylei.forum.service.user.service.cache.UserCacheService;
 
-import java.util.List;
 import java.util.Objects;
 
 /**
  * 用户服务实现类
- * <p>
- * 提供用户信息查询和更新功能
+ *
+ * @author harry
  */
 @Slf4j
 @Service
@@ -54,6 +55,7 @@ public class UserServiceImpl implements UserService {
      * @param userId 用户 ID
      * @return 用户信息 DTO
      */
+    @Override
     public UserInfoDetailDTO getUserInfoById(Long userId) {
         ExceptionUtil.requireValid(userId, ErrorCodeEnum.PARAM_MISSING, "用户ID");
 
@@ -97,7 +99,7 @@ public class UserServiceImpl implements UserService {
     /**
      * 更新用户密码
      *
-     * @param userId 用户ID
+     * @param userId      用户ID
      * @param oldPassword 旧密码
      * @param newPassword 新密码
      */
@@ -149,41 +151,17 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    /**
-     * 用户列表查询
-     *
-     * @param queryParam 查询参数
-     * @param pageRequest 分页参数
-     * @return 用户列表
-     */
     @Override
-    public List<UserDetailDTO> listUsers(UserQueryParam queryParam, Page pageRequest) {
+    public PageVO<UserDetailDTO> pageQuery(UserQueryParam queryParam) {
         ExceptionUtil.requireValid(queryParam, ErrorCodeEnum.PARAM_MISSING, "请求参数");
-        ExceptionUtil.requireValid(pageRequest, ErrorCodeEnum.PARAM_MISSING, "分页参数");
 
         try {
-            return userDAO.listUsers(queryParam, pageRequest.getLimitSql());
+            IPage<UserDetailDTO> page = PageHelper.createPage(queryParam, true);
+            IPage<UserDetailDTO> result = userDAO.pageUsers(queryParam, page);
+            return PageHelper.build(result);
         } catch (Exception e) {
             ExceptionUtil.error(ErrorCodeEnum.SYSTEM_ERROR, "查询用户列表异常", e);
-            return List.of();
-        }
-    }
-
-    /**
-     * 统计符合条件的用户数量
-     *
-     * @param queryParam 查询参数
-     * @return 用户数量
-     */
-    @Override
-    public long countUsers(UserQueryParam queryParam) {
-        ExceptionUtil.requireValid(queryParam, ErrorCodeEnum.PARAM_MISSING, "请求参数");
-
-        try {
-            return userDAO.countUsers(queryParam);
-        } catch (Exception e) {
-            ExceptionUtil.error(ErrorCodeEnum.SYSTEM_ERROR, "统计用户数量失败", e);
-            return 0;
+            return null;
         }
     }
 
@@ -235,7 +213,7 @@ public class UserServiceImpl implements UserService {
     /**
      * 重置密码
      *
-     * @param userId 用户ID
+     * @param userId   用户ID
      * @param password 新密码
      */
     @Override
@@ -288,7 +266,10 @@ public class UserServiceImpl implements UserService {
             userDAO.updateById(user);
             userInfo.setDeleted(status.getCode());
             userInfoDAO.updateById(userInfo);
-            log.info("用户删除状态更新成功: userId={}, deleted={}, operatorId={}", userId, status.getLabel(), operatorId);
+            log.info("用户删除状态更新成功: userId={}, deleted={}, operatorId={}",
+                     userId,
+                     status.getLabel(),
+                     operatorId);
         } catch (Exception e) {
             ExceptionUtil.error(ErrorCodeEnum.USER_DELETE_FAILED, e);
         }
@@ -298,7 +279,7 @@ public class UserServiceImpl implements UserService {
      * 更新用户角色
      *
      * @param userId 用户ID
-     * @param role 角色枚举
+     * @param role   角色枚举
      */
     @Override
     public void updateUserRole(Long userId, UserRoleEnum role) {

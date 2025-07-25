@@ -9,13 +9,6 @@ import top.harrylei.forum.api.model.vo.user.dto.UserDetailDTO;
 
 public interface UserManagementService {
 
-    /**
-     * 查询用户列表
-     *
-     * @param queryParam 查询参数
-     * @return 用户列表的分页结果
-     */
-    PageVO<UserDetailDTO> list(UserQueryParam queryParam);
 
     /**
      * 查询用户详细信息

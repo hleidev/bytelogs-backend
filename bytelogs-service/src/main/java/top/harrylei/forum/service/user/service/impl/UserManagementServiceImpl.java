@@ -1,28 +1,27 @@
 package top.harrylei.forum.service.user.service.impl;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
 import top.harrylei.forum.api.model.vo.auth.UserCreateReq;
-import top.harrylei.forum.api.model.vo.page.Page;
-import top.harrylei.forum.core.util.PageHelper;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.UserQueryParam;
 import top.harrylei.forum.api.model.vo.user.dto.UserDetailDTO;
 import top.harrylei.forum.core.exception.ExceptionUtil;
+import top.harrylei.forum.core.util.PageHelper;
 import top.harrylei.forum.service.user.service.UserManagementService;
 import top.harrylei.forum.service.user.service.UserService;
 
 /**
  * 用户管理服务实现类
+ *
+ * @author harry
  */
 @Slf4j
 @Service
@@ -34,34 +33,6 @@ public class UserManagementServiceImpl implements UserManagementService {
 
     private final UserService userService;
 
-    /**
-     * 分页查询用户列表
-     *
-     * @param queryParam 查询条件
-     * @return 用户分页列表
-     */
-    @Override
-    public PageVO<UserDetailDTO> list(UserQueryParam queryParam) {
-        // 参数校验
-        ExceptionUtil.requireValid(queryParam, ErrorCodeEnum.PARAM_MISSING, "查询参数不能为空");
-        
-        // 创建分页参数
-        Page pageRequest = PageHelper.createPage(queryParam.getPageNum(), queryParam.getPageSize());
-        
-        try {
-            // 调用userService获取用户列表
-            List<UserDetailDTO> users = userService.listUsers(queryParam, pageRequest);
-            // 获取总记录数
-            long total = userService.countUsers(queryParam);
-            
-            // 构建分页结果
-            return PageHelper.build(users, pageRequest.getPageNum(), pageRequest.getPageSize(), total);
-            
-        } catch (Exception e) {
-            ExceptionUtil.error(ErrorCodeEnum.SYSTEM_ERROR, "查询用户列表失败", e);
-            return null; // 不会执行到这里，因为ExceptionUtil.error会抛出异常
-        }
-    }
 
     /**
      * 查询用户详细信息
@@ -129,7 +100,7 @@ public class UserManagementServiceImpl implements UserManagementService {
      * 修改用户角色
      *
      * @param userId 用户ID
-     * @param role 角色枚举
+     * @param role   角色枚举
      */
     @Override
     public void updateUserRole(Long userId, UserRoleEnum role) {

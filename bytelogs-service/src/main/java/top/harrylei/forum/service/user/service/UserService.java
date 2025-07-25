@@ -1,18 +1,18 @@
 package top.harrylei.forum.service.user.service;
 
-import java.util.List;
-
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
 import top.harrylei.forum.api.model.vo.auth.UserCreateReq;
-import top.harrylei.forum.api.model.vo.page.Page;
+import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.UserQueryParam;
-import top.harrylei.forum.api.model.vo.user.dto.UserInfoDetailDTO;
 import top.harrylei.forum.api.model.vo.user.dto.UserDetailDTO;
+import top.harrylei.forum.api.model.vo.user.dto.UserInfoDetailDTO;
 
 /**
  * 用户服务接口
+ *
+ * @author harry
  */
 public interface UserService {
 
@@ -35,7 +35,7 @@ public interface UserService {
     /**
      * 更新用户密码
      *
-     * @param userId 用户ID
+     * @param userId      用户ID
      * @param oldPassword 新密码
      * @param newPassword 旧密码
      */
@@ -49,26 +49,11 @@ public interface UserService {
      */
     void updateAvatar(Long userId, String avatar);
 
-    /**
-     * 用户列表查询
-     *
-     * @param queryParam 查询参数
-     * @param pageRequest 分页参数
-     * @return 用户列表
-     */
-    List<UserDetailDTO> listUsers(UserQueryParam queryParam, Page pageRequest);
-
-    /**
-     * 统计符合条件的用户数量
-     *
-     * @param queryParam 查询参数
-     * @return 用户数量
-     */
-    long countUsers(UserQueryParam queryParam);
+    PageVO<UserDetailDTO> pageQuery(UserQueryParam queryParam);
 
     /**
      * 查询用户详细信息
-     * 
+     *
      * @param userId 用户ID
      * @return 用户详细信息
      */
@@ -85,7 +70,7 @@ public interface UserService {
     /**
      * 重置用户密码
      *
-     * @param userId 用户ID
+     * @param userId   用户ID
      * @param password 新密码
      */
     void resetPassword(Long userId, String password);
@@ -102,7 +87,7 @@ public interface UserService {
      * 修改用户角色
      *
      * @param userId 用户ID
-     * @param role 角色枚举
+     * @param role   角色枚举
      */
     void updateUserRole(Long userId, UserRoleEnum role);
 

@@ -25,44 +25,41 @@
     </resultMap>
 
     <!-- 联表查询用户完整信息的SQL -->
-    <select id="listUsers" resultMap="UserDetailDTOMap">
+    <select id="pageUsers" resultMap="UserDetailDTOMap">
         select
             a.id, a.user_name, a.email, a.status, a.deleted, a.create_time, a.update_time, a.third_account_id,
             a.login_type, b.avatar, b.position, b.company, b.profile, b.extend, b.user_role
-        from user_account a
-        left join user_info b on a.id = b.user_id
+            from user_account a
+            left join user_info b on a.id = b.user_id
         <where>
-            <if test="status != null">and a.status = #{status}</if>
-            <if test="deleted != null">and a.deleted = #{deleted}</if>
-            <if test="startTime != null">and a.create_time &gt;= #{startTime}</if>
-            <if test="endTime != null">and a.create_time &lt;= #{endTime}</if>
-            <if test="userName != null and userName != ''">and a.user_name like concat('%',#{userName},'%')</if>
+            <if test="queryParam.status != null">and a.status = #{queryParam.status}</if>
+            <if test="queryParam.deleted != null">and a.deleted = #{queryParam.deleted}</if>
+            <if test="queryParam.startTime != null">and a.create_time &gt;= #{queryParam.startTime}</if>
+            <if test="queryParam.endTime != null">and a.create_time &lt;= #{queryParam.endTime}</if>
+            <if test="queryParam.userName != null and queryParam.userName != ''">and a.user_name like concat('%',#{queryParam.userName},'%')</if>
         </where>
-        ${orderBySql}
-        ${limitSql}
-    </select>
-
-    <!-- 统计符合条件的用户数量 -->
-    <select id="countUsers" resultType="java.lang.Long">
-        select count(*)
-        from user_account a
-        left join user_info b on a.id = b.user_id
-        <where>
-            <if test="status != null">and a.status = #{status}</if>
-            <if test="deleted != null">and a.deleted = #{deleted}</if>
-            <if test="startTime != null">and a.create_time &gt;= #{startTime}</if>
-            <if test="endTime != null">and a.create_time &lt;= #{endTime}</if>
-            <if test="userName != null and userName != ''">and a.user_name like concat('%',#{userName},'%')</if>
-        </where>
+        order by a.create_time desc
     </select>
 
     <!-- 查询用户详细信息 -->
     <select id="selectUserDetail" resultMap="UserDetailDTOMap">
-        select
-            a.id, a.user_name, a.email, a.status, a.deleted, a.create_time, a.update_time, a.third_account_id,
-            a.login_type, b.avatar, b.position, b.company, b.profile, b.extend, b.user_role
+        select a.id,
+               a.user_name,
+               a.email,
+               a.status,
+               a.deleted,
+               a.create_time,
+               a.update_time,
+               a.third_account_id,
+               a.login_type,
+               b.avatar,
+               b.position,
+               b.company,
+               b.profile,
+               b.extend,
+               b.user_role
         from user_account a
-        left join user_info b on a.id = b.user_id
+                 left join user_info b on a.id = b.user_id
         where a.id = #{userId}
     </select>
 

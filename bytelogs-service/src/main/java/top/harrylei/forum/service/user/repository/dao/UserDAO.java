@@ -1,11 +1,8 @@
 package top.harrylei.forum.service.user.repository.dao;
 
-import java.util.List;
-
-import org.springframework.stereotype.Repository;
-
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-
+import org.springframework.stereotype.Repository;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.vo.page.param.UserQueryParam;
 import top.harrylei.forum.api.model.vo.user.dto.UserDetailDTO;
@@ -14,6 +11,8 @@ import top.harrylei.forum.service.user.repository.mapper.UserMapper;
 
 /**
  * 用户账号数据访问对象 负责操作user_account表
+ *
+ * @author harry
  */
 @Repository
 public class UserDAO extends ServiceImpl<UserMapper, UserDO> {
@@ -36,42 +35,8 @@ public class UserDAO extends ServiceImpl<UserMapper, UserDO> {
                 .one();
     }
 
-    /**
-     * 根据查询参数和分页信息查询用户列表
-     *
-     * @param queryParam 查询参数
-     * @param limitSql 分页SQL
-     * @return 用户列表
-     */
-    public List<UserDetailDTO> listUsers(UserQueryParam queryParam, String limitSql) {
-        String orderBySql = queryParam.getOrderBySql();
-
-        return getBaseMapper()
-                .listUsers(
-                        queryParam.getUserName(),
-                        queryParam.getStatus(),
-                        queryParam.getDeleted(),
-                        queryParam.getStartTime(),
-                        queryParam.getEndTime(),
-                        orderBySql, limitSql
-        );
-    }
-
-    /**
-     * 统计符合条件的用户数量
-     *
-     * @param queryParam 查询参数
-     * @return 用户数量
-     */
-    public long countUsers(UserQueryParam queryParam) {
-        return getBaseMapper()
-                .countUsers(
-                        queryParam.getUserName(),
-                        queryParam.getStatus(),
-                        queryParam.getDeleted(),
-                        queryParam.getStartTime(),
-                        queryParam.getEndTime()
-                );
+    public IPage<UserDetailDTO> pageUsers(UserQueryParam queryParam, IPage<UserDetailDTO> page) {
+        return getBaseMapper().pageUsers(page, queryParam);
     }
 
     /**
@@ -87,7 +52,7 @@ public class UserDAO extends ServiceImpl<UserMapper, UserDO> {
 
     /**
      * 通过userId获取用户账号信息
-     * 
+     *
      * @param userId 用户ID
      * @return 用户账号信息
      */
@@ -95,19 +60,6 @@ public class UserDAO extends ServiceImpl<UserMapper, UserDO> {
         return lambdaQuery()
                 .eq(UserDO::getId, userId)
                 .eq(UserDO::getDeleted, YesOrNoEnum.NO.getCode())
-                .one();
-    }
-
-    /**
-     * 通过userId查询被删除的账号信息
-     *
-     * @param userId 用户ID
-     * @return 用户账号信息
-     */
-    public UserDO getDeletedUserById(Long userId) {
-        return lambdaQuery()
-                .eq(UserDO::getId, userId)
-                .eq(UserDO::getDeleted, YesOrNoEnum.YES.getCode())
                 .one();
     }
 }
