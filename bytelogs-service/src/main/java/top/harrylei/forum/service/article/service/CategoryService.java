@@ -1,13 +1,13 @@
 package top.harrylei.forum.service.article.service;
 
-import java.util.List;
-
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.article.dto.CategoryDTO;
 import top.harrylei.forum.api.model.vo.article.req.CategoryReq;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.CategoryQueryParam;
+
+import java.util.List;
 
 /**
  * 分类服务接口类
@@ -35,7 +35,7 @@ public interface CategoryService {
      * @param queryParam 分页及筛选参数
      * @return 分页分类列表
      */
-    PageVO<CategoryDTO> page(CategoryQueryParam queryParam);
+    PageVO<CategoryDTO> pageQuery(CategoryQueryParam queryParam);
 
     /**
      * 更新分类状态

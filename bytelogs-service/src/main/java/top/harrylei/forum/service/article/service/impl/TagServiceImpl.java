@@ -1,29 +1,30 @@
 package top.harrylei.forum.service.article.service.impl;
 
-import java.util.List;
-import java.util.Objects;
-
-import org.springframework.stereotype.Service;
-
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.article.dto.TagDTO;
 import top.harrylei.forum.api.model.vo.article.vo.TagSimpleVO;
-import top.harrylei.forum.api.model.vo.page.Page;
-import top.harrylei.forum.core.util.PageHelper;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.TagQueryParam;
 import top.harrylei.forum.core.exception.ExceptionUtil;
+import top.harrylei.forum.core.util.PageHelper;
 import top.harrylei.forum.service.article.converted.TagStructMapper;
 import top.harrylei.forum.service.article.repository.dao.TagDAO;
 import top.harrylei.forum.service.article.repository.entity.TagDO;
 import top.harrylei.forum.service.article.service.TagService;
 
+import java.util.List;
+import java.util.Objects;
+
 /**
  * 标签服务实现类
+ *
+ * @author harry
  */
 @Slf4j
 @RequiredArgsConstructor
@@ -60,17 +61,15 @@ public class TagServiceImpl implements TagService {
      * @return 标签分类列表
      */
     @Override
-    public PageVO<TagDTO> page(TagQueryParam queryParam) {
+    public PageVO<TagDTO> pageQuery(TagQueryParam queryParam) {
         ExceptionUtil.requireValid(queryParam, ErrorCodeEnum.PARAM_MISSING, "分页请求参数");
 
-        Page page = PageHelper.createPage(queryParam.getPageNum(), queryParam.getPageSize());
+        // 使用新的MyBatis-Plus分页
+        IPage<TagDO> page = PageHelper.createPage(queryParam, true);
+        IPage<TagDO> result = tagDAO.pageQuery(queryParam, page);
 
-        List<TagDO> tags = tagDAO.listTags(queryParam, page);
-        List<TagDTO> result = tags.stream().filter(Objects::nonNull).map(tagStructMapper::toDTO).toList();
-
-        long total = tagDAO.countTags(queryParam);
-
-        return PageHelper.build(result, page.getPageNum(), page.getPageSize(), total);
+        // 转换为DTO并构建返回结果
+        return PageHelper.buildAndMap(result, tagStructMapper::toDTO);
     }
 
     /**
@@ -94,7 +93,7 @@ public class TagServiceImpl implements TagService {
     /**
      * 更新标签
      *
-     * @param tagId 标签ID
+     * @param tagId       标签ID
      * @param yesOrNoEnum 删除标识
      */
     @Override

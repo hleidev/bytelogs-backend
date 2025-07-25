@@ -1,10 +1,8 @@
 package top.harrylei.forum.service.article.service;
 
 import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
-import top.harrylei.forum.api.model.vo.article.req.CategoryReq;
 import top.harrylei.forum.api.model.vo.article.dto.CategoryDTO;
-import top.harrylei.forum.api.model.vo.page.PageVO;
-import top.harrylei.forum.api.model.vo.page.param.CategoryQueryParam;
+import top.harrylei.forum.api.model.vo.article.req.CategoryReq;
 
 import java.util.List;
 
@@ -27,14 +25,6 @@ public interface CategoryManagementService {
      * @param req 修改参数
      */
     CategoryDTO update(Long categoryId, CategoryReq req);
-
-    /**
-     * 分类分页查询
-     *
-     * @param queryParam 分页及筛选参数
-     * @return 分页分类列表
-     */
-    PageVO<CategoryDTO> list(CategoryQueryParam queryParam);
 
     /**
      * 修改分类状态

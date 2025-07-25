@@ -1,19 +1,20 @@
 package top.harrylei.forum.service.article.repository.dao;
 
-import java.util.List;
-
-import org.springframework.stereotype.Repository;
-
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-
+import org.springframework.stereotype.Repository;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.page.param.CategoryQueryParam;
 import top.harrylei.forum.service.article.repository.entity.CategoryDO;
 import top.harrylei.forum.service.article.repository.mapper.CategoryMapper;
 
+import java.util.List;
+
 /**
  * 分类访问对象
+ *
+ * @author harry
  */
 @Repository
 public class CategoryDAO extends ServiceImpl<CategoryMapper, CategoryDO> {
@@ -26,26 +27,16 @@ public class CategoryDAO extends ServiceImpl<CategoryMapper, CategoryDO> {
                 .one();
     }
 
-    public List<CategoryDO> listCategory(CategoryQueryParam queryParam, String limitSql) {
-        String orderBySql = queryParam.getOrderBySql();
+    public IPage<CategoryDO> pageQuery(CategoryQueryParam queryParam, IPage<CategoryDO> page) {
         return lambdaQuery()
                 .like(queryParam.getCategoryName() != null && !queryParam.getCategoryName().isEmpty(),
-                        CategoryDO::getCategoryName, queryParam.getCategoryName())
+                      CategoryDO::getCategoryName, queryParam.getCategoryName())
                 .eq(queryParam.getStatus() != null, CategoryDO::getStatus, queryParam.getStatus())
                 .eq(queryParam.getSortWeight() != null, CategoryDO::getSort, queryParam.getSortWeight())
+                .ge(queryParam.getStartTime() != null, CategoryDO::getCreateTime, queryParam.getStartTime())
+                .le(queryParam.getEndTime() != null, CategoryDO::getCreateTime, queryParam.getEndTime())
                 .eq(CategoryDO::getDeleted, YesOrNoEnum.NO.getCode())
-                .last(orderBySql + " " + limitSql)
-                .list();
-    }
-
-    public long countCategory(CategoryQueryParam queryParam) {
-        return lambdaQuery()
-                .like(queryParam.getCategoryName() != null && !queryParam.getCategoryName().isEmpty(),
-                        CategoryDO::getCategoryName, queryParam.getCategoryName())
-                .eq(queryParam.getStatus() != null, CategoryDO::getStatus, queryParam.getStatus())
-                .eq(queryParam.getSortWeight() != null, CategoryDO::getSort, queryParam.getSortWeight())
-                .eq(CategoryDO::getDeleted, YesOrNoEnum.NO.getCode())
-                .count();
+                .page(page);
     }
 
     public List<CategoryDO> getDeleted() {

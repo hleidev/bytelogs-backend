@@ -1,20 +1,20 @@
 package top.harrylei.forum.service.article.repository.dao;
 
-import java.util.List;
-
-import org.springframework.stereotype.Repository;
-
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-
+import org.springframework.stereotype.Repository;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
-import top.harrylei.forum.api.model.vo.page.Page;
 import top.harrylei.forum.api.model.vo.page.param.TagQueryParam;
 import top.harrylei.forum.service.article.repository.entity.TagDO;
 import top.harrylei.forum.service.article.repository.mapper.TagMapper;
 
+import java.util.List;
+
 /**
  * 标签访问对象
+ *
+ * @author harry
  */
 @Repository
 public class TagDAO extends ServiceImpl<TagMapper, TagDO> {
@@ -29,28 +29,17 @@ public class TagDAO extends ServiceImpl<TagMapper, TagDO> {
                 .one() != null;
     }
 
-    public List<TagDO> listTags(TagQueryParam queryParam, Page page) {
-        String orderBySql = queryParam.getOrderBySql();
+    public IPage<TagDO> pageQuery(TagQueryParam queryParam, IPage<TagDO> page) {
         return lambdaQuery()
                 .like(queryParam.getTagName() != null && !queryParam.getTagName().isEmpty(),
-                        TagDO::getTagName, queryParam.getTagName())
+                      TagDO::getTagName, queryParam.getTagName())
                 .eq(queryParam.getTagType() != null, TagDO::getTagType, queryParam.getTagType())
                 .eq(queryParam.getCategoryId() != null, TagDO::getCategoryId, queryParam.getCategoryId())
                 .eq(queryParam.getStatus() != null, TagDO::getStatus, queryParam.getStatus())
+                .ge(queryParam.getStartTime() != null, TagDO::getCreateTime, queryParam.getStartTime())
+                .le(queryParam.getEndTime() != null, TagDO::getCreateTime, queryParam.getEndTime())
                 .eq(TagDO::getDeleted, YesOrNoEnum.NO.getCode())
-                .last(orderBySql + " " + page.getLimitSql())
-                .list();
-    }
-
-    public Long countTags(TagQueryParam queryParam) {
-        return lambdaQuery()
-                .like(queryParam.getTagName() != null && !queryParam.getTagName().isEmpty(),
-                        TagDO::getTagName, queryParam.getTagName())
-                .eq(queryParam.getTagType() != null, TagDO::getTagType, queryParam.getTagType())
-                .eq(queryParam.getCategoryId() != null, TagDO::getCategoryId, queryParam.getCategoryId())
-                .eq(queryParam.getStatus() != null, TagDO::getStatus, queryParam.getStatus())
-                .eq(TagDO::getDeleted, YesOrNoEnum.NO.getCode())
-                .count();
+                .page(page);
     }
 
     public TagDO getByTagId(Long id) {

@@ -27,7 +27,7 @@ public interface TagService {
      * @param queryParam 标签及筛选参数
      * @return 标签分类列表
      */
-    PageVO<TagDTO> page(TagQueryParam queryParam);
+    PageVO<TagDTO> pageQuery(TagQueryParam queryParam);
 
     /**
      * 更新标签

@@ -20,6 +20,8 @@ import java.util.List;
 
 /**
  * 分类管理服务实现类
+ *
+ * @author harry
  */
 @Slf4j
 @Service
@@ -45,7 +47,7 @@ public class CategoryManagementServiceImpl implements CategoryManagementService 
      * 修改分类
      *
      * @param categoryId 分类ID
-     * @param req 修改参数
+     * @param req        修改参数
      */
     @Override
     public CategoryDTO update(Long categoryId, CategoryReq req) {
@@ -58,22 +60,10 @@ public class CategoryManagementServiceImpl implements CategoryManagementService 
     }
 
     /**
-     * 分类分页查询
-     *
-     * @param queryParam 分页及筛选参数
-     * @return 分页分类列表
-     */
-    @Override
-    public PageVO<CategoryDTO> list(CategoryQueryParam queryParam) {
-        ExceptionUtil.requireValid(queryParam, ErrorCodeEnum.PARAM_MISSING, "分页请求参数");
-        return categoryService.page(queryParam);
-    }
-
-    /**
      * 修改分类状态
      *
      * @param categoryId 分类ID
-     * @param status 新状态
+     * @param status     新状态
      */
     @Override
     public void updateStatus(Long categoryId, PublishStatusEnum status) {

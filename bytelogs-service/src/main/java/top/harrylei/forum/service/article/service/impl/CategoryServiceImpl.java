@@ -1,31 +1,32 @@
 package top.harrylei.forum.service.article.service.impl;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-
-import org.springframework.stereotype.Service;
-
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
 import top.harrylei.forum.api.model.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.vo.article.dto.CategoryDTO;
 import top.harrylei.forum.api.model.vo.article.req.CategoryReq;
-import top.harrylei.forum.api.model.vo.page.Page;
-import top.harrylei.forum.core.util.PageHelper;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.page.param.CategoryQueryParam;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
+import top.harrylei.forum.core.util.PageHelper;
 import top.harrylei.forum.service.article.converted.CategoryStructMapper;
 import top.harrylei.forum.service.article.repository.dao.CategoryDAO;
 import top.harrylei.forum.service.article.repository.entity.CategoryDO;
 import top.harrylei.forum.service.article.service.CategoryService;
 
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+
 /**
  * 分类服务层
+ *
+ * @author harry
  */
 @Slf4j
 @Service
@@ -44,8 +45,10 @@ public class CategoryServiceImpl implements CategoryService {
     public void save(CategoryReq req) {
         ExceptionUtil.requireValid(req, ErrorCodeEnum.PARAM_MISSING, "分类请求参数");
 
-        CategoryDO category =
-            new CategoryDO().setCategoryName(req.getCategoryName()).setStatus(req.getStatus().getCode()).setSort(req.getSort());
+        CategoryDO category = new CategoryDO().
+                setCategoryName(req.getCategoryName())
+                .setStatus(req.getStatus().getCode())
+                .setSort(req.getSort());
 
         try {
             categoryDAO.save(category);
@@ -86,23 +89,21 @@ public class CategoryServiceImpl implements CategoryService {
      * @return 分页分类列表
      */
     @Override
-    public PageVO<CategoryDTO> page(CategoryQueryParam queryParam) {
+    public PageVO<CategoryDTO> pageQuery(CategoryQueryParam queryParam) {
         ExceptionUtil.requireValid(queryParam, ErrorCodeEnum.PARAM_MISSING, "分页请求参数");
-        Page page = PageHelper.createPage(queryParam.getPageNum(), queryParam.getPageSize());
+        // 分页查询
+        IPage<CategoryDO> page = PageHelper.createPage(queryParam, true);
+        IPage<CategoryDO> result = categoryDAO.pageQuery(queryParam, page);
 
-        List<CategoryDO> categoryDOList = categoryDAO.listCategory(queryParam, page.getLimitSql());
-        long total = categoryDAO.countCategory(queryParam);
-
-        List<CategoryDTO> categoryList = categoryDOList.stream().map(categoryStructMapper::toDTO).toList();
-
-        return PageHelper.build(categoryList, page.getPageNum(), page.getPageSize(), total);
+        // 转换为DTO并构建返回结果
+        return PageHelper.buildAndMap(result, categoryStructMapper::toDTO);
     }
 
     /**
      * 更新分类状态
      *
      * @param categoryId 分类ID
-     * @param status 新状态
+     * @param status     新状态
      */
     @Override
     public void updateStatus(Long categoryId, PublishStatusEnum status) {
@@ -122,8 +123,10 @@ public class CategoryServiceImpl implements CategoryService {
         try {
             category.setStatus(status.getCode());
             categoryDAO.updateById(category);
-            log.info("更新分类状态成功 category={} status={} operatorId={}", category.getCategoryName(), status.getLabel(),
-                operatorId);
+            log.info("更新分类状态成功 category={} status={} operatorId={}",
+                     category.getCategoryName(),
+                     status.getLabel(),
+                     operatorId);
         } catch (Exception e) {
             ExceptionUtil.error(ErrorCodeEnum.CATEGORY_UPDATE_FAILED, "更新状态失败", e);
         }
@@ -133,7 +136,7 @@ public class CategoryServiceImpl implements CategoryService {
      * 更新删除状态
      *
      * @param categoryId 分类ID
-     * @param status 删除状态
+     * @param status     删除状态
      */
     @Override
     public void updateDeleted(Long categoryId, YesOrNoEnum status) {
