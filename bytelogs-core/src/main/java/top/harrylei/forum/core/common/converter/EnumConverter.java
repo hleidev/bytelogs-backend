@@ -3,8 +3,8 @@ package top.harrylei.forum.core.common.converter;
 import org.mapstruct.Named;
 import org.springframework.stereotype.Component;
 
-import top.harrylei.forum.api.model.enums.YesOrNoEnum;
-import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
+import top.harrylei.forum.api.enums.YesOrNoEnum;
+import top.harrylei.forum.api.enums.article.PublishStatusEnum;
 
 /**
  * 通用枚举转换器

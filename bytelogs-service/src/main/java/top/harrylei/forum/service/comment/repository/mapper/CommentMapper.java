@@ -3,8 +3,8 @@ package top.harrylei.forum.service.comment.repository.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.apache.ibatis.annotations.Param;
-import top.harrylei.forum.api.model.vo.comment.req.CommentManagementQueryParam;
-import top.harrylei.forum.api.model.vo.comment.vo.CommentManagementVO;
+import top.harrylei.forum.api.model.comment.req.CommentManagementQueryParam;
+import top.harrylei.forum.api.model.comment.vo.CommentManagementVO;
 import top.harrylei.forum.service.comment.repository.entity.CommentDO;
 
 /**

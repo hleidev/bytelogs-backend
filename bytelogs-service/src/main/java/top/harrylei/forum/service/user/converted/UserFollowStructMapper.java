@@ -3,8 +3,8 @@ package top.harrylei.forum.service.user.converted;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
-import top.harrylei.forum.api.model.enums.user.UserFollowStatusEnum;
-import top.harrylei.forum.api.model.vo.user.dto.UserFollowDTO;
+import top.harrylei.forum.api.enums.user.UserFollowStatusEnum;
+import top.harrylei.forum.api.model.user.dto.UserFollowDTO;
 import top.harrylei.forum.core.common.converter.EnumConverter;
 import top.harrylei.forum.service.user.repository.entity.UserFollowDO;
 

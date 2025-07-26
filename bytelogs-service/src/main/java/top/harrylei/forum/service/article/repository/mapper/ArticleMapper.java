@@ -3,8 +3,8 @@ package top.harrylei.forum.service.article.repository.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.apache.ibatis.annotations.Param;
-import top.harrylei.forum.api.model.vo.article.req.ArticleQueryParam;
-import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
+import top.harrylei.forum.api.model.article.req.ArticleQueryParam;
+import top.harrylei.forum.api.model.article.vo.ArticleVO;
 import top.harrylei.forum.service.article.repository.entity.ArticleDO;
 
 /**

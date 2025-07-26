@@ -4,7 +4,7 @@ import org.springframework.stereotype.Repository;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
-import top.harrylei.forum.api.model.enums.YesOrNoEnum;
+import top.harrylei.forum.api.enums.YesOrNoEnum;
 import top.harrylei.forum.service.user.repository.entity.UserInfoDO;
 import top.harrylei.forum.service.user.repository.mapper.UserInfoMapper;
 

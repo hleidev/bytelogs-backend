@@ -3,9 +3,9 @@ package top.harrylei.forum.service.article.repository.dao;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Repository;
-import top.harrylei.forum.api.model.enums.YesOrNoEnum;
-import top.harrylei.forum.api.model.vo.article.req.ArticleQueryParam;
-import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
+import top.harrylei.forum.api.enums.YesOrNoEnum;
+import top.harrylei.forum.api.model.article.req.ArticleQueryParam;
+import top.harrylei.forum.api.model.article.vo.ArticleVO;
 import top.harrylei.forum.service.article.repository.entity.ArticleDO;
 import top.harrylei.forum.service.article.repository.mapper.ArticleMapper;
 

@@ -4,10 +4,10 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
-import top.harrylei.forum.api.model.vo.article.dto.CategoryDTO;
-import top.harrylei.forum.api.model.vo.article.req.CategoryReq;
-import top.harrylei.forum.api.model.vo.article.vo.CategoryVO;
-import top.harrylei.forum.api.model.vo.article.vo.CategorySimpleVO;
+import top.harrylei.forum.api.model.article.dto.CategoryDTO;
+import top.harrylei.forum.api.model.article.req.CategoryReq;
+import top.harrylei.forum.api.model.article.vo.CategoryVO;
+import top.harrylei.forum.api.model.article.vo.CategorySimpleVO;
 import top.harrylei.forum.core.common.converter.EnumConverter;
 import top.harrylei.forum.service.article.repository.entity.CategoryDO;
 

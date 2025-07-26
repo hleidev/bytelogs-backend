@@ -16,7 +16,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
-import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
+import top.harrylei.forum.api.enums.user.UserRoleEnum;
 import top.harrylei.forum.core.config.JwtProperties;
 
 /**

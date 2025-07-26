@@ -2,7 +2,7 @@ package top.harrylei.forum.core.exception;
 
 import org.springframework.lang.NonNull;
 import org.springframework.util.CollectionUtils;
-import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
+import top.harrylei.forum.api.enums.ErrorCodeEnum;
 
 import java.lang.reflect.Array;
 import java.util.Collection;

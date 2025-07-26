@@ -1,7 +1,7 @@
 package top.harrylei.forum.core.exception;
 
 import lombok.Getter;
-import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
+import top.harrylei.forum.api.enums.ErrorCodeEnum;
 
 import java.io.Serial;
 

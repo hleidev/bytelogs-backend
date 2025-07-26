@@ -3,7 +3,7 @@
 <mapper namespace="top.harrylei.forum.service.article.repository.mapper.ArticleMapper">
 
     <!-- ArticleVO完整映射 -->
-    <resultMap id="ArticleVOMap" type="top.harrylei.forum.api.model.vo.article.vo.ArticleVO">
+    <resultMap id="ArticleVOMap" type="top.harrylei.forum.api.model.article.vo.ArticleVO">
         <!-- 文章基础信息 -->
         <id column="id" property="id"/>
         <result column="user_id" property="userId"/>
@@ -25,13 +25,13 @@
         <result column="content" property="content"/>
 
         <!-- 分类信息 -->
-        <association property="category" javaType="top.harrylei.forum.api.model.vo.article.vo.CategorySimpleVO">
+        <association property="category" javaType="top.harrylei.forum.api.model.article.vo.CategorySimpleVO">
             <result column="category_id" property="categoryId"/>
             <result column="category_name" property="categoryName"/>
         </association>
 
         <!-- 标签集合 -->
-        <collection property="tags" ofType="top.harrylei.forum.api.model.vo.article.vo.TagSimpleVO">
+        <collection property="tags" ofType="top.harrylei.forum.api.model.article.vo.TagSimpleVO">
             <result column="tag_id" property="tagId"/>
             <result column="tag_name" property="tagName"/>
             <result column="tag_type" property="tagType"/>

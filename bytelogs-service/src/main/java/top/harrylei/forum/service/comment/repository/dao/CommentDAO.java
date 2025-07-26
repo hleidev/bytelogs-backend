@@ -3,9 +3,9 @@ package top.harrylei.forum.service.comment.repository.dao;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Repository;
-import top.harrylei.forum.api.model.enums.YesOrNoEnum;
-import top.harrylei.forum.api.model.vo.comment.req.CommentManagementQueryParam;
-import top.harrylei.forum.api.model.vo.comment.vo.CommentManagementVO;
+import top.harrylei.forum.api.enums.YesOrNoEnum;
+import top.harrylei.forum.api.model.comment.req.CommentManagementQueryParam;
+import top.harrylei.forum.api.model.comment.vo.CommentManagementVO;
 import top.harrylei.forum.service.comment.repository.entity.CommentDO;
 import top.harrylei.forum.service.comment.repository.mapper.CommentMapper;
 

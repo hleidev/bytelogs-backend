@@ -21,8 +21,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
-import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
-import top.harrylei.forum.api.model.vo.ResVO;
+import top.harrylei.forum.api.enums.ErrorCodeEnum;
+import top.harrylei.forum.api.model.base.ResVO;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ForumException;
 

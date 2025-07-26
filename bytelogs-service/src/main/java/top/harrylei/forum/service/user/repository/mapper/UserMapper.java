@@ -1,13 +1,10 @@
 package top.harrylei.forum.service.user.repository.mapper;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 
-import top.harrylei.forum.api.model.vo.page.param.UserQueryParam;
-import top.harrylei.forum.api.model.vo.user.dto.UserDetailDTO;
+import top.harrylei.forum.api.model.page.param.UserQueryParam;
+import top.harrylei.forum.api.model.user.dto.UserDetailDTO;
 import top.harrylei.forum.service.user.repository.entity.UserDO;
 
 public interface UserMapper extends BaseMapper<UserDO> {

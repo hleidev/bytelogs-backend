@@ -3,7 +3,7 @@ package top.harrylei.forum.service.user.service.cache;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import top.harrylei.forum.api.model.vo.user.dto.UserInfoDetailDTO;
+import top.harrylei.forum.api.model.user.dto.UserInfoDetailDTO;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.common.constans.RedisKeyConstants;
 import top.harrylei.forum.core.util.RedisUtil;

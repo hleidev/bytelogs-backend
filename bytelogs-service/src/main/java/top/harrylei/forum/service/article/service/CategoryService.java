@@ -1,11 +1,11 @@
 package top.harrylei.forum.service.article.service;
 
-import top.harrylei.forum.api.model.enums.YesOrNoEnum;
-import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
-import top.harrylei.forum.api.model.vo.article.dto.CategoryDTO;
-import top.harrylei.forum.api.model.vo.article.req.CategoryReq;
-import top.harrylei.forum.api.model.vo.page.PageVO;
-import top.harrylei.forum.api.model.vo.page.param.CategoryQueryParam;
+import top.harrylei.forum.api.enums.YesOrNoEnum;
+import top.harrylei.forum.api.enums.article.PublishStatusEnum;
+import top.harrylei.forum.api.model.article.dto.CategoryDTO;
+import top.harrylei.forum.api.model.article.req.CategoryReq;
+import top.harrylei.forum.api.model.page.PageVO;
+import top.harrylei.forum.api.model.page.param.CategoryQueryParam;
 
 import java.util.List;
 

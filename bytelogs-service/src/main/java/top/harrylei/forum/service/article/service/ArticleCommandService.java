@@ -1,11 +1,11 @@
 package top.harrylei.forum.service.article.service;
 
-import top.harrylei.forum.api.model.enums.YesOrNoEnum;
-import top.harrylei.forum.api.model.enums.article.ArticleStatusTypeEnum;
-import top.harrylei.forum.api.model.enums.OperateTypeEnum;
-import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
-import top.harrylei.forum.api.model.vo.article.dto.ArticleDTO;
-import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
+import top.harrylei.forum.api.enums.YesOrNoEnum;
+import top.harrylei.forum.api.enums.article.ArticleStatusTypeEnum;
+import top.harrylei.forum.api.enums.OperateTypeEnum;
+import top.harrylei.forum.api.enums.article.PublishStatusEnum;
+import top.harrylei.forum.api.model.article.dto.ArticleDTO;
+import top.harrylei.forum.api.model.article.vo.ArticleVO;
 
 /**
  * 文章命令服务接口

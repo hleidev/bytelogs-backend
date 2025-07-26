@@ -1,6 +1,6 @@
 package top.harrylei.forum.service.statistics.service;
 
-import top.harrylei.forum.api.model.enums.comment.ContentTypeEnum;
+import top.harrylei.forum.api.enums.comment.ContentTypeEnum;
 
 /**
  * 阅读统计服务接口

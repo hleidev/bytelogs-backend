@@ -8,10 +8,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import top.harrylei.forum.api.model.vo.ResVO;
-import top.harrylei.forum.api.model.vo.comment.req.CommentManagementQueryParam;
-import top.harrylei.forum.api.model.vo.comment.vo.CommentManagementVO;
-import top.harrylei.forum.api.model.vo.page.PageVO;
+import top.harrylei.forum.api.model.base.ResVO;
+import top.harrylei.forum.api.model.comment.req.CommentManagementQueryParam;
+import top.harrylei.forum.api.model.comment.vo.CommentManagementVO;
+import top.harrylei.forum.api.model.page.PageVO;
 import top.harrylei.forum.core.security.permission.RequiresAdmin;
 import top.harrylei.forum.service.comment.service.CommentManagementService;
 

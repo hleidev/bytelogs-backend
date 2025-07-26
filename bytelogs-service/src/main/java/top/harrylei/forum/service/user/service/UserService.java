@@ -1,13 +1,13 @@
 package top.harrylei.forum.service.user.service;
 
-import top.harrylei.forum.api.model.enums.YesOrNoEnum;
-import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
-import top.harrylei.forum.api.model.enums.user.UserStatusEnum;
-import top.harrylei.forum.api.model.vo.auth.UserCreateReq;
-import top.harrylei.forum.api.model.vo.page.PageVO;
-import top.harrylei.forum.api.model.vo.page.param.UserQueryParam;
-import top.harrylei.forum.api.model.vo.user.dto.UserDetailDTO;
-import top.harrylei.forum.api.model.vo.user.dto.UserInfoDetailDTO;
+import top.harrylei.forum.api.enums.YesOrNoEnum;
+import top.harrylei.forum.api.enums.user.UserRoleEnum;
+import top.harrylei.forum.api.enums.user.UserStatusEnum;
+import top.harrylei.forum.api.model.auth.UserCreateReq;
+import top.harrylei.forum.api.model.page.PageVO;
+import top.harrylei.forum.api.model.page.param.UserQueryParam;
+import top.harrylei.forum.api.model.user.dto.UserDetailDTO;
+import top.harrylei.forum.api.model.user.dto.UserInfoDetailDTO;
 
 /**
  * 用户服务接口

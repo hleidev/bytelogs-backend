@@ -14,8 +14,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
-import top.harrylei.forum.api.model.vo.ResVO;
+import top.harrylei.forum.api.enums.ErrorCodeEnum;
+import top.harrylei.forum.api.model.base.ResVO;
 
 /**
  * 自定义访问拒绝处理器，处理已认证但权限不足的请求

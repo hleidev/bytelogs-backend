@@ -10,9 +10,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import top.harrylei.forum.api.model.vo.ResVO;
-import top.harrylei.forum.api.model.vo.article.dto.CategoryDTO;
-import top.harrylei.forum.api.model.vo.article.vo.CategorySimpleVO;
+import top.harrylei.forum.api.model.base.ResVO;
+import top.harrylei.forum.api.model.article.dto.CategoryDTO;
+import top.harrylei.forum.api.model.article.vo.CategorySimpleVO;
 import top.harrylei.forum.service.article.converted.CategoryStructMapper;
 import top.harrylei.forum.service.article.service.CategoryService;
 

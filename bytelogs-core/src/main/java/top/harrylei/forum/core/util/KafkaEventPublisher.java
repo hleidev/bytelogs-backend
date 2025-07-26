@@ -5,9 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Component;
-import top.harrylei.forum.api.model.enums.NotifyTypeEnum;
-import top.harrylei.forum.api.model.enums.comment.ContentTypeEnum;
-import top.harrylei.forum.api.model.event.NotificationEvent;
+import top.harrylei.forum.api.enums.NotifyTypeEnum;
+import top.harrylei.forum.api.enums.comment.ContentTypeEnum;
+import top.harrylei.forum.api.event.NotificationEvent;
 import top.harrylei.forum.core.common.constans.KafkaTopics;
 
 import java.time.LocalDateTime;

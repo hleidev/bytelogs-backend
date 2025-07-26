@@ -2,11 +2,10 @@ package top.harrylei.forum.service.user.repository.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
-import top.harrylei.forum.api.model.vo.user.req.UserFollowQueryParam;
-import top.harrylei.forum.api.model.vo.user.vo.UserFollowVO;
+import top.harrylei.forum.api.model.user.req.UserFollowQueryParam;
+import top.harrylei.forum.api.model.user.vo.UserFollowVO;
 import top.harrylei.forum.service.user.repository.entity.UserFollowDO;
 
 import java.util.List;

@@ -2,7 +2,7 @@ package top.harrylei.forum.service.user.repository.dao;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Repository;
-import top.harrylei.forum.api.model.enums.comment.ContentTypeEnum;
+import top.harrylei.forum.api.enums.comment.ContentTypeEnum;
 import top.harrylei.forum.service.user.repository.entity.UserFootDO;
 import top.harrylei.forum.service.user.repository.mapper.UserFootMapper;
 

@@ -1,13 +1,12 @@
 package top.harrylei.forum.service.user.repository.dao;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Repository;
-import top.harrylei.forum.api.model.enums.YesOrNoEnum;
-import top.harrylei.forum.api.model.enums.user.UserFollowStatusEnum;
-import top.harrylei.forum.api.model.vo.user.req.UserFollowQueryParam;
-import top.harrylei.forum.api.model.vo.user.vo.UserFollowVO;
+import top.harrylei.forum.api.enums.YesOrNoEnum;
+import top.harrylei.forum.api.enums.user.UserFollowStatusEnum;
+import top.harrylei.forum.api.model.user.req.UserFollowQueryParam;
+import top.harrylei.forum.api.model.user.vo.UserFollowVO;
 import top.harrylei.forum.service.user.repository.entity.UserFollowDO;
 import top.harrylei.forum.service.user.repository.mapper.UserFollowMapper;
 

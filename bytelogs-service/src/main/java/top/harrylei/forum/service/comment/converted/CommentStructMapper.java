@@ -3,12 +3,12 @@ package top.harrylei.forum.service.comment.converted;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
-import top.harrylei.forum.api.model.vo.comment.dto.CommentDTO;
-import top.harrylei.forum.api.model.vo.comment.req.CommentSaveReq;
-import top.harrylei.forum.api.model.vo.comment.vo.CommentMyVO;
-import top.harrylei.forum.api.model.vo.comment.vo.CommentVO;
-import top.harrylei.forum.api.model.vo.comment.vo.SubCommentVO;
-import top.harrylei.forum.api.model.vo.comment.vo.TopCommentVO;
+import top.harrylei.forum.api.model.comment.dto.CommentDTO;
+import top.harrylei.forum.api.model.comment.req.CommentSaveReq;
+import top.harrylei.forum.api.model.comment.vo.CommentMyVO;
+import top.harrylei.forum.api.model.comment.vo.CommentVO;
+import top.harrylei.forum.api.model.comment.vo.SubCommentVO;
+import top.harrylei.forum.api.model.comment.vo.TopCommentVO;
 import top.harrylei.forum.core.common.converter.EnumConverter;
 import top.harrylei.forum.service.comment.repository.entity.CommentDO;
 

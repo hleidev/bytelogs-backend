@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
-import top.harrylei.forum.api.model.vo.article.vo.TagSimpleVO;
+import top.harrylei.forum.api.model.article.vo.TagSimpleVO;
 import top.harrylei.forum.service.article.repository.entity.ArticleTagDO;
 
 import java.util.List;

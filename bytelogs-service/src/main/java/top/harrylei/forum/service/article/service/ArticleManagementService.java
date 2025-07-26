@@ -1,8 +1,8 @@
 package top.harrylei.forum.service.article.service;
 
-import top.harrylei.forum.api.model.enums.YesOrNoEnum;
-import top.harrylei.forum.api.model.enums.article.ArticleStatusTypeEnum;
-import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
+import top.harrylei.forum.api.enums.YesOrNoEnum;
+import top.harrylei.forum.api.enums.article.ArticleStatusTypeEnum;
+import top.harrylei.forum.api.enums.article.PublishStatusEnum;
 
 import java.util.List;
 

@@ -1,8 +1,8 @@
 package top.harrylei.forum.service.comment.service;
 
-import top.harrylei.forum.api.model.vo.comment.req.CommentManagementQueryParam;
-import top.harrylei.forum.api.model.vo.comment.vo.CommentManagementVO;
-import top.harrylei.forum.api.model.vo.page.PageVO;
+import top.harrylei.forum.api.model.comment.req.CommentManagementQueryParam;
+import top.harrylei.forum.api.model.comment.vo.CommentManagementVO;
+import top.harrylei.forum.api.model.page.PageVO;
 
 import java.util.List;
 

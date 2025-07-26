@@ -1,9 +1,9 @@
 package top.harrylei.forum.service.article.service;
 
-import top.harrylei.forum.api.model.vo.article.req.ArticleQueryParam;
-import top.harrylei.forum.api.model.vo.article.vo.ArticleDetailVO;
-import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
-import top.harrylei.forum.api.model.vo.page.PageVO;
+import top.harrylei.forum.api.model.article.req.ArticleQueryParam;
+import top.harrylei.forum.api.model.article.vo.ArticleDetailVO;
+import top.harrylei.forum.api.model.article.vo.ArticleVO;
+import top.harrylei.forum.api.model.page.PageVO;
 import top.harrylei.forum.service.article.repository.entity.ArticleDO;
 
 /**

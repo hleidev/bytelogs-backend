@@ -1,6 +1,6 @@
 package top.harrylei.forum.service.auth.service;
 
-import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
+import top.harrylei.forum.api.enums.user.UserRoleEnum;
 
 /**
  * 用户登录和注册服务接口

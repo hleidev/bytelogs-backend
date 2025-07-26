@@ -5,11 +5,11 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 
-import top.harrylei.forum.api.model.enums.article.TagTypeEnum;
-import top.harrylei.forum.api.model.vo.article.dto.TagDTO;
-import top.harrylei.forum.api.model.vo.article.req.TagReq;
-import top.harrylei.forum.api.model.vo.article.vo.TagVO;
-import top.harrylei.forum.api.model.vo.article.vo.TagSimpleVO;
+import top.harrylei.forum.api.enums.article.TagTypeEnum;
+import top.harrylei.forum.api.model.article.dto.TagDTO;
+import top.harrylei.forum.api.model.article.req.TagReq;
+import top.harrylei.forum.api.model.article.vo.TagVO;
+import top.harrylei.forum.api.model.article.vo.TagSimpleVO;
 import top.harrylei.forum.core.common.converter.EnumConverter;
 import top.harrylei.forum.service.article.repository.entity.TagDO;
 

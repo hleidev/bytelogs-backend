@@ -1,6 +1,6 @@
 package top.harrylei.forum.service.article.service;
 
-import top.harrylei.forum.api.model.vo.article.vo.TagSimpleVO;
+import top.harrylei.forum.api.model.article.vo.TagSimpleVO;
 
 import java.util.List;
 

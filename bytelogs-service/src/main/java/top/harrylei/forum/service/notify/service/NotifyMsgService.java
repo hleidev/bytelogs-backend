@@ -1,9 +1,9 @@
 package top.harrylei.forum.service.notify.service;
 
-import top.harrylei.forum.api.model.event.NotificationEvent;
-import top.harrylei.forum.api.model.vo.notify.vo.NotifyMsgVO;
-import top.harrylei.forum.api.model.vo.notify.req.NotifyMsgQueryParam;
-import top.harrylei.forum.api.model.vo.page.PageVO;
+import top.harrylei.forum.api.event.NotificationEvent;
+import top.harrylei.forum.api.model.notify.vo.NotifyMsgVO;
+import top.harrylei.forum.api.model.notify.req.NotifyMsgQueryParam;
+import top.harrylei.forum.api.model.page.PageVO;
 
 /**
  * 通知消息服务接口

@@ -3,7 +3,7 @@
 <mapper namespace="top.harrylei.forum.service.comment.repository.mapper.CommentMapper">
 
     <!-- 管理端评论VO映射 -->
-    <resultMap id="CommentManagementVOMap" type="top.harrylei.forum.api.model.vo.comment.vo.CommentManagementVO">
+    <resultMap id="CommentManagementVOMap" type="top.harrylei.forum.api.model.comment.vo.CommentManagementVO">
         <id column="id" property="id"/>
         <result column="content" property="content"/>
         <result column="user_id" property="userId"/>

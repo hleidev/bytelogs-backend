@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import top.harrylei.forum.api.model.enums.comment.ContentTypeEnum;
+import top.harrylei.forum.api.enums.comment.ContentTypeEnum;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.util.RedisUtil;
 import top.harrylei.forum.service.statistics.repository.dao.ReadCountDAO;

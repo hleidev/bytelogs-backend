@@ -3,7 +3,7 @@
 <mapper namespace="top.harrylei.forum.service.user.repository.mapper.UserFollowMapper">
 
     <!-- 用户关注展示对象结果映射 -->
-    <resultMap id="UserFollowVOMap" type="top.harrylei.forum.api.model.vo.user.vo.UserFollowVO">
+    <resultMap id="UserFollowVOMap" type="top.harrylei.forum.api.model.user.vo.UserFollowVO">
         <result column="user_id" property="userId"/>
         <result column="user_name" property="userName"/>
         <result column="avatar" property="avatar"/>

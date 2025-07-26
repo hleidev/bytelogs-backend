@@ -5,13 +5,13 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 
-import top.harrylei.forum.api.model.enums.user.UserRoleEnum;
-import top.harrylei.forum.api.model.vo.user.dto.UserInfoDetailDTO;
-import top.harrylei.forum.api.model.vo.user.dto.UserDetailDTO;
-import top.harrylei.forum.api.model.vo.user.req.UserInfoReq;
-import top.harrylei.forum.api.model.vo.user.vo.UserDetailVO;
-import top.harrylei.forum.api.model.vo.user.vo.UserInfoVO;
-import top.harrylei.forum.api.model.vo.user.vo.UserListItemVO;
+import top.harrylei.forum.api.enums.user.UserRoleEnum;
+import top.harrylei.forum.api.model.user.dto.UserInfoDetailDTO;
+import top.harrylei.forum.api.model.user.dto.UserDetailDTO;
+import top.harrylei.forum.api.model.user.req.UserInfoReq;
+import top.harrylei.forum.api.model.user.vo.UserDetailVO;
+import top.harrylei.forum.api.model.user.vo.UserInfoVO;
+import top.harrylei.forum.api.model.user.vo.UserListItemVO;
 import top.harrylei.forum.service.user.repository.entity.UserInfoDO;
 
 /**

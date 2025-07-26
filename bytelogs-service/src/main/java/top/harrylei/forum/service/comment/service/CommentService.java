@@ -1,12 +1,12 @@
 package top.harrylei.forum.service.comment.service;
 
-import top.harrylei.forum.api.model.enums.OperateTypeEnum;
-import top.harrylei.forum.api.model.vo.comment.dto.CommentDTO;
-import top.harrylei.forum.api.model.vo.comment.req.CommentMyQueryParam;
-import top.harrylei.forum.api.model.vo.comment.req.CommentQueryParam;
-import top.harrylei.forum.api.model.vo.comment.vo.CommentMyVO;
-import top.harrylei.forum.api.model.vo.comment.vo.TopCommentVO;
-import top.harrylei.forum.api.model.vo.page.PageVO;
+import top.harrylei.forum.api.enums.OperateTypeEnum;
+import top.harrylei.forum.api.model.comment.dto.CommentDTO;
+import top.harrylei.forum.api.model.comment.req.CommentMyQueryParam;
+import top.harrylei.forum.api.model.comment.req.CommentQueryParam;
+import top.harrylei.forum.api.model.comment.vo.CommentMyVO;
+import top.harrylei.forum.api.model.comment.vo.TopCommentVO;
+import top.harrylei.forum.api.model.page.PageVO;
 
 /**
  * 评论服务接口

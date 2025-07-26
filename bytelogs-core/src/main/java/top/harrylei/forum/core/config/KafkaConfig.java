@@ -18,7 +18,7 @@ import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.springframework.util.backoff.ExponentialBackOff;
-import top.harrylei.forum.api.model.event.NotificationEvent;
+import top.harrylei.forum.api.event.NotificationEvent;
 import top.harrylei.forum.core.common.constans.KafkaTopics;
 import top.harrylei.forum.core.config.properties.KafkaProperties;
 import top.harrylei.forum.core.exception.NonRetryableException;

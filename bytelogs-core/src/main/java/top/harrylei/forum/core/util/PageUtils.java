@@ -4,8 +4,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.commons.lang3.StringUtils;
-import top.harrylei.forum.api.model.entity.BasePage;
-import top.harrylei.forum.api.model.vo.page.PageVO;
+import top.harrylei.forum.api.model.base.BasePage;
+import top.harrylei.forum.api.model.page.PageVO;
 
 import java.util.*;
 import java.util.function.Function;

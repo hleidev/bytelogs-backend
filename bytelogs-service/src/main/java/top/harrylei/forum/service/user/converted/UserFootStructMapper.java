@@ -3,12 +3,12 @@ package top.harrylei.forum.service.user.converted;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
-import top.harrylei.forum.api.model.enums.CollectionStatusEnum;
-import top.harrylei.forum.api.model.enums.PraiseStatusEnum;
-import top.harrylei.forum.api.model.enums.ReadStatusEnum;
-import top.harrylei.forum.api.model.enums.comment.CommentStatusEnum;
-import top.harrylei.forum.api.model.enums.comment.ContentTypeEnum;
-import top.harrylei.forum.api.model.vo.user.dto.UserFootDTO;
+import top.harrylei.forum.api.enums.CollectionStatusEnum;
+import top.harrylei.forum.api.enums.PraiseStatusEnum;
+import top.harrylei.forum.api.enums.ReadStatusEnum;
+import top.harrylei.forum.api.enums.comment.CommentStatusEnum;
+import top.harrylei.forum.api.enums.comment.ContentTypeEnum;
+import top.harrylei.forum.api.model.user.dto.UserFootDTO;
 import top.harrylei.forum.core.common.converter.EnumConverter;
 import top.harrylei.forum.service.user.repository.entity.UserFootDO;
 

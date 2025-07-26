@@ -7,7 +7,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
-import top.harrylei.forum.api.model.entity.BaseDO;
+import top.harrylei.forum.api.model.base.BaseDO;
 
 /**
  * 文章实体对象

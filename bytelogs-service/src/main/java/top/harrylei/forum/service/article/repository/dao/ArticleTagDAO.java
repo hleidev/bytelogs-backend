@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
-import top.harrylei.forum.api.model.vo.article.vo.TagSimpleVO;
+import top.harrylei.forum.api.model.article.vo.TagSimpleVO;
 import top.harrylei.forum.service.article.repository.entity.ArticleTagDO;
 import top.harrylei.forum.service.article.repository.mapper.ArticleTagMapper;
 

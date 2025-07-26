@@ -3,7 +3,7 @@ package top.harrylei.forum.service.notify.repository.dao;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Repository;
-import top.harrylei.forum.api.model.enums.NotifyMsgStateEnum;
+import top.harrylei.forum.api.enums.NotifyMsgStateEnum;
 import top.harrylei.forum.service.notify.repository.entity.NotifyMsgDO;
 import top.harrylei.forum.service.notify.repository.mapper.NotifyMsgMapper;
 

@@ -8,7 +8,7 @@ import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
-import top.harrylei.forum.api.model.event.NotificationEvent;
+import top.harrylei.forum.api.event.NotificationEvent;
 import top.harrylei.forum.core.common.constans.KafkaTopics;
 import top.harrylei.forum.core.exception.NonRetryableException;
 import top.harrylei.forum.core.exception.RetryableException;

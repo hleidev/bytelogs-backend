@@ -1,8 +1,8 @@
 package top.harrylei.forum.service.article.service;
 
-import top.harrylei.forum.api.model.vo.article.vo.ArticleVO;
-import top.harrylei.forum.api.model.vo.article.vo.ArticleVersionVO;
-import top.harrylei.forum.api.model.vo.article.vo.VersionDiffVO;
+import top.harrylei.forum.api.model.article.vo.ArticleVO;
+import top.harrylei.forum.api.model.article.vo.ArticleVersionVO;
+import top.harrylei.forum.api.model.article.vo.VersionDiffVO;
 
 import java.util.List;
 

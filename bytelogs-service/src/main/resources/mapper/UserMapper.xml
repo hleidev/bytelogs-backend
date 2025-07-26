@@ -3,7 +3,7 @@
 <mapper namespace="top.harrylei.forum.service.user.repository.mapper.UserMapper">
 
     <!-- 自定义结果映射 -->
-    <resultMap id="UserDetailDTOMap" type="top.harrylei.forum.api.model.vo.user.dto.UserDetailDTO">
+    <resultMap id="UserDetailDTOMap" type="top.harrylei.forum.api.model.user.dto.UserDetailDTO">
         <!-- user_account表字段 -->
         <id column="id" property="userId"/>
         <result column="user_name" property="userName"/>

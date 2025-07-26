@@ -4,13 +4,11 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import top.harrylei.forum.api.model.enums.article.PublishStatusEnum;
-import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
-import top.harrylei.forum.api.model.enums.YesOrNoEnum;
-import top.harrylei.forum.api.model.vo.article.req.CategoryReq;
-import top.harrylei.forum.api.model.vo.article.dto.CategoryDTO;
-import top.harrylei.forum.api.model.vo.page.PageVO;
-import top.harrylei.forum.api.model.vo.page.param.CategoryQueryParam;
+import top.harrylei.forum.api.enums.article.PublishStatusEnum;
+import top.harrylei.forum.api.enums.ErrorCodeEnum;
+import top.harrylei.forum.api.enums.YesOrNoEnum;
+import top.harrylei.forum.api.model.article.req.CategoryReq;
+import top.harrylei.forum.api.model.article.dto.CategoryDTO;
 import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.service.article.converted.CategoryStructMapper;
 import top.harrylei.forum.service.article.service.CategoryManagementService;

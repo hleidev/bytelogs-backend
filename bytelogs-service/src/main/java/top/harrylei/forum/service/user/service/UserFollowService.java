@@ -1,8 +1,8 @@
 package top.harrylei.forum.service.user.service;
 
-import top.harrylei.forum.api.model.vo.page.PageVO;
-import top.harrylei.forum.api.model.vo.user.req.UserFollowQueryParam;
-import top.harrylei.forum.api.model.vo.user.vo.UserFollowVO;
+import top.harrylei.forum.api.model.page.PageVO;
+import top.harrylei.forum.api.model.user.req.UserFollowQueryParam;
+import top.harrylei.forum.api.model.user.vo.UserFollowVO;
 
 import java.util.List;
 
