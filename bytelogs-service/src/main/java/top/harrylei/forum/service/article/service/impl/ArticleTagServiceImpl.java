@@ -14,6 +14,8 @@ import java.util.stream.Collectors;
 
 /**
  * 文章标签绑定实现类
+ *
+ * @author harry
  */
 @Slf4j
 @Service
@@ -26,7 +28,7 @@ public class ArticleTagServiceImpl implements ArticleTagService {
      * 文章批量绑定标签
      *
      * @param articleId 文章ID
-     * @param tagIds 标签ID列表
+     * @param tagIds    标签ID列表
      */
     @Override
     public void saveBatch(Long articleId, List<Long> tagIds) {
@@ -42,7 +44,7 @@ public class ArticleTagServiceImpl implements ArticleTagService {
      * 更新文章的标签
      *
      * @param articleId 文章ID
-     * @param tagIds 标签ID列表
+     * @param tagIds    标签ID列表
      */
     @Override
     public void updateTags(Long articleId, List<Long> tagIds) {
@@ -77,7 +79,7 @@ public class ArticleTagServiceImpl implements ArticleTagService {
 
     /**
      * 通过文章ID查询标签ID列表
-     * 
+     *
      * @param articleId 文章ID
      * @return 标签ID列表
      */
