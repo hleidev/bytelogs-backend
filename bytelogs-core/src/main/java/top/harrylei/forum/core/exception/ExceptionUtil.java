@@ -2,9 +2,9 @@ package top.harrylei.forum.core.exception;
 
 import org.springframework.lang.NonNull;
 import org.springframework.util.CollectionUtils;
-
 import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
 
+import java.lang.reflect.Array;
 import java.util.Collection;
 
 /**
@@ -43,9 +43,10 @@ public class ExceptionUtil {
      * 校验规则：
      * - String: 非空且非空白字符串
      * - Collection: 非空且包含元素
-     * - Number: 非空且为正数（排除NaN和无穷大）
+     * - Number: 非空且为有效数字
      * - Array: 非空且长度大于0
      * - 其他对象: 非空
+     * <p>
      *
      * @param obj           要检查的对象
      * @param errorCodeEnum 状态枚举
@@ -57,41 +58,24 @@ public class ExceptionUtil {
         }
 
         // 针对不同类型进行额外校验
-        try {
-            if (obj instanceof String str) {
-                if (str.trim().isEmpty()) {
-                    error(errorCodeEnum, args);
-                }
-            } else if (obj instanceof Collection<?> collection) {
-                if (CollectionUtils.isEmpty(collection)) {
-                    error(errorCodeEnum, args);
-                }
-            } else if (obj instanceof Number number) {
-                double value = number.doubleValue();
-                // 检查NaN、无穷大和非正数
-                if (Double.isNaN(value) || Double.isInfinite(value) || value <= 0) {
-                    error(errorCodeEnum, args);
-                }
-            } else if (obj.getClass().isArray()) {
-                // 使用反射获取数组长度，避免类型转换问题
-                int length = java.lang.reflect.Array.getLength(obj);
-                if (length == 0) {
-                    error(errorCodeEnum, args);
-                }
+        if (obj instanceof String str) {
+            if (str.trim().isEmpty()) {
+                error(errorCodeEnum, args);
             }
-        } catch (Exception e) {
-            // 如果在类型转换或校验过程中出现异常，认为校验失败
-            error(errorCodeEnum, args);
+        } else if (obj instanceof Collection<?> collection) {
+            if (CollectionUtils.isEmpty(collection)) {
+                error(errorCodeEnum, args);
+            }
+        } else if (obj instanceof Number number) {
+            double value = number.doubleValue();
+            if (Double.isNaN(value) || Double.isInfinite(value)) {
+                error(errorCodeEnum, args);
+            }
+        } else if (obj.getClass().isArray()) {
+            int length = Array.getLength(obj);
+            if (length == 0) {
+                error(errorCodeEnum, args);
+            }
         }
-    }
-
-    /**
-     * 检查字符串非空
-     *
-     * @deprecated 使用 {@link #requireValid(Object, ErrorCodeEnum, Object...)} 替代
-     */
-    @Deprecated
-    public static void requireNonEmpty(String str, @NonNull ErrorCodeEnum errorCodeEnum, Object... args) {
-        requireValid(str, errorCodeEnum, args);
     }
 }

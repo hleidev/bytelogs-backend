@@ -60,7 +60,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResVO<Void> login(@Valid @RequestBody AuthReq authReq, HttpServletResponse response) {
         String token = authService.login(authReq.getUsername(), authReq.getPassword());
-        ExceptionUtil.requireNonEmpty(token, ErrorCodeEnum.USER_LOGIN_FAILED, "token 为空");
+        ExceptionUtil.requireValid(token, ErrorCodeEnum.USER_LOGIN_FAILED, "token 为空");
         
         response.setHeader("Authorization", "Bearer " + token);
         response.setHeader("Access-Control-Expose-Headers", "Authorization");

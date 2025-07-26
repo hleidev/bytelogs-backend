@@ -106,8 +106,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public void updatePassword(Long userId, String oldPassword, String newPassword) {
         ExceptionUtil.requireValid(userId, ErrorCodeEnum.PARAM_MISSING, "用户ID");
-        ExceptionUtil.requireNonEmpty(oldPassword, ErrorCodeEnum.PARAM_MISSING, "旧密码");
-        ExceptionUtil.requireNonEmpty(newPassword, ErrorCodeEnum.PARAM_MISSING, "新密码");
+        ExceptionUtil.requireValid(oldPassword, ErrorCodeEnum.PARAM_MISSING, "旧密码");
+        ExceptionUtil.requireValid(newPassword, ErrorCodeEnum.PARAM_MISSING, "新密码");
 
         if (Objects.equals(oldPassword, newPassword)) {
             ExceptionUtil.error(ErrorCodeEnum.USER_UPDATE_FAILED, "新密码与旧密码相同");
@@ -135,7 +135,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void updateAvatar(Long userId, String avatar) {
         ExceptionUtil.requireValid(userId, ErrorCodeEnum.PARAM_MISSING, "用户ID");
-        ExceptionUtil.requireNonEmpty(avatar, ErrorCodeEnum.PARAM_MISSING, "用户头像");
+        ExceptionUtil.requireValid(avatar, ErrorCodeEnum.PARAM_MISSING, "用户头像");
 
         UserInfoDetailDTO userInfo = getUserInfoById(userId);
 
