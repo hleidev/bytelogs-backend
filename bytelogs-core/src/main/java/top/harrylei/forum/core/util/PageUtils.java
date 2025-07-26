@@ -121,6 +121,31 @@ public class PageUtils {
     }
 
     /**
+     * 根据MyBatis-Plus对象构建分页结果并进行列表转换
+     *
+     * @param iPage         MyBatis-Plus IPage对象
+     * @param listConverter 列表转换函数
+     * @param <T>           原始数据类型
+     * @param <R>           目标数据类型
+     * @return 转换后的分页结果
+     */
+    public static <T, R> PageVO<R> fromList(IPage<T> iPage, Function<List<T>, List<R>> listConverter) {
+        if (iPage == null || iPage.getRecords().isEmpty()) {
+            return empty();
+        }
+
+        // 使用列表转换函数转换数据
+        List<R> convertedRecords = listConverter.apply(iPage.getRecords());
+
+        // 创建新的IPage对象，复制分页信息
+        IPage<R> convertedPage = new Page<>(iPage.getCurrent(), iPage.getSize(), iPage.getTotal());
+        convertedPage.setRecords(convertedRecords);
+
+        // 复用现有的from方法
+        return from(convertedPage);
+    }
+
+    /**
      * 创建空分页对象
      *
      * @param <T> 分页数据类型
@@ -128,6 +153,18 @@ public class PageUtils {
      */
     public static <T> IPage<T> of() {
         return new Page<>(1, 10);
+    }
+
+    /**
+     * 创建简单分页对象
+     *
+     * @param pageNum  页码（从1开始）
+     * @param pageSize 每页大小
+     * @param <T>      分页数据类型
+     * @return MyBatis-Plus分页对象
+     */
+    public static <T> IPage<T> of(long pageNum, long pageSize) {
+        return new Page<>(pageNum, pageSize);
     }
 
     /**
@@ -142,27 +179,18 @@ public class PageUtils {
             return of();
         }
 
-        Page<T> page = new Page<>(basePage.getPageNum(), basePage.getPageSize());
-
-        // 检测是否需要排序
+        // 使用字段映射自动推导默认排序
         Map<String, String> fieldMapping = basePage.getFieldMapping();
+        OrderItem[] defaultOrders = null;
         if (fieldMapping != null) {
-            if (StringUtils.isNotBlank(basePage.getSortField())) {
-                // 有用户指定的排序参数，解析并应用
-                List<OrderItem> orderItems = parseOrderItems(basePage, fieldMapping);
-                if (!orderItems.isEmpty()) {
-                    page.addOrder(orderItems);
-                } else {
-                    // 解析失败，使用默认排序
-                    addDefaultSortIfAvailable(page, fieldMapping);
-                }
-            } else {
-                // 没有用户排序参数，使用默认排序
-                addDefaultSortIfAvailable(page, fieldMapping);
+            String createTimeColumn = fieldMapping.get("createTime");
+            if (createTimeColumn != null) {
+                defaultOrders = new OrderItem[]{OrderItem.desc(createTimeColumn)};
             }
         }
 
-        return page;
+        // 复用带默认排序的方法
+        return of(basePage, defaultOrders);
     }
 
     /**
@@ -180,12 +208,12 @@ public class PageUtils {
 
         Page<T> page = new Page<>(basePage.getPageNum(), basePage.getPageSize());
 
+        // 优先尝试使用用户指定的排序
         Map<String, String> fieldMapping = basePage.getFieldMapping();
         if (fieldMapping != null && StringUtils.isNotBlank(basePage.getSortField())) {
-            // 优先使用用户排序
-            List<OrderItem> orderItems = parseOrderItems(basePage, fieldMapping);
-            if (!orderItems.isEmpty()) {
-                page.addOrder(orderItems);
+            List<OrderItem> userOrderItems = parseOrderItems(basePage, fieldMapping);
+            if (!userOrderItems.isEmpty()) {
+                page.addOrder(userOrderItems);
                 return page;
             }
         }
@@ -196,15 +224,6 @@ public class PageUtils {
         return page;
     }
 
-    /**
-     * 添加默认排序
-     */
-    private static void addDefaultSortIfAvailable(Page<?> page, Map<String, String> fieldMapping) {
-        String createTimeColumn = fieldMapping.get("createTime");
-        if (createTimeColumn != null) {
-            page.addOrder(OrderItem.desc(createTimeColumn));
-        }
-    }
 
     /**
      * 添加有效的排序项
