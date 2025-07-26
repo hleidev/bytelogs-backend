@@ -22,6 +22,8 @@ import java.util.List;
 
 /**
  * Spring Security 安全配置类
+ *
+ * @author harry
  */
 @Configuration
 @EnableWebSecurity
@@ -61,9 +63,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/tag/**").permitAll()
                         .requestMatchers("/api/v1/category/**").permitAll()
                         .requestMatchers("/api/v1/article/**").permitAll()
+                        .requestMatchers("/api/v1/comment/**").permitAll()
                         .requestMatchers("/api/v1/public/**").permitAll()
-                        .requestMatchers("/api/v1/test/**").permitAll().
-                        requestMatchers("/error").permitAll()
+                        .requestMatchers("/api/v1/test/**").permitAll()
+                        .requestMatchers("/error").permitAll()
                         .requestMatchers("/favicon.ico").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
                         // 静态资源
