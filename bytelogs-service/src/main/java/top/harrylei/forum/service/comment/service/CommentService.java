@@ -58,7 +58,7 @@ public interface CommentService {
      * @param param  分页查询参数
      * @return 分页结果
      */
-    PageVO<CommentMyVO> queryUserComments(Long userId, CommentMyQueryParam param);
+    PageVO<CommentMyVO> pageQueryUserComments(Long userId, CommentMyQueryParam param);
 
     /**
      * 评论操作

@@ -85,7 +85,7 @@ public class CommentController {
     public ResVO<PageVO<CommentMyVO>> myComments(@Valid CommentMyQueryParam param) {
         // 从登录上下文获取当前用户ID
         Long userId = ReqInfoContext.getContext().getUserId();
-        PageVO<CommentMyVO> result = commentService.queryUserComments(userId, param);
+        PageVO<CommentMyVO> result = commentService.pageQueryUserComments(userId, param);
         return ResVO.ok(result);
     }
 

@@ -1,16 +1,11 @@
 package top.harrylei.forum.service.comment.service.impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import top.harrylei.forum.api.model.enums.ErrorCodeEnum;
-import top.harrylei.forum.api.model.enums.NotifyTypeEnum;
-import top.harrylei.forum.api.model.enums.OperateTypeEnum;
-import top.harrylei.forum.api.model.enums.PraiseStatusEnum;
-import top.harrylei.forum.api.model.enums.YesOrNoEnum;
+import top.harrylei.forum.api.model.enums.*;
 import top.harrylei.forum.api.model.enums.comment.ContentTypeEnum;
 import top.harrylei.forum.api.model.vo.comment.dto.CommentDTO;
 import top.harrylei.forum.api.model.vo.comment.req.CommentMyQueryParam;
@@ -19,7 +14,6 @@ import top.harrylei.forum.api.model.vo.comment.vo.BaseCommentVO;
 import top.harrylei.forum.api.model.vo.comment.vo.CommentMyVO;
 import top.harrylei.forum.api.model.vo.comment.vo.SubCommentVO;
 import top.harrylei.forum.api.model.vo.comment.vo.TopCommentVO;
-import top.harrylei.forum.core.util.PageUtils;
 import top.harrylei.forum.api.model.vo.page.PageVO;
 import top.harrylei.forum.api.model.vo.user.dto.UserFootDTO;
 import top.harrylei.forum.api.model.vo.user.dto.UserInfoDetailDTO;
@@ -27,8 +21,9 @@ import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.core.util.KafkaEventPublisher;
 import top.harrylei.forum.core.util.NumUtil;
-import top.harrylei.forum.service.article.repository.entity.ArticleDO;
+import top.harrylei.forum.core.util.PageUtils;
 import top.harrylei.forum.service.article.repository.dao.ArticleDetailDAO;
+import top.harrylei.forum.service.article.repository.entity.ArticleDO;
 import top.harrylei.forum.service.article.service.ArticleQueryService;
 import top.harrylei.forum.service.comment.converted.CommentStructMapper;
 import top.harrylei.forum.service.comment.repository.dao.CommentDAO;
@@ -40,8 +35,6 @@ import top.harrylei.forum.service.user.service.cache.UserCacheService;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -83,10 +76,10 @@ public class CommentServiceImpl implements CommentService {
      */
     @Override
     public PageVO<TopCommentVO> pageQuery(CommentQueryParam param) {
-        return executePageQuery(
-                () -> commentDAO.pageQuery(param.getArticleId(), new Page<>(param.getPageNum(), param.getPageSize())),
-                records -> buildTopCommentsWithSub(records, param.getArticleId())
-        );
+        // 执行分页查询并转换数据
+        IPage<CommentDO> comments = commentDAO.pageQuery(param.getArticleId(), PageUtils.of(param));
+
+        return PageUtils.fromList(comments, records -> buildTopCommentsWithSub(records, param.getArticleId()));
     }
 
     /**
@@ -143,13 +136,11 @@ public class CommentServiceImpl implements CommentService {
      * @return 分页结果
      */
     @Override
-    public PageVO<CommentMyVO> queryUserComments(Long userId, CommentMyQueryParam param) {
-        return executePageQuery(
-                () -> commentDAO.pageQueryUserComments(
-                        userId,
-                        new Page<>(param.getPageNum(), param.getPageSize())),
-                this::buildMyComments
-        );
+    public PageVO<CommentMyVO> pageQueryUserComments(Long userId, CommentMyQueryParam param) {
+        // 执行分页查询并转换数据
+        IPage<CommentDO> comments = commentDAO.pageQueryUserComments(userId, PageUtils.of(param));
+
+        return PageUtils.fromList(comments, this::buildMyComments);
     }
 
     /**
@@ -475,27 +466,6 @@ public class CommentServiceImpl implements CommentService {
         return result;
     }
 
-    /**
-     * 通用分页查询方法
-     */
-    private <T> PageVO<T> executePageQuery(Supplier<IPage<CommentDO>> querySupplier,
-                                           Function<List<CommentDO>, List<T>> dataBuilder) {
-        // 1. 执行分页查询
-        IPage<CommentDO> comments = querySupplier.get();
-
-        if (comments.getRecords().isEmpty()) {
-            return PageUtils.empty();
-        }
-
-        // 2. 构建结果数据
-        List<T> resultData = dataBuilder.apply(comments.getRecords());
-
-        // 3. 构建分页结果
-        IPage<T> resultPage = new Page<>(comments.getCurrent(), comments.getSize(), comments.getTotal());
-        resultPage.setRecords(resultData);
-
-        return PageUtils.from(resultPage);
-    }
 
     /**
      * 发布评论通知事件

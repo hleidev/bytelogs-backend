@@ -26,7 +26,6 @@ public class CommentDAO extends ServiceImpl<CommentMapper, CommentDO> {
                 .eq(CommentDO::getTopCommentId, 0L)
                 .eq(CommentDO::getArticleId, articleId)
                 .eq(CommentDO::getDeleted, YesOrNoEnum.NO.getCode())
-                .orderByDesc(CommentDO::getCreateTime)
                 .page(page);
     }
 
@@ -34,7 +33,6 @@ public class CommentDAO extends ServiceImpl<CommentMapper, CommentDO> {
         return lambdaQuery()
                 .eq(CommentDO::getUserId, userId)
                 .eq(CommentDO::getDeleted, YesOrNoEnum.NO.getCode())
-                .orderByDesc(CommentDO::getCreateTime)
                 .page(page);
     }
 
