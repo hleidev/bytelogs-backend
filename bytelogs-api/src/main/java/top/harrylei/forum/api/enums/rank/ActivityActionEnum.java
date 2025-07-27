@@ -52,7 +52,32 @@ public enum ActivityActionEnum implements CodeLabelEnum {
     /**
      * 关注
      */
-    FOLLOW(6, "关注", 2);
+    FOLLOW(6, "关注", 2),
+
+    /**
+     * 删除文章
+     */
+    DELETE_ARTICLE(7, "删除文章", -10),
+
+    /**
+     * 删除评论
+     */
+    DELETE_COMMENT(8, "删除评论", -2),
+
+    /**
+     * 取消点赞
+     */
+    CANCEL_PRAISE(9, "取消点赞", -2),
+
+    /**
+     * 取消收藏
+     */
+    CANCEL_COLLECT(10, "取消收藏", -2),
+
+    /**
+     * 取消关注
+     */
+    CANCEL_FOLLOW(11, "取消关注", -2);
 
     // 行为编码（唯一标识）
     @EnumValue
@@ -61,7 +86,7 @@ public enum ActivityActionEnum implements CodeLabelEnum {
     // 行为描述（用于展示）
     private final String label;
 
-    // 默认积分值
+    // 积分值（正数为加分，负数为减分）
     private final Integer score;
 
     // 根据编码快速定位枚举实例
@@ -89,4 +114,5 @@ public enum ActivityActionEnum implements CodeLabelEnum {
     public static ActivityActionEnum fromCode(Integer code) {
         return code == null ? null : CODE_MAP.get(code);
     }
+
 }
