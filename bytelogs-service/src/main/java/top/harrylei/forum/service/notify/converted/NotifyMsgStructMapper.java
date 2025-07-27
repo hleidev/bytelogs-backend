@@ -2,8 +2,8 @@ package top.harrylei.forum.service.notify.converted;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import top.harrylei.forum.api.enums.NotifyMsgStateEnum;
-import top.harrylei.forum.api.enums.NotifyTypeEnum;
+import top.harrylei.forum.api.enums.notify.NotifyMsgStateEnum;
+import top.harrylei.forum.api.enums.notify.NotifyTypeEnum;
 import top.harrylei.forum.api.enums.comment.ContentTypeEnum;
 import top.harrylei.forum.api.model.notify.dto.NotifyMsgDTO;
 import top.harrylei.forum.api.model.notify.vo.NotifyMsgVO;

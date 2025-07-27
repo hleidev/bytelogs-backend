@@ -1,6 +1,6 @@
 package top.harrylei.forum.service.comment.service;
 
-import top.harrylei.forum.api.enums.OperateTypeEnum;
+import top.harrylei.forum.api.enums.user.OperateTypeEnum;
 import top.harrylei.forum.api.model.comment.dto.CommentDTO;
 import top.harrylei.forum.api.model.comment.req.CommentMyQueryParam;
 import top.harrylei.forum.api.model.comment.req.CommentQueryParam;

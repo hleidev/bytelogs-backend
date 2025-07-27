@@ -1,6 +1,6 @@
 package top.harrylei.forum.service.user.service;
 
-import top.harrylei.forum.api.enums.OperateTypeEnum;
+import top.harrylei.forum.api.enums.user.OperateTypeEnum;
 import top.harrylei.forum.api.enums.comment.ContentTypeEnum;
 import top.harrylei.forum.api.model.user.dto.ArticleFootCountDTO;
 import top.harrylei.forum.api.model.user.dto.UserFootDTO;
