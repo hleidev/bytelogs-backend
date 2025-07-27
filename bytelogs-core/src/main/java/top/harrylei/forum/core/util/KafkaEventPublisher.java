@@ -5,8 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Component;
-import top.harrylei.forum.api.enums.notify.NotifyTypeEnum;
 import top.harrylei.forum.api.enums.comment.ContentTypeEnum;
+import top.harrylei.forum.api.enums.notify.NotifyTypeEnum;
+import top.harrylei.forum.api.enums.rank.ActivityActionEnum;
+import top.harrylei.forum.api.enums.rank.ActivityTargetEnum;
+import top.harrylei.forum.api.event.ActivityEvent;
 import top.harrylei.forum.api.event.NotificationEvent;
 import top.harrylei.forum.core.common.constans.KafkaTopics;
 
@@ -24,7 +27,8 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 public class KafkaEventPublisher {
 
-    private final KafkaTemplate<String, NotificationEvent> kafkaTemplate;
+    private final KafkaTemplate<String, NotificationEvent> notificationTemplate;
+    private final KafkaTemplate<String, ActivityEvent> activityTemplate;
 
     /**
      * 发布通知事件
@@ -42,7 +46,7 @@ public class KafkaEventPublisher {
 
         try {
             CompletableFuture<SendResult<String, NotificationEvent>> future =
-                    kafkaTemplate.send(KafkaTopics.NOTIFICATION_EVENTS, event.getEventId(), event);
+                    notificationTemplate.send(KafkaTopics.NOTIFICATION_EVENTS, event.getEventId(), event);
 
             future.whenComplete((result, ex) -> {
                 if (ex != null) {
@@ -96,6 +100,75 @@ public class KafkaEventPublisher {
     }
 
     /**
+     * 发布用户活跃度事件
+     *
+     * @param userId     用户ID
+     * @param targetId   目标ID
+     * @param targetType 目标类型
+     * @param actionType 行为类型
+     */
+    public void publishUserActivityEvent(Long userId,
+                                         Long targetId,
+                                         ActivityTargetEnum targetType,
+                                         ActivityActionEnum actionType) {
+        publishUserActivityEvent(userId, targetId, targetType, actionType, null);
+    }
+
+    /**
+     * 发布用户活跃度事件（带扩展信息）
+     *
+     * @param userId     用户ID
+     * @param targetId   目标ID
+     * @param targetType 目标类型
+     * @param actionType 行为类型
+     * @param extra      扩展信息
+     */
+    public void publishUserActivityEvent(Long userId,
+                                         Long targetId,
+                                         ActivityTargetEnum targetType,
+                                         ActivityActionEnum actionType,
+                                         String extra) {
+        ActivityEvent event = ActivityEvent.builder()
+                .userId(userId)
+                .actionType(actionType)
+                .targetType(targetType)
+                .targetId(targetId)
+                .extra(extra)
+                .source("user-activity")
+                .build();
+
+        publishActivityEvent(event);
+    }
+
+    /**
+     * 发布活跃度事件
+     *
+     * @param event 活跃度事件
+     */
+    public void publishActivityEvent(ActivityEvent event) {
+        // 设置事件基础信息
+        if (event.getEventId() == null) {
+            event.setEventId(UUID.randomUUID().toString());
+        }
+        if (event.getTimestamp() == null) {
+            event.setTimestamp(LocalDateTime.now());
+        }
+
+        try {
+            CompletableFuture<SendResult<String, ActivityEvent>> future =
+                    activityTemplate.send(KafkaTopics.USER_ACTIVITY_EVENTS, event.getEventId(), event);
+
+            future.whenComplete((result, ex) -> {
+                if (ex != null) {
+                    log.error("活跃度事件发送失败: eventId={}, event={}", event.getEventId(), event, ex);
+                }
+            });
+        } catch (Exception e) {
+            log.error("发送活跃度事件异常: event={}", event, e);
+        }
+    }
+
+    /**
      * 发布系统事件
      *
      * @param event 系统事件
@@ -114,7 +187,7 @@ public class KafkaEventPublisher {
 
         try {
             CompletableFuture<SendResult<String, NotificationEvent>> future =
-                    kafkaTemplate.send(KafkaTopics.SYSTEM_EVENTS, event.getEventId(), event);
+                    notificationTemplate.send(KafkaTopics.SYSTEM_EVENTS, event.getEventId(), event);
 
             future.whenComplete((result, ex) -> {
                 if (ex != null) {
