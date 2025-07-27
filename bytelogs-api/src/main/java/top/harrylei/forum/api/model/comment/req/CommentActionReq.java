@@ -3,7 +3,7 @@ package top.harrylei.forum.api.model.comment.req;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import top.harrylei.forum.api.enums.OperateTypeEnum;
+import top.harrylei.forum.api.enums.user.OperateTypeEnum;
 
 /**
  * 评论操作请求

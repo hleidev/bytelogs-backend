@@ -3,12 +3,14 @@ package top.harrylei.forum.api.enums.base;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+
 import java.io.IOException;
 
 /**
  * 通用枚举序列化器
  *
  * @param <T> 需要序列化的枚举类型
+ * @author harry
  */
 public class EnumCodeLabelJsonSerializer<T extends Enum<T> & CodeLabelEnum> extends JsonSerializer<T> {
 

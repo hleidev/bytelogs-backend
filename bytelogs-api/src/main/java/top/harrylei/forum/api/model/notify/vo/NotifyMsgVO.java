@@ -4,8 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import top.harrylei.forum.api.model.base.BaseVO;
-import top.harrylei.forum.api.enums.NotifyMsgStateEnum;
-import top.harrylei.forum.api.enums.NotifyTypeEnum;
+import top.harrylei.forum.api.enums.notify.NotifyMsgStateEnum;
+import top.harrylei.forum.api.enums.notify.NotifyTypeEnum;
 import top.harrylei.forum.api.enums.comment.ContentTypeEnum;
 
 /**

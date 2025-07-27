@@ -8,14 +8,16 @@ import lombok.Getter;
  * 状态码设计规范：
  * 1. 使用五位数字编码：前两位表示模块，后三位表示具体错误
  * 2. 模块划分：
- *    - 00: 成功状态
- *    - 10: 通用错误
- *    - 20: 权限相关
- *    - 30: 资源相关
- *    - 40: 用户相关
- *    - 50: 文章相关
- *    - 60: 评论相关
+ * - 00: 成功状态
+ * - 10: 通用错误
+ * - 20: 权限相关
+ * - 30: 资源相关
+ * - 40: 用户相关
+ * - 50: 文章相关
+ * - 60: 评论相关
  * 3. 每个状态码都有明确语义，避免重复或含义模糊
+ *
+ * @author harry
  */
 @Getter
 public enum ErrorCodeEnum {
@@ -99,7 +101,7 @@ public enum ErrorCodeEnum {
     /**
      * 构造状态枚举对象
      *
-     * @param code 状态码
+     * @param code    状态码
      * @param message 状态消息
      */
     ErrorCodeEnum(int code, String message) {
@@ -119,15 +121,20 @@ public enum ErrorCodeEnum {
      */
     public int getHttpStatus() {
         if (code >= 40000 && code < 50000) {
-            return 400; // 客户端错误
+            // 客户端错误
+            return 400;
         } else if (code >= 20000 && code < 30000) {
-            return 403; // 权限错误
+            // 权限错误
+            return 403;
         } else if (code >= 30000 && code < 40000) {
-            return 404; // 资源不存在
+            // 资源不存在
+            return 404;
         } else if (code >= 10000) {
-            return 500; // 服务器错误
+            // 服务器错误
+            return 500;
         }
-        return 200; // 成功
+        // 成功
+        return 200;
     }
 
     /**

@@ -1,6 +1,6 @@
 package top.harrylei.forum.api.model.notify;
 
-import top.harrylei.forum.api.enums.NotifyTypeEnum;
+import top.harrylei.forum.api.enums.notify.NotifyTypeEnum;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;

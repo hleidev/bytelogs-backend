@@ -2,6 +2,8 @@ package top.harrylei.forum.api.enums.base;
 
 /**
  * 通用 code-label 枚举接口。
+ *
+ * @author harry
  */
 public interface CodeLabelEnum {
 

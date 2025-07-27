@@ -1,4 +1,4 @@
-package top.harrylei.forum.api.enums;
+package top.harrylei.forum.api.enums.user;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonCreator;

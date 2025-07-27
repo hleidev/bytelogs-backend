@@ -3,8 +3,8 @@ package top.harrylei.forum.api.model.notify.dto;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import top.harrylei.forum.api.model.base.BaseDTO;
-import top.harrylei.forum.api.enums.NotifyMsgStateEnum;
-import top.harrylei.forum.api.enums.NotifyTypeEnum;
+import top.harrylei.forum.api.enums.notify.NotifyMsgStateEnum;
+import top.harrylei.forum.api.enums.notify.NotifyTypeEnum;
 import top.harrylei.forum.api.enums.comment.ContentTypeEnum;
 
 /**

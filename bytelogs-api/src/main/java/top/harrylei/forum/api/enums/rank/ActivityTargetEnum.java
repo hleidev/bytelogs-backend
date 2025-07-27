@@ -1,4 +1,4 @@
-package top.harrylei.forum.api.enums.notify;
+package top.harrylei.forum.api.enums.rank;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -15,33 +15,45 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * 通知消息状态枚举
+ * 活跃度目标类型枚举
  *
  * @author harry
  */
 @Getter
 @AllArgsConstructor
 @JsonSerialize(using = EnumCodeLabelJsonSerializer.class)
-public enum NotifyMsgStateEnum implements CodeLabelEnum {
+public enum ActivityTargetEnum implements CodeLabelEnum {
 
-    UNREAD(0, "未读"),
-    READ(1, "已读");
+    /**
+     * 文章
+     */
+    ARTICLE(1, "文章"),
 
-    // 编码（唯一标识）
+    /**
+     * 用户
+     */
+    USER(2, "用户"),
+
+    /**
+     * 评论
+     */
+    COMMENT(3, "评论");
+
+    // 目标类型编码（唯一标识）
     @EnumValue
     private final Integer code;
 
-    // 描述（用于展示）
+    // 目标类型描述（用于展示）
     private final String label;
 
     // 根据编码快速定位枚举实例
-    private static final Map<Integer, NotifyMsgStateEnum> CODE_MAP =
-            Arrays.stream(values()).collect(Collectors.toMap(NotifyMsgStateEnum::getCode, Function.identity()));
+    private static final Map<Integer, ActivityTargetEnum> CODE_MAP =
+            Arrays.stream(values()).collect(Collectors.toMap(ActivityTargetEnum::getCode, Function.identity()));
 
     /**
-     * 获取编码
+     * 获取目标类型编码
      *
-     * @return 编码
+     * @return 目标类型编码
      */
     @JsonValue
     @Override
@@ -56,7 +68,7 @@ public enum NotifyMsgStateEnum implements CodeLabelEnum {
      * @return 对应的枚举，若无匹配则返回 null
      */
     @JsonCreator
-    public static NotifyMsgStateEnum fromCode(Integer code) {
+    public static ActivityTargetEnum fromCode(Integer code) {
         return code == null ? null : CODE_MAP.get(code);
     }
 }
