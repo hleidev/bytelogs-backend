@@ -10,7 +10,6 @@ import top.harrylei.forum.api.enums.article.CollectionStatusEnum;
 import top.harrylei.forum.api.enums.base.CodeLabelEnum;
 import top.harrylei.forum.api.enums.base.EnumCodeLabelJsonSerializer;
 import top.harrylei.forum.api.enums.comment.CommentStatusEnum;
-import top.harrylei.forum.api.enums.comment.ContentTypeEnum;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -77,9 +76,6 @@ public enum OperateTypeEnum implements CodeLabelEnum {
     // 根据操作编码快速定位枚举实例
     private static final Map<Integer, OperateTypeEnum> CODE_MAP =
             Arrays.stream(values()).collect(Collectors.toMap(OperateTypeEnum::getCode, Function.identity()));
-    // 根据枚举名称（不区分大小写）快速定位枚举实例
-    private static final Map<String, OperateTypeEnum> NAME_MAP =
-            Arrays.stream(values()).collect(Collectors.toMap(e -> e.name().toUpperCase(), Function.identity()));
 
     /**
      * 获取操作码
@@ -119,16 +115,6 @@ public enum OperateTypeEnum implements CodeLabelEnum {
             case DELETE_COMMENT -> CommentStatusEnum.NOT_COMMENT.getCode();
             default -> 0;
         };
-    }
-
-    /**
-     * 判断操作的是否是文章
-     *
-     * @param type 操作类型
-     * @return 内容类型枚举，评论相关操作返回 COMMENT，其他返回 ARTICLE
-     */
-    public static ContentTypeEnum getOperateType(OperateTypeEnum type) {
-        return (type == COMMENT || type == DELETE_COMMENT) ? ContentTypeEnum.COMMENT : ContentTypeEnum.ARTICLE;
     }
 
 }
