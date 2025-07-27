@@ -5,9 +5,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import top.harrylei.forum.api.enums.*;
+import top.harrylei.forum.api.enums.ErrorCodeEnum;
+import top.harrylei.forum.api.enums.YesOrNoEnum;
 import top.harrylei.forum.api.enums.comment.ContentTypeEnum;
 import top.harrylei.forum.api.enums.notify.NotifyTypeEnum;
+import top.harrylei.forum.api.enums.rank.ActivityActionEnum;
+import top.harrylei.forum.api.enums.rank.ActivityTargetEnum;
 import top.harrylei.forum.api.enums.user.OperateTypeEnum;
 import top.harrylei.forum.api.enums.user.PraiseStatusEnum;
 import top.harrylei.forum.api.model.comment.dto.CommentDTO;
@@ -284,6 +287,9 @@ public class CommentServiceImpl implements CommentService {
         // 发布通知事件
         publishCommentNotificationEvent(comment, article, parent);
 
+        // 发布活跃度事件
+        publishCommentActivityEvent(comment, ActivityActionEnum.COMMENT);
+
         return comment;
     }
 
@@ -393,6 +399,10 @@ public class CommentServiceImpl implements CommentService {
             // 4. 处理用户足迹
             boolean isDelete = targetStatus == YesOrNoEnum.YES;
             updateCommentFoot(comment, isDelete);
+
+            // 5. 发布活跃度事件
+            ActivityActionEnum actionType = isDelete ? ActivityActionEnum.DELETE_COMMENT : ActivityActionEnum.COMMENT;
+            publishCommentActivityEvent(comment, actionType);
 
             log.info("评论状态更新成功，commentId={}, deleted={}", commentId, targetStatus);
         } else {
@@ -504,6 +514,30 @@ public class CommentServiceImpl implements CommentService {
         } catch (Exception e) {
             // 事件发布失败不影响主业务流程
             log.error("发布评论通知事件失败: commentId={}, articleId={}", comment.getId(), article.getId(), e);
+        }
+    }
+
+    /**
+     * 发布评论活跃度事件
+     *
+     * @param comment    评论对象
+     * @param actionType 行为类型
+     */
+    private void publishCommentActivityEvent(CommentDO comment, ActivityActionEnum actionType) {
+        try {
+            // 发布评论活跃度事件，用于积分计算
+            kafkaEventPublisher.publishUserActivityEvent(comment.getUserId(),
+                                                         comment.getArticleId(),
+                                                         ActivityTargetEnum.ARTICLE,
+                                                         actionType);
+
+            log.debug("发布评论活跃度事件: userId={}, articleId={}, action={}",
+                      comment.getUserId(), comment.getArticleId(), actionType.getLabel());
+
+        } catch (Exception e) {
+            // 事件发布失败不影响主业务流程
+            log.error("发布评论活跃度事件失败: commentId={}, articleId={}, userId={}, action={}",
+                      comment.getId(), comment.getArticleId(), comment.getUserId(), actionType.getLabel(), e);
         }
     }
 }
