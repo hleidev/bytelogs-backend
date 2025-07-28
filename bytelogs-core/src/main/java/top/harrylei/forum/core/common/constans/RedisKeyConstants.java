@@ -23,7 +23,7 @@ public class RedisKeyConstants {
     public static final String KAFKA_IDEMPOTENCY = KAFKA + "idempotency:";
     public static final String USER_ACTIVITY = USER + "activity:";
     public static final String USER_ACTIVITY_RANK = USER_ACTIVITY + "rank:";
-    public static final String USER_ACTIVITY_LIMIT = USER_ACTIVITY + "daily:limit:";
+    public static final String USER_ACTIVITY_DAILY = USER_ACTIVITY + "idempotency:";
 
 
     /**
@@ -105,15 +105,15 @@ public class RedisKeyConstants {
         return USER_ACTIVITY_RANK + "monthly:" + yearMonth;
     }
 
+
     /**
-     * 构建用户每日分数限制key
+     * 构建用户每日活跃度Hash key
      *
      * @param userId 用户ID
      * @param date   日期(yyyy-MM-dd格式)
-     * @return 每日分数限制key
+     * @return 用户每日活跃度Hash key
      */
-    public static String getUserActivityDailyLimitKey(Long userId, String date) {
-        return USER_ACTIVITY_LIMIT + userId + ":" + date;
+    public static String getUserActivityDailyKey(Long userId, String date) {
+        return USER_ACTIVITY_DAILY + date + ":" + userId;
     }
-
 }
