@@ -170,7 +170,7 @@ public class RedisUtil {
      * @return 是否成功，操作异常时返回false
      */
     public <T> Boolean set(String key, T value, Duration duration) {
-        validateNotNull(duration);
+        validateNotNull(key, value);
         long seconds = duration.getSeconds();
         if (seconds < 0) {
             throw new IllegalArgumentException("Duration 不得为负数");
@@ -249,7 +249,7 @@ public class RedisUtil {
      * @return 是否成功设置，键已存在或操作异常时返回false
      */
     public <T> Boolean setIfAbsent(String key, T value, Duration duration) {
-        validateNotNull(duration);
+        validateNotNull(key, value);
         long seconds = duration.getSeconds();
         if (seconds <= 0) {
             throw new IllegalArgumentException("setIfAbsent带过期时间的Duration必须为正数");
@@ -380,7 +380,7 @@ public class RedisUtil {
      * @return 是否成功，操作异常时返回false
      */
     public Boolean expire(String key, Duration duration) {
-        validateNotNull(duration);
+        validateNotNull(key);
         long seconds = duration.getSeconds();
         if (seconds <= 0) {
             throw new IllegalArgumentException("过期时间Duration必须为正数");
@@ -623,7 +623,7 @@ public class RedisUtil {
      * @param delta 增量
      * @return 增加后的值，操作异常时返回null
      */
-    public Long hIncrementBy(String key, String field, long delta) {
+    public Long hIncrBy(String key, String field, long delta) {
         validateNotNull(key, field);
         try {
             return redisTemplate.execute((RedisCallback<Long>) connection ->
@@ -642,8 +642,8 @@ public class RedisUtil {
      * @param field 字段
      * @return 增加后的值，操作异常时返回null
      */
-    public Long hIncrement(String key, String field) {
-        return hIncrementBy(key, field, 1);
+    public Long hIncrBy(String key, String field) {
+        return hIncrBy(key, field, 1);
     }
 
     /**
@@ -654,8 +654,8 @@ public class RedisUtil {
      * @param delta 减量（正值）
      * @return 减少后的值，操作异常时返回null
      */
-    public Long hDecrementBy(String key, String field, long delta) {
-        return hIncrementBy(key, field, -Math.abs(delta));
+    public Long hDecrBy(String key, String field, long delta) {
+        return hIncrBy(key, field, -Math.abs(delta));
     }
 
     /**
@@ -665,8 +665,8 @@ public class RedisUtil {
      * @param field 字段
      * @return 减少后的值，操作异常时返回null
      */
-    public Long hDecrement(String key, String field) {
-        return hIncrementBy(key, field, -1);
+    public Long hDecr(String key, String field) {
+        return hIncrBy(key, field, -1);
     }
 
 
