@@ -1001,6 +1001,208 @@ public class RedisUtil {
     }
 
     /**
+     * 向有序集合添加成员
+     *
+     * @param key    键
+     * @param member 成员
+     * @param score  分数
+     * @return 是否成功，操作异常时返回false
+     */
+    public Boolean zAdd(String key, String member, double score) {
+        validateNotNull(key, member);
+        try {
+            return redisTemplate.execute((RedisCallback<Boolean>) connection ->
+                    connection.zSetCommands().zAdd(keyToBytes(key), score, member.getBytes(CHARSET)));
+        } catch (Exception e) {
+            log.error("添加有序集合成员失败: key={}, member={}, score={}, error={}",
+                      key, member, score, e.getMessage(), e);
+            return false;
+        }
+    }
+
+    /**
+     * 增加有序集合成员的分数
+     *
+     * @param key    键
+     * @param member 成员
+     * @param delta  分数增量
+     * @return 增加后的分数，操作异常时返回null
+     */
+    public Double zIncrBy(String key, String member, double delta) {
+        validateNotNull(key, member);
+        try {
+            return redisTemplate.execute((RedisCallback<Double>) connection ->
+                    connection.zSetCommands().zIncrBy(keyToBytes(key), delta, member.getBytes(CHARSET)));
+        } catch (Exception e) {
+            log.error("增加有序集合成员分数失败: key={}, member={}, delta={}, error={}",
+                      key, member, delta, e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * 获取有序集合成员的分数
+     *
+     * @param key    键
+     * @param member 成员
+     * @return 分数，成员不存在或操作异常时返回null
+     */
+    public Double zScore(String key, String member) {
+        validateNotNull(key, member);
+        try {
+            return redisTemplate.execute((RedisCallback<Double>) connection ->
+                    connection.zSetCommands().zScore(keyToBytes(key), member.getBytes(CHARSET)));
+        } catch (Exception e) {
+            log.error("获取有序集合成员分数失败: key={}, member={}, error={}",
+                      key, member, e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * 获取有序集合成员的排名（从小到大）
+     *
+     * @param key    键
+     * @param member 成员
+     * @return 排名，成员不存在或操作异常时返回null
+     */
+    public Long zRank(String key, String member) {
+        validateNotNull(key, member);
+        try {
+            return redisTemplate.execute((RedisCallback<Long>) connection ->
+                    connection.zSetCommands().zRank(keyToBytes(key), member.getBytes(CHARSET)));
+        } catch (Exception e) {
+            log.error("获取有序集合成员排名失败: key={}, member={}, error={}",
+                      key, member, e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * 获取有序集合成员的逆序排名（从大到小）
+     *
+     * @param key    键
+     * @param member 成员
+     * @return 排名，成员不存在或操作异常时返回null
+     */
+    public Long zRevRank(String key, String member) {
+        validateNotNull(key, member);
+        try {
+            return redisTemplate.execute((RedisCallback<Long>) connection ->
+                    connection.zSetCommands().zRevRank(keyToBytes(key), member.getBytes(CHARSET)));
+        } catch (Exception e) {
+            log.error("获取有序集合成员逆序排名失败: key={}, member={}, error={}",
+                      key, member, e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * 获取有序集合指定范围的成员（按分数从小到大）
+     *
+     * @param key   键
+     * @param start 起始位置
+     * @param end   结束位置
+     * @return 成员列表，操作异常时返回空列表
+     */
+    public Set<String> zRange(String key, long start, long end) {
+        validateNotNull(key);
+        try {
+            return redisTemplate.execute((RedisCallback<Set<String>>) connection -> {
+                Set<byte[]> memberBytes = connection.zSetCommands().zRange(keyToBytes(key), start, end);
+                if (memberBytes == null || memberBytes.isEmpty()) {
+                    return Set.of();
+                }
+
+                Set<String> members = new LinkedHashSet<>(memberBytes.size());
+                for (byte[] bytes : memberBytes) {
+                    members.add(new String(bytes, CHARSET));
+                }
+                return members;
+            });
+        } catch (Exception e) {
+            log.error("获取有序集合范围成员失败: key={}, start={}, end={}, error={}",
+                      key, start, end, e.getMessage(), e);
+            return Set.of();
+        }
+    }
+
+    /**
+     * 获取有序集合指定范围的成员（按分数从大到小）
+     *
+     * @param key   键
+     * @param start 起始位置
+     * @param end   结束位置
+     * @return 成员列表，操作异常时返回空列表
+     */
+    public Set<String> zRevRange(String key, long start, long end) {
+        validateNotNull(key);
+        try {
+            return redisTemplate.execute((RedisCallback<Set<String>>) connection -> {
+                Set<byte[]> memberBytes = connection.zSetCommands().zRevRange(keyToBytes(key), start, end);
+                if (memberBytes == null || memberBytes.isEmpty()) {
+                    return Set.of();
+                }
+
+                Set<String> members = new LinkedHashSet<>(memberBytes.size());
+                for (byte[] bytes : memberBytes) {
+                    members.add(new String(bytes, CHARSET));
+                }
+                return members;
+            });
+        } catch (Exception e) {
+            log.error("获取有序集合逆序范围成员失败: key={}, start={}, end={}, error={}",
+                      key, start, end, e.getMessage(), e);
+            return Set.of();
+        }
+    }
+
+    /**
+     * 删除有序集合成员
+     *
+     * @param key     键
+     * @param members 成员数组
+     * @return 删除的成员数量，操作异常时返回0
+     */
+    public Long zRem(String key, String... members) {
+        validateNotNull(key);
+        if (members == null || members.length == 0) {
+            return 0L;
+        }
+
+        try {
+            return redisTemplate.execute((RedisCallback<Long>) connection -> {
+                byte[][] memberBytes = new byte[members.length][];
+                for (int i = 0; i < members.length; i++) {
+                    memberBytes[i] = members[i].getBytes(CHARSET);
+                }
+                return connection.zSetCommands().zRem(keyToBytes(key), memberBytes);
+            });
+        } catch (Exception e) {
+            log.error("删除有序集合成员失败: key={}, members={}, error={}",
+                      key, Arrays.toString(members), e.getMessage(), e);
+            return 0L;
+        }
+    }
+
+    /**
+     * 获取有序集合成员数量
+     *
+     * @param key 键
+     * @return 成员数量，操作异常时返回0
+     */
+    public Long zCard(String key) {
+        validateNotNull(key);
+        try {
+            return redisTemplate.execute((RedisCallback<Long>) connection ->
+                    connection.zSetCommands().zCard(keyToBytes(key)));
+        } catch (Exception e) {
+            log.error("获取有序集合成员数量失败: key={}, error={}", key, e.getMessage(), e);
+            return 0L;
+        }
+    }
+
+    /**
      * 带锁的操作接口
      */
     @FunctionalInterface

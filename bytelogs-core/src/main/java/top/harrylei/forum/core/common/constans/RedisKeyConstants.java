@@ -21,6 +21,9 @@ public class RedisKeyConstants {
     public static final String DISTRIBUTED_LOCK = LOCK + "distributed:";
     public static final String DUPLICATE_LOCK = LOCK + "duplicate:";
     public static final String KAFKA_IDEMPOTENCY = KAFKA + "idempotency:";
+    public static final String USER_ACTIVITY = USER + "activity:";
+    public static final String USER_ACTIVITY_RANK = USER_ACTIVITY + "rank:";
+    public static final String USER_ACTIVITY_LIMIT = USER_ACTIVITY + "daily:limit:";
 
 
     /**
@@ -71,6 +74,46 @@ public class RedisKeyConstants {
      */
     public static String getKafkaIdempotencyKey(String eventId) {
         return KAFKA_IDEMPOTENCY + eventId;
+    }
+
+    /**
+     * 构建用户活跃度总排行榜key
+     *
+     * @return 总排行榜key
+     */
+    public static String getUserActivityTotalRankKey() {
+        return USER_ACTIVITY_RANK + "total";
+    }
+
+    /**
+     * 构建用户活跃度日排行榜key
+     *
+     * @param date 日期(yyyy-MM-dd格式)
+     * @return 日排行榜key
+     */
+    public static String getUserActivityDailyRankKey(String date) {
+        return USER_ACTIVITY_RANK + "daily:" + date;
+    }
+
+    /**
+     * 构建用户活跃度月排行榜key
+     *
+     * @param yearMonth 年月(yyyy-MM格式)
+     * @return 月排行榜key
+     */
+    public static String getUserActivityMonthlyRankKey(String yearMonth) {
+        return USER_ACTIVITY_RANK + "monthly:" + yearMonth;
+    }
+
+    /**
+     * 构建用户每日分数限制key
+     *
+     * @param userId 用户ID
+     * @param date   日期(yyyy-MM-dd格式)
+     * @return 每日分数限制key
+     */
+    public static String getUserActivityDailyLimitKey(Long userId, String date) {
+        return USER_ACTIVITY_LIMIT + userId + ":" + date;
     }
 
 }
