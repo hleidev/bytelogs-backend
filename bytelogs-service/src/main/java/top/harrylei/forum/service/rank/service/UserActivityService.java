@@ -1,6 +1,6 @@
 package top.harrylei.forum.service.rank.service;
 
-import top.harrylei.forum.api.event.ActivityEvent;
+import top.harrylei.forum.api.event.UserActivityEvent;
 
 /**
  * 用户活跃度服务接口
@@ -14,7 +14,7 @@ public interface UserActivityService {
      *
      * @param event 活跃度事件
      */
-    void processActivityEvent(ActivityEvent event);
+    void processActivityEvent(UserActivityEvent event);
 
     /**
      * 更新用户活跃度分数

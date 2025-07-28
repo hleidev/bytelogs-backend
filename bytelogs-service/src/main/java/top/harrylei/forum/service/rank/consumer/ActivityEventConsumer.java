@@ -8,7 +8,7 @@ import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
-import top.harrylei.forum.api.event.ActivityEvent;
+import top.harrylei.forum.api.event.UserActivityEvent;
 import top.harrylei.forum.core.common.constans.KafkaTopics;
 import top.harrylei.forum.core.exception.NonRetryableException;
 import top.harrylei.forum.core.exception.RetryableException;
@@ -36,8 +36,8 @@ public class ActivityEventConsumer {
      * @param offset         偏移量
      * @param acknowledgment 手动确认
      */
-    @KafkaListener(topics = KafkaTopics.USER_ACTIVITY_EVENTS)
-    public void handleActivityEvent(@Payload ActivityEvent event,
+    @KafkaListener(topics = KafkaTopics.USER_ACTIVITY_EVENTS, containerFactory = "userActivityKafkaListenerContainerFactory")
+    public void handleActivityEvent(@Payload UserActivityEvent event,
                                     @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
                                     @Header(KafkaHeaders.OFFSET) long offset,
                                     Acknowledgment acknowledgment) {
@@ -75,7 +75,7 @@ public class ActivityEventConsumer {
             // 手动确认消息
             acknowledgment.acknowledge();
             log.debug("活跃度事件处理成功: eventId={}, userId={}, action={}",
-                      event.getEventId(), event.getUserId(), event.getActionType().getLabel());
+                      event.getEventId(), event.getUserId(), event.getActionType());
 
         } catch (IllegalArgumentException e) {
             // 参数错误，不重试，释放处理权限

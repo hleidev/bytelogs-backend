@@ -1,11 +1,10 @@
 package top.harrylei.forum.api.event;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import top.harrylei.forum.api.enums.rank.ActivityActionEnum;
-import top.harrylei.forum.api.enums.rank.ActivityTargetEnum;
 
 import java.time.LocalDateTime;
 
@@ -18,7 +17,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ActivityEvent {
+public class UserActivityEvent {
 
     /**
      * 事件ID
@@ -33,12 +32,12 @@ public class ActivityEvent {
     /**
      * 行为类型
      */
-    private ActivityActionEnum actionType;
+    private Integer actionType;
 
     /**
      * 目标类型
      */
-    private ActivityTargetEnum targetType;
+    private Integer targetType;
 
     /**
      * 目标ID
@@ -48,6 +47,7 @@ public class ActivityEvent {
     /**
      * 事件时间戳
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime timestamp;
 
     /**

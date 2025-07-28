@@ -9,7 +9,7 @@ import top.harrylei.forum.api.enums.comment.ContentTypeEnum;
 import top.harrylei.forum.api.enums.notify.NotifyTypeEnum;
 import top.harrylei.forum.api.enums.rank.ActivityActionEnum;
 import top.harrylei.forum.api.enums.rank.ActivityTargetEnum;
-import top.harrylei.forum.api.event.ActivityEvent;
+import top.harrylei.forum.api.event.UserActivityEvent;
 import top.harrylei.forum.api.event.NotificationEvent;
 import top.harrylei.forum.core.common.constans.KafkaTopics;
 
@@ -27,8 +27,7 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 public class KafkaEventPublisher {
 
-    private final KafkaTemplate<String, NotificationEvent> notificationTemplate;
-    private final KafkaTemplate<String, ActivityEvent> activityTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     /**
      * 发布通知事件
@@ -45,8 +44,8 @@ public class KafkaEventPublisher {
         }
 
         try {
-            CompletableFuture<SendResult<String, NotificationEvent>> future =
-                    notificationTemplate.send(KafkaTopics.NOTIFICATION_EVENTS, event.getEventId(), event);
+            CompletableFuture<SendResult<String, Object>> future =
+                    kafkaTemplate.send(KafkaTopics.NOTIFICATION_EVENTS, event.getEventId(), event);
 
             future.whenComplete((result, ex) -> {
                 if (ex != null) {
@@ -128,10 +127,10 @@ public class KafkaEventPublisher {
                                          ActivityTargetEnum targetType,
                                          ActivityActionEnum actionType,
                                          String extra) {
-        ActivityEvent event = ActivityEvent.builder()
+        UserActivityEvent event = UserActivityEvent.builder()
                 .userId(userId)
-                .actionType(actionType)
-                .targetType(targetType)
+                .actionType(actionType.getCode())
+                .targetType(targetType.getCode())
                 .targetId(targetId)
                 .extra(extra)
                 .source("user-activity")
@@ -145,7 +144,7 @@ public class KafkaEventPublisher {
      *
      * @param event 活跃度事件
      */
-    public void publishActivityEvent(ActivityEvent event) {
+    public void publishActivityEvent(UserActivityEvent event) {
         // 设置事件基础信息
         if (event.getEventId() == null) {
             event.setEventId(UUID.randomUUID().toString());
@@ -155,8 +154,8 @@ public class KafkaEventPublisher {
         }
 
         try {
-            CompletableFuture<SendResult<String, ActivityEvent>> future =
-                    activityTemplate.send(KafkaTopics.USER_ACTIVITY_EVENTS, event.getEventId(), event);
+            CompletableFuture<SendResult<String, Object>> future =
+                    kafkaTemplate.send(KafkaTopics.USER_ACTIVITY_EVENTS, event.getEventId(), event);
 
             future.whenComplete((result, ex) -> {
                 if (ex != null) {
@@ -186,8 +185,8 @@ public class KafkaEventPublisher {
         }
 
         try {
-            CompletableFuture<SendResult<String, NotificationEvent>> future =
-                    notificationTemplate.send(KafkaTopics.SYSTEM_EVENTS, event.getEventId(), event);
+            CompletableFuture<SendResult<String, Object>> future =
+                    kafkaTemplate.send(KafkaTopics.SYSTEM_EVENTS, event.getEventId(), event);
 
             future.whenComplete((result, ex) -> {
                 if (ex != null) {
