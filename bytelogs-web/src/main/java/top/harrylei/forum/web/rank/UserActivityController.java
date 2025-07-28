@@ -19,6 +19,4 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Validated
 public class UserActivityController {
-
-
 }

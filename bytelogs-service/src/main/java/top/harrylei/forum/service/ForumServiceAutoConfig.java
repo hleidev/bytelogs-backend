@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Configuration;
         "top.harrylei.forum.service.comment.repository.mapper",
         "top.harrylei.forum.service.statistics.repository.mapper",
         "top.harrylei.forum.service.notify.repository.mapper",
+        "top.harrylei.forum.service.rank.repository.mapper"
 })
 public class ForumServiceAutoConfig {
 }
