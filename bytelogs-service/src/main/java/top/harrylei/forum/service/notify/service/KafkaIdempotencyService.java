@@ -81,7 +81,7 @@ public class KafkaIdempotencyService {
         }
 
         String key = RedisKeyConstants.getKafkaIdempotencyKey(eventId);
-        Boolean released = redisUtil.delete(key);
+        Boolean released = redisUtil.del(key);
 
         if (Boolean.TRUE.equals(released)) {
             log.debug("释放Kafka消息处理权限成功: eventId={}", eventId);

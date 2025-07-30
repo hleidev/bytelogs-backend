@@ -113,7 +113,7 @@ public class UserCacheService {
         }
 
         try {
-            redisUtil.delete(RedisKeyConstants.getUserInfoKey(userId));
+            redisUtil.del(RedisKeyConstants.getUserInfoKey(userId));
             log.debug("用户信息缓存已清除: userId={}", userId);
         } catch (Exception e) {
             log.error("清除用户信息缓存失败: userId={}", userId, e);

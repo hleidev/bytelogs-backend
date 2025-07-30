@@ -9,6 +9,8 @@ import top.harrylei.forum.api.enums.user.UserRoleEnum;
 
 /**
  * 用户基础实体对象
+ *
+ * @author harry
  */
 @EqualsAndHashCode(callSuper = true)
 @Data

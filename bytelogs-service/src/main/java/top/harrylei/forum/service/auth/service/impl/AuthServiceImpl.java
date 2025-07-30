@@ -152,7 +152,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void logout(Long userId) {
         try {
-            boolean result = redisUtil.delete(RedisKeyConstants.getUserTokenKey(userId));
+            boolean result = redisUtil.del(RedisKeyConstants.getUserTokenKey(userId));
             userCacheService.clearUserInfoCache(userId);
 
             if (!result) {

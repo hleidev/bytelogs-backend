@@ -143,8 +143,9 @@ public class UserActivityServiceImpl implements UserActivityService {
 
         if (score > 0) {
             // 正分检查限制
-            String currentTotalStr = redisUtil.hGet(userDayKey, SCORE_TOTAL_FIELD, String.class);
-            Integer currentTotal = (currentTotalStr == null) ? 0 : Integer.parseInt(currentTotalStr);
+            Integer total = redisUtil.hGet(userDayKey, SCORE_TOTAL_FIELD, Integer.class);
+            int currentTotal = total == null ? 0 : total;
+
 
             actualScore = score;
             if (currentTotal + score > DAILY_SCORE_LIMIT) {

@@ -284,7 +284,7 @@ public class RedisUtil {
      * @param key 键
      * @return 是否成功，操作异常时返回false
      */
-    public Boolean delete(String key) {
+    public Boolean del(String key) {
         validateNotNull(key);
         try {
             return redisTemplate.execute((RedisCallback<Boolean>) connection -> {
@@ -303,7 +303,7 @@ public class RedisUtil {
      * @param keys 键集合
      * @return 删除的键数量，操作异常时返回0
      */
-    public Long deleteAll(Collection<String> keys) {
+    public Long delAll(Collection<String> keys) {
         if (keys == null || keys.isEmpty()) {
             return 0L;
         }
@@ -327,11 +327,11 @@ public class RedisUtil {
      * @param keys 键数组
      * @return 删除的键数量，操作异常时返回0
      */
-    public Long deleteAll(String... keys) {
+    public Long delAll(String... keys) {
         if (keys == null || keys.length == 0) {
             return 0L;
         }
-        return deleteAll(Arrays.asList(keys));
+        return delAll(Arrays.asList(keys));
     }
 
     /**
@@ -412,7 +412,7 @@ public class RedisUtil {
      * @param delta 增量（正值为自增，负值为自减）
      * @return 操作后的值，失败返回null
      */
-    public Long incrementBy(String key, long delta) {
+    public Long incrBy(String key, long delta) {
         validateNotNull(key);
         try {
             return redisTemplate.execute((RedisCallback<Long>) connection ->
@@ -429,8 +429,8 @@ public class RedisUtil {
      * @param key 键
      * @return 操作后的值，失败返回null
      */
-    public Long increment(String key) {
-        return incrementBy(key, 1);
+    public Long incr(String key) {
+        return incrBy(key, 1);
     }
 
     /**
@@ -439,8 +439,8 @@ public class RedisUtil {
      * @param key 键
      * @return 操作后的值，失败返回null
      */
-    public Long decrement(String key) {
-        return incrementBy(key, -1);
+    public Long decr(String key) {
+        return incrBy(key, -1);
     }
 
     /**
@@ -450,8 +450,8 @@ public class RedisUtil {
      * @param delta 减量（正值）
      * @return 操作后的值，失败返回null
      */
-    public Long decrementBy(String key, long delta) {
-        return incrementBy(key, -Math.abs(delta));
+    public Long decrBy(String key, long delta) {
+        return incrBy(key, -Math.abs(delta));
     }
 
     /**
@@ -569,7 +569,7 @@ public class RedisUtil {
      * @param fields 字段
      * @return 删除的字段数量，操作异常时返回0
      */
-    public Long hDelete(String key, String... fields) {
+    public Long hDel(String key, String... fields) {
         validateNotNull(key);
         if (fields == null || fields.length == 0) {
             return 0L;
@@ -642,7 +642,7 @@ public class RedisUtil {
      * @param field 字段
      * @return 增加后的值，操作异常时返回null
      */
-    public Long hIncrBy(String key, String field) {
+    public Long hIncr(String key, String field) {
         return hIncrBy(key, field, 1);
     }
 
@@ -668,41 +668,6 @@ public class RedisUtil {
     public Long hDecr(String key, String field) {
         return hIncrBy(key, field, -1);
     }
-
-
-    /**
-     * 获取字符串值
-     *
-     * @param key 键
-     * @return 字符串值，键不存在或操作异常时返回null
-     */
-    public String getString(String key) {
-        return get(key, String.class);
-    }
-
-    /**
-     * 设置字符串值
-     *
-     * @param key   键
-     * @param value 字符串值
-     * @return 是否成功，操作异常时返回false
-     */
-    public Boolean setString(String key, String value) {
-        return set(key, value);
-    }
-
-    /**
-     * 设置字符串值，带过期时间
-     *
-     * @param key     键
-     * @param value   字符串值
-     * @param seconds 过期时间（秒）
-     * @return 是否成功，操作异常时返回false
-     */
-    public Boolean setString(String key, String value, long seconds) {
-        return set(key, value, seconds);
-    }
-
 
     /**
      * 批量获取值
@@ -767,49 +732,6 @@ public class RedisUtil {
     }
 
     /**
-     * 获取键的类型
-     *
-     * @param key 键
-     * @return 数据类型字符串
-     */
-    public String type(String key) {
-        validateNotNull(key);
-        try {
-            return redisTemplate.execute((RedisCallback<String>) connection -> {
-                org.springframework.data.redis.connection.DataType dataType =
-                        connection.keyCommands().type(keyToBytes(key));
-                return dataType != null ? dataType.name() : "none";
-            });
-        } catch (Exception e) {
-            log.error("获取键类型失败: key={}, error={}", key, e.getMessage(), e);
-            return "unknown";
-        }
-    }
-
-    /**
-     * 尝试获取分布式锁
-     *
-     * @param lockKey 锁的key
-     * @param seconds 锁过期时间（秒）
-     * @return 锁标识符，获取失败返回null
-     */
-    public String tryLock(String lockKey, long seconds) {
-        validateNotNull(lockKey);
-        String lockValue = UUID.randomUUID().toString();
-        String key = RedisKeyConstants.getDistributedLockKey(lockKey);
-
-        Boolean success = setIfAbsent(key, lockValue, seconds);
-        if (Boolean.TRUE.equals(success)) {
-            log.debug("获取分布式锁成功: key={}, value={}", key, lockValue);
-            return lockValue;
-        }
-
-        log.debug("获取分布式锁失败: key={}", key);
-        return null;
-    }
-
-
-    /**
      * 释放分布式锁
      *
      * @param lockKey   锁的key
@@ -852,61 +774,6 @@ public class RedisUtil {
     }
 
     /**
-     * 执行带锁的操作
-     *
-     * @param lockKey 锁的key
-     * @param seconds 锁过期时间（秒）
-     * @param action  要执行的操作
-     * @param <T>     返回值类型
-     * @return 操作结果，获取锁失败时返回null
-     */
-    public <T> T executeWithLock(String lockKey, long seconds, LockAction<T> action) {
-        validateNotNull(lockKey, action);
-        String lockValue = tryLock(lockKey, seconds);
-        if (lockValue == null) {
-            log.debug("获取锁失败，无法执行操作: lockKey={}", lockKey);
-            return null;
-        }
-
-        try {
-            return action.execute();
-        } catch (Exception e) {
-            log.error("执行带锁操作异常: lockKey={}, error={}", lockKey, e.getMessage(), e);
-            throw e;
-        } finally {
-            releaseLock(lockKey, lockValue);
-        }
-    }
-
-
-    /**
-     * 执行带锁的操作（无返回值）
-     *
-     * @param lockKey 锁的key
-     * @param seconds 锁过期时间（秒）
-     * @param action  要执行的操作
-     * @return 是否执行成功
-     */
-    public boolean executeWithLock(String lockKey, long seconds, Runnable action) {
-        validateNotNull(lockKey, action);
-        String lockValue = tryLock(lockKey, seconds);
-        if (lockValue == null) {
-            log.debug("获取锁失败，无法执行操作: lockKey={}", lockKey);
-            return false;
-        }
-
-        try {
-            action.run();
-            return true;
-        } catch (Exception e) {
-            log.error("执行带锁操作异常: lockKey={}, error={}", lockKey, e.getMessage(), e);
-            return false;
-        } finally {
-            releaseLock(lockKey, lockValue);
-        }
-    }
-
-    /**
      * 防重复提交锁（自动过期，无需手动释放）
      *
      * @param lockKey 锁的key
@@ -930,58 +797,6 @@ public class RedisUtil {
 
         log.debug("获取防重复提交锁失败，检测到重复提交: key={}", key);
         return false;
-    }
-
-
-    /**
-     * 尝试获取分布式锁（Duration版本）
-     *
-     * @param lockKey  锁的key
-     * @param duration 锁过期时间
-     * @return 锁标识符，获取失败返回null
-     */
-    public String tryLock(String lockKey, Duration duration) {
-        validateNotNull(duration);
-        long seconds = duration.getSeconds();
-        if (seconds <= 0) {
-            throw new IllegalArgumentException("分布式锁的Duration必须为正数");
-        }
-        return tryLock(lockKey, seconds);
-    }
-
-    /**
-     * 执行带锁的操作（Duration版本）
-     *
-     * @param lockKey  锁的key
-     * @param duration 锁过期时间
-     * @param action   要执行的操作
-     * @param <T>      返回值类型
-     * @return 操作结果，获取锁失败时返回null
-     */
-    public <T> T executeWithLock(String lockKey, Duration duration, LockAction<T> action) {
-        validateNotNull(duration);
-        long seconds = duration.getSeconds();
-        if (seconds <= 0) {
-            throw new IllegalArgumentException("分布式锁的Duration必须为正数");
-        }
-        return executeWithLock(lockKey, seconds, action);
-    }
-
-    /**
-     * 执行带锁的操作（Duration版本，无返回值）
-     *
-     * @param lockKey  锁的key
-     * @param duration 锁过期时间
-     * @param action   要执行的操作
-     * @return 是否执行成功
-     */
-    public boolean executeWithLock(String lockKey, Duration duration, Runnable action) {
-        validateNotNull(duration);
-        long seconds = duration.getSeconds();
-        if (seconds <= 0) {
-            throw new IllegalArgumentException("分布式锁的Duration必须为正数");
-        }
-        return executeWithLock(lockKey, seconds, action);
     }
 
     /**
@@ -1200,13 +1015,5 @@ public class RedisUtil {
             log.error("获取有序集合成员数量失败: key={}, error={}", key, e.getMessage(), e);
             return 0L;
         }
-    }
-
-    /**
-     * 带锁的操作接口
-     */
-    @FunctionalInterface
-    public interface LockAction<T> {
-        T execute();
     }
 }

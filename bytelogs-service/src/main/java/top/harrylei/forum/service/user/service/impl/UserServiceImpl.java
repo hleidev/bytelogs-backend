@@ -88,7 +88,7 @@ public class UserServiceImpl implements UserService {
             userDO.setUserName(userInfo.getUserName());
             userDAO.updateById(userDO);
 
-            redisUtil.delete(RedisKeyConstants.getUserInfoKey(userInfo.getUserId()));
+            redisUtil.del(RedisKeyConstants.getUserInfoKey(userInfo.getUserId()));
 
             log.info("用户信息更新成功: userId={}", userInfoDTO.getUserId());
         } catch (Exception e) {
@@ -139,7 +139,7 @@ public class UserServiceImpl implements UserService {
 
         UserInfoDetailDTO userInfo = getUserInfoById(userId);
 
-        redisUtil.delete(RedisKeyConstants.getUserInfoKey(userInfo.getUserId()));
+        redisUtil.del(RedisKeyConstants.getUserInfoKey(userInfo.getUserId()));
         userCacheService.updateUserInfoCache(userInfo);
 
         try {
