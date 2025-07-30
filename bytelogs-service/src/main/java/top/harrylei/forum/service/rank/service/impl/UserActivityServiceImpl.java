@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import top.harrylei.forum.api.enums.rank.ActivityActionEnum;
 import top.harrylei.forum.api.event.UserActivityEvent;
 import top.harrylei.forum.core.common.constans.RedisKeyConstants;
@@ -33,40 +32,82 @@ public class UserActivityServiceImpl implements UserActivityService {
     private static final DateTimeFormatter DAY_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter MONTH_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM");
 
-    private String getDayKey() {
+    private static String getDayKey() {
         String dayStr = getDateStr(DAY_FORMATTER);
         return RedisKeyConstants.getUserActivityDailyRankKey(dayStr);
     }
 
-    private String getMonthKey() {
+    private static String getMonthKey() {
         String monthStr = getDateStr(MONTH_FORMATTER);
         return RedisKeyConstants.getUserActivityMonthlyRankKey(monthStr);
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void processActivityEvent(UserActivityEvent event) {
         try {
-            ActivityActionEnum actionEnum = ActivityActionEnum.fromCode(event.getActionType());
+            // 基础验证
+            ActivityActionEnum actionEnum = validateAndGetActionEnum(event);
             if (actionEnum == null) {
-                log.error("无效的活跃度行为类型: actionType={}", event.getActionType());
                 return;
             }
 
-            Integer scoreChange = actionEnum.getScore();
-            Integer actualScore = scoreIdempotency(event, scoreChange);
-
-            if (actualScore > 0) {
-                updateUserScore(event.getUserId(), actualScore);
+            // 根据积分类型分发处理
+            if (actionEnum.getScore() < 0) {
+                handleNegativeScore(event);
+            } else {
+                handlePositiveScore(event, actionEnum);
             }
+
         } catch (Exception e) {
             log.error("处理活跃度事件失败: userId={}, action={}", event.getUserId(), event.getActionType(), e);
             throw e;
         }
     }
 
+    /**
+     * 验证事件并获取行为枚举
+     */
+    private ActivityActionEnum validateAndGetActionEnum(UserActivityEvent event) {
+        ActivityActionEnum actionEnum = ActivityActionEnum.fromCode(event.getActionType());
+        if (actionEnum == null) {
+            log.error("无效的活跃度行为类型: actionType={}", event.getActionType());
+            return null;
+        }
+
+        if (actionEnum.getScore() == 0) {
+            log.debug("积分为0，跳过处理: userId={}, action={}", event.getUserId(), event.getActionType());
+            return null;
+        }
+
+        return actionEnum;
+    }
+
+    /**
+     * 处理正分事件
+     */
+    private void handlePositiveScore(UserActivityEvent event, ActivityActionEnum actionEnum) {
+        // 幂等性检查
+        if (isOperationDuplicate(event)) {
+            log.debug("重复操作，跳过: userId={}, action={}", event.getUserId(), event.getActionType());
+            return;
+        }
+
+        // 积分计算与限制
+        Integer actualScore = calculateActualScore(event.getUserId(), actionEnum.getScore());
+        if (actualScore <= 0) {
+            log.debug("积分计算结果为0，跳过: userId={}, baseScore={}", event.getUserId(), actionEnum.getScore());
+            return;
+        }
+
+        // 执行积分更新
+        recordOperation(event, actualScore);
+        updateUserScore(event.getUserId(), actualScore);
+
+        log.debug("正分事件处理完成: userId={}, action={}, baseScore={}, actualScore={}",
+                  event.getUserId(), event.getActionType(), actionEnum.getScore(), actualScore);
+    }
+
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void updateUserScore(Long userId, Integer score) {
         if (score == 0) {
             return;
@@ -95,78 +136,157 @@ public class UserActivityServiceImpl implements UserActivityService {
     }
 
     /**
-     * Hash方式：幂等性检查 + 积分限制校验 + 记录更新
+     * 检查操作是否重复
      *
      * @param event 活跃度事件
-     * @param score 积分值
-     * @return 实际获得的积分
+     * @return true-重复操作，false-非重复操作
      */
-    private Integer scoreIdempotency(UserActivityEvent event, Integer score) {
-        if (score == 0) {
-            return 0;
-        }
-
-        // 没有具体目标的操作（如每日签到）跳过幂等性检查，只做积分限制
+    private boolean isOperationDuplicate(UserActivityEvent event) {
+        // TODO 没有具体目标的操作（如每日签到）跳过幂等性检查
         if (event.getTargetId() == null || event.getTargetType() == null) {
-            return scoreDailyLimit(event.getUserId(), score);
+            return false;
         }
 
         String dayStr = getDateStr(DAY_FORMATTER);
         String userDayKey = RedisKeyConstants.getUserActivityDailyKey(event.getUserId(), dayStr);
-        String operationField = "op:" + event.getActionType() + ":" + event.getTargetType() + ":" + event.getTargetId();
+        String operationField = buildOperationField(event);
 
-        // 检查操作是否已存在
-        if (redisUtil.hExists(userDayKey, operationField)) {
-            log.debug("操作已存在，幂等性检查失败: userId={}, operation={}", event.getUserId(), operationField);
-            return 0;
+        return redisUtil.hExists(userDayKey, operationField);
+    }
+
+    /**
+     * 计算实际获得的积分
+     *
+     * @param userId    用户ID
+     * @param baseScore 基础积分
+     * @return 实际积分
+     */
+    private Integer calculateActualScore(Long userId, Integer baseScore) {
+        // 负分不受每日限制约束，直接返回
+        if (baseScore < 0) {
+            return baseScore;
         }
 
-        // 统一积分处理
-        int actualScore = scoreDailyLimit(event.getUserId(), score);
-        if (actualScore != 0) {
-            // 记录具体操作
+        // 正分需要检查每日限制
+        String dayStr = getDateStr(DAY_FORMATTER);
+        String userDayKey = RedisKeyConstants.getUserActivityDailyKey(userId, dayStr);
+
+        Integer currentTotal = redisUtil.hGet(userDayKey, SCORE_TOTAL_FIELD, Integer.class);
+        int totalScore = (currentTotal == null) ? 0 : currentTotal;
+
+        // 检查是否超过每日限制
+        if (totalScore + baseScore > DAILY_SCORE_LIMIT) {
+            int resultScore = DAILY_SCORE_LIMIT - totalScore;
+            return Math.max(resultScore, 0);
+        }
+
+        return baseScore;
+    }
+
+    /**
+     * 记录操作历史和更新积分统计
+     *
+     * @param event       活跃度事件
+     * @param actualScore 实际积分
+     */
+    private void recordOperation(UserActivityEvent event, Integer actualScore) {
+        String dayStr = getDateStr(DAY_FORMATTER);
+        String userDayKey = RedisKeyConstants.getUserActivityDailyKey(event.getUserId(), dayStr);
+
+        // 更新总积分统计
+        redisUtil.hIncrBy(userDayKey, SCORE_TOTAL_FIELD, actualScore);
+
+        // 记录具体操作
+        if (event.getTargetId() != null && event.getTargetType() != null) {
+            String operationField = buildOperationField(event);
             redisUtil.hIncrBy(userDayKey, operationField, actualScore);
         }
 
-        log.debug("活跃度记录成功: userId={}, operation={}, score={}", event.getUserId(), operationField, actualScore);
-        return actualScore;
-    }
-
-    private Integer scoreDailyLimit(Long userId, Integer score) {
-        if (score == 0) {
-            return 0;
-        }
-
-        String dayStr = getDateStr(DAY_FORMATTER);
-        String userDayKey = RedisKeyConstants.getUserActivityDailyKey(userId, dayStr);
-        int actualScore;
-
-        if (score > 0) {
-            // 正分检查限制
-            Integer total = redisUtil.hGet(userDayKey, SCORE_TOTAL_FIELD, Integer.class);
-            int currentTotal = total == null ? 0 : total;
-
-
-            actualScore = score;
-            if (currentTotal + score > DAILY_SCORE_LIMIT) {
-                actualScore = DAILY_SCORE_LIMIT - currentTotal;
-                if (actualScore <= 0) {
-                    return 0;
-                }
-            }
-        } else {
-            // 负分不做限制，直接记录
-            actualScore = score;
-        }
-
-        // 更新总积分
-        redisUtil.hIncrBy(userDayKey, SCORE_TOTAL_FIELD, actualScore);
+        // 设置过期时间
         Long ttl = redisUtil.ttl(userDayKey);
         if (!NumUtil.upZero(ttl)) {
             redisUtil.expire(userDayKey, Duration.ofHours(25));
         }
+    }
 
-        return actualScore;
+    /**
+     * 构建操作字段名
+     *
+     * @param event 活跃度事件
+     * @return 操作字段名
+     */
+    private String buildOperationField(UserActivityEvent event) {
+        return "op:" + event.getActionType() + ":" + event.getTargetType() + ":" + event.getTargetId();
+    }
+
+    /**
+     * 处理负分操作
+     * 简单逻辑：找到对应的正分记录，删除并扣分
+     *
+     * @param event 活跃度事件
+     */
+    private void handleNegativeScore(UserActivityEvent event) {
+        String dayStr = getDateStr(DAY_FORMATTER);
+        String userDayKey = RedisKeyConstants.getUserActivityDailyKey(event.getUserId(), dayStr);
+
+        // 1. 构建对应的正分操作字段名
+        String positiveOperationField = buildPositiveOperationField(event);
+
+        // 2. 检查原有正分操作是否存在
+        Integer originalScore = redisUtil.hGet(userDayKey, positiveOperationField, Integer.class);
+        if (originalScore == null || originalScore <= 0) {
+            log.debug("未找到对应的正分操作，跳过: userId={}, action={}", event.getUserId(), event.getActionType());
+            return;
+        }
+
+        // 3. 删除正分记录
+        redisUtil.hDel(userDayKey, positiveOperationField);
+
+        // 4. 从每日积分统计中扣除
+        redisUtil.hDecrBy(userDayKey, SCORE_TOTAL_FIELD, originalScore);
+
+        // 5. 更新排行榜积分
+        updateUserScore(event.getUserId(), -originalScore);
+
+        log.debug("负分事件处理成功: userId={}, action={}, deductedScore={}",
+                  event.getUserId(), event.getActionType(), -originalScore);
+    }
+
+    /**
+     * 构建对应的正分操作字段名
+     *
+     * @param event 负分事件
+     * @return 对应的正分操作字段名
+     */
+    private String buildPositiveOperationField(UserActivityEvent event) {
+        Integer positiveActionType = getCorrespondingPositiveAction(event.getActionType());
+        if (positiveActionType == null) {
+            return buildOperationField(event);
+        }
+
+        return "op:" + positiveActionType + ":" + event.getTargetType() + ":" + event.getTargetId();
+    }
+
+    /**
+     * 获取负分操作对应的正分操作类型
+     *
+     * @param negativeActionType 负分操作类型
+     * @return 对应的正分操作类型，若无对应关系则返回null
+     */
+    private Integer getCorrespondingPositiveAction(Integer negativeActionType) {
+        ActivityActionEnum actionEnum = ActivityActionEnum.fromCode(negativeActionType);
+        if (actionEnum == null) {
+            return null;
+        }
+
+        return switch (actionEnum) {
+            case CANCEL_PRAISE -> ActivityActionEnum.PRAISE.getCode();
+            case CANCEL_COLLECT -> ActivityActionEnum.COLLECT.getCode();
+            case CANCEL_FOLLOW -> ActivityActionEnum.FOLLOW.getCode();
+            case DELETE_COMMENT -> ActivityActionEnum.COMMENT.getCode();
+            case DELETE_ARTICLE -> ActivityActionEnum.ARTICLE.getCode();
+            default -> null;
+        };
     }
 
     private static @NotNull String getDateStr(DateTimeFormatter dayFormatter) {
