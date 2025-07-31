@@ -19,7 +19,7 @@ import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.springframework.util.backoff.ExponentialBackOff;
 import top.harrylei.forum.api.event.NotificationEvent;
-import top.harrylei.forum.api.event.UserActivityEvent;
+import top.harrylei.forum.api.event.ActivityRankEvent;
 import top.harrylei.forum.core.common.constans.KafkaTopics;
 import top.harrylei.forum.core.exception.NonRetryableException;
 
@@ -171,9 +171,9 @@ public class KafkaConfig {
      * 用户活跃度事件消费者配置
      */
     @Bean
-    public ConsumerFactory<String, UserActivityEvent> userActivityConsumerFactory() {
+    public ConsumerFactory<String, ActivityRankEvent> userActivityConsumerFactory() {
         Map<String, Object> props = createBaseConsumerProps(activityGroupId);
-        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, UserActivityEvent.class);
+        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, ActivityRankEvent.class);
         return new DefaultKafkaConsumerFactory<>(props);
     }
 
@@ -181,8 +181,8 @@ public class KafkaConfig {
      * 用户活跃度事件监听器容器工厂
      */
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, UserActivityEvent> userActivityKafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, UserActivityEvent> factory = new ConcurrentKafkaListenerContainerFactory<>();
+    public ConcurrentKafkaListenerContainerFactory<String, ActivityRankEvent> userActivityKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, ActivityRankEvent> factory = new ConcurrentKafkaListenerContainerFactory<>();
 
         factory.setConsumerFactory(userActivityConsumerFactory());
         factory.setCommonErrorHandler(errorHandler());
@@ -197,7 +197,7 @@ public class KafkaConfig {
      */
     @Bean
     public NewTopic userActivityTopic() {
-        return TopicBuilder.name(KafkaTopics.USER_ACTIVITY_EVENTS)
+        return TopicBuilder.name(KafkaTopics.ACTIVITY_RANK_EVENTS)
                 .partitions(kafkaProperties.getPartitions())
                 .replicas(kafkaProperties.getReplicas())
                 .build();

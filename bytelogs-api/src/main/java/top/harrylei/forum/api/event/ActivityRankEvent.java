@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserActivityEvent {
+public class ActivityRankEvent {
 
     /**
      * 事件ID

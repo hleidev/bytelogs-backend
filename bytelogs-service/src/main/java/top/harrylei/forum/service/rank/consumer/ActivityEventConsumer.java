@@ -8,12 +8,12 @@ import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
-import top.harrylei.forum.api.event.UserActivityEvent;
+import top.harrylei.forum.api.event.ActivityRankEvent;
 import top.harrylei.forum.core.common.constans.KafkaTopics;
 import top.harrylei.forum.core.exception.NonRetryableException;
 import top.harrylei.forum.core.exception.RetryableException;
 import top.harrylei.forum.service.notify.service.KafkaIdempotencyService;
-import top.harrylei.forum.service.rank.service.UserActivityService;
+import top.harrylei.forum.service.rank.service.ActivityService;
 
 /**
  * 用户活跃度事件消费者
@@ -25,7 +25,7 @@ import top.harrylei.forum.service.rank.service.UserActivityService;
 @Slf4j
 public class ActivityEventConsumer {
 
-    private final UserActivityService userActivityService;
+    private final ActivityService activityService;
     private final KafkaIdempotencyService kafkaIdempotencyService;
 
     /**
@@ -36,8 +36,8 @@ public class ActivityEventConsumer {
      * @param offset         偏移量
      * @param acknowledgment 手动确认
      */
-    @KafkaListener(topics = KafkaTopics.USER_ACTIVITY_EVENTS, containerFactory = "userActivityKafkaListenerContainerFactory")
-    public void handleActivityEvent(@Payload UserActivityEvent event,
+    @KafkaListener(topics = KafkaTopics.ACTIVITY_RANK_EVENTS, containerFactory = "userActivityKafkaListenerContainerFactory")
+    public void handleActivityEvent(@Payload ActivityRankEvent event,
                                     @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
                                     @Header(KafkaHeaders.OFFSET) long offset,
                                     Acknowledgment acknowledgment) {
@@ -67,7 +67,7 @@ public class ActivityEventConsumer {
             }
 
             // 处理活跃度事件
-            userActivityService.processActivityEvent(event);
+            activityService.processActivityEvent(event);
 
             // 标记消息处理完成
             kafkaIdempotencyService.markMessageAsProcessed(event.getEventId());

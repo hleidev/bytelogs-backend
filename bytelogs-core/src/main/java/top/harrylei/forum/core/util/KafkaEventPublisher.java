@@ -9,7 +9,7 @@ import top.harrylei.forum.api.enums.comment.ContentTypeEnum;
 import top.harrylei.forum.api.enums.notify.NotifyTypeEnum;
 import top.harrylei.forum.api.enums.rank.ActivityActionEnum;
 import top.harrylei.forum.api.enums.rank.ActivityTargetEnum;
-import top.harrylei.forum.api.event.UserActivityEvent;
+import top.harrylei.forum.api.event.ActivityRankEvent;
 import top.harrylei.forum.api.event.NotificationEvent;
 import top.harrylei.forum.core.common.constans.KafkaTopics;
 
@@ -127,7 +127,7 @@ public class KafkaEventPublisher {
                                          ActivityTargetEnum targetType,
                                          ActivityActionEnum actionType,
                                          String extra) {
-        UserActivityEvent event = UserActivityEvent.builder()
+        ActivityRankEvent event = ActivityRankEvent.builder()
                 .userId(userId)
                 .actionType(actionType.getCode())
                 .targetType(targetType.getCode())
@@ -144,7 +144,7 @@ public class KafkaEventPublisher {
      *
      * @param event 活跃度事件
      */
-    public void publishActivityEvent(UserActivityEvent event) {
+    public void publishActivityEvent(ActivityRankEvent event) {
         // 设置事件基础信息
         if (event.getEventId() == null) {
             event.setEventId(UUID.randomUUID().toString());
@@ -155,7 +155,7 @@ public class KafkaEventPublisher {
 
         try {
             CompletableFuture<SendResult<String, Object>> future =
-                    kafkaTemplate.send(KafkaTopics.USER_ACTIVITY_EVENTS, event.getEventId(), event);
+                    kafkaTemplate.send(KafkaTopics.ACTIVITY_RANK_EVENTS, event.getEventId(), event);
 
             future.whenComplete((result, ex) -> {
                 if (ex != null) {
