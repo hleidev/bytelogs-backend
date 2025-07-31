@@ -14,6 +14,7 @@ public class RedisKeyConstants {
     public static final String USER = GLOBAL_PREFIX + "user:";
     public static final String LOCK = GLOBAL_PREFIX + "lock:";
     public static final String KAFKA = GLOBAL_PREFIX + "kafka:";
+    public static final String ACTIVITY = GLOBAL_PREFIX + "activity:";
 
     // 功能分类
     public static final String USER_TOKEN = USER + "token:";
@@ -21,9 +22,8 @@ public class RedisKeyConstants {
     public static final String DISTRIBUTED_LOCK = LOCK + "distributed:";
     public static final String DUPLICATE_LOCK = LOCK + "duplicate:";
     public static final String KAFKA_IDEMPOTENCY = KAFKA + "idempotency:";
-    public static final String USER_ACTIVITY = USER + "activity:";
-    public static final String USER_ACTIVITY_RANK = USER_ACTIVITY + "rank:";
-    public static final String USER_ACTIVITY_DAILY = USER_ACTIVITY + "idempotency:";
+    public static final String ACTIVITY_RANK = ACTIVITY + "rank:";
+    public static final String ACTIVITY_DAILY = ACTIVITY + "idempotency:";
 
 
     /**
@@ -81,8 +81,8 @@ public class RedisKeyConstants {
      *
      * @return 总排行榜key
      */
-    public static String getUserActivityTotalRankKey() {
-        return USER_ACTIVITY_RANK + "total";
+    public static String getActivityTotalRankKey() {
+        return ACTIVITY_RANK + "total";
     }
 
     /**
@@ -91,8 +91,8 @@ public class RedisKeyConstants {
      * @param date 日期(yyyy-MM-dd格式)
      * @return 日排行榜key
      */
-    public static String getUserActivityDailyRankKey(String date) {
-        return USER_ACTIVITY_RANK + "daily:" + date;
+    public static String getActivityDailyRankKey(String date) {
+        return ACTIVITY_RANK + "daily:" + date;
     }
 
     /**
@@ -101,8 +101,8 @@ public class RedisKeyConstants {
      * @param yearMonth 年月(yyyy-MM格式)
      * @return 月排行榜key
      */
-    public static String getUserActivityMonthlyRankKey(String yearMonth) {
-        return USER_ACTIVITY_RANK + "monthly:" + yearMonth;
+    public static String getActivityMonthlyRankKey(String yearMonth) {
+        return ACTIVITY_RANK + "monthly:" + yearMonth;
     }
 
 
@@ -113,7 +113,7 @@ public class RedisKeyConstants {
      * @param date   日期(yyyy-MM-dd格式)
      * @return 用户每日活跃度Hash key
      */
-    public static String getUserActivityDailyKey(Long userId, String date) {
-        return USER_ACTIVITY_DAILY + date + ":" + userId;
+    public static String getActivityDailyKey(Long userId, String date) {
+        return ACTIVITY_DAILY + date + ":" + userId;
     }
 }

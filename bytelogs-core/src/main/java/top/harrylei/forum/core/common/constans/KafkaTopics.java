@@ -24,7 +24,7 @@ public class KafkaTopics {
      * 活跃度事件 Topic
      * 用于处理用户活跃度相关事件（文章、用户、评论等）
      */
-    public static final String USER_ACTIVITY_EVENTS = "bytelogs-user-activity-events";
+    public static final String ACTIVITY_RANK_EVENTS = "bytelogs-activity-rank-events";
 
     /**
      * 系统事件 Topic
