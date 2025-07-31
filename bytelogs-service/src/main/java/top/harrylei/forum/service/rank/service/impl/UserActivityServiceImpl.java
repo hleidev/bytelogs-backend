@@ -33,12 +33,13 @@ public class UserActivityServiceImpl implements UserActivityService {
     private static final DateTimeFormatter MONTH_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM");
 
     private static String getDayKey() {
-        String dayStr = getDateStr(DAY_FORMATTER);
+        String dayStr = getDateStr();
         return RedisKeyConstants.getUserActivityDailyRankKey(dayStr);
     }
 
     private static String getMonthKey() {
-        String monthStr = getDateStr(MONTH_FORMATTER);
+        LocalDate now = LocalDate.now();
+        String monthStr = now.format(MONTH_FORMATTER);
         return RedisKeyConstants.getUserActivityMonthlyRankKey(monthStr);
     }
 
@@ -46,8 +47,14 @@ public class UserActivityServiceImpl implements UserActivityService {
     public void processActivityEvent(UserActivityEvent event) {
         try {
             // 基础验证
-            ActivityActionEnum actionEnum = validateAndGetActionEnum(event);
+            ActivityActionEnum actionEnum = ActivityActionEnum.fromCode(event.getActionType());
             if (actionEnum == null) {
+                log.error("无效的活跃度行为类型: actionType={}", event.getActionType());
+                return;
+            }
+
+            if (actionEnum.getScore() == 0) {
+                log.debug("积分为0，跳过处理: userId={}, action={}", event.getUserId(), event.getActionType());
                 return;
             }
 
@@ -65,24 +72,6 @@ public class UserActivityServiceImpl implements UserActivityService {
     }
 
     /**
-     * 验证事件并获取行为枚举
-     */
-    private ActivityActionEnum validateAndGetActionEnum(UserActivityEvent event) {
-        ActivityActionEnum actionEnum = ActivityActionEnum.fromCode(event.getActionType());
-        if (actionEnum == null) {
-            log.error("无效的活跃度行为类型: actionType={}", event.getActionType());
-            return null;
-        }
-
-        if (actionEnum.getScore() == 0) {
-            log.debug("积分为0，跳过处理: userId={}, action={}", event.getUserId(), event.getActionType());
-            return null;
-        }
-
-        return actionEnum;
-    }
-
-    /**
      * 处理正分事件
      */
     private void handlePositiveScore(UserActivityEvent event, ActivityActionEnum actionEnum) {
@@ -94,7 +83,7 @@ public class UserActivityServiceImpl implements UserActivityService {
 
         // 积分计算与限制
         Integer actualScore = calculateActualScore(event.getUserId(), actionEnum.getScore());
-        if (actualScore <= 0) {
+        if (actualScore == 0) {
             log.debug("积分计算结果为0，跳过: userId={}, baseScore={}", event.getUserId(), actionEnum.getScore());
             return;
         }
@@ -147,7 +136,7 @@ public class UserActivityServiceImpl implements UserActivityService {
             return false;
         }
 
-        String dayStr = getDateStr(DAY_FORMATTER);
+        String dayStr = getDateStr();
         String userDayKey = RedisKeyConstants.getUserActivityDailyKey(event.getUserId(), dayStr);
         String operationField = buildOperationField(event);
 
@@ -168,7 +157,7 @@ public class UserActivityServiceImpl implements UserActivityService {
         }
 
         // 正分需要检查每日限制
-        String dayStr = getDateStr(DAY_FORMATTER);
+        String dayStr = getDateStr();
         String userDayKey = RedisKeyConstants.getUserActivityDailyKey(userId, dayStr);
 
         Integer currentTotal = redisUtil.hGet(userDayKey, SCORE_TOTAL_FIELD, Integer.class);
@@ -190,7 +179,7 @@ public class UserActivityServiceImpl implements UserActivityService {
      * @param actualScore 实际积分
      */
     private void recordOperation(UserActivityEvent event, Integer actualScore) {
-        String dayStr = getDateStr(DAY_FORMATTER);
+        String dayStr = getDateStr();
         String userDayKey = RedisKeyConstants.getUserActivityDailyKey(event.getUserId(), dayStr);
 
         // 更新总积分统计
@@ -226,7 +215,7 @@ public class UserActivityServiceImpl implements UserActivityService {
      * @param event 活跃度事件
      */
     private void handleNegativeScore(UserActivityEvent event) {
-        String dayStr = getDateStr(DAY_FORMATTER);
+        String dayStr = getDateStr();
         String userDayKey = RedisKeyConstants.getUserActivityDailyKey(event.getUserId(), dayStr);
 
         // 1. 构建对应的正分操作字段名
@@ -261,7 +250,7 @@ public class UserActivityServiceImpl implements UserActivityService {
     private String buildPositiveOperationField(UserActivityEvent event) {
         Integer positiveActionType = getCorrespondingPositiveAction(event.getActionType());
         if (positiveActionType == null) {
-            return buildOperationField(event);
+            return null;
         }
 
         return "op:" + positiveActionType + ":" + event.getTargetType() + ":" + event.getTargetId();
@@ -289,8 +278,8 @@ public class UserActivityServiceImpl implements UserActivityService {
         };
     }
 
-    private static @NotNull String getDateStr(DateTimeFormatter dayFormatter) {
+    private static @NotNull String getDateStr() {
         LocalDate now = LocalDate.now();
-        return now.format(dayFormatter);
+        return now.format(DAY_FORMATTER);
     }
 }
