@@ -5,24 +5,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import top.harrylei.forum.api.enums.rank.ActivityActionEnum;
-import top.harrylei.forum.api.enums.rank.ActivityRankTypeEnum;
-import top.harrylei.forum.api.event.UserActivityEvent;
-import top.harrylei.forum.api.model.page.PageVO;
-import top.harrylei.forum.api.model.rank.req.ActivityRankQueryParam;
-import top.harrylei.forum.api.model.rank.vo.ActivityRankVO;
-import top.harrylei.forum.api.model.user.dto.UserInfoDetailDTO;
+import top.harrylei.forum.api.event.ActivityRankEvent;
 import top.harrylei.forum.core.common.constans.RedisKeyConstants;
 import top.harrylei.forum.core.util.NumUtil;
 import top.harrylei.forum.core.util.RedisUtil;
-import top.harrylei.forum.service.rank.service.UserActivityService;
+import top.harrylei.forum.service.rank.service.ActivityService;
 import top.harrylei.forum.service.user.service.UserService;
 
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 
 /**
  * 用户活跃度服务实现
@@ -32,7 +24,7 @@ import java.util.Set;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class UserActivityServiceImpl implements UserActivityService {
+public class ActivityServiceImpl implements ActivityService {
 
     private final RedisUtil redisUtil;
     private final UserService userService;
@@ -44,17 +36,17 @@ public class UserActivityServiceImpl implements UserActivityService {
 
     private static String getDayKey() {
         String dayStr = getDateStr();
-        return RedisKeyConstants.getUserActivityDailyRankKey(dayStr);
+        return RedisKeyConstants.getActivityDailyRankKey(dayStr);
     }
 
     private static String getMonthKey() {
         LocalDate now = LocalDate.now();
         String monthStr = now.format(MONTH_FORMATTER);
-        return RedisKeyConstants.getUserActivityMonthlyRankKey(monthStr);
+        return RedisKeyConstants.getActivityMonthlyRankKey(monthStr);
     }
 
     @Override
-    public void processActivityEvent(UserActivityEvent event) {
+    public void processActivityEvent(ActivityRankEvent event) {
         try {
             // 基础验证
             ActivityActionEnum actionEnum = ActivityActionEnum.fromCode(event.getActionType());
@@ -84,7 +76,7 @@ public class UserActivityServiceImpl implements UserActivityService {
     /**
      * 处理正分事件
      */
-    private void handlePositiveScore(UserActivityEvent event, ActivityActionEnum actionEnum) {
+    private void handlePositiveScore(ActivityRankEvent event, ActivityActionEnum actionEnum) {
         // 幂等性检查
         if (isOperationDuplicate(event)) {
             log.debug("重复操作，跳过: userId={}, action={}", event.getUserId(), event.getActionType());
@@ -115,7 +107,7 @@ public class UserActivityServiceImpl implements UserActivityService {
         String userIdStr = userId.toString();
 
         // 更新总排行榜
-        redisUtil.zIncrBy(RedisKeyConstants.getUserActivityTotalRankKey(), userIdStr, score);
+        redisUtil.zIncrBy(RedisKeyConstants.getActivityTotalRankKey(), userIdStr, score);
 
         // 更新日排行榜（1天过期）
         String dailyRankKey = getDayKey();
@@ -140,14 +132,14 @@ public class UserActivityServiceImpl implements UserActivityService {
      * @param event 活跃度事件
      * @return true-重复操作，false-非重复操作
      */
-    private boolean isOperationDuplicate(UserActivityEvent event) {
+    private boolean isOperationDuplicate(ActivityRankEvent event) {
         // TODO 没有具体目标的操作（如每日签到）跳过幂等性检查
         if (event.getTargetId() == null || event.getTargetType() == null) {
             return false;
         }
 
         String dayStr = getDateStr();
-        String userDayKey = RedisKeyConstants.getUserActivityDailyKey(event.getUserId(), dayStr);
+        String userDayKey = RedisKeyConstants.getActivityDailyKey(event.getUserId(), dayStr);
         String operationField = buildOperationField(event);
 
         return redisUtil.hExists(userDayKey, operationField);
@@ -168,7 +160,7 @@ public class UserActivityServiceImpl implements UserActivityService {
 
         // 正分需要检查每日限制
         String dayStr = getDateStr();
-        String userDayKey = RedisKeyConstants.getUserActivityDailyKey(userId, dayStr);
+        String userDayKey = RedisKeyConstants.getActivityDailyKey(userId, dayStr);
 
         Integer currentTotal = redisUtil.hGet(userDayKey, SCORE_TOTAL_FIELD, Integer.class);
         int totalScore = (currentTotal == null) ? 0 : currentTotal;
@@ -188,9 +180,9 @@ public class UserActivityServiceImpl implements UserActivityService {
      * @param event       活跃度事件
      * @param actualScore 实际积分
      */
-    private void recordOperation(UserActivityEvent event, Integer actualScore) {
+    private void recordOperation(ActivityRankEvent event, Integer actualScore) {
         String dayStr = getDateStr();
-        String userDayKey = RedisKeyConstants.getUserActivityDailyKey(event.getUserId(), dayStr);
+        String userDayKey = RedisKeyConstants.getActivityDailyKey(event.getUserId(), dayStr);
 
         // 更新总积分统计
         redisUtil.hIncrBy(userDayKey, SCORE_TOTAL_FIELD, actualScore);
@@ -214,7 +206,7 @@ public class UserActivityServiceImpl implements UserActivityService {
      * @param event 活跃度事件
      * @return 操作字段名
      */
-    private String buildOperationField(UserActivityEvent event) {
+    private String buildOperationField(ActivityRankEvent event) {
         return "op:" + event.getActionType() + ":" + event.getTargetType() + ":" + event.getTargetId();
     }
 
@@ -224,9 +216,9 @@ public class UserActivityServiceImpl implements UserActivityService {
      *
      * @param event 活跃度事件
      */
-    private void handleNegativeScore(UserActivityEvent event) {
+    private void handleNegativeScore(ActivityRankEvent event) {
         String dayStr = getDateStr();
-        String userDayKey = RedisKeyConstants.getUserActivityDailyKey(event.getUserId(), dayStr);
+        String userDayKey = RedisKeyConstants.getActivityDailyKey(event.getUserId(), dayStr);
 
         // 1. 构建对应的正分操作字段名
         String positiveOperationField = buildPositiveOperationField(event);
@@ -257,7 +249,7 @@ public class UserActivityServiceImpl implements UserActivityService {
      * @param event 负分事件
      * @return 对应的正分操作字段名
      */
-    private String buildPositiveOperationField(UserActivityEvent event) {
+    private String buildPositiveOperationField(ActivityRankEvent event) {
         Integer positiveActionType = getCorrespondingPositiveAction(event.getActionType());
         if (positiveActionType == null) {
             return null;
