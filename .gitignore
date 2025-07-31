@@ -42,3 +42,4 @@ update.md
 ### Configuration Files with Sensitive Data ###
 **/resources-env/**/application-dal.yml
 **/resources-env/**/application-mq.yml
+.mcp.json
