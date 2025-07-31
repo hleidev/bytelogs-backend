@@ -263,52 +263,21 @@ CREATE TABLE `request_count`
   COLLATE = utf8mb4_general_ci
     COMMENT = '请求计数表';
 
--- 用户活跃度积分表
-CREATE TABLE `user_activity_score`
-(
-    `id`               bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-    `user_id`          bigint unsigned NOT NULL DEFAULT 0 COMMENT '用户ID',
-    `total_score`      int unsigned    NOT NULL DEFAULT 0 COMMENT '历史总积分',
-    `daily_score`      int unsigned    NOT NULL DEFAULT 0 COMMENT '今日积分',
-    `weekly_score`     int unsigned    NOT NULL DEFAULT 0 COMMENT '本周积分',
-    `monthly_score`    int unsigned    NOT NULL DEFAULT 0 COMMENT '本月积分',
-    `last_active_date` date            NOT NULL COMMENT '最后活跃日期',
-    `deleted`          tinyint         NOT NULL DEFAULT 0 COMMENT '是否删除,0:未删除,1:已删除',
-    `create_time`      timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `update_time`      timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_user_id` (`user_id`) COMMENT '用户ID唯一约束',
-    KEY `idx_total_score` (`total_score`) COMMENT '总积分索引',
-    KEY `idx_daily_score` (`daily_score`) COMMENT '日积分索引',
-    KEY `idx_weekly_score` (`weekly_score`) COMMENT '周积分索引',
-    KEY `idx_monthly_score` (`monthly_score`) COMMENT '月积分索引',
-    KEY `idx_last_active_date` (`last_active_date`) COMMENT '最后活跃日期索引'
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_general_ci
-    COMMENT = '用户活跃度积分表';
-
--- 用户活跃度明细表
-CREATE TABLE `user_activity_detail`
+-- 活跃度排行榜表
+CREATE TABLE `activity_rank`
 (
     `id`          bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     `user_id`     bigint unsigned NOT NULL DEFAULT 0 COMMENT '用户ID',
-    `action_type` tinyint         NOT NULL DEFAULT 0 COMMENT '行为类型: 1-发文,2-评论,3-点赞,4-收藏,5-阅读,6-关注',
-    `target_id`   bigint unsigned NOT NULL DEFAULT 0 COMMENT '目标ID',
-    `target_type` tinyint         NOT NULL DEFAULT 0 COMMENT '目标类型: 1-文章,2-用户,3-评论',
-    `score`       tinyint         NOT NULL DEFAULT 0 COMMENT '获得积分',
-    `biz_key`     varchar(100)    NOT NULL DEFAULT '' COMMENT '业务唯一键,用于防重',
-    `action_date` date            NOT NULL COMMENT '行为日期',
+    `rank_type`   tinyint         NOT NULL DEFAULT 0 COMMENT '排行榜类型: 1-总榜,2-月榜,3-日榜',
+    `rank_period` varchar(10)     NOT NULL DEFAULT '' COMMENT '排行榜周期: 日榜2025-01-15, 月榜2025-01, 总榜total',
+    `score`       int unsigned    NOT NULL DEFAULT 0 COMMENT '积分',
     `deleted`     tinyint         NOT NULL DEFAULT 0 COMMENT '是否删除,0:未删除,1:已删除',
     `create_time` timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_biz_key` (`biz_key`) COMMENT '业务唯一键约束',
-    KEY `idx_user_date` (`user_id`, `action_date`) COMMENT '用户日期索引',
-    KEY `idx_action_date` (`action_date`) COMMENT '行为日期索引',
-    KEY `idx_target` (`target_type`, `target_id`) COMMENT '目标索引',
-    KEY `idx_action_type` (`action_type`) COMMENT '行为类型索引'
+    UNIQUE KEY `uk_user_type_period` (`user_id`, `rank_type`, `rank_period`) COMMENT '用户排行榜唯一约束',
+    KEY `idx_type_period_score` (`rank_type`, `rank_period`, `score` DESC) COMMENT '排行榜查询索引'
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci
-    COMMENT = '用户活跃度明细表';
+    COMMENT = '用户活跃度排行榜表';

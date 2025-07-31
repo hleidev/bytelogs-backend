@@ -5,15 +5,24 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import top.harrylei.forum.api.enums.rank.ActivityActionEnum;
+import top.harrylei.forum.api.enums.rank.ActivityRankTypeEnum;
 import top.harrylei.forum.api.event.UserActivityEvent;
+import top.harrylei.forum.api.model.page.PageVO;
+import top.harrylei.forum.api.model.rank.req.ActivityRankQueryParam;
+import top.harrylei.forum.api.model.rank.vo.ActivityRankVO;
+import top.harrylei.forum.api.model.user.dto.UserInfoDetailDTO;
 import top.harrylei.forum.core.common.constans.RedisKeyConstants;
 import top.harrylei.forum.core.util.NumUtil;
 import top.harrylei.forum.core.util.RedisUtil;
 import top.harrylei.forum.service.rank.service.UserActivityService;
+import top.harrylei.forum.service.user.service.UserService;
 
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * 用户活跃度服务实现
@@ -26,6 +35,7 @@ import java.time.format.DateTimeFormatter;
 public class UserActivityServiceImpl implements UserActivityService {
 
     private final RedisUtil redisUtil;
+    private final UserService userService;
 
     private static final String SCORE_TOTAL_FIELD = "score_total";
     private static final Integer DAILY_SCORE_LIMIT = 100;
