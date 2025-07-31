@@ -18,5 +18,5 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/rank/activity")
 @RequiredArgsConstructor
 @Validated
-public class UserActivityController {
+public class ActivityController {
 }
