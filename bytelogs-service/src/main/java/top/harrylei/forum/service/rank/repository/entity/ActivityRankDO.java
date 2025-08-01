@@ -1,7 +1,5 @@
 package top.harrylei.forum.service.rank.repository.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -19,12 +17,6 @@ import top.harrylei.forum.api.model.base.BaseDO;
 @EqualsAndHashCode(callSuper = true)
 @TableName("activity_rank")
 public class ActivityRankDO extends BaseDO {
-
-    /**
-     * 主键ID
-     */
-    @TableId(type = IdType.AUTO)
-    private Long id;
 
     /**
      * 用户ID

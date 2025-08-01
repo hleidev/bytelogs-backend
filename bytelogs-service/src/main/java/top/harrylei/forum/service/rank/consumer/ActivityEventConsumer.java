@@ -67,7 +67,7 @@ public class ActivityEventConsumer {
             }
 
             // 处理活跃度事件
-            activityService.processActivityEvent(event);
+            activityService.handleActivityEvent(event);
 
             // 标记消息处理完成
             kafkaIdempotencyService.markMessageAsProcessed(event.getEventId());

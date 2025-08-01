@@ -5,16 +5,27 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import top.harrylei.forum.api.enums.rank.ActivityActionEnum;
+import top.harrylei.forum.api.enums.rank.ActivityRankTypeEnum;
 import top.harrylei.forum.api.event.ActivityRankEvent;
+import top.harrylei.forum.api.model.rank.dto.ActivityRankDTO;
+import top.harrylei.forum.api.model.rank.vo.ActivityRankVO;
+import top.harrylei.forum.api.model.user.dto.UserInfoDetailDTO;
 import top.harrylei.forum.core.common.constans.RedisKeyConstants;
 import top.harrylei.forum.core.util.NumUtil;
 import top.harrylei.forum.core.util.RedisUtil;
 import top.harrylei.forum.service.rank.service.ActivityService;
 import top.harrylei.forum.service.user.service.UserService;
+import top.harrylei.forum.service.user.service.cache.UserCacheService;
 
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * 用户活跃度服务实现
@@ -27,12 +38,13 @@ import java.time.format.DateTimeFormatter;
 public class ActivityServiceImpl implements ActivityService {
 
     private final RedisUtil redisUtil;
-    private final UserService userService;
 
     private static final String SCORE_TOTAL_FIELD = "score_total";
     private static final Integer DAILY_SCORE_LIMIT = 100;
     private static final DateTimeFormatter DAY_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter MONTH_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM");
+    private final UserService userService;
+    private final UserCacheService userCacheService;
 
     private static String getDayKey() {
         String dayStr = getDateStr();
@@ -46,7 +58,7 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
-    public void processActivityEvent(ActivityRankEvent event) {
+    public void handleActivityEvent(ActivityRankEvent event) {
         try {
             // 基础验证
             ActivityActionEnum actionEnum = ActivityActionEnum.fromCode(event.getActionType());
@@ -122,8 +134,88 @@ public class ActivityServiceImpl implements ActivityService {
         redisUtil.zIncrBy(monthlyRankKey, userIdStr, score);
         ttl = redisUtil.ttl(monthlyRankKey);
         if (!NumUtil.upZero(ttl)) {
-            redisUtil.expire(monthlyRankKey, Duration.ofDays(30));
+            redisUtil.expire(monthlyRankKey, Duration.ofDays(31));
         }
+    }
+
+    @Override
+    public List<ActivityRankDTO> listRank(ActivityRankTypeEnum rankType) {
+        String rankKey = getRankKey(rankType);
+        if (rankKey == null) {
+            return List.of();
+        }
+
+        // 一次性获取排行榜数据
+        List<Map.Entry<String, Double>> rankedList = redisUtil.zRevRangeWithScores(rankKey, 0, 99);
+        if (rankedList.isEmpty()) {
+            return List.of();
+        }
+
+        // 提取用户ID列表
+        List<Long> userIds = rankedList.stream()
+                .map(member -> Long.valueOf(member.getKey()))
+                .toList();
+
+        // 批量查询用户信息
+        List<UserInfoDetailDTO> userInfoList = userService.batchQueryUserInfo(userIds);
+        Map<Long, UserInfoDetailDTO> userInfoMap = userInfoList.stream()
+                .collect(Collectors.toMap(UserInfoDetailDTO::getUserId, Function.identity()));
+
+        // 构建排行榜结果
+        List<ActivityRankDTO> result = new ArrayList<>();
+        AtomicLong rank = new AtomicLong(1);
+        for (Map.Entry<String, Double> member : rankedList) {
+            Long userId = Long.valueOf(member.getKey());
+            UserInfoDetailDTO userInfo = userInfoMap.get(userId);
+
+            if (userInfo != null) {
+                result.add(new ActivityRankDTO()
+                                   .setUserId(userId)
+                                   .setUserName(userInfo.getUserName())
+                                   .setAvatar(userInfo.getAvatar())
+                                   .setScore(member.getValue())
+                                   .setRank(rank.getAndIncrement()));
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public ActivityRankVO getUserRank(Long userId, ActivityRankTypeEnum rankType) {
+        if (userId == null || rankType == null) {
+            return null;
+        }
+
+        // 获取对应的排行榜键
+        String rankKey = getRankKey(rankType);
+        if (rankKey == null) {
+            return null;
+        }
+
+        String userIdStr = userId.toString();
+        // 获取用户分数
+        Double score = redisUtil.zScore(rankKey, userIdStr);
+        if (score == null) {
+            return null;
+        }
+        // 获取用户排名
+        Long rank = redisUtil.zRevRank(rankKey, userIdStr);
+        if (rank == null) {
+            return null;
+        }
+        // 获取用户信息
+        UserInfoDetailDTO userInfo = userCacheService.getUserInfo(userId);
+        // 如果用户信息不存在，直接返回null
+        if (userInfo == null) {
+            return null;
+        }
+
+        return new ActivityRankVO()
+                .setUserId(userId)
+                .setUserName(userInfo.getUserName())
+                .setAvatar(userInfo.getAvatar())
+                .setRank(rank + 1)
+                .setScore(score);
     }
 
     /**
@@ -277,6 +369,25 @@ public class ActivityServiceImpl implements ActivityService {
             case DELETE_COMMENT -> ActivityActionEnum.COMMENT.getCode();
             case DELETE_ARTICLE -> ActivityActionEnum.ARTICLE.getCode();
             default -> null;
+        };
+    }
+
+    /**
+     * 根据排行榜类型获取对应的Redis键
+     *
+     * @param rankType 排行榜类型
+     * @return Redis键，无效类型返回null
+     */
+    private String getRankKey(ActivityRankTypeEnum rankType) {
+        if (rankType == null) {
+            log.error("排行榜类型不能为空");
+            return null;
+        }
+
+        return switch (rankType) {
+            case TOTAL -> RedisKeyConstants.getActivityTotalRankKey();
+            case MONTHLY -> getMonthKey();
+            case DAILY -> getDayKey();
         };
     }
 
