@@ -1,11 +1,23 @@
 package top.harrylei.forum.web.rank;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import top.harrylei.forum.api.enums.rank.ActivityRankTypeEnum;
+import top.harrylei.forum.api.model.base.ResVO;
+import top.harrylei.forum.api.model.rank.dto.ActivityRankDTO;
+import top.harrylei.forum.api.model.rank.vo.ActivityRankListVO;
+import top.harrylei.forum.api.model.rank.vo.ActivityRankVO;
+import top.harrylei.forum.core.context.ReqInfoContext;
+import top.harrylei.forum.service.rank.service.ActivityService;
+
+import java.util.List;
 
 /**
  * 用户活跃度控制器
@@ -19,4 +31,32 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Validated
 public class ActivityController {
+
+    private final ActivityService activityService;
+
+    /**
+     * 获取活跃度排行榜
+     *
+     * @param rankType 排行榜类型
+     * @return 排行榜数据，包含用户个人排名
+     */
+    @Operation(summary = "获取活跃度排行榜", description = "获取活跃度排行榜，登录用户会额外返回个人排名信息")
+    @GetMapping
+    public ResVO<ActivityRankListVO> getRank(@NotNull(message = "排行榜类型不能为空") Integer rankType) {
+        // 获取排行榜列表
+        ActivityRankTypeEnum rankTypeEnum = ActivityRankTypeEnum.fromCode(rankType);
+        List<ActivityRankDTO> rankList = activityService.listRank(rankTypeEnum);
+
+        // 构建响应对象
+        ActivityRankListVO result = new ActivityRankListVO().setRankList(rankList);
+
+        // 如果用户已登录，获取个人排名信息
+        Long currentUserId = ReqInfoContext.getContext().getUserId();
+        if (currentUserId != null) {
+            ActivityRankVO userRank = activityService.getUserRank(currentUserId, rankTypeEnum);
+            result.setCurrentUserRank(userRank);
+        }
+
+        return ResVO.ok(result);
+    }
 }
