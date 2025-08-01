@@ -30,6 +30,7 @@ import top.harrylei.forum.service.user.repository.entity.UserInfoDO;
 import top.harrylei.forum.service.user.service.UserService;
 import top.harrylei.forum.service.user.service.cache.UserCacheService;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -62,6 +63,15 @@ public class UserServiceImpl implements UserService {
         UserInfoDetailDTO userInfo = userCacheService.getUserInfo(userId);
         ExceptionUtil.requireValid(userInfo, ErrorCodeEnum.USER_INFO_NOT_EXISTS);
         return userInfo;
+    }
+
+    @Override
+    public List<UserInfoDetailDTO> batchQueryUserInfo(List<Long> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return List.of();
+        }
+        List<UserInfoDO> list = userInfoDAO.queryBatchByUserIds(userIds);
+        return list.stream().map(userStructMapper::toDTO).toList();
     }
 
     /**

@@ -9,6 +9,8 @@ import top.harrylei.forum.api.model.page.param.UserQueryParam;
 import top.harrylei.forum.api.model.user.dto.UserDetailDTO;
 import top.harrylei.forum.api.model.user.dto.UserInfoDetailDTO;
 
+import java.util.List;
+
 /**
  * 用户服务接口
  *
@@ -23,6 +25,14 @@ public interface UserService {
      * @return 用户信息DTO，不存在则返回null
      */
     UserInfoDetailDTO getUserInfoById(Long userId);
+
+    /**
+     * 批量获取用户信息
+     *
+     * @param userIds 用户ID列表
+     * @return 用户信息列表
+     */
+    List<UserInfoDetailDTO> batchQueryUserInfo(List<Long> userIds);
 
     /**
      * 更新用户信息

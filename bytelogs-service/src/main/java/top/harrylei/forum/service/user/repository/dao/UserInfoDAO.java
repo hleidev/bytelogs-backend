@@ -8,6 +8,8 @@ import top.harrylei.forum.api.enums.YesOrNoEnum;
 import top.harrylei.forum.service.user.repository.entity.UserInfoDO;
 import top.harrylei.forum.service.user.repository.mapper.UserInfoMapper;
 
+import java.util.List;
+
 /**
  * 用户信息数据访问对象
  * 负责操作user_info表
@@ -35,5 +37,12 @@ public class UserInfoDAO extends ServiceImpl<UserInfoMapper, UserInfoDO> {
                 .eq(UserInfoDO::getUserName, username)
                 .eq(UserInfoDO::getDeleted, YesOrNoEnum.NO.getCode())
                 .one();
+    }
+
+    public List<UserInfoDO> queryBatchByUserIds(List<Long> userIds) {
+        return lambdaQuery()
+                .in(UserInfoDO::getUserId, userIds)
+                .eq(UserInfoDO::getDeleted, YesOrNoEnum.NO.getCode())
+                .list();
     }
 }
