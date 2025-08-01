@@ -1,8 +1,11 @@
 package top.harrylei.forum.core.util;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.RedisStringCommands;
+import org.springframework.data.redis.connection.zset.Tuple;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.types.Expiration;
@@ -913,66 +916,6 @@ public class RedisUtil {
     }
 
     /**
-     * 获取有序集合指定范围的成员（按分数从小到大）
-     *
-     * @param key   键
-     * @param start 起始位置
-     * @param end   结束位置
-     * @return 成员列表，操作异常时返回空列表
-     */
-    public Set<String> zRange(String key, long start, long end) {
-        validateNotNull(key);
-        try {
-            return redisTemplate.execute((RedisCallback<Set<String>>) connection -> {
-                Set<byte[]> memberBytes = connection.zSetCommands().zRange(keyToBytes(key), start, end);
-                if (memberBytes == null || memberBytes.isEmpty()) {
-                    return Set.of();
-                }
-
-                Set<String> members = new LinkedHashSet<>(memberBytes.size());
-                for (byte[] bytes : memberBytes) {
-                    members.add(new String(bytes, CHARSET));
-                }
-                return members;
-            });
-        } catch (Exception e) {
-            log.error("获取有序集合范围成员失败: key={}, start={}, end={}, error={}",
-                      key, start, end, e.getMessage(), e);
-            return Set.of();
-        }
-    }
-
-    /**
-     * 获取有序集合指定范围的成员（按分数从大到小）
-     *
-     * @param key   键
-     * @param start 起始位置
-     * @param end   结束位置
-     * @return 成员列表，操作异常时返回空列表
-     */
-    public Set<String> zRevRange(String key, long start, long end) {
-        validateNotNull(key);
-        try {
-            return redisTemplate.execute((RedisCallback<Set<String>>) connection -> {
-                Set<byte[]> memberBytes = connection.zSetCommands().zRevRange(keyToBytes(key), start, end);
-                if (memberBytes == null || memberBytes.isEmpty()) {
-                    return Set.of();
-                }
-
-                Set<String> members = new LinkedHashSet<>(memberBytes.size());
-                for (byte[] bytes : memberBytes) {
-                    members.add(new String(bytes, CHARSET));
-                }
-                return members;
-            });
-        } catch (Exception e) {
-            log.error("获取有序集合逆序范围成员失败: key={}, start={}, end={}, error={}",
-                      key, start, end, e.getMessage(), e);
-            return Set.of();
-        }
-    }
-
-    /**
      * 删除有序集合成员
      *
      * @param key     键
@@ -1014,6 +957,40 @@ public class RedisUtil {
         } catch (Exception e) {
             log.error("获取有序集合成员数量失败: key={}, error={}", key, e.getMessage(), e);
             return 0L;
+        }
+    }
+
+    /**
+     * 获取有序集合指定范围的成员和分数
+     *
+     * @param key   键
+     * @param start 起始位置
+     * @param end   结束位置
+     * @return 不可变的成员和分数列表，操作异常时返回空列表
+     */
+    public List<Map.Entry<String, Double>> zRevRangeWithScores(String key, long start, long end) {
+        validateNotNull(key, start, end);
+        try {
+            return redisTemplate.execute((RedisCallback<List<Map.Entry<String, Double>>>) connection -> {
+                Set<Tuple> tuples = connection.zSetCommands().zRevRangeWithScores(keyToBytes(key), start, end);
+
+                if (tuples == null || tuples.isEmpty()) {
+                    return List.of();
+                }
+
+                ImmutableList.Builder<Map.Entry<String, Double>> builder = ImmutableList.builder();
+
+                for (Tuple tuple : tuples) {
+                    String member = new String(tuple.getValue(), CHARSET);
+                    Double score = tuple.getScore();
+                    builder.add(Maps.immutableEntry(member, score));
+                }
+                return builder.build();
+            });
+        } catch (Exception e) {
+            log.error("获取有序集合逆序范围成员和分数失败: key={}, start={}, end={}, error={}",
+                      key, start, end, e.getMessage(), e);
+            return List.of();
         }
     }
 }
