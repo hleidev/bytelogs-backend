@@ -24,7 +24,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -164,7 +164,7 @@ public class ActivityServiceImpl implements ActivityService {
 
         // 构建排行榜结果
         List<ActivityRankDTO> result = new ArrayList<>();
-        AtomicLong rank = new AtomicLong(1);
+        AtomicInteger rank = new AtomicInteger(1);
         for (Map.Entry<String, Double> member : rankedList) {
             Long userId = Long.valueOf(member.getKey());
             UserInfoDetailDTO userInfo = userInfoMap.get(userId);
@@ -174,7 +174,7 @@ public class ActivityServiceImpl implements ActivityService {
                                    .setUserId(userId)
                                    .setUserName(userInfo.getUserName())
                                    .setAvatar(userInfo.getAvatar())
-                                   .setScore(member.getValue())
+                                   .setScore(member.getValue().intValue())
                                    .setRank(rank.getAndIncrement()));
             }
         }
@@ -184,7 +184,7 @@ public class ActivityServiceImpl implements ActivityService {
     @Override
     public ActivityRankVO getUserRank(Long userId, ActivityRankTypeEnum rankType) {
         // 获取排名和积分
-        Double[] rankScore = getUserRankScore(userId, rankType);
+        Integer[] rankScore = getUserRankScore(userId, rankType);
         if (rankScore == null) {
             return null;
         }
@@ -199,7 +199,7 @@ public class ActivityServiceImpl implements ActivityService {
                 .setUserId(userId)
                 .setUserName(userInfo.getUserName())
                 .setAvatar(userInfo.getAvatar())
-                .setRank(rankScore[0].longValue())
+                .setRank(rankScore[0])
                 .setScore(rankScore[1]);
     }
 
@@ -385,21 +385,21 @@ public class ActivityServiceImpl implements ActivityService {
         ActivityStatsVO stats = new ActivityStatsVO();
 
         // 获取日榜数据
-        Double[] dailyRankScore = getUserRankScore(userId, ActivityRankTypeEnum.DAILY);
+        Integer[] dailyRankScore = getUserRankScore(userId, ActivityRankTypeEnum.DAILY);
         if (dailyRankScore != null) {
-            stats.setDailyRank(dailyRankScore[0].longValue()).setDailyScore(dailyRankScore[1]);
+            stats.setDailyRank(dailyRankScore[0]).setDailyScore(dailyRankScore[1]);
         }
 
         // 获取月榜数据
-        Double[] monthlyRankScore = getUserRankScore(userId, ActivityRankTypeEnum.MONTHLY);
+        Integer[] monthlyRankScore = getUserRankScore(userId, ActivityRankTypeEnum.MONTHLY);
         if (monthlyRankScore != null) {
-            stats.setMonthlyRank(monthlyRankScore[0].longValue()).setMonthlyScore(monthlyRankScore[1]);
+            stats.setMonthlyRank(monthlyRankScore[0]).setMonthlyScore(monthlyRankScore[1]);
         }
 
         // 获取总榜数据
-        Double[] totalRankScore = getUserRankScore(userId, ActivityRankTypeEnum.TOTAL);
+        Integer[] totalRankScore = getUserRankScore(userId, ActivityRankTypeEnum.TOTAL);
         if (totalRankScore != null) {
-            stats.setTotalRank(totalRankScore[0].longValue()).setTotalScore(totalRankScore[1]);
+            stats.setTotalRank(totalRankScore[0]).setTotalScore(totalRankScore[1]);
         }
 
         return stats;
@@ -412,7 +412,7 @@ public class ActivityServiceImpl implements ActivityService {
      * @param rankType 排行榜类型
      * @return [排名, 积分]数组，无数据时返回null
      */
-    private Double[] getUserRankScore(Long userId, ActivityRankTypeEnum rankType) {
+    private Integer[] getUserRankScore(Long userId, ActivityRankTypeEnum rankType) {
         if (userId == null || rankType == null) {
             return null;
         }
@@ -433,7 +433,7 @@ public class ActivityServiceImpl implements ActivityService {
             return null;
         }
 
-        return new Double[]{(double) (rank + 1), score};
+        return new Integer[]{(int) (rank + 1), score.intValue()};
     }
 
     private static @NotNull String getDateStr() {

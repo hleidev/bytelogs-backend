@@ -30,10 +30,10 @@ public class ActivityRankVO {
     /**
      * 排名
      */
-    private Long rank;
+    private Integer rank;
 
     /**
      * 积分
      */
-    private Double score;
+    private Integer score;
 }
