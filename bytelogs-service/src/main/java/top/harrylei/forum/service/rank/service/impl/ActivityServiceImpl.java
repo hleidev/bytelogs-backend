@@ -9,6 +9,7 @@ import top.harrylei.forum.api.enums.rank.ActivityRankTypeEnum;
 import top.harrylei.forum.api.event.ActivityRankEvent;
 import top.harrylei.forum.api.model.rank.dto.ActivityRankDTO;
 import top.harrylei.forum.api.model.rank.vo.ActivityRankVO;
+import top.harrylei.forum.api.model.rank.vo.ActivityStatsVO;
 import top.harrylei.forum.api.model.user.dto.UserInfoDetailDTO;
 import top.harrylei.forum.core.common.constans.RedisKeyConstants;
 import top.harrylei.forum.core.util.NumUtil;
@@ -182,30 +183,14 @@ public class ActivityServiceImpl implements ActivityService {
 
     @Override
     public ActivityRankVO getUserRank(Long userId, ActivityRankTypeEnum rankType) {
-        if (userId == null || rankType == null) {
+        // 获取排名和积分
+        Double[] rankScore = getUserRankScore(userId, rankType);
+        if (rankScore == null) {
             return null;
         }
 
-        // 获取对应的排行榜键
-        String rankKey = getRankKey(rankType);
-        if (rankKey == null) {
-            return null;
-        }
-
-        String userIdStr = userId.toString();
-        // 获取用户分数
-        Double score = redisUtil.zScore(rankKey, userIdStr);
-        if (score == null) {
-            return null;
-        }
-        // 获取用户排名
-        Long rank = redisUtil.zRevRank(rankKey, userIdStr);
-        if (rank == null) {
-            return null;
-        }
         // 获取用户信息
         UserInfoDetailDTO userInfo = userCacheService.getUserInfo(userId);
-        // 如果用户信息不存在，直接返回null
         if (userInfo == null) {
             return null;
         }
@@ -214,8 +199,8 @@ public class ActivityServiceImpl implements ActivityService {
                 .setUserId(userId)
                 .setUserName(userInfo.getUserName())
                 .setAvatar(userInfo.getAvatar())
-                .setRank(rank + 1)
-                .setScore(score);
+                .setRank(rankScore[0].longValue())
+                .setScore(rankScore[1]);
     }
 
     /**
@@ -389,6 +374,66 @@ public class ActivityServiceImpl implements ActivityService {
             case MONTHLY -> getMonthKey();
             case DAILY -> getDayKey();
         };
+    }
+
+    @Override
+    public ActivityStatsVO getUserStats(Long userId) {
+        if (userId == null) {
+            return null;
+        }
+
+        ActivityStatsVO stats = new ActivityStatsVO();
+
+        // 获取日榜数据
+        Double[] dailyRankScore = getUserRankScore(userId, ActivityRankTypeEnum.DAILY);
+        if (dailyRankScore != null) {
+            stats.setDailyRank(dailyRankScore[0].longValue()).setDailyScore(dailyRankScore[1]);
+        }
+
+        // 获取月榜数据
+        Double[] monthlyRankScore = getUserRankScore(userId, ActivityRankTypeEnum.MONTHLY);
+        if (monthlyRankScore != null) {
+            stats.setMonthlyRank(monthlyRankScore[0].longValue()).setMonthlyScore(monthlyRankScore[1]);
+        }
+
+        // 获取总榜数据
+        Double[] totalRankScore = getUserRankScore(userId, ActivityRankTypeEnum.TOTAL);
+        if (totalRankScore != null) {
+            stats.setTotalRank(totalRankScore[0].longValue()).setTotalScore(totalRankScore[1]);
+        }
+
+        return stats;
+    }
+
+    /**
+     * 获取用户在指定排行榜中的排名和积分
+     *
+     * @param userId   用户ID
+     * @param rankType 排行榜类型
+     * @return [排名, 积分]数组，无数据时返回null
+     */
+    private Double[] getUserRankScore(Long userId, ActivityRankTypeEnum rankType) {
+        if (userId == null || rankType == null) {
+            return null;
+        }
+
+        String rankKey = getRankKey(rankType);
+        if (rankKey == null) {
+            return null;
+        }
+
+        String userIdStr = userId.toString();
+        Double score = redisUtil.zScore(rankKey, userIdStr);
+        if (score == null) {
+            return null;
+        }
+
+        Long rank = redisUtil.zRevRank(rankKey, userIdStr);
+        if (rank == null) {
+            return null;
+        }
+
+        return new Double[]{(double) (rank + 1), score};
     }
 
     private static @NotNull String getDateStr() {

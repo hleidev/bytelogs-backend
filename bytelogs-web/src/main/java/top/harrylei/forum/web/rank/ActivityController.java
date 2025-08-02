@@ -9,11 +9,14 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import top.harrylei.forum.api.enums.ErrorCodeEnum;
 import top.harrylei.forum.api.enums.rank.ActivityRankTypeEnum;
 import top.harrylei.forum.api.model.base.ResVO;
+import top.harrylei.forum.core.exception.ForumException;
 import top.harrylei.forum.api.model.rank.dto.ActivityRankDTO;
 import top.harrylei.forum.api.model.rank.vo.ActivityRankListVO;
 import top.harrylei.forum.api.model.rank.vo.ActivityRankVO;
+import top.harrylei.forum.api.model.rank.vo.ActivityStatsVO;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.service.rank.service.ActivityService;
 
@@ -58,5 +61,22 @@ public class ActivityController {
         }
 
         return ResVO.ok(result);
+    }
+
+    /**
+     * 获取用户积分统计概览
+     *
+     * @return 用户在日榜、月榜、总榜的排名和积分信息
+     */
+    @Operation(summary = "获取用户积分", description = "获取当前登录用户在日榜、月榜、总榜的排名和积分信息")
+    @GetMapping("/stats")
+    public ResVO<ActivityStatsVO> getActivityStats() {
+        Long currentUserId = ReqInfoContext.getContext().getUserId();
+        if (currentUserId == null) {
+            throw new ForumException(ErrorCodeEnum.UNAUTHORIZED);
+        }
+
+        ActivityStatsVO stats = activityService.getUserStats(currentUserId);
+        return ResVO.ok(stats);
     }
 }

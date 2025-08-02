@@ -4,6 +4,7 @@ import top.harrylei.forum.api.enums.rank.ActivityRankTypeEnum;
 import top.harrylei.forum.api.event.ActivityRankEvent;
 import top.harrylei.forum.api.model.rank.dto.ActivityRankDTO;
 import top.harrylei.forum.api.model.rank.vo.ActivityRankVO;
+import top.harrylei.forum.api.model.rank.vo.ActivityStatsVO;
 
 import java.util.List;
 
@@ -32,4 +33,6 @@ public interface ActivityService {
     List<ActivityRankDTO> listRank(ActivityRankTypeEnum rankType);
 
     ActivityRankVO getUserRank(Long userId, ActivityRankTypeEnum rankType);
+
+    ActivityStatsVO getUserStats(Long userId);
 }
