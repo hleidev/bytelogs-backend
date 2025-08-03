@@ -271,13 +271,35 @@ CREATE TABLE `activity_rank`
     `rank_type`   tinyint         NOT NULL DEFAULT 0 COMMENT '排行榜类型: 1-总榜,2-月榜,3-日榜',
     `rank_period` varchar(10)     NOT NULL DEFAULT '' COMMENT '排行榜周期: 日榜2025-01-15, 月榜2025-01, 总榜total',
     `score`       int unsigned    NOT NULL DEFAULT 0 COMMENT '积分',
+    `rank`        int unsigned    NOT NULL DEFAULT 0 COMMENT '排名位置',
     `deleted`     tinyint         NOT NULL DEFAULT 0 COMMENT '是否删除,0:未删除,1:已删除',
     `create_time` timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_user_type_period` (`user_id`, `rank_type`, `rank_period`) COMMENT '用户排行榜唯一约束',
-    KEY `idx_type_period_score` (`rank_type`, `rank_period`, `score` DESC) COMMENT '排行榜查询索引'
+    KEY `idx_type_period_score` (`rank_type`, `rank_period`, `score` DESC) COMMENT '排行榜查询索引',
+    KEY `idx_type_period_rank` (`rank_type`, `rank_period`, `rank`) COMMENT '排名查询索引'
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci
     COMMENT = '用户活跃度排行榜表';
+
+-- 活跃度幂等控制表
+CREATE TABLE `activity_idempotent`
+(
+    `id`            bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    `user_id`       bigint unsigned NOT NULL DEFAULT 0 COMMENT '用户ID',
+    `activity_date` date            NOT NULL COMMENT '活动日期',
+    `operation_key` varchar(64)     NOT NULL DEFAULT '' COMMENT '操作标识: actionType:targetType:targetId',
+    `score`         int             NOT NULL DEFAULT 0 COMMENT '获得积分',
+    `deleted`       tinyint         NOT NULL DEFAULT 0 COMMENT '是否删除,0:未删除,1:已删除',
+    `create_time`   timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time`   timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_user_date_operation` (`user_id`, `activity_date`, `operation_key`) COMMENT '用户日期操作唯一约束',
+    KEY `idx_activity_date` (`activity_date`) COMMENT '数据清理索引',
+    KEY `idx_user_date` (`user_id`, `activity_date`) COMMENT '幂等查询索引'
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_general_ci
+    COMMENT = '活跃度幂等控制表';
