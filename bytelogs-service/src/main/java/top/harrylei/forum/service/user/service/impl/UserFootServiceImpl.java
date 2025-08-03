@@ -3,9 +3,11 @@ package top.harrylei.forum.service.user.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import top.harrylei.forum.api.enums.notify.NotifyTypeEnum;
-import top.harrylei.forum.api.enums.user.OperateTypeEnum;
 import top.harrylei.forum.api.enums.comment.ContentTypeEnum;
+import top.harrylei.forum.api.enums.notify.NotifyTypeEnum;
+import top.harrylei.forum.api.enums.rank.ActivityActionEnum;
+import top.harrylei.forum.api.enums.rank.ActivityTargetEnum;
+import top.harrylei.forum.api.enums.user.OperateTypeEnum;
 import top.harrylei.forum.api.model.user.dto.ArticleFootCountDTO;
 import top.harrylei.forum.api.model.user.dto.UserFootDTO;
 import top.harrylei.forum.core.util.KafkaEventPublisher;
@@ -201,6 +203,9 @@ public class UserFootServiceImpl implements UserFootService {
         // 发布通知事件
         publishNotificationEvent(userId, type, contentAuthorId, contentId, contentType);
 
+        // 发布活跃度事件
+        publishActivityEvent(userId, type, contentId, contentType);
+
         return true;
     }
 
@@ -347,6 +352,75 @@ public class UserFootServiceImpl implements UserFootService {
         };
     }
 
+    /**
+     * 发布活跃度事件
+     *
+     * @param userId      操作用户ID
+     * @param type        操作类型
+     * @param contentId   内容ID
+     * @param contentType 内容类型
+     */
+    private void publishActivityEvent(Long userId,
+                                      OperateTypeEnum type,
+                                      Long contentId,
+                                      ContentTypeEnum contentType) {
+        try {
+            ActivityActionEnum activityAction = getActivityActionFromOperateType(type);
+            if (activityAction == null) {
+                // 不是需要记录活跃度的操作类型，跳过
+                return;
+            }
+
+            ActivityTargetEnum activityTarget = getActivityTargetFromContentType(contentType);
+            if (activityTarget == null) {
+                log.warn("未知的内容类型，无法发布活跃度事件: contentType={}", contentType);
+                return;
+            }
+
+            // 发布活跃度事件
+            kafkaEventPublisher.publishUserActivityEvent(userId, contentId, activityTarget, activityAction);
+
+            log.debug("发布{}活跃度事件成功: userId={}, targetId={}, targetType={}",
+                      activityAction.getLabel(), userId, contentId, activityTarget.getLabel());
+
+        } catch (Exception e) {
+            // 事件发布失败不影响主业务流程
+            log.error("发布活跃度事件失败: userId={}, type={}, contentId={}", userId, type, contentId, e);
+        }
+    }
+
+    /**
+     * 将操作类型转换为活跃度行为类型
+     *
+     * @param operateType 操作类型
+     * @return 活跃度行为类型，如果不需要记录活跃度则返回null
+     */
+    private ActivityActionEnum getActivityActionFromOperateType(OperateTypeEnum operateType) {
+        return switch (operateType) {
+            case PRAISE -> ActivityActionEnum.PRAISE;
+            case COLLECTION -> ActivityActionEnum.COLLECT;
+            case CANCEL_PRAISE -> ActivityActionEnum.CANCEL_PRAISE;
+            case CANCEL_COLLECTION -> ActivityActionEnum.CANCEL_COLLECT;
+            case READ -> ActivityActionEnum.READ;
+            // 其他操作类型不在此处处理
+            default -> null;
+        };
+    }
+
+    /**
+     * 将内容类型转换为活跃度目标类型
+     *
+     * @param contentType 内容类型
+     * @return 活跃度目标类型
+     */
+    private ActivityTargetEnum getActivityTargetFromContentType(ContentTypeEnum contentType) {
+        return switch (contentType) {
+            case ARTICLE -> ActivityTargetEnum.ARTICLE;
+            case COMMENT -> ActivityTargetEnum.COMMENT;
+            default -> null;
+        };
+    }
+
     @Override
     public ArticleFootCountDTO getArticleFootCount(Long articleId) {
         ArticleFootCountDTO countDTO = new ArticleFootCountDTO();
@@ -354,5 +428,4 @@ public class UserFootServiceImpl implements UserFootService {
         countDTO.setCollectionCount(userFootDAO.countCollectionByArticleId(articleId));
         return countDTO;
     }
-
 }

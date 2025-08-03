@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import top.harrylei.forum.api.enums.ErrorCodeEnum;
 import top.harrylei.forum.api.enums.notify.NotifyTypeEnum;
+import top.harrylei.forum.api.enums.rank.ActivityActionEnum;
+import top.harrylei.forum.api.enums.rank.ActivityTargetEnum;
 import top.harrylei.forum.api.enums.YesOrNoEnum;
 import top.harrylei.forum.api.enums.comment.ContentTypeEnum;
 import top.harrylei.forum.api.enums.user.UserFollowStatusEnum;
@@ -78,7 +80,7 @@ public class UserFollowServiceImpl implements UserFollowService {
         // 查询是否已有关注关系
         UserFollowDO existingFollow = userFollowDAO.getFollowRelation(currentUserId, followUserId);
 
-        boolean needNotify = false;
+        boolean success = false;
 
         if (existingFollow == null) {
             // 创建新的关注关系
@@ -89,22 +91,24 @@ public class UserFollowServiceImpl implements UserFollowService {
                     .setDeleted(YesOrNoEnum.NO.getCode());
             boolean saved = userFollowDAO.save(newFollow);
             ExceptionUtil.errorIf(!saved, ErrorCodeEnum.UNEXPECT_ERROR, "关注失败");
-            needNotify = true;
+            success = true;
         } else if (!Objects.equals(existingFollow.getFollowState(), UserFollowStatusEnum.FOLLOWED.getCode())) {
             // 更新现有关注关系状态
             boolean updated = userFollowDAO.updateFollowStatus(currentUserId,
                                                                followUserId,
                                                                UserFollowStatusEnum.FOLLOWED);
             ExceptionUtil.errorIf(!updated, ErrorCodeEnum.UNEXPECT_ERROR, "关注失败");
-            needNotify = true;
+            success = true;
         } else {
             // 已经关注，无需重复操作
             log.warn("用户已关注，无需重复关注 userId={} followeeId={}", currentUserId, followUserId);
         }
 
-        // 发布关注通知事件
-        if (needNotify) {
+        if (success) {
+            // 发布关注通知事件
             publishFollowNotificationEvent(currentUserId, followUserId);
+            // 发布关注活跃度事件
+            publishFollowActivityEvent(currentUserId, followUserId, ActivityActionEnum.FOLLOW);
         }
 
         log.info("用户关注成功 followerId={} followeeId={}", currentUserId, followUserId);
@@ -142,6 +146,9 @@ public class UserFollowServiceImpl implements UserFollowService {
                                                            followUserId,
                                                            UserFollowStatusEnum.UNFOLLOWED);
         ExceptionUtil.errorIf(!updated, ErrorCodeEnum.SYSTEM_ERROR, "取消关注失败");
+
+        // 发布取消关注活跃度事件
+        publishFollowActivityEvent(currentUserId, followUserId, ActivityActionEnum.CANCEL_FOLLOW);
 
         log.info("用户取消关注成功 followerId={} followeeId={}", currentUserId, followUserId);
     }
@@ -234,6 +241,29 @@ public class UserFollowServiceImpl implements UserFollowService {
 
         } catch (Exception e) {
             log.error("发布关注通知事件失败: currentUserId={}, followUserId={}", currentUserId, followUserId, e);
+        }
+    }
+
+    /**
+     * 发布关注活跃度事件
+     *
+     * @param currentUserId  当前用户ID
+     * @param followUserId   被关注用户ID
+     * @param activityAction 活跃度行为（关注/取消关注）
+     */
+    private void publishFollowActivityEvent(Long currentUserId, Long followUserId, ActivityActionEnum activityAction) {
+        try {
+            kafkaEventPublisher.publishUserActivityEvent(currentUserId,
+                                                         followUserId,
+                                                         ActivityTargetEnum.USER,
+                                                         activityAction);
+
+            log.debug("发布{}活跃度事件成功: currentUserId={}, followUserId={}",
+                      activityAction.getLabel(), currentUserId, followUserId);
+
+        } catch (Exception e) {
+            log.error("发布{}活跃度事件失败: currentUserId={}, followUserId={}",
+                      activityAction.getLabel(), currentUserId, followUserId, e);
         }
     }
 
