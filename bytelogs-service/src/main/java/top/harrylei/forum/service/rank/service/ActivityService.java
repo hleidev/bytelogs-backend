@@ -35,4 +35,16 @@ public interface ActivityService {
     ActivityRankVO getUserRank(Long userId, ActivityRankTypeEnum rankType);
 
     ActivityStatsVO getUserStats(Long userId);
+
+    /**
+     * 备份指定类型排行榜数据到MySQL
+     *
+     * @param rankType 排行榜类型
+     */
+    void backupRankingData(ActivityRankTypeEnum rankType);
+
+    /**
+     * 备份所有类型排行榜数据到MySQL
+     */
+    void backupAllRankingData();
 }

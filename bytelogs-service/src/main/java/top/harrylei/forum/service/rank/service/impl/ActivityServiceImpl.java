@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import top.harrylei.forum.api.enums.rank.ActivityActionEnum;
 import top.harrylei.forum.api.enums.rank.ActivityRankTypeEnum;
 import top.harrylei.forum.api.event.ActivityRankEvent;
@@ -14,6 +15,8 @@ import top.harrylei.forum.api.model.user.dto.UserInfoDetailDTO;
 import top.harrylei.forum.core.common.constans.RedisKeyConstants;
 import top.harrylei.forum.core.util.NumUtil;
 import top.harrylei.forum.core.util.RedisUtil;
+import top.harrylei.forum.service.rank.repository.dao.ActivityRankDAO;
+import top.harrylei.forum.service.rank.repository.entity.ActivityRankDO;
 import top.harrylei.forum.service.rank.service.ActivityService;
 import top.harrylei.forum.service.user.service.UserService;
 import top.harrylei.forum.service.user.service.cache.UserCacheService;
@@ -39,6 +42,7 @@ import java.util.stream.Collectors;
 public class ActivityServiceImpl implements ActivityService {
 
     private final RedisUtil redisUtil;
+    private final ActivityRankDAO activityRankDAO;
 
     private static final String SCORE_TOTAL_FIELD = "score_total";
     private static final Integer DAILY_SCORE_LIMIT = 100;
@@ -127,7 +131,7 @@ public class ActivityServiceImpl implements ActivityService {
         redisUtil.zIncrBy(dailyRankKey, userIdStr, score);
         Long ttl = redisUtil.ttl(dailyRankKey);
         if (!NumUtil.upZero(ttl)) {
-            redisUtil.expire(dailyRankKey, Duration.ofDays(1));
+            redisUtil.expire(dailyRankKey, Duration.ofDays(7));
         }
 
         // 更新月排行榜（30天过期）
@@ -135,7 +139,7 @@ public class ActivityServiceImpl implements ActivityService {
         redisUtil.zIncrBy(monthlyRankKey, userIdStr, score);
         ttl = redisUtil.ttl(monthlyRankKey);
         if (!NumUtil.upZero(ttl)) {
-            redisUtil.expire(monthlyRankKey, Duration.ofDays(31));
+            redisUtil.expire(monthlyRankKey, Duration.ofDays(180));
         }
     }
 
@@ -434,6 +438,77 @@ public class ActivityServiceImpl implements ActivityService {
         }
 
         return new Integer[]{(int) (rank + 1), score.intValue()};
+    }
+
+    /**
+     * 备份Redis排行榜数据到MySQL
+     *
+     * @param rankType 排行榜类型
+     */
+    @Override
+    public void backupRankingData(ActivityRankTypeEnum rankType) {
+        String period = generatePeriod(rankType);
+        String rankKey = getRankKey(rankType);
+        if (rankKey == null) {
+            log.error("无效的排行榜类型: {}", rankType);
+            return;
+        }
+
+        // 从Redis获取排行榜数据
+        List<Map.Entry<String, Double>> rankedList = redisUtil.zRevRangeWithScores(rankKey, 0, -1);
+        if (rankedList.isEmpty()) {
+            log.info("排行榜无数据，跳过备份: rankType={}, period={}", rankType, period);
+            return;
+        }
+
+        // 转换为DO对象
+        List<ActivityRankDO> rankDataList = new ArrayList<>();
+        int rank = 1;
+        for (Map.Entry<String, Double> entry : rankedList) {
+            ActivityRankDO rankDO = new ActivityRankDO()
+                    .setUserId(Long.valueOf(entry.getKey()))
+                    .setRankType(rankType.getCode())
+                    .setRankPeriod(period)
+                    .setScore(entry.getValue().intValue())
+                    .setRank(rank++);
+            rankDataList.add(rankDO);
+        }
+
+        // 先物理删除该期间的历史数据
+        activityRankDAO.removeByTypeAndPeriod(rankType.getCode(), period);
+
+        // 插入新数据
+        activityRankDAO.saveBatch(rankDataList);
+
+        log.info("排行榜备份完成: rankType={}, period={}, count={}", rankType, period, rankDataList.size());
+    }
+
+    /**
+     * 备份所有类型排行榜数据
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void backupAllRankingData() {
+        for (ActivityRankTypeEnum rankType : ActivityRankTypeEnum.values()) {
+            try {
+                backupRankingData(rankType);
+            } catch (Exception e) {
+                log.error("备份排行榜失败: rankType={}", rankType, e);
+            }
+        }
+    }
+
+
+    /**
+     * 根据排行榜类型生成对应的期间
+     */
+    private String generatePeriod(ActivityRankTypeEnum rankType) {
+        LocalDate now = LocalDate.now();
+        return switch (rankType) {
+            case TOTAL -> "total";
+            case MONTHLY -> now.format(MONTH_FORMATTER);
+            case DAILY -> now.format(DAY_FORMATTER);
+        };
     }
 
     private static @NotNull String getDateStr() {

@@ -1,5 +1,6 @@
 package top.harrylei.forum.service.rank.repository.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -39,8 +40,13 @@ public class ActivityRankDO extends BaseDO {
     private Integer score;
 
     /**
+     * 排名位置
+     */
+    @TableField("`rank`")
+    private Integer rank;
+
+    /**
      * 是否删除,0:未删除,1:已删除
      */
-    @TableLogic
     private Integer deleted;
 }
