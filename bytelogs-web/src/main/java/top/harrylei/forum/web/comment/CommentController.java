@@ -12,6 +12,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import top.harrylei.forum.api.enums.ErrorCodeEnum;
 import top.harrylei.forum.api.model.base.ResVO;
+import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.api.model.comment.dto.CommentDTO;
 import top.harrylei.forum.api.model.comment.req.CommentQueryParam;
 import top.harrylei.forum.api.model.comment.req.CommentMyQueryParam;
@@ -134,6 +135,11 @@ public class CommentController {
     @RequiresLogin
     @PutMapping("/action")
     public ResVO<Void> action(@Valid @RequestBody CommentActionReq req) {
+        // 验证操作类型，只允许点赞收藏相关操作
+        if (!req.getType().isPraiseOrCollection()) {
+            ExceptionUtil.error(ErrorCodeEnum.PARAM_VALIDATE_FAILED, "不支持的操作类型");
+        }
+
         commentService.actionComment(req.getCommentId(), req.getType());
         return ResVO.ok();
     }

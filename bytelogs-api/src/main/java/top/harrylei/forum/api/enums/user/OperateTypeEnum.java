@@ -117,4 +117,13 @@ public enum OperateTypeEnum implements CodeLabelEnum {
         };
     }
 
+    /**
+     * 判断是否是点赞收藏相关操作
+     *
+     * @return 是否是点赞收藏操作
+     */
+    public boolean isPraiseOrCollection() {
+        return this == PRAISE || this == CANCEL_PRAISE || this == COLLECTION || this == CANCEL_COLLECTION;
+    }
+
 }

@@ -8,15 +8,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import top.harrylei.forum.api.model.base.ResVO;
+import top.harrylei.forum.api.enums.ErrorCodeEnum;
 import top.harrylei.forum.api.model.article.dto.ArticleDTO;
 import top.harrylei.forum.api.model.article.req.*;
 import top.harrylei.forum.api.model.article.vo.ArticleDetailVO;
 import top.harrylei.forum.api.model.article.vo.ArticleVO;
 import top.harrylei.forum.api.model.article.vo.ArticleVersionVO;
 import top.harrylei.forum.api.model.article.vo.VersionDiffVO;
+import top.harrylei.forum.api.model.base.ResVO;
 import top.harrylei.forum.api.model.page.PageVO;
 import top.harrylei.forum.core.context.ReqInfoContext;
+import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.core.security.permission.RequiresLogin;
 import top.harrylei.forum.service.article.converted.ArticleStructMapper;
 import top.harrylei.forum.service.article.service.ArticleCommandService;
@@ -187,6 +189,11 @@ public class ArticleController {
     @RequiresLogin
     @PutMapping("/action")
     public ResVO<Void> action(@Valid @RequestBody ArticleActionReq req) {
+        // 验证操作类型，只允许点赞收藏相关操作
+        if (!req.getType().isPraiseOrCollection()) {
+            ExceptionUtil.error(ErrorCodeEnum.PARAM_VALIDATE_FAILED, "不支持的操作类型");
+        }
+
         Long userId = ReqInfoContext.getContext().getUserId();
         articleCommandService.actionArticle(userId, req.getArticleId(), req.getType());
         return ResVO.ok();
