@@ -277,8 +277,7 @@ CREATE TABLE `activity_rank`
     `update_time` timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_user_type_period` (`user_id`, `rank_type`, `rank_period`) COMMENT '用户排行榜唯一约束',
-    KEY `idx_type_period_score` (`rank_type`, `rank_period`, `score` DESC) COMMENT '排行榜查询索引',
-    KEY `idx_type_period_rank` (`rank_type`, `rank_period`, `rank`) COMMENT '排名查询索引'
+    KEY `idx_type_period_score` (`rank_type`, `rank_period`, `score` DESC) COMMENT '排行榜查询索引'
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci
