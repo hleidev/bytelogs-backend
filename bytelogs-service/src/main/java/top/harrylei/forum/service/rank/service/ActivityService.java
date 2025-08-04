@@ -32,7 +32,11 @@ public interface ActivityService {
 
     List<ActivityRankDTO> listRank(ActivityRankTypeEnum rankType);
 
+    List<ActivityRankDTO> listRank(ActivityRankTypeEnum rankType, String period);
+
     ActivityRankVO getUserRank(Long userId, ActivityRankTypeEnum rankType);
+
+    ActivityRankVO getUserRank(Long userId, ActivityRankTypeEnum rankType, String period);
 
     ActivityStatsVO getUserStats(Long userId);
 
@@ -47,4 +51,5 @@ public interface ActivityService {
      * 备份所有类型排行榜数据到MySQL
      */
     void backupAllRankingData();
+
 }

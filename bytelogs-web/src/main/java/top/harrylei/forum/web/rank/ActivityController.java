@@ -77,4 +77,32 @@ public class ActivityController {
         ActivityStatsVO stats = activityService.getUserStats(currentUserId);
         return ResVO.ok(stats);
     }
+
+    /**
+     * 获取历史排行榜
+     *
+     * @param rankType 排行榜类型
+     * @param period   排行榜期间（如：2025-01-10, 2025-01, total）
+     * @return 历史排行榜数据，包含用户个人排名
+     */
+    @Operation(summary = "获取历史排行榜", description = "获取指定期间的历史排行榜，登录用户会额外返回个人排名信息")
+    @GetMapping("/history")
+    public ResVO<ActivityRankListVO> getHistoryRank(@NotNull(message = "排行榜类型不能为空") Integer rankType,
+                                                    @NotNull(message = "排行榜期间不能为空") String period) {
+        // 获取历史排行榜列表
+        ActivityRankTypeEnum rankTypeEnum = ActivityRankTypeEnum.fromCode(rankType);
+        List<ActivityRankDTO> rankList = activityService.listRank(rankTypeEnum, period);
+
+        // 构建响应对象
+        ActivityRankListVO result = new ActivityRankListVO().setRankList(rankList);
+
+        // 如果用户已登录，获取个人历史排名信息
+        Long currentUserId = ReqInfoContext.getContext().getUserId();
+        if (currentUserId != null) {
+            ActivityRankVO userRank = activityService.getUserRank(currentUserId, rankTypeEnum, period);
+            result.setCurrentUserRank(userRank);
+        }
+
+        return ResVO.ok(result);
+    }
 }

@@ -126,7 +126,7 @@ public class ActivityServiceImpl implements ActivityService {
         // 更新总排行榜
         redisUtil.zIncrBy(RedisKeyConstants.getActivityTotalRankKey(), userIdStr, score);
 
-        // 更新日排行榜（1天过期）
+        // 更新日排行榜（7天过期）
         String dailyRankKey = getDayKey();
         redisUtil.zIncrBy(dailyRankKey, userIdStr, score);
         Long ttl = redisUtil.ttl(dailyRankKey);
@@ -134,7 +134,7 @@ public class ActivityServiceImpl implements ActivityService {
             redisUtil.expire(dailyRankKey, Duration.ofDays(7));
         }
 
-        // 更新月排行榜（30天过期）
+        // 更新月排行榜（180天过期）
         String monthlyRankKey = getMonthKey();
         redisUtil.zIncrBy(monthlyRankKey, userIdStr, score);
         ttl = redisUtil.ttl(monthlyRankKey);
@@ -145,50 +145,40 @@ public class ActivityServiceImpl implements ActivityService {
 
     @Override
     public List<ActivityRankDTO> listRank(ActivityRankTypeEnum rankType) {
-        String rankKey = getRankKey(rankType);
+        return listRank(rankType, null);
+    }
+
+    @Override
+    public List<ActivityRankDTO> listRank(ActivityRankTypeEnum rankType, String period) {
+        String rankKey = getRankKey(rankType, period);
         if (rankKey == null) {
             return List.of();
         }
 
         // 一次性获取排行榜数据
         List<Map.Entry<String, Double>> rankedList = redisUtil.zRevRangeWithScores(rankKey, 0, 99);
+
+        // 如果Redis无数据且是历史查询，尝试从MySQL恢复
+        if (rankedList.isEmpty() && period != null) {
+            return getHistoryRanking(rankType, period, rankKey);
+        }
+
         if (rankedList.isEmpty()) {
             return List.of();
         }
 
-        // 提取用户ID列表
-        List<Long> userIds = rankedList.stream()
-                .map(member -> Long.valueOf(member.getKey()))
-                .toList();
-
-        // 批量查询用户信息
-        List<UserInfoDetailDTO> userInfoList = userService.batchQueryUserInfo(userIds);
-        Map<Long, UserInfoDetailDTO> userInfoMap = userInfoList.stream()
-                .collect(Collectors.toMap(UserInfoDetailDTO::getUserId, Function.identity()));
-
-        // 构建排行榜结果
-        List<ActivityRankDTO> result = new ArrayList<>();
-        AtomicInteger rank = new AtomicInteger(1);
-        for (Map.Entry<String, Double> member : rankedList) {
-            Long userId = Long.valueOf(member.getKey());
-            UserInfoDetailDTO userInfo = userInfoMap.get(userId);
-
-            if (userInfo != null) {
-                result.add(new ActivityRankDTO()
-                                   .setUserId(userId)
-                                   .setUserName(userInfo.getUserName())
-                                   .setAvatar(userInfo.getAvatar())
-                                   .setScore(member.getValue().intValue())
-                                   .setRank(rank.getAndIncrement()));
-            }
-        }
-        return result;
+        return buildRankingFromRedisData(rankedList);
     }
 
     @Override
     public ActivityRankVO getUserRank(Long userId, ActivityRankTypeEnum rankType) {
+        return getUserRank(userId, rankType, null);
+    }
+
+    @Override
+    public ActivityRankVO getUserRank(Long userId, ActivityRankTypeEnum rankType, String period) {
         // 获取排名和积分
-        Integer[] rankScore = getUserRankScore(userId, rankType);
+        Integer[] rankScore = getUserRankScore(userId, rankType, period);
         if (rankScore == null) {
             return null;
         }
@@ -368,6 +358,10 @@ public class ActivityServiceImpl implements ActivityService {
      * @return Redis键，无效类型返回null
      */
     private String getRankKey(ActivityRankTypeEnum rankType) {
+        return getRankKey(rankType, null);
+    }
+
+    private String getRankKey(ActivityRankTypeEnum rankType, String period) {
         if (rankType == null) {
             log.error("排行榜类型不能为空");
             return null;
@@ -375,9 +369,24 @@ public class ActivityServiceImpl implements ActivityService {
 
         return switch (rankType) {
             case TOTAL -> RedisKeyConstants.getActivityTotalRankKey();
-            case MONTHLY -> getMonthKey();
-            case DAILY -> getDayKey();
+            case MONTHLY -> {
+                String monthPeriod = period != null ? period : getCurrentMonth();
+                yield RedisKeyConstants.getActivityMonthlyRankKey(monthPeriod);
+            }
+            case DAILY -> {
+                String dayPeriod = period != null ? period : getCurrentDay();
+                yield RedisKeyConstants.getActivityDailyRankKey(dayPeriod);
+            }
         };
+    }
+
+    private String getCurrentMonth() {
+        LocalDate now = LocalDate.now();
+        return now.format(MONTH_FORMATTER);
+    }
+
+    private String getCurrentDay() {
+        return getDateStr();
     }
 
     @Override
@@ -417,23 +426,33 @@ public class ActivityServiceImpl implements ActivityService {
      * @return [排名, 积分]数组，无数据时返回null
      */
     private Integer[] getUserRankScore(Long userId, ActivityRankTypeEnum rankType) {
+        return getUserRankScore(userId, rankType, null);
+    }
+
+    private Integer[] getUserRankScore(Long userId, ActivityRankTypeEnum rankType, String period) {
         if (userId == null || rankType == null) {
             return null;
         }
 
-        String rankKey = getRankKey(rankType);
+        String rankKey = getRankKey(rankType, period);
         if (rankKey == null) {
             return null;
         }
 
         String userIdStr = userId.toString();
         Double score = redisUtil.zScore(rankKey, userIdStr);
-        if (score == null) {
+        Long rank = redisUtil.zRevRank(rankKey, userIdStr);
+
+        // 如果Redis中没有数据且是历史查询，从MySQL查询
+        if ((score == null || rank == null) && period != null) {
+            ActivityRankDO userRank = activityRankDAO.getUserHistoryRank(userId, rankType.getCode(), period);
+            if (userRank != null) {
+                return new Integer[]{userRank.getRank(), userRank.getScore()};
+            }
             return null;
         }
 
-        Long rank = redisUtil.zRevRank(rankKey, userIdStr);
-        if (rank == null) {
+        if (score == null || rank == null) {
             return null;
         }
 
@@ -515,4 +534,85 @@ public class ActivityServiceImpl implements ActivityService {
         LocalDate now = LocalDate.now();
         return now.format(DAY_FORMATTER);
     }
+
+    /**
+     * 从数据库获取历史排行榜数据并缓存到Redis
+     */
+    private List<ActivityRankDTO> getHistoryRanking(ActivityRankTypeEnum rankType, String period, String rankKey) {
+        // 从MySQL查询历史数据
+        List<ActivityRankDO> dbRanking = activityRankDAO.listRanking(rankType.getCode(), period);
+        if (dbRanking.isEmpty()) {
+            return List.of();
+        }
+
+        // 缓存到Redis（1小时过期）
+        try {
+            for (ActivityRankDO rank : dbRanking) {
+                redisUtil.zAdd(rankKey, rank.getUserId().toString(), rank.getScore().doubleValue());
+            }
+            redisUtil.expire(rankKey, Duration.ofHours(1));
+        } catch (Exception e) {
+            log.warn("缓存历史排行榜数据失败: key={}", rankKey, e);
+        }
+
+        // 转换为DTO返回
+        return buildRankingFromDatabaseData(dbRanking);
+    }
+
+    /**
+     * 从Redis数据构建排行榜DTO列表
+     */
+    private List<ActivityRankDTO> buildRankingFromRedisData(List<Map.Entry<String, Double>> rankedList) {
+        // 提取用户ID列表
+        List<Long> userIds = rankedList.stream().map(member -> Long.valueOf(member.getKey())).toList();
+
+        // 批量查询用户信息
+        List<UserInfoDetailDTO> userInfoList = userService.batchQueryUserInfo(userIds);
+        Map<Long, UserInfoDetailDTO> userInfoMap = userInfoList.stream()
+                .collect(Collectors.toMap(UserInfoDetailDTO::getUserId, Function.identity()));
+
+        // 构建排行榜结果
+        List<ActivityRankDTO> result = new ArrayList<>();
+        AtomicInteger rank = new AtomicInteger(1);
+        for (Map.Entry<String, Double> member : rankedList) {
+            Long userId = Long.valueOf(member.getKey());
+            UserInfoDetailDTO userInfo = userInfoMap.get(userId);
+
+            if (userInfo != null) {
+                result.add(new ActivityRankDTO()
+                                   .setUserId(userId)
+                                   .setUserName(userInfo.getUserName())
+                                   .setAvatar(userInfo.getAvatar())
+                                   .setScore(member.getValue().intValue())
+                                   .setRank(rank.getAndIncrement()));
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 从数据库数据构建排行榜DTO列表
+     */
+    private List<ActivityRankDTO> buildRankingFromDatabaseData(List<ActivityRankDO> dbRanking) {
+        List<Long> userIds = dbRanking.stream().map(ActivityRankDO::getUserId).toList();
+
+        List<UserInfoDetailDTO> userInfoList = userService.batchQueryUserInfo(userIds);
+        Map<Long, UserInfoDetailDTO> userInfoMap = userInfoList.stream()
+                .collect(Collectors.toMap(UserInfoDetailDTO::getUserId, Function.identity()));
+
+        List<ActivityRankDTO> result = new ArrayList<>();
+        for (ActivityRankDO rank : dbRanking) {
+            UserInfoDetailDTO userInfo = userInfoMap.get(rank.getUserId());
+            if (userInfo != null) {
+                result.add(new ActivityRankDTO()
+                                   .setUserId(rank.getUserId())
+                                   .setUserName(userInfo.getUserName())
+                                   .setAvatar(userInfo.getAvatar())
+                                   .setRank(rank.getRank())
+                                   .setScore(rank.getScore()));
+            }
+        }
+        return result;
+    }
+
 }
