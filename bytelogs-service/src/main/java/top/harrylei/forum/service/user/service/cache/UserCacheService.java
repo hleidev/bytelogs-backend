@@ -12,6 +12,10 @@ import top.harrylei.forum.service.user.repository.dao.UserInfoDAO;
 import top.harrylei.forum.service.user.repository.entity.UserInfoDO;
 import top.harrylei.forum.core.util.JwtUtil;
 
+import java.time.Duration;
+import java.util.*;
+import java.util.stream.Collectors;
+
 /**
  * 用户缓存服务
  *
@@ -118,5 +122,81 @@ public class UserCacheService {
         } catch (Exception e) {
             log.error("清除用户信息缓存失败: userId={}", userId, e);
         }
+    }
+
+    /**
+     * 批量获取用户信息，优先从缓存获取
+     *
+     * @param userIds 用户ID列表
+     * @return 用户信息列表
+     */
+    public List<UserInfoDetailDTO> listUserInfosByIds(List<Long> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return List.of();
+        }
+
+        // 1. 构建缓存Key列表
+        List<String> cacheKeys = userIds.stream().map(RedisKeyConstants::getUserInfoKey).toList();
+
+        // 2. 批量从Redis获取
+        List<UserInfoDetailDTO> cachedUsers = redisUtil.mGet(cacheKeys, UserInfoDetailDTO.class);
+
+        // 3. 一次遍历收集缓存命中和未命中的用户
+        Map<Long, UserInfoDetailDTO> userMap = new HashMap<>();
+        List<Long> missedUserIds = new ArrayList<>();
+
+        for (int i = 0; i < userIds.size(); i++) {
+            UserInfoDetailDTO cachedUser = cachedUsers.get(i);
+            if (cachedUser != null) {
+                userMap.put(userIds.get(i), cachedUser);
+            } else {
+                missedUserIds.add(userIds.get(i));
+            }
+        }
+
+        // 4. 从数据库查询未命中的用户
+        if (!missedUserIds.isEmpty()) {
+            log.debug("缓存未命中用户数: {}, userIds: {}", missedUserIds.size(), missedUserIds);
+
+            List<UserInfoDO> dbUsers = userInfoDAO.queryBatchByUserIds(missedUserIds);
+            List<UserInfoDetailDTO> dbUserList = dbUsers.stream()
+                    .map(userStructMapper::toDTO)
+                    .toList();
+
+            // 5. 异步批量缓存数据库查询结果
+            if (!dbUserList.isEmpty()) {
+                asyncBatchCacheUserInfo(dbUserList);
+            }
+
+            // 6. 添加数据库查询的用户到结果Map
+            dbUserList.forEach(user -> userMap.put(user.getUserId(), user));
+        }
+
+        // 7. 按原始顺序返回结果
+        return userIds.stream()
+                .map(userMap::get)
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    /**
+     * 异步批量缓存用户信息
+     *
+     * @param userInfoList 用户信息列表
+     */
+    private void asyncBatchCacheUserInfo(List<UserInfoDetailDTO> userInfoList) {
+        // 使用虚拟线程异步执行，不阻塞主流程
+        Thread.startVirtualThread(() -> {
+            try {
+                Map<String, UserInfoDetailDTO> cacheMap = userInfoList.stream()
+                        .collect(Collectors.toMap(user -> RedisKeyConstants.getUserInfoKey(user.getUserId()),
+                                                  user -> user));
+
+                redisUtil.mSet(cacheMap, Duration.ofSeconds(jwtUtil.getExpireSeconds()));
+                log.debug("批量缓存用户信息完成: count={}", userInfoList.size());
+            } catch (Exception e) {
+                log.error("批量缓存用户信息失败", e);
+            }
+        });
     }
 }

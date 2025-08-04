@@ -993,4 +993,75 @@ public class RedisUtil {
             return List.of();
         }
     }
+
+    /**
+     * 批量获取多个键的值
+     *
+     * @param <T>   值的类型
+     * @param keys  键列表
+     * @param clazz 值的类型类
+     * @return 值列表，与键列表顺序对应，不存在的键对应null
+     */
+    public <T> List<T> mGet(List<String> keys, Class<T> clazz) {
+        if (keys == null || keys.isEmpty()) {
+            return List.of();
+        }
+        validateNotNull(clazz);
+
+        try {
+            List<Object> values = redisTemplate.opsForValue().multiGet(keys);
+            if (values == null) {
+                return Collections.nCopies(keys.size(), null);
+            }
+
+            return values.stream()
+                    .map(value -> value != null ? clazz.cast(value) : null)
+                    .toList();
+        } catch (Exception e) {
+            log.error("批量获取值失败: keys={}, error={}", keys, e.getMessage(), e);
+            return Collections.nCopies(keys.size(), null);
+        }
+    }
+
+    /**
+     * 批量设置多个键值对
+     *
+     * @param <T>     值的类型
+     * @param kvMap   键值映射
+     * @param duration 过期时间
+     * @return 是否成功
+     */
+    public <T> Boolean mSet(Map<String, T> kvMap, Duration duration) {
+        if (kvMap == null || kvMap.isEmpty()) {
+            return true;
+        }
+
+        try {
+            // 批量设置值
+            redisTemplate.opsForValue().multiSet(kvMap);
+            
+            // 批量设置过期时间
+            if (duration != null && !duration.isNegative() && !duration.isZero()) {
+                for (String key : kvMap.keySet()) {
+                    redisTemplate.expire(key, duration);
+                }
+            }
+            
+            return true;
+        } catch (Exception e) {
+            log.error("批量设置键值对失败: keys={}, error={}", kvMap.keySet(), e.getMessage(), e);
+            return false;
+        }
+    }
+
+    /**
+     * 批量设置多个键值对（无过期时间）
+     *
+     * @param <T>   值的类型
+     * @param kvMap 键值映射
+     * @return 是否成功
+     */
+    public <T> Boolean mSet(Map<String, T> kvMap) {
+        return mSet(kvMap, null);
+    }
 }

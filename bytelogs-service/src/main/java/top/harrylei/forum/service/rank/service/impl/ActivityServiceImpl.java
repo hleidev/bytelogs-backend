@@ -566,8 +566,8 @@ public class ActivityServiceImpl implements ActivityService {
         // 提取用户ID列表
         List<Long> userIds = rankedList.stream().map(member -> Long.valueOf(member.getKey())).toList();
 
-        // 批量查询用户信息
-        List<UserInfoDetailDTO> userInfoList = userService.batchQueryUserInfo(userIds);
+        // 使用批量缓存查询用户信息
+        List<UserInfoDetailDTO> userInfoList = userCacheService.listUserInfosByIds(userIds);
         Map<Long, UserInfoDetailDTO> userInfoMap = userInfoList.stream()
                 .collect(Collectors.toMap(UserInfoDetailDTO::getUserId, Function.identity()));
 
@@ -596,7 +596,8 @@ public class ActivityServiceImpl implements ActivityService {
     private List<ActivityRankDTO> buildRankingFromDatabaseData(List<ActivityRankDO> dbRanking) {
         List<Long> userIds = dbRanking.stream().map(ActivityRankDO::getUserId).toList();
 
-        List<UserInfoDetailDTO> userInfoList = userService.batchQueryUserInfo(userIds);
+        // 使用批量缓存查询用户信息
+        List<UserInfoDetailDTO> userInfoList = userCacheService.listUserInfosByIds(userIds);
         Map<Long, UserInfoDetailDTO> userInfoMap = userInfoList.stream()
                 .collect(Collectors.toMap(UserInfoDetailDTO::getUserId, Function.identity()));
 
