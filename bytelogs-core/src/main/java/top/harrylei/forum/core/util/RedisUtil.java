@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.RedisStringCommands;
+import org.springframework.data.redis.connection.ReturnType;
 import org.springframework.data.redis.connection.zset.Tuple;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -48,6 +49,20 @@ public class RedisUtil {
     }
 
     /**
+     * 校验Duration参数
+     *
+     * @param duration 时间参数
+     * @throws IllegalArgumentException 如果Duration无效
+     */
+    private static void validatePositiveDuration(Duration duration) {
+        validateNotNull(duration);
+        if (duration.isNegative() || duration.isZero()) {
+            throw new IllegalArgumentException("Duration必须为正数");
+        }
+    }
+
+
+    /**
      * 将字符串转换为字节数组
      *
      * @param key 字符串
@@ -56,6 +71,24 @@ public class RedisUtil {
     private byte[] keyToBytes(String key) {
         validateNotNull(key);
         return key.getBytes(CHARSET);
+    }
+
+    /**
+     * 批量将字符串转换为字节数组
+     *
+     * @param keys 字符串数组
+     * @return 字节数组的数组
+     */
+    private byte[][] keysToBytes(String... keys) {
+        if (keys == null || keys.length == 0) {
+            return new byte[0][];
+        }
+
+        byte[][] result = new byte[keys.length][];
+        for (int i = 0; i < keys.length; i++) {
+            result[i] = keyToBytes(keys[i]);
+        }
+        return result;
     }
 
     /**
@@ -80,16 +113,6 @@ public class RedisUtil {
             log.error("对象序列化失败: type={}, error={}", value.getClass().getName(), e.getMessage(), e);
             return null;
         }
-    }
-
-    /**
-     * 将字节数组反序列化为字符串
-     *
-     * @param bytes 字节数组
-     * @return 字符串，bytes为null时返回null
-     */
-    private String bytesToString(byte[] bytes) {
-        return (bytes == null) ? null : new String(bytes, CHARSET);
     }
 
     /**
@@ -128,19 +151,19 @@ public class RedisUtil {
      * @return 是否成功，操作异常时返回false
      */
     public <T> Boolean set(String key, T value) {
-        return set(key, value, 0);
+        return set(key, value, null);
     }
 
     /**
      * 设置值，带过期时间
      *
-     * @param <T>     值类型
-     * @param key     键
-     * @param value   值
-     * @param seconds 过期时间（秒）
+     * @param <T>      值类型
+     * @param key      键
+     * @param value    值
+     * @param duration 过期时间
      * @return 是否成功，操作异常时返回false
      */
-    public <T> Boolean set(String key, T value, long seconds) {
+    public <T> Boolean set(String key, T value, Duration duration) {
         validateNotNull(key, value);
         try {
             return redisTemplate.execute((RedisCallback<Boolean>) connection -> {
@@ -150,8 +173,11 @@ public class RedisUtil {
                     log.warn("设置值失败，序列化返回null: key={}", key);
                     return false;
                 }
-                if (seconds > 0) {
-                    return connection.stringCommands().set(keyBytes, valueBytes, Expiration.seconds(seconds),
+                if (duration != null) {
+                    validatePositiveDuration(duration);
+                    return connection.stringCommands().set(keyBytes,
+                                                           valueBytes,
+                                                           Expiration.seconds(duration.getSeconds()),
                                                            RedisStringCommands.SetOption.UPSERT);
                 } else {
                     return connection.stringCommands().set(keyBytes, valueBytes);
@@ -164,86 +190,7 @@ public class RedisUtil {
     }
 
     /**
-     * 设置值，带过期时间（Duration版本）
-     *
-     * @param <T>      值类型
-     * @param key      键
-     * @param value    值
-     * @param duration 过期时间
-     * @return 是否成功，操作异常时返回false
-     */
-    public <T> Boolean set(String key, T value, Duration duration) {
-        validateNotNull(key, value);
-        long seconds = duration.getSeconds();
-        if (seconds < 0) {
-            throw new IllegalArgumentException("Duration 不得为负数");
-        }
-        return set(key, value, seconds);
-    }
-
-    /**
-     * 仅当键不存在时设置值（不过期）
-     *
-     * @param <T>   值类型
-     * @param key   键
-     * @param value 值
-     * @return 是否成功设置，键已存在或操作异常时返回false
-     */
-    public <T> Boolean setIfAbsent(String key, T value) {
-        validateNotNull(key, value);
-        try {
-            return redisTemplate.execute((RedisCallback<Boolean>) connection -> {
-                byte[] keyBytes = keyToBytes(key);
-                byte[] valueBytes = valueToBytes(value);
-                if (valueBytes == null) {
-                    log.warn("如果不存在，则设置值失败，序列化返回 null : key={}", key);
-                    return false;
-                }
-                return connection.stringCommands().set(keyBytes, valueBytes,
-                                                       Expiration.persistent(),
-                                                       RedisStringCommands.SetOption.SET_IF_ABSENT);
-            });
-        } catch (Exception e) {
-            log.error("setIfAbsent设置值失败: key={}, error={}", key, e.getMessage(), e);
-            return false;
-        }
-    }
-
-    /**
      * 仅当键不存在时设置值，带过期时间
-     *
-     * @param <T>     值类型
-     * @param key     键
-     * @param value   值
-     * @param seconds 过期时间（秒）
-     * @return 是否成功设置，键已存在或操作异常时返回false
-     */
-    public <T> Boolean setIfAbsent(String key, T value, long seconds) {
-        validateNotNull(key, value);
-        if (seconds <= 0) {
-            throw new IllegalArgumentException("过期时间必须为正数");
-        }
-        try {
-            return redisTemplate.execute((RedisCallback<Boolean>) connection -> {
-                byte[] keyBytes = keyToBytes(key);
-                byte[] valueBytes = valueToBytes(value);
-                if (valueBytes == null) {
-                    log.warn("setIfAbsent带过期时间设置值失败，序列化返回null: key={}", key);
-                    return false;
-                }
-                return connection.stringCommands().set(keyBytes, valueBytes,
-                                                       Expiration.seconds(seconds),
-                                                       RedisStringCommands.SetOption.SET_IF_ABSENT);
-            });
-        } catch (Exception e) {
-            log.error("setIfAbsent带过期时间设置值失败: key={}, seconds={}, error={}",
-                      key, seconds, e.getMessage(), e);
-            return false;
-        }
-    }
-
-    /**
-     * 仅当键不存在时设置值，带过期时间（Duration版本）
      *
      * @param <T>      值类型
      * @param key      键
@@ -253,11 +200,24 @@ public class RedisUtil {
      */
     public <T> Boolean setIfAbsent(String key, T value, Duration duration) {
         validateNotNull(key, value);
-        long seconds = duration.getSeconds();
-        if (seconds <= 0) {
-            throw new IllegalArgumentException("setIfAbsent带过期时间的Duration必须为正数");
+        validatePositiveDuration(duration);
+        try {
+            return redisTemplate.execute((RedisCallback<Boolean>) connection -> {
+                byte[] keyBytes = keyToBytes(key);
+                byte[] valueBytes = valueToBytes(value);
+                if (valueBytes == null) {
+                    log.warn("setIfAbsent带过期时间设置值失败，序列化返回null: key={}", key);
+                    return false;
+                }
+                return connection.stringCommands().set(keyBytes, valueBytes,
+                                                       Expiration.seconds(duration.getSeconds()),
+                                                       RedisStringCommands.SetOption.SET_IF_ABSENT);
+            });
+        } catch (Exception e) {
+            log.error("setIfAbsent带过期时间设置值失败: key={}, duration={}, error={}",
+                      key, duration, e.getMessage(), e);
+            return false;
         }
-        return setIfAbsent(key, value, seconds);
     }
 
     /**
@@ -270,6 +230,7 @@ public class RedisUtil {
      */
     public <T> T get(String key, Class<T> clazz) {
         validateNotNull(key, clazz);
+
         try {
             return redisTemplate.execute((RedisCallback<T>) connection -> {
                 byte[] valueBytes = connection.stringCommands().get(keyToBytes(key));
@@ -325,19 +286,6 @@ public class RedisUtil {
     }
 
     /**
-     * 批量删除键（可变参数版本）
-     *
-     * @param keys 键数组
-     * @return 删除的键数量，操作异常时返回0
-     */
-    public Long delAll(String... keys) {
-        if (keys == null || keys.length == 0) {
-            return 0L;
-        }
-        return delAll(Arrays.asList(keys));
-    }
-
-    /**
      * 判断键是否存在
      *
      * @param key 键
@@ -354,41 +302,26 @@ public class RedisUtil {
         }
     }
 
-    /**
-     * 设置键的过期时间
-     *
-     * @param key     键
-     * @param seconds 过期时间（秒）
-     * @return 是否成功，操作异常时返回false
-     */
-    public Boolean expire(String key, long seconds) {
-        validateNotNull(key);
-        if (seconds <= 0) {
-            throw new IllegalArgumentException("过期时间必须为正数");
-        }
-        try {
-            return redisTemplate.execute((RedisCallback<Boolean>) connection ->
-                    connection.keyCommands().expire(keyToBytes(key), seconds));
-        } catch (Exception e) {
-            log.error("设置过期时间失败: key={}, seconds={}, error={}", key, seconds, e.getMessage(), e);
-            return false;
-        }
-    }
 
     /**
-     * 设置键的过期时间（Duration版本）
+     * 设置键的过期时间
      *
      * @param key      键
      * @param duration 过期时间
      * @return 是否成功，操作异常时返回false
      */
     public Boolean expire(String key, Duration duration) {
-        validateNotNull(key);
-        long seconds = duration.getSeconds();
-        if (seconds <= 0) {
+        validateNotNull(key, duration);
+        if (duration.isNegative() || duration.isZero()) {
             throw new IllegalArgumentException("过期时间Duration必须为正数");
         }
-        return expire(key, seconds);
+        try {
+            return redisTemplate.execute((RedisCallback<Boolean>) connection ->
+                    connection.keyCommands().expire(keyToBytes(key), duration.getSeconds()));
+        } catch (Exception e) {
+            log.error("设置过期时间失败: key={}, duration={}, error={}", key, duration, e.getMessage(), e);
+            return false;
+        }
     }
 
     /**
@@ -588,10 +521,7 @@ public class RedisUtil {
             });
         } catch (Exception e) {
             log.error("删除哈希字段失败: key={}, fields={}, error={}",
-                      key,
-                      Arrays.toString(fields),
-                      e.getMessage(),
-                      e);
+                      key, Arrays.toString(fields), e.getMessage(), e);
             return 0L;
         }
     }
@@ -610,10 +540,7 @@ public class RedisUtil {
                     connection.hashCommands().hExists(keyToBytes(key), field.getBytes(CHARSET)));
         } catch (Exception e) {
             log.error("检查哈希字段是否存在失败: key={}, field={}, error={}",
-                      key,
-                      field,
-                      e.getMessage(),
-                      e);
+                      key, field, e.getMessage(), e);
             return false;
         }
     }
@@ -675,63 +602,188 @@ public class RedisUtil {
     /**
      * 批量获取值
      *
-     * @param keys  键集合
-     * @param clazz 值类型
-     * @return 键值对映射
+     * @param <T>   值的类型
+     * @param keys  键集合，不能为null或空集合
+     * @param clazz 值的类型类，用于反序列化
+     * @return 键值对映射，不存在的键不会包含在结果中
+     * @throws IllegalArgumentException 如果参数无效
+     * @since 1.0
      */
-    public <T> Map<String, T> getAll(Collection<String> keys, Class<T> clazz) {
-        if (keys == null || keys.isEmpty()) {
+    public <T> Map<String, T> mGet(Collection<String> keys, Class<T> clazz) {
+        validateNotNull(keys, clazz);
+
+        try {
+            return redisTemplate.execute((RedisCallback<Map<String, T>>) connection -> {
+                List<String> keyList = new ArrayList<>(keys);
+                List<byte[]> results = connection.stringCommands().mGet(keysToBytes(keyList.toArray(new String[0])));
+
+                if (results == null) {
+                    return Map.of();
+                }
+
+                Map<String, T> resultMap = new HashMap<>(keys.size());
+                for (int i = 0; i < keyList.size() && i < results.size(); i++) {
+                    byte[] valueBytes = results.get(i);
+                    if (valueBytes != null) {
+                        try {
+                            T value = bytesToObject(valueBytes, clazz);
+                            if (value != null) {
+                                resultMap.put(keyList.get(i), value);
+                            }
+                        } catch (Exception e) {
+                            log.warn("反序列化失败，跳过键: key={}, error={}", keyList.get(i), e.getMessage());
+                        }
+                    }
+                }
+                return resultMap;
+            });
+        } catch (Exception e) {
+            log.error("批量获取值失败: keys={}, error={}", keys, e.getMessage(), e);
             return Map.of();
         }
-
-        Map<String, T> result = new HashMap<>(keys.size());
-        for (String key : keys) {
-            T value = get(key, clazz);
-            if (value != null) {
-                result.put(key, value);
-            }
-        }
-        return result;
     }
 
     /**
      * 批量设置值
      *
-     * @param map 键值对映射
-     * @return 成功设置的数量
+     * @param <T> 值的类型
+     * @param map 键值对映射，不能为null或空Map
+     * @return 是否设置成功
+     * @throws IllegalArgumentException 如果参数无效
+     * @since 1.0
      */
-    public <T> Long setAll(Map<String, T> map) {
-        if (map == null || map.isEmpty()) {
-            return 0L;
-        }
+    public <T> Boolean mSet(Map<String, T> map) {
+        validateNotNull(map);
 
-        long successCount = 0;
-        for (Map.Entry<String, T> entry : map.entrySet()) {
-            if (Boolean.TRUE.equals(set(entry.getKey(), entry.getValue()))) {
-                successCount++;
-            }
+        try {
+            return redisTemplate.execute((RedisCallback<Boolean>) connection -> {
+                Map<byte[], byte[]> byteMap = new HashMap<>(map.size());
+
+                for (Map.Entry<String, T> entry : map.entrySet()) {
+                    if (entry.getKey() != null && entry.getValue() != null) {
+                        byte[] keyBytes = keyToBytes(entry.getKey());
+                        byte[] valueBytes = valueToBytes(entry.getValue());
+                        if (valueBytes != null) {
+                            byteMap.put(keyBytes, valueBytes);
+                        }
+                    }
+                }
+
+                if (byteMap.isEmpty()) {
+                    log.warn("批量设置值时，没有有效的键值对");
+                    return false;
+                }
+
+                connection.stringCommands().mSet(byteMap);
+                return true;
+            });
+        } catch (Exception e) {
+            log.error("批量设置值失败: keys={}, error={}", map.keySet(), e.getMessage(), e);
+            return false;
         }
-        return successCount;
+    }
+
+    /**
+     * 批量设置值，带过期时间
+     *
+     * @param <T>      值的类型
+     * @param map      键值对映射
+     * @param duration 过期时间
+     * @return 是否设置成功
+     * @throws IllegalArgumentException 如果参数无效
+     * @since 1.0
+     */
+    public <T> Boolean mSet(Map<String, T> map, Duration duration) {
+        validateNotNull(map);
+        validatePositiveDuration(duration);
+
+        try {
+            return redisTemplate.execute((RedisCallback<Boolean>) connection -> {
+                // 先批量设置值
+                Map<byte[], byte[]> byteMap = new HashMap<>(map.size());
+                List<String> validKeys = new ArrayList<>();
+
+                for (Map.Entry<String, T> entry : map.entrySet()) {
+                    if (entry.getKey() != null && entry.getValue() != null) {
+                        byte[] keyBytes = keyToBytes(entry.getKey());
+                        byte[] valueBytes = valueToBytes(entry.getValue());
+                        if (valueBytes != null) {
+                            byteMap.put(keyBytes, valueBytes);
+                            validKeys.add(entry.getKey());
+                        }
+                    }
+                }
+
+                if (byteMap.isEmpty()) {
+                    log.warn("批量设置值时，没有有效的键值对");
+                    return false;
+                }
+
+                connection.stringCommands().mSet(byteMap);
+
+                // 再批量设置过期时间
+                for (String key : validKeys) {
+                    connection.keyCommands().expire(keyToBytes(key), duration);
+                }
+
+                return true;
+            });
+        } catch (Exception e) {
+            log.error("批量设置值和过期时间失败: keys={}, duration={}, error={}",
+                      map.keySet(), duration, e.getMessage(), e);
+            return false;
+        }
     }
 
     /**
      * 检查多个键是否存在
      *
-     * @param keys 键集合
+     * @param keys 键集合，不能为null或空集合
      * @return 存在的键集合
+     * @throws IllegalArgumentException 如果参数无效
+     * @since 1.0
      */
     public Set<String> existsAll(Collection<String> keys) {
-        if (keys == null || keys.isEmpty()) {
+        validateNotNull(keys);
+
+        try {
+            return redisTemplate.execute((RedisCallback<Set<String>>) connection -> {
+                // 过滤有效的键
+                List<String> validKeys = keys.stream()
+                        .filter(key -> key != null && !key.trim().isEmpty())
+                        .toList();
+
+                if (validKeys.isEmpty()) {
+                    return Set.of();
+                }
+
+                // 使用批量EXISTS命令检查总数
+                Long existsCount = connection.keyCommands().exists(keysToBytes(validKeys.toArray(new String[0])));
+
+                if (existsCount == null || existsCount == 0) {
+                    return Set.of();
+                }
+
+                // 如果所有键都存在，直接返回
+                if (existsCount == validKeys.size()) {
+                    return new HashSet<>(validKeys);
+                }
+
+                // 部分键存在，逐个检查确定哪些存在
+                Set<String> existingKeys = new HashSet<>();
+                for (String key : validKeys) {
+                    Boolean exists = connection.keyCommands().exists(keyToBytes(key));
+                    if (Boolean.TRUE.equals(exists)) {
+                        existingKeys.add(key);
+                    }
+                }
+
+                return existingKeys;
+            });
+        } catch (Exception e) {
+            log.error("批量检查键是否存在失败: keys={}, error={}", keys, e.getMessage(), e);
             return Set.of();
         }
-
-        Set<String> existingKeys = new HashSet<>();
-        for (String key : keys) {
-            if (Boolean.TRUE.equals(exists(key))) {
-                existingKeys.add(key);
-            }
-        }
-        return existingKeys;
     }
 
     /**
@@ -755,7 +807,7 @@ public class RedisUtil {
                 // 执行Lua脚本
                 Long result = connection.scriptingCommands().eval(
                         UNLOCK_LUA_SCRIPT.getBytes(CHARSET),
-                        org.springframework.data.redis.connection.ReturnType.INTEGER,
+                        ReturnType.INTEGER,
                         1,
                         keyBytes,
                         valueBytes
@@ -776,46 +828,29 @@ public class RedisUtil {
         }
     }
 
+
     /**
      * 防重复提交锁（自动过期，无需手动释放）
-     *
-     * @param lockKey 锁的key
-     * @param seconds 锁过期时间（秒）
-     * @return 是否获取锁成功（false表示重复提交）
-     */
-    public boolean tryPreventDuplicate(String lockKey, long seconds) {
-        validateNotNull(lockKey);
-        if (seconds <= 0) {
-            throw new IllegalArgumentException("防重复提交的过期时间必须为正数");
-        }
-
-        String lockValue = UUID.randomUUID().toString();
-        String key = RedisKeyConstants.getDuplicateLockKey(lockKey);
-
-        Boolean success = setIfAbsent(key, lockValue, seconds);
-        if (Boolean.TRUE.equals(success)) {
-            log.debug("获取防重复提交锁成功: key={}, expireSeconds={}", key, seconds);
-            return true;
-        }
-
-        log.debug("获取防重复提交锁失败，检测到重复提交: key={}", key);
-        return false;
-    }
-
-    /**
-     * 防重复提交锁（Duration版本）
      *
      * @param lockKey  锁的key
      * @param duration 锁过期时间
      * @return 是否获取锁成功（false表示重复提交）
      */
     public boolean tryPreventDuplicate(String lockKey, Duration duration) {
-        validateNotNull(duration);
-        long seconds = duration.getSeconds();
-        if (seconds <= 0) {
-            throw new IllegalArgumentException("防重复提交的Duration必须为正数");
+        validateNotNull(lockKey);
+        validatePositiveDuration(duration);
+
+        String lockValue = UUID.randomUUID().toString();
+        String key = RedisKeyConstants.getDuplicateLockKey(lockKey);
+
+        Boolean success = setIfAbsent(key, lockValue, duration);
+        if (Boolean.TRUE.equals(success)) {
+            log.debug("获取防重复提交锁成功: key={}, duration={}", key, duration);
+            return true;
         }
-        return tryPreventDuplicate(lockKey, seconds);
+
+        log.debug("获取防重复提交锁失败，检测到重复提交: key={}", key);
+        return false;
     }
 
     /**
@@ -992,99 +1027,5 @@ public class RedisUtil {
                       key, start, end, e.getMessage(), e);
             return List.of();
         }
-    }
-
-    /**
-     * 批量获取多个键的值
-     *
-     * @param <T>   值的类型
-     * @param keys  键列表
-     * @param clazz 值的类型类
-     * @return 值列表，与键列表顺序对应，不存在的键对应null
-     */
-    public <T> List<T> mGet(List<String> keys, Class<T> clazz) {
-        if (keys == null || keys.isEmpty()) {
-            return List.of();
-        }
-        validateNotNull(clazz);
-
-        try {
-            return redisTemplate.execute((RedisCallback<List<T>>) connection -> {
-                // 使用底层命令获取字节数组
-                List<byte[]> results = connection.stringCommands().mGet(keys.stream().map(this::keyToBytes).toArray(byte[][]::new));
-
-                if (results == null) {
-                    return Collections.nCopies(keys.size(), null);
-                }
-
-                // 使用JsonUtil反序列化
-                return results.stream()
-                        .map(bytes -> {
-                            if (bytes == null) {
-                                return null;
-                            }
-                            try {
-                                return JsonUtil.fromJson(new String(bytes), clazz);
-                            } catch (Exception e) {
-                                log.warn("反序列化失败，可能是旧数据格式: error={}", e.getMessage());
-                                return null;
-                            }
-                        })
-                        .toList();
-            });
-        } catch (Exception e) {
-            log.error("批量获取值失败: keys={}, error={}", keys, e.getMessage(), e);
-            return Collections.nCopies(keys.size(), null);
-        }
-    }
-
-    /**
-     * 批量设置多个键值对
-     *
-     * @param <T>      值的类型
-     * @param kvMap    键值映射
-     * @param duration 过期时间
-     * @return 是否成功
-     */
-    public <T> Boolean mSet(Map<String, T> kvMap, Duration duration) {
-        if (kvMap == null || kvMap.isEmpty()) {
-            return true;
-        }
-
-        try {
-            return redisTemplate.execute((RedisCallback<Boolean>) connection -> {
-                // 使用JsonUtil序列化并批量设置
-                Map<byte[], byte[]> byteMap = new HashMap<>();
-                kvMap.forEach((key, value) -> {
-                    byte[] keyBytes = keyToBytes(key);
-                    byte[] valueBytes = JsonUtil.toJson(value).getBytes();
-                    byteMap.put(keyBytes, valueBytes);
-                });
-
-                connection.stringCommands().mSet(byteMap);
-
-                // 批量设置过期时间
-                if (duration != null && !duration.isNegative() && !duration.isZero()) {
-                    kvMap.keySet().forEach(key -> connection.keyCommands().expire(keyToBytes(key),
-                                                                                  duration.getSeconds()));
-                }
-
-                return true;
-            });
-        } catch (Exception e) {
-            log.error("批量设置键值对失败: keys={}, error={}", kvMap.keySet(), e.getMessage(), e);
-            return false;
-        }
-    }
-
-    /**
-     * 批量设置多个键值对（无过期时间）
-     *
-     * @param <T>   值的类型
-     * @param kvMap 键值映射
-     * @return 是否成功
-     */
-    public <T> Boolean mSet(Map<String, T> kvMap) {
-        return mSet(kvMap, null);
     }
 }
