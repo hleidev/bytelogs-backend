@@ -85,7 +85,9 @@ public class UserCacheService {
         }
 
         try {
-            redisUtil.set(RedisKeyConstants.getUserInfoKey(userId), userInfoDTO, jwtUtil.getExpireSeconds());
+            redisUtil.set(RedisKeyConstants.getUserInfoKey(userId),
+                          userInfoDTO,
+                          Duration.ofSeconds(jwtUtil.getExpireSeconds()));
             log.debug("用户信息已缓存: userId={}", userId);
         } catch (Exception e) {
             log.error("缓存用户信息失败: userId={}", userId, e);
@@ -139,18 +141,20 @@ public class UserCacheService {
         List<String> cacheKeys = userIds.stream().map(RedisKeyConstants::getUserInfoKey).toList();
 
         // 2. 批量从Redis获取
-        List<UserInfoDetailDTO> cachedUsers = redisUtil.mGet(cacheKeys, UserInfoDetailDTO.class);
+        Map<String, UserInfoDetailDTO> cachedUsers = redisUtil.mGet(cacheKeys, UserInfoDetailDTO.class);
 
         // 3. 一次遍历收集缓存命中和未命中的用户
         Map<Long, UserInfoDetailDTO> userMap = new HashMap<>();
         List<Long> missedUserIds = new ArrayList<>();
 
         for (int i = 0; i < userIds.size(); i++) {
-            UserInfoDetailDTO cachedUser = cachedUsers.get(i);
+            Long userId = userIds.get(i);
+            String cacheKey = cacheKeys.get(i);
+            UserInfoDetailDTO cachedUser = cachedUsers.get(cacheKey);
             if (cachedUser != null) {
-                userMap.put(userIds.get(i), cachedUser);
+                userMap.put(userId, cachedUser);
             } else {
-                missedUserIds.add(userIds.get(i));
+                missedUserIds.add(userId);
             }
         }
 

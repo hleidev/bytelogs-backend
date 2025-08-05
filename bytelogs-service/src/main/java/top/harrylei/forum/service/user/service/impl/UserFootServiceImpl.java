@@ -19,6 +19,7 @@ import top.harrylei.forum.service.user.repository.dao.UserFootDAO;
 import top.harrylei.forum.service.user.repository.entity.UserFootDO;
 import top.harrylei.forum.service.user.service.UserFootService;
 
+import java.time.Duration;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -42,7 +43,7 @@ public class UserFootServiceImpl implements UserFootService {
     /**
      * 防重复提交锁过期时间（秒）
      */
-    private static final long DUPLICATE_PREVENT_TIME = 2;
+    private static final Duration DUPLICATE_PREVENT_TIME = Duration.ofSeconds(2);
 
 
     /**

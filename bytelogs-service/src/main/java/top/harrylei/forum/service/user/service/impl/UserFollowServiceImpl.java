@@ -26,6 +26,7 @@ import top.harrylei.forum.service.user.repository.entity.UserDO;
 import top.harrylei.forum.service.user.repository.entity.UserFollowDO;
 import top.harrylei.forum.service.user.service.UserFollowService;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
 
@@ -47,7 +48,7 @@ public class UserFollowServiceImpl implements UserFollowService {
     /**
      * 防重复提交锁过期时间（秒）
      */
-    private static final long DUPLICATE_PREVENT_TIME = 2;
+    private static final Duration DUPLICATE_PREVENT_TIME = Duration.ofSeconds(2);
 
     /**
      * 关注用户

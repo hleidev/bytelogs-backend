@@ -22,6 +22,7 @@ import top.harrylei.forum.core.util.RedisUtil;
 import top.harrylei.forum.service.user.service.cache.UserCacheService;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,13 +47,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * 处理每个HTTP请求，提取JWT令牌并进行认证。 认证成功后，会设置Spring Security上下文和请求上下文，同步获取完整用户信息。
      * </p>
      *
-     * @param request 当前HTTP请求
-     * @param response HTTP响应
+     * @param request     当前HTTP请求
+     * @param response    HTTP响应
      * @param filterChain 过滤器链，用于继续执行后续过滤器
      */
     @Override
     protected void doFilterInternal(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response,
-        @NotNull FilterChain filterChain) throws ServletException, IOException {
+                                    @NotNull FilterChain filterChain) throws ServletException, IOException {
         try {
             // 从请求头中获取JWT令牌
             String token = getTokenFromRequest(request);
@@ -94,6 +95,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     /**
      * 从请求中获取token
+     *
      * @param request 请求
      * @return token或null
      */
@@ -135,7 +137,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             // 刷新token过期时间
-            redisUtil.expire(RedisKeyConstants.getUserTokenKey(userId), jwtUtil.getExpireSeconds());
+            redisUtil.expire(RedisKeyConstants.getUserTokenKey(userId), Duration.ofSeconds(jwtUtil.getExpireSeconds()));
 
             return userId;
         } catch (Exception e) {
@@ -147,7 +149,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     /**
      * 设置用户认证信息到Spring Security上下文
      *
-     * @param userId 用户ID
+     * @param userId  用户ID
      * @param isAdmin 是否为管理员
      */
     private void setAuthentication(Long userId, boolean isAdmin) {
@@ -163,7 +165,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // 创建认证对象
         UsernamePasswordAuthenticationToken authentication =
-            new UsernamePasswordAuthenticationToken(userId, null, authorities);
+                new UsernamePasswordAuthenticationToken(userId, null, authorities);
 
         // 设置认证信息到Spring Security上下文
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -172,9 +174,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     /**
      * 设置用户上下文到ThreadLocal
      *
-     * @param userId 用户ID
+     * @param userId   用户ID
      * @param userInfo 用户信息
-     * @param isAdmin 是否为管理员
+     * @param isAdmin  是否为管理员
      */
     private void setUserContext(Long userId, UserInfoDetailDTO userInfo, boolean isAdmin) {
         // 构建用户上下文信息
