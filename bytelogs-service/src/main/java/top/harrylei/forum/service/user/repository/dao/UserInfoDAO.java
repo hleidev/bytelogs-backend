@@ -12,7 +12,8 @@ import java.util.List;
 
 /**
  * 用户信息数据访问对象
- * 负责操作user_info表
+ *
+ * @author harry
  */
 @Repository
 public class UserInfoDAO extends ServiceImpl<UserInfoMapper, UserInfoDO> {
@@ -25,21 +26,7 @@ public class UserInfoDAO extends ServiceImpl<UserInfoMapper, UserInfoDO> {
                 .one();
     }
 
-    public UserInfoDO getDeletedByUserId(Long userId) {
-        return lambdaQuery()
-                .eq(UserInfoDO::getUserId, userId)
-                .eq(UserInfoDO::getDeleted, YesOrNoEnum.YES.getCode())
-                .one();
-    }
-
-    public UserInfoDO getByUserName(String username) {
-        return lambdaQuery()
-                .eq(UserInfoDO::getUserName, username)
-                .eq(UserInfoDO::getDeleted, YesOrNoEnum.NO.getCode())
-                .one();
-    }
-
-    public List<UserInfoDO> queryBatchByUserIds(List<Long> userIds) {
+    public List<UserInfoDO> listByUserIds(List<Long> userIds) {
         return lambdaQuery()
                 .in(UserInfoDO::getUserId, userIds)
                 .eq(UserInfoDO::getDeleted, YesOrNoEnum.NO.getCode())

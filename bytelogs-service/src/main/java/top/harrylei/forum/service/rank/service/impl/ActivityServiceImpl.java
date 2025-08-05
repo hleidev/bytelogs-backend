@@ -18,7 +18,6 @@ import top.harrylei.forum.core.util.RedisUtil;
 import top.harrylei.forum.service.rank.repository.dao.ActivityRankDAO;
 import top.harrylei.forum.service.rank.repository.entity.ActivityRankDO;
 import top.harrylei.forum.service.rank.service.ActivityService;
-import top.harrylei.forum.service.user.service.UserService;
 import top.harrylei.forum.service.user.service.cache.UserCacheService;
 
 import java.time.Duration;
@@ -48,7 +47,6 @@ public class ActivityServiceImpl implements ActivityService {
     private static final Integer DAILY_SCORE_LIMIT = 100;
     private static final DateTimeFormatter DAY_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter MONTH_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM");
-    private final UserService userService;
     private final UserCacheService userCacheService;
 
     private static String getDayKey() {

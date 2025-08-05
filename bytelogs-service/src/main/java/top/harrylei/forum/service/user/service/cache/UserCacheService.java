@@ -158,7 +158,7 @@ public class UserCacheService {
         if (!missedUserIds.isEmpty()) {
             log.debug("缓存未命中用户数: {}, userIds: {}", missedUserIds.size(), missedUserIds);
 
-            List<UserInfoDO> dbUsers = userInfoDAO.queryBatchByUserIds(missedUserIds);
+            List<UserInfoDO> dbUsers = userInfoDAO.listByUserIds(missedUserIds);
             List<UserInfoDetailDTO> dbUserList = dbUsers.stream()
                     .map(userStructMapper::toDTO)
                     .toList();

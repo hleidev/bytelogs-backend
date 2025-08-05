@@ -70,7 +70,7 @@ public class UserServiceImpl implements UserService {
         if (userIds == null || userIds.isEmpty()) {
             return List.of();
         }
-        List<UserInfoDO> list = userInfoDAO.queryBatchByUserIds(userIds);
+        List<UserInfoDO> list = userInfoDAO.listByUserIds(userIds);
         return list.stream().map(userStructMapper::toDTO).toList();
     }
 
