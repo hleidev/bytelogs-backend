@@ -1009,14 +1009,29 @@ public class RedisUtil {
         validateNotNull(clazz);
 
         try {
-            List<Object> values = redisTemplate.opsForValue().multiGet(keys);
-            if (values == null) {
-                return Collections.nCopies(keys.size(), null);
-            }
+            return redisTemplate.execute((RedisCallback<List<T>>) connection -> {
+                // 使用底层命令获取字节数组
+                List<byte[]> results = connection.stringCommands().mGet(keys.stream().map(this::keyToBytes).toArray(byte[][]::new));
 
-            return values.stream()
-                    .map(value -> value != null ? clazz.cast(value) : null)
-                    .toList();
+                if (results == null) {
+                    return Collections.nCopies(keys.size(), null);
+                }
+
+                // 使用JsonUtil反序列化
+                return results.stream()
+                        .map(bytes -> {
+                            if (bytes == null) {
+                                return null;
+                            }
+                            try {
+                                return JsonUtil.fromJson(new String(bytes), clazz);
+                            } catch (Exception e) {
+                                log.warn("反序列化失败，可能是旧数据格式: error={}", e.getMessage());
+                                return null;
+                            }
+                        })
+                        .toList();
+            });
         } catch (Exception e) {
             log.error("批量获取值失败: keys={}, error={}", keys, e.getMessage(), e);
             return Collections.nCopies(keys.size(), null);
@@ -1026,8 +1041,8 @@ public class RedisUtil {
     /**
      * 批量设置多个键值对
      *
-     * @param <T>     值的类型
-     * @param kvMap   键值映射
+     * @param <T>      值的类型
+     * @param kvMap    键值映射
      * @param duration 过期时间
      * @return 是否成功
      */
@@ -1037,17 +1052,25 @@ public class RedisUtil {
         }
 
         try {
-            // 批量设置值
-            redisTemplate.opsForValue().multiSet(kvMap);
-            
-            // 批量设置过期时间
-            if (duration != null && !duration.isNegative() && !duration.isZero()) {
-                for (String key : kvMap.keySet()) {
-                    redisTemplate.expire(key, duration);
+            return redisTemplate.execute((RedisCallback<Boolean>) connection -> {
+                // 使用JsonUtil序列化并批量设置
+                Map<byte[], byte[]> byteMap = new HashMap<>();
+                kvMap.forEach((key, value) -> {
+                    byte[] keyBytes = keyToBytes(key);
+                    byte[] valueBytes = JsonUtil.toJson(value).getBytes();
+                    byteMap.put(keyBytes, valueBytes);
+                });
+
+                connection.stringCommands().mSet(byteMap);
+
+                // 批量设置过期时间
+                if (duration != null && !duration.isNegative() && !duration.isZero()) {
+                    kvMap.keySet().forEach(key -> connection.keyCommands().expire(keyToBytes(key),
+                                                                                  duration.getSeconds()));
                 }
-            }
-            
-            return true;
+
+                return true;
+            });
         } catch (Exception e) {
             log.error("批量设置键值对失败: keys={}, error={}", kvMap.keySet(), e.getMessage(), e);
             return false;
