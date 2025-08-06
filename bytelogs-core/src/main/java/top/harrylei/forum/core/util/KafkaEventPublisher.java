@@ -133,7 +133,7 @@ public class KafkaEventPublisher {
                 .targetType(targetType.getCode())
                 .targetId(targetId)
                 .extra(extra)
-                .source("user-activity")
+                .source("activity-rank")
                 .build();
 
         publishActivityEvent(event);
