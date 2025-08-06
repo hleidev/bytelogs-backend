@@ -1,12 +1,9 @@
 package top.harrylei.forum.core.config;
 
-import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.common.serialization.StringDeserializer;
-import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
@@ -16,14 +13,12 @@ import org.springframework.kafka.core.*;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
-import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.springframework.util.backoff.ExponentialBackOff;
-import top.harrylei.forum.api.event.NotificationEvent;
 import top.harrylei.forum.api.event.ActivityRankEvent;
+import top.harrylei.forum.api.event.NotificationEvent;
 import top.harrylei.forum.core.common.constans.KafkaTopics;
 import top.harrylei.forum.core.exception.NonRetryableException;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -33,13 +28,7 @@ import java.util.Map;
  */
 @Configuration
 @EnableKafka
-@RequiredArgsConstructor
 public class KafkaConfig {
-
-    private final KafkaProperties kafkaProperties;
-
-    @Value("${spring.kafka.bootstrap-servers}")
-    private String bootstrapServers;
 
     @Value("${spring.kafka.consumer.notification-group-id}")
     private String notificationGroupId;
@@ -47,86 +36,47 @@ public class KafkaConfig {
     @Value("${spring.kafka.consumer.activity-group-id}")
     private String activityGroupId;
 
-    /**
-     * 创建通用消费者配置
-     */
-    private Map<String, Object> createBaseConsumerProps(String groupId) {
-        Map<String, Object> props = new HashMap<>();
+    @Value("${kafka.concurrency:3}")
+    private Integer concurrency;
 
-        // 基础连接配置
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+    @Value("${kafka.partitions:3}")
+    private Integer partitions;
 
-        // 反序列化配置
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+    @Value("${kafka.replicas:1}")
+    private Integer replicas;
 
-        // 消费策略配置
-        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
+    @Value("${kafka.retry.initial-interval:1000}")
+    private Long retryInitialInterval;
 
-        // 性能优化配置
-        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, kafkaProperties.getMaxPollRecords());
-        props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, kafkaProperties.getSessionTimeoutMs());
-        props.put(ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG, kafkaProperties.getHeartbeatIntervalMs());
-        props.put(ConsumerConfig.FETCH_MIN_BYTES_CONFIG, kafkaProperties.getFetchMinBytes());
-        props.put(ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG, kafkaProperties.getFetchMaxWaitMs());
+    @Value("${kafka.retry.max-interval:16000}")
+    private Long retryMaxInterval;
 
-        // JSON反序列化通用配置
-        props.put(JsonDeserializer.TRUSTED_PACKAGES, "top.harrylei.forum.api.event");
-        props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
+    @Value("${kafka.retry.max-elapsed-time:60000}")
+    private Long retryMaxElapsedTime;
 
-        return props;
-    }
-
-    /**
-     * 生产者配置
-     */
-    @Bean
-    public ProducerFactory<String, Object> producerFactory() {
-        Map<String, Object> configProps = new HashMap<>();
-
-        // 基础连接配置
-        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-
-        // 序列化配置
-        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
-
-        // 性能优化配置
-        configProps.put(ProducerConfig.BATCH_SIZE_CONFIG, kafkaProperties.getBatchSize());
-        configProps.put(ProducerConfig.LINGER_MS_CONFIG, kafkaProperties.getLingerMs());
-        configProps.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "snappy");
-
-        // 可靠性配置
-        configProps.put(ProducerConfig.ACKS_CONFIG, "all");
-        configProps.put(ProducerConfig.RETRIES_CONFIG, Integer.MAX_VALUE);
-        configProps.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
-        configProps.put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, 5);
-
-        // 超时配置
-        configProps.put(ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG, kafkaProperties.getRequestTimeoutMs());
-        configProps.put(ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG, kafkaProperties.getDeliveryTimeoutMs());
-
-        return new DefaultKafkaProducerFactory<>(configProps);
-    }
-
-    /**
-     * Kafka模板
-     */
-    @Bean
-    public KafkaTemplate<String, Object> kafkaTemplate() {
-        return new KafkaTemplate<>(producerFactory());
-    }
+    @Value("${kafka.retry.multiplier:2.0}")
+    private Double retryMultiplier;
 
     /**
      * 通知事件消费者配置
      */
     @Bean
-    public ConsumerFactory<String, NotificationEvent> notificationConsumerFactory() {
-        Map<String, Object> props = createBaseConsumerProps(notificationGroupId);
-        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, NotificationEvent.class);
-        return new DefaultKafkaConsumerFactory<>(props);
+    public ConsumerFactory<String, NotificationEvent> notificationConsumerFactory(KafkaProperties kafkaProperties) {
+        Map<String, Object> props = kafkaProperties.buildConsumerProperties();
+        // 覆盖消费者组ID
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, notificationGroupId);
+        return new DefaultKafkaConsumerFactory<>(props, null, new JsonDeserializer<>(NotificationEvent.class));
+    }
+
+    /**
+     * 用户活跃度事件消费者配置
+     */
+    @Bean
+    public ConsumerFactory<String, ActivityRankEvent> activityRankConsumerFactory(KafkaProperties kafkaProperties) {
+        Map<String, Object> props = kafkaProperties.buildConsumerProperties();
+        // 覆盖消费者组ID
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, activityGroupId);
+        return new DefaultKafkaConsumerFactory<>(props, null, new JsonDeserializer<>(ActivityRankEvent.class));
     }
 
     /**
@@ -135,9 +85,11 @@ public class KafkaConfig {
     @Bean
     public DefaultErrorHandler errorHandler() {
         // 指数退避重试策略
-        ExponentialBackOff backOff = new ExponentialBackOff(kafkaProperties.getRetryInitialInterval(), 2.0);
-        backOff.setMaxInterval(kafkaProperties.getRetryMaxInterval());
-        backOff.setMaxElapsedTime(kafkaProperties.getRetryMaxElapsedTime());
+        ExponentialBackOff backOff = new ExponentialBackOff();
+        backOff.setInitialInterval(retryInitialInterval);
+        backOff.setMultiplier(retryMultiplier);
+        backOff.setMaxInterval(retryMaxInterval);
+        backOff.setMaxElapsedTime(retryMaxElapsedTime);
 
         DefaultErrorHandler handler = new DefaultErrorHandler(backOff);
 
@@ -151,42 +103,36 @@ public class KafkaConfig {
      * 监听器容器工厂
      */
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, NotificationEvent> kafkaListenerContainerFactory() {
+    public ConcurrentKafkaListenerContainerFactory<String, NotificationEvent> notificationKafkaListenerContainerFactory(
+            ConsumerFactory<String, NotificationEvent> notificationConsumerFactory,
+            DefaultErrorHandler errorHandler) {
         ConcurrentKafkaListenerContainerFactory<String, NotificationEvent> factory = new ConcurrentKafkaListenerContainerFactory<>();
 
         // 基础配置
-        factory.setConsumerFactory(notificationConsumerFactory());
-        factory.setCommonErrorHandler(errorHandler());
+        factory.setConsumerFactory(notificationConsumerFactory);
+        factory.setCommonErrorHandler(errorHandler);
 
         // 并发配置
-        factory.setConcurrency(kafkaProperties.getConcurrency());
+        factory.setConcurrency(concurrency);
 
-        // 消息确认模式
+        // 手动立即确认模式
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
 
         return factory;
     }
 
     /**
-     * 用户活跃度事件消费者配置
-     */
-    @Bean
-    public ConsumerFactory<String, ActivityRankEvent> userActivityConsumerFactory() {
-        Map<String, Object> props = createBaseConsumerProps(activityGroupId);
-        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, ActivityRankEvent.class);
-        return new DefaultKafkaConsumerFactory<>(props);
-    }
-
-    /**
      * 用户活跃度事件监听器容器工厂
      */
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, ActivityRankEvent> userActivityKafkaListenerContainerFactory() {
+    public ConcurrentKafkaListenerContainerFactory<String, ActivityRankEvent> activityRankKafkaListenerContainerFactory(
+            ConsumerFactory<String, ActivityRankEvent> activityRankConsumerFactory,
+            DefaultErrorHandler errorHandler) {
         ConcurrentKafkaListenerContainerFactory<String, ActivityRankEvent> factory = new ConcurrentKafkaListenerContainerFactory<>();
 
-        factory.setConsumerFactory(userActivityConsumerFactory());
-        factory.setCommonErrorHandler(errorHandler());
-        factory.setConcurrency(kafkaProperties.getConcurrency());
+        factory.setConsumerFactory(activityRankConsumerFactory);
+        factory.setCommonErrorHandler(errorHandler);
+        factory.setConcurrency(concurrency);
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
 
         return factory;
@@ -196,13 +142,12 @@ public class KafkaConfig {
      * 用户活跃度事件Topic
      */
     @Bean
-    public NewTopic userActivityTopic() {
+    public NewTopic activityRankTopic() {
         return TopicBuilder.name(KafkaTopics.ACTIVITY_RANK_EVENTS)
-                .partitions(kafkaProperties.getPartitions())
-                .replicas(kafkaProperties.getReplicas())
+                .partitions(partitions)
+                .replicas(replicas)
                 .build();
     }
-
 
     /**
      * 通知事件Topic
@@ -210,8 +155,8 @@ public class KafkaConfig {
     @Bean
     public NewTopic notificationTopic() {
         return TopicBuilder.name(KafkaTopics.NOTIFICATION_EVENTS)
-                .partitions(kafkaProperties.getPartitions())
-                .replicas(kafkaProperties.getReplicas())
+                .partitions(partitions)
+                .replicas(replicas)
                 .build();
     }
 
@@ -221,8 +166,8 @@ public class KafkaConfig {
     @Bean
     public NewTopic systemTopic() {
         return TopicBuilder.name(KafkaTopics.SYSTEM_EVENTS)
-                .partitions(kafkaProperties.getPartitions())
-                .replicas(kafkaProperties.getReplicas())
+                .partitions(partitions)
+                .replicas(replicas)
                 .build();
     }
 }
