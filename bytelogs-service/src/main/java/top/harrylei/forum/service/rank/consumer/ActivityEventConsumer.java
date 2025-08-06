@@ -36,7 +36,7 @@ public class ActivityEventConsumer {
      * @param offset         偏移量
      * @param acknowledgment 手动确认
      */
-    @KafkaListener(topics = KafkaTopics.ACTIVITY_RANK_EVENTS, containerFactory = "userActivityKafkaListenerContainerFactory")
+    @KafkaListener(topics = KafkaTopics.ACTIVITY_RANK_EVENTS, containerFactory = "activityRankKafkaListenerContainerFactory")
     public void handleActivityEvent(@Payload ActivityRankEvent event,
                                     @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
                                     @Header(KafkaHeaders.OFFSET) long offset,

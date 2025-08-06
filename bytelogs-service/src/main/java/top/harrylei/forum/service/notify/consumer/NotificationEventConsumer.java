@@ -36,7 +36,7 @@ public class NotificationEventConsumer {
      * @param offset         偏移量
      * @param acknowledgment 手动确认
      */
-    @KafkaListener(topics = KafkaTopics.NOTIFICATION_EVENTS)
+    @KafkaListener(topics = KafkaTopics.NOTIFICATION_EVENTS, containerFactory = "notificationKafkaListenerContainerFactory")
     public void handleNotificationEvent(@Payload NotificationEvent event,
                                         @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
                                         @Header(KafkaHeaders.OFFSET) long offset,
@@ -94,7 +94,7 @@ public class NotificationEventConsumer {
      * @param offset         偏移量
      * @param acknowledgment 手动确认
      */
-    @KafkaListener(topics = KafkaTopics.SYSTEM_EVENTS)
+    @KafkaListener(topics = KafkaTopics.SYSTEM_EVENTS, containerFactory = "notificationKafkaListenerContainerFactory")
     public void handleSystemEvent(@Payload NotificationEvent event,
                                   @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
                                   @Header(KafkaHeaders.OFFSET) long offset,
