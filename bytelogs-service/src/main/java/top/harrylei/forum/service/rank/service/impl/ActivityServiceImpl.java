@@ -92,20 +92,20 @@ public class ActivityServiceImpl implements ActivityService {
      * 处理正分事件
      */
     private void handlePositiveScore(ActivityRankEvent event, ActivityActionEnum actionEnum) {
-        // 幂等性检查
-        if (isOperationDuplicate(event)) {
-            log.debug("重复操作，跳过: userId={}, action={}", event.getUserId(), event.getActionType());
-            return;
-        }
-
-        // 积分计算与限制
+        // 先计算积分，避免无意义的幂等检查
         Integer actualScore = calculateActualScore(event.getUserId(), actionEnum.getScore());
         if (actualScore == 0) {
             log.debug("积分计算结果为0，跳过: userId={}, baseScore={}", event.getUserId(), actionEnum.getScore());
             return;
         }
 
-        // 执行积分更新
+        // 只有当积分大于0时才进行幂等性检查
+        if (isOperationDuplicate(event)) {
+            log.debug("重复操作，跳过: userId={}, action={}", event.getUserId(), event.getActionType());
+            return;
+        }
+
+        // 执行积分更新和幂等记录
         recordOperation(event, actualScore);
         updateUserScore(event.getUserId(), actualScore);
 
