@@ -126,4 +126,13 @@ public enum OperateTypeEnum implements CodeLabelEnum {
         return this == PRAISE || this == CANCEL_PRAISE || this == COLLECTION || this == CANCEL_COLLECTION;
     }
 
+    /**
+     * 判断是否是评论可用的操作
+     *
+     * @return 是否是评论支持的操作
+     */
+    public boolean isPraise() {
+        return this == PRAISE || this == CANCEL_PRAISE;
+    }
+
 }

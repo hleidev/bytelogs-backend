@@ -131,13 +131,13 @@ public class CommentController {
      * @param req 评论操作请求
      * @return 操作结果
      */
-    @Operation(summary = "评论操作", description = "对评论进行点赞、收藏等操作")
+    @Operation(summary = "评论操作", description = "对评论进行点赞或取消点赞操作")
     @RequiresLogin
     @PutMapping("/action")
     public ResVO<Void> action(@Valid @RequestBody CommentActionReq req) {
-        // 验证操作类型，只允许点赞收藏相关操作
-        if (!req.getType().isPraiseOrCollection()) {
-            ExceptionUtil.error(ErrorCodeEnum.PARAM_VALIDATE_FAILED, "不支持的操作类型");
+        // 验证操作类型，评论只允许点赞操作，不支持收藏
+        if (!req.getType().isPraise()) {
+            ExceptionUtil.error(ErrorCodeEnum.PARAM_VALIDATE_FAILED, "评论只支持点赞操作");
         }
 
         commentService.actionComment(req.getCommentId(), req.getType());
