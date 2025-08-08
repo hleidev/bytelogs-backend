@@ -124,7 +124,7 @@ public class ActivityServiceImpl implements ActivityService {
         // 更新总排行榜
         redisUtil.zIncrBy(RedisKeyConstants.getActivityTotalRankKey(), userIdStr, score);
 
-        // 更新日排行榜（7天过期）
+        // 更新日排行榜
         String dailyRankKey = getDayKey();
         redisUtil.zIncrBy(dailyRankKey, userIdStr, score);
         Long ttl = redisUtil.ttl(dailyRankKey);
@@ -132,7 +132,7 @@ public class ActivityServiceImpl implements ActivityService {
             redisUtil.expire(dailyRankKey, Duration.ofDays(7));
         }
 
-        // 更新月排行榜（180天过期）
+        // 更新月排行榜
         String monthlyRankKey = getMonthKey();
         redisUtil.zIncrBy(monthlyRankKey, userIdStr, score);
         ttl = redisUtil.ttl(monthlyRankKey);
@@ -148,12 +148,13 @@ public class ActivityServiceImpl implements ActivityService {
 
     @Override
     public List<ActivityRankDTO> listRank(ActivityRankTypeEnum rankType, String period) {
+
         String rankKey = getRankKey(rankType, period);
         if (rankKey == null) {
             return List.of();
         }
 
-        // 一次性获取排行榜数据
+        // 获取排行榜数据
         List<Map.Entry<String, Double>> rankedList = redisUtil.zRevRangeWithScores(rankKey, 0, 99);
 
         // 如果Redis无数据且是历史查询，尝试从MySQL恢复

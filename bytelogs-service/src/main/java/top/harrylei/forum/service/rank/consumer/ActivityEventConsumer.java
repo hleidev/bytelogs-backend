@@ -53,8 +53,7 @@ public class ActivityEventConsumer {
             }
 
             if (event.getUserId() == null || event.getActionType() == null) {
-                log.error("活跃度事件缺少必要参数: userId={}, actionType={}",
-                          event.getUserId(), event.getActionType());
+                log.error("活跃度事件缺少必要参数: userId={}, actionType={}", event.getUserId(), event.getActionType());
                 acknowledgment.acknowledge();
                 throw new NonRetryableException("活跃度事件缺少必要参数");
             }
