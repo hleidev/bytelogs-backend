@@ -24,6 +24,7 @@ public class RedisKeyConstants {
     public static final String KAFKA_IDEMPOTENCY = KAFKA + "idempotency:";
     public static final String ACTIVITY_RANK = ACTIVITY + "rank:";
     public static final String ACTIVITY_DAILY = ACTIVITY + "idempotency:";
+    public static final String HEALTH_CHECK = GLOBAL_PREFIX + "health:check";
 
 
     /**
