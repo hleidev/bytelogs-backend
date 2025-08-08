@@ -25,7 +25,7 @@ import java.util.List;
 @Tag(name = "评论管理模块", description = "提供评论后台管理接口")
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/admin/comment")
+@RequestMapping("/v1/admin/comment")
 @RequiredArgsConstructor
 @RequiresAdmin
 @Validated

@@ -24,7 +24,7 @@ import top.harrylei.forum.service.notify.service.NotifyMsgService;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/notify")
+@RequestMapping("/v1/notify")
 @Validated
 @RequiresLogin
 public class NotifyController {

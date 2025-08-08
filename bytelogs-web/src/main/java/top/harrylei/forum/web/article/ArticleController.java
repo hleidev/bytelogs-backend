@@ -35,7 +35,7 @@ import java.util.List;
 @Tag(name = "文章相关模块", description = "提供文章的基础查询")
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/article")
+@RequestMapping("/v1/article")
 @RequiredArgsConstructor
 @Validated
 public class ArticleController {

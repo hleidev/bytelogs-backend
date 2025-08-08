@@ -22,7 +22,7 @@ import top.harrylei.forum.service.article.service.TagService;
 @Tag(name = "标签相关模块", description = "提供标签的基础查询")
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/tag")
+@RequestMapping("/v1/tag")
 @RequiredArgsConstructor
 @Validated
 public class TagController {

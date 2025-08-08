@@ -58,15 +58,15 @@ public class SecurityConfig {
                 // 配置请求授权规则
                 .authorizeHttpRequests(auth -> auth
                         // 公共接口，无需认证
-                        .requestMatchers("/api/v1/auth/**").permitAll()
-                        .requestMatchers("/api/v1/admin/auth/login").permitAll()
-                        .requestMatchers("/api/v1/tag/**").permitAll()
-                        .requestMatchers("/api/v1/category/**").permitAll()
-                        .requestMatchers("/api/v1/article/**").permitAll()
-                        .requestMatchers("/api/v1/comment/**").permitAll()
-                        .requestMatchers("/api/v1/rank/**").permitAll()
-                        .requestMatchers("/api/v1/public/**").permitAll()
-                        .requestMatchers("/api/v1/test/**").permitAll()
+                        .requestMatchers("/v1/auth/**").permitAll()
+                        .requestMatchers("/v1/admin/auth/login").permitAll()
+                        .requestMatchers("/v1/tag/**").permitAll()
+                        .requestMatchers("/v1/category/**").permitAll()
+                        .requestMatchers("/v1/article/**").permitAll()
+                        .requestMatchers("/v1/comment/**").permitAll()
+                        .requestMatchers("/v1/rank/**").permitAll()
+                        .requestMatchers("/v1/public/**").permitAll()
+                        .requestMatchers("/v1/test/**").permitAll()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/favicon.ico").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
@@ -75,7 +75,7 @@ public class SecurityConfig {
                         // OPTIONS请求放行
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // 需要管理员权限的接口
-                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/v1/admin/**").hasRole("ADMIN")
                         // 其他请求需要认证
                         .anyRequest().authenticated())
                 // 配置异常处理

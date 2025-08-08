@@ -38,6 +38,7 @@ build/
 prompt.md
 update.md
 .java-version
+CLAUDE.md
 
 ### Configuration Files with Sensitive Data ###
 **/resources-env/**/application-dal.yml

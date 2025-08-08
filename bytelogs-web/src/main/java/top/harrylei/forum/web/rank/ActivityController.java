@@ -30,7 +30,7 @@ import java.util.List;
 @Tag(name = "用户活跃排行榜模块", description = "提供用户活跃排行榜的功能")
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/rank/activity")
+@RequestMapping("/v1/rank/activity")
 @RequiredArgsConstructor
 @Validated
 public class ActivityController {

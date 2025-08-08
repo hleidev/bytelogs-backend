@@ -34,7 +34,7 @@ import top.harrylei.forum.service.comment.service.CommentService;
 @Tag(name = "评论相关模块", description = "提供评论的基础功能")
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/comment")
+@RequestMapping("/v1/comment")
 @RequiredArgsConstructor
 @Validated
 public class CommentController {

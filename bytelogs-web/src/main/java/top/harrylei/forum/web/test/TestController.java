@@ -8,7 +8,7 @@ import top.harrylei.forum.api.model.base.ResVO;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/test")
+@RequestMapping("/v1/test")
 public class TestController {
 
     @GetMapping("/ping")

@@ -31,7 +31,7 @@ import top.harrylei.forum.service.user.service.UserService;
 @Tag(name = "管理员认证模块", description = "提供登录、退出等接口")
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/admin/auth")
+@RequestMapping("/v1/admin/auth")
 @RequiredArgsConstructor
 @Validated
 public class AuthManagementController {

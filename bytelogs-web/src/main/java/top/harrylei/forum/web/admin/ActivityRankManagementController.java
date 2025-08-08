@@ -19,7 +19,7 @@ import top.harrylei.forum.service.rank.service.ActivityService;
 @Tag(name = "活跃度排行榜管理模块", description = "提供活跃度排行榜后台管理接口")
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/admin/rank/activity")
+@RequestMapping("/v1/admin/rank/activity")
 @RequiredArgsConstructor
 @RequiresAdmin
 @Validated

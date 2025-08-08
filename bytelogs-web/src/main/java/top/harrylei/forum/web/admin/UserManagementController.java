@@ -33,7 +33,7 @@ import top.harrylei.forum.service.user.converted.UserStructMapper;
 @Tag(name = "用户管理模块", description = "提供用户查询、创建、状态管理等功能")
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/admin/users")
+@RequestMapping("/v1/admin/users")
 @RequiresAdmin
 @RequiredArgsConstructor
 @Validated

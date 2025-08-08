@@ -29,7 +29,7 @@ import java.util.List;
 @Tag(name = "文章管理模块", description = "提供文章后台管理接口")
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/admin/article")
+@RequestMapping("/v1/admin/article")
 @RequiredArgsConstructor
 @RequiresAdmin
 @Validated

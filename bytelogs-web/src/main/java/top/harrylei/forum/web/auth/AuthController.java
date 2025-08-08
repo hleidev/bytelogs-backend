@@ -29,7 +29,7 @@ import top.harrylei.forum.service.auth.service.AuthService;
 @Tag(name = "用户认证模块", description = "提供注册、登录、退出等接口")
 @Slf4j
 @RestController
-@RequestMapping(path = "/api/v1/auth")
+@RequestMapping(path = "/v1/auth")
 @RequiredArgsConstructor
 @Validated
 public class AuthController {

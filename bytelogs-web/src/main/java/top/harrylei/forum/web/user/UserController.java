@@ -34,7 +34,7 @@ import top.harrylei.forum.service.user.service.UserService;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/user")
+@RequestMapping("/v1/user")
 @Validated
 @RequiresLogin
 public class UserController {

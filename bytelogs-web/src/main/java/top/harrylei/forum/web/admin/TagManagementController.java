@@ -29,7 +29,7 @@ import java.util.List;
 @Tag(name = "标签管理模块", description = "提供分类后台管理接口")
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/admin/tag")
+@RequestMapping("/v1/admin/tag")
 @RequiresAdmin
 @RequiredArgsConstructor
 @Validated

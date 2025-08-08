@@ -22,7 +22,7 @@ import top.harrylei.forum.service.article.service.CategoryService;
 @Tag(name = "分类相关模块", description = "提供分类的增删改查接口")
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/category")
+@RequestMapping("/v1/category")
 @RequiredArgsConstructor
 public class CategoryController {
 
