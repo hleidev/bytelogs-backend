@@ -1,14 +1,77 @@
-# 消息队列配置 - 开发环境
+# 消息队列配置
 spring:
   kafka:
+    # Kafka服务器地址
     bootstrap-servers: localhost:9092
+    
+    # Producer配置 - 生产者设置
     producer:
+      # 序列化器配置
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      # 批次大小 - 16KB，用于批量发送优化
+      batch-size: 16384
+      # 确认模式 - all表示等待所有同步副本确认，保证数据不丢失
+      acks: all
+      # 重试次数 - 最大值，确保消息发送成功
+      retries: 2147483647  # Integer.MAX_VALUE
+      properties:
+        # 延迟时间 - 50ms，批量发送前的等待时间
+        linger.ms: 50
+        # 压缩类型 - snappy压缩，平衡压缩率和性能
+        compression.type: snappy
+        # 幂等性 - 防止重复发送
+        enable.idempotence: true
+        # 请求超时时间 - 30秒
+        request.timeout.ms: 30000
+        # 交付超时时间 - 2分钟
+        delivery.timeout.ms: 120000
+        # 单连接最大飞行请求数 - 5个，平衡性能和有序性
+        max.in.flight.requests.per.connection: 5
+
+    # Consumer配置 - 消费者设置
     consumer:
-      group-id: bytelogs-notification-group
-      auto-offset-reset: earliest
+      # 反序列化器配置
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      # 偏移量重置策略 - earliest表示从最早的消息开始消费
+      auto-offset-reset: earliest
+      # 禁用自动提交 - 使用手动确认模式
+      enable-auto-commit: false
+      # 单次拉取最大记录数 - 100条，平衡内存和性能
+      max-poll-records: 100
+      # 自定义消费者组ID配置
+      notification-group-id: bytelogs-notification-group  # 通知事件消费组
+      activity-group-id: bytelogs-activity-group          # 活跃度事件消费组
       properties:
-        spring.json.trusted.packages: "top.harrylei.forum.api.model.event"
+        # 会话超时时间 - 30秒，超过此时间认为消费者已死
+        session.timeout.ms: 30000
+        # 心跳间隔 - 10秒，向协调器发送心跳的间隔
+        heartbeat.interval.ms: 10000
+        # 最小拉取字节数 - 1KB，减少网络请求次数
+        fetch.min.bytes: 1024
+        # 拉取最大等待时间 - 5秒
+        fetch.max.wait.ms: 5000
+        # JSON反序列化安全包配置 - 只信任指定包的类
+        spring.json.trusted.packages: "top.harrylei.forum.api.event"
+        # 不使用类型信息头 - 使用默认类型推断
+        spring.json.use.type.info.headers: false
+
+# Kafka自定义配置 - Spring Boot不直接支持的配置
+kafka:
+  # 消费者并发数 - 每个分区的并发消费者数量
+  concurrency: 3
+  # Topic分区数 - 用于新建Topic时的默认分区数
+  partitions: 3
+  # 副本数 - 用于新建Topic时的默认副本数
+  replicas: 1
+  # 错误重试配置 - 消费失败时的重试策略
+  retry:
+    # 初始重试间隔 - 1秒
+    initial-interval: 1000
+    # 最大重试间隔 - 16秒
+    max-interval: 16000
+    # 最大重试总时间 - 1分钟
+    max-elapsed-time: 60000
+    # 重试间隔倍数 - 每次重试间隔乘以此倍数
+    multiplier: 2.0

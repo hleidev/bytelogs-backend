@@ -7,7 +7,9 @@ ByteLogs 是一个现代化的论坛系统后端，采用 Spring Boot 3.5.0 和 
 - 基于 Spring Boot 3.5.0 和 JDK 21，性能卓越
 - 清晰的多模块架构，代码组织有序
 - 完整的 JWT 认证和权限控制体系
-- 文章编辑和展示功能
+- 用户活跃度排行榜系统，支持日榜/月榜/总榜
+- Redis 健康监控机制，保障系统稳定性
+- Kafka 消息队列，异步处理通知和活跃度事件
 - RESTful API 设计，前后端分离
 - 完整的 API 文档（SpringDoc OpenAPI 3）
 - MapStruct 自动映射，开发效率高
@@ -36,12 +38,15 @@ bytelogs-backend/
 
 ### 数据存储
 - **MySQL 8.0+** - 主数据库
-- **Redis** - 缓存和会话存储
+- **Redis** - 缓存、会话存储、排行榜、健康监控
+- **Kafka** - 消息队列，事件驱动架构
 
 ### 工具库
 - **MapStruct 1.5.5** - 对象映射框架
 - **JWT (jjwt 0.11.5)** - 身份认证
 - **SpringDoc OpenAPI 3** - API 文档生成
+- **Spring Kafka** - 消息队列集成
+- **Spring Scheduling** - 定时任务和健康检查
 
 ## 核心功能
 
@@ -69,10 +74,30 @@ bytelogs-backend/
 - JWT Token 认证
 - 请求上下文管理
 
+### 用户活跃度系统
+- 用户行为积分统计（点赞、评论、发文等）
+- 实时排行榜（日榜、月榜、总榜）
+- 基于 Redis 的高性能积分计算
+- Kafka 异步处理活跃度事件
+- 支持积分上限和负分机制
+
+### 通知系统
+- 实时消息通知（点赞、评论、关注等）
+- Kafka 异步消息处理
+- 支持系统通知和用户通知
+- 消息状态管理和已读标记
+
+### 系统监控
+- Redis 健康状态实时监控
+- 定时心跳检查机制（30秒间隔）
+- 健康状态变化日志记录
+- 支持配置化管理和开关控制
+
 ### 防重复提交机制
 - 基于 Redis 的分布式锁防重复提交
 - 支持用户关注、文章点赞、评论点赞等操作
 - 可配置的防重复提交时间窗口
+- Kafka 消息幂等性保证
 
 ## 环境要求
 
@@ -80,6 +105,7 @@ bytelogs-backend/
 - **Maven 3.8+**
 - **MySQL 8.0+**
 - **Redis 6+**
+- **Kafka 2.8+**
 
 ## 快速开始
 
@@ -133,6 +159,8 @@ java -jar bytelogs-web/target/bytelogs-web-0.0.1-SNAPSHOT.jar
 - `/api/v1/tag/*` - 标签管理
 - `/api/v1/user/*` - 用户管理
 - `/api/v1/comment/*` - 评论管理
+- `/api/v1/activity/*` - 活跃度排行榜
+- `/api/v1/notify/*` - 通知消息
 - `/api/v1/admin/*` - 管理员功能
 
 ## 项目状态

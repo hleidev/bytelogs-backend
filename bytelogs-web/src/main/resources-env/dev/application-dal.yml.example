@@ -17,3 +17,10 @@ spring:
           max-wait: -1ms
           max-idle: 8
           min-idle: 0
+
+# Redis健康检查配置
+redis:
+  health:
+    check:
+      enabled: true # 是否启用Redis健康检查
+      interval: 30000 # 心跳检查间隔（毫秒），默认30秒
