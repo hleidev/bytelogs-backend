@@ -26,6 +26,7 @@ public enum ResultCode {
     USER_ALREADY_EXISTS(41002, "用户已存在"),
     USER_DISABLED(41003, "用户已被禁用"),
     USER_PASSWORD_INVALID(41004, "密码格式不符合要求"),
+    USER_USERNAME_OR_PASSWORD_ERROR(41005, "用户名或密码错误"),
 
     // ========== 文章模块 42xxx ==========
     ARTICLE_NOT_EXISTS(42001, "文章不存在"),
