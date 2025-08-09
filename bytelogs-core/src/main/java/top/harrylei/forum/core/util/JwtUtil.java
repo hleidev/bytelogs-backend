@@ -1,26 +1,27 @@
 package top.harrylei.forum.core.util;
 
-import java.util.Date;
-import java.util.Optional;
-
-import javax.crypto.SecretKey;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 import top.harrylei.forum.api.enums.user.UserRoleEnum;
 import top.harrylei.forum.core.config.JwtProperties;
 
+import javax.crypto.SecretKey;
+import java.time.Duration;
+import java.util.Date;
+import java.util.Optional;
+
 /**
  * JWT 工具类
+ *
+ * @author harry
  */
 @Component
 @RequiredArgsConstructor
@@ -29,7 +30,9 @@ public class JwtUtil {
 
     private final JwtProperties jwtProperties;
 
-    /** 获取密钥 */
+    /**
+     * 获取密钥
+     */
     private SecretKey getSecretKey() {
         return Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes());
     }
@@ -37,17 +40,21 @@ public class JwtUtil {
     /**
      * 生成JWT令牌
      *
-     * @param userId 用户ID
-     * @param role 用户角色
+     * @param userId    用户ID
+     * @param role      用户角色
+     * @param keepLogin 是否保持登录状态
      * @return JWT令牌字符串
      */
-    public String generateToken(Long userId, UserRoleEnum role) {
+    public String generateToken(Long userId, UserRoleEnum role, boolean keepLogin) {
         checkInit();
         long now = System.currentTimeMillis();
-        Date expiryDate = new Date(now + jwtProperties.getExpire() * 1000);
-        return Jwts.builder().setSubject(String.valueOf(userId)).claim("role", role.name()).setIssuer(jwtProperties.getIssuer())
-            .setIssuedAt(new Date(now)).setExpiration(expiryDate).signWith(getSecretKey(), SignatureAlgorithm.HS256)
-            .compact();
+        // 根据keepLogin选择过期时间
+        Duration expireDuration = keepLogin ? jwtProperties.getKeepLoginExpire() : jwtProperties.getExpire();
+        Date expiryDate = new Date(now + expireDuration.toMillis());
+        return Jwts.builder().setSubject(String.valueOf(userId))
+                .claim("role", role.name()).setIssuer(jwtProperties.getIssuer())
+                .setIssuedAt(new Date(now)).setExpiration(expiryDate).signWith(getSecretKey(), SignatureAlgorithm.HS256)
+                .compact();
     }
 
     /**
@@ -105,7 +112,7 @@ public class JwtUtil {
      */
     public Long getExpireSeconds() {
         checkInit();
-        return jwtProperties.getExpire();
+        return jwtProperties.getExpire().getSeconds();
     }
 
     /**

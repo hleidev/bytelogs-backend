@@ -7,8 +7,8 @@ import lombok.Data;
 
 /**
  * 认证请求
- * <p>
- * 用于登录和注册接口的请求参数
+ *
+ * @author harry
  */
 @Data
 @Schema(description = "认证请求")
@@ -29,4 +29,10 @@ public class AuthReq {
     @Pattern(regexp = "^[a-zA-Z0-9_@#%&!$*-]{8,20}$", message = "密码必须包含字母、数字，可包含特殊字符，长度为8~20位")
     @Schema(description = "密码", example = "user@123", requiredMode = Schema.RequiredMode.REQUIRED)
     private String password;
+
+    /**
+     * 保持登录状态
+     */
+    @Schema(description = "保持登录状态", example = "false", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private Boolean keepLogin = false;
 }

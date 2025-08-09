@@ -5,8 +5,12 @@ import org.springframework.context.annotation.Configuration;
 
 import lombok.Data;
 
+import java.time.Duration;
+
 /**
  * JWT 配置参数
+ *
+ * @author harry
  */
 @Data
 @Configuration
@@ -23,7 +27,12 @@ public class JwtProperties {
     private String secret;
 
     /**
-     * 有效期（秒）
+     * 默认有效期
      */
-    private Long expire;
+    private Duration expire;
+
+    /**
+     * 保持登录有效期
+     */
+    private Duration keepLoginExpire;
 }
