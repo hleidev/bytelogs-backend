@@ -2,6 +2,7 @@ package top.harrylei.forum.web.exception;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import top.harrylei.forum.api.enums.ErrorCodeEnum;
+import top.harrylei.forum.api.exception.BusinessException;
 import top.harrylei.forum.api.model.base.ResVO;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ForumException;
@@ -32,12 +34,6 @@ import java.util.stream.Collectors;
 
 /**
  * 全局异常处理器
- * <p>
- * 异常处理规范：
- * 1. 业务异常(ForumException): WARN级别 + 简要信息
- * 2. 参数校验异常: WARN级别 + 无堆栈
- * 3. 系统异常: ERROR级别 + 完整堆栈
- * 4. 统一日志格式: [异常类型] 错误信息 | 路径: {} | 用户: {} | 方法: {}
  *
  * @author harry
  */
@@ -46,8 +42,20 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
 
     /**
-     * 处理业务异常 ForumException
-     * 业务异常属于预期异常，使用WARN级别，不记录堆栈
+     * 处理业务异常 BusinessException
+     */
+    @ExceptionHandler(BusinessException.class)
+    public ResVO<Void> handleBusinessException(BusinessException e,
+                                               HttpServletRequest request,
+                                               HttpServletResponse response) {
+        logBusinessException("业务异常", e.getMessage(), request);
+        // 设置对应的HTTP状态码
+        response.setStatus(e.getHttpStatus());
+        return ResVO.fail(e.getCode(), e.getMessage());
+    }
+
+    /**
+     * 处理业务异常 ForumException (向后兼容)
      */
     @ExceptionHandler(ForumException.class)
     @ResponseStatus(HttpStatus.OK)
