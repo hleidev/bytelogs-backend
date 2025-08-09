@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import top.harrylei.forum.api.enums.ErrorCodeEnum;
+import top.harrylei.forum.api.enums.ResultCode;
 import top.harrylei.forum.api.enums.user.LoginTypeEnum;
 import top.harrylei.forum.api.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.enums.user.UserStatusEnum;
@@ -52,39 +53,58 @@ public class AuthServiceImpl implements AuthService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void register(String username, String password, UserRoleEnum userRole) {
+        validateRegisterParams(username, password, userRole);
+
+        UserDO newUser = createUser(username, password);
+        createUserInfo(newUser, username, userRole);
+
+        log.info("用户注册成功 userId={}", newUser.getId());
+    }
+
+    /**
+     * 校验注册参数
+     */
+    private void validateRegisterParams(String username, String password, UserRoleEnum userRole) {
         // 密码格式校验
-        ExceptionUtil.errorIf(!PasswordUtil.isValid(password), ErrorCodeEnum.USER_PASSWORD_INVALID);
-
-        // 检查用户名是否已存在
-        UserDO user = userDAO.getUserByUserName(username);
-        ExceptionUtil.errorIf(user != null, ErrorCodeEnum.USER_EXISTS, username);
-
-        // 创建新用户
-        UserDO newUser = new UserDO()
-                .setUserName(username)
-                .setPassword(BCryptUtil.hash(password))
-                .setThirdAccountId("")
-                .setLoginType(LoginTypeEnum.USER_PWD.getCode());
-        userDAO.save(newUser);
-
-        // 创建用户信息
-        UserInfoDO newUserInfo = new UserInfoDO().setUserId(newUser.getId()).setUserName(username).setAvatar("");
-
-        if (UserRoleEnum.ADMIN.equals(userRole)) {
-            // 创建管理员账号需要管理员权限
-            if (!ReqInfoContext.getContext().isAdmin()) {
-                ExceptionUtil.error(ErrorCodeEnum.FORBID_ERROR_MIXED, "当前用户没有管理员权限");
-            }
-            newUserInfo.setUserRole(userRole.getCode());
-        } else {
-            // 创建普通用户
-            newUserInfo.setUserRole(UserRoleEnum.NORMAL.getCode());
+        if (PasswordUtil.isInvalid(password)) {
+            ResultCode.USER_PASSWORD_INVALID.throwException("密码必须包含字母、数字，可包含特殊字符，长度为8~20位");
         }
 
-        userInfoDAO.save(newUserInfo);
+        // 检查用户名是否已存在
+        UserDO existingUser = userDAO.getUserByUsername(username);
+        if (existingUser != null) {
+            ResultCode.USER_ALREADY_EXISTS.throwException("用户名：" + username);
+        }
 
-        // 简洁、标准化的日志
-        log.info("用户注册成功 userId={}", newUser.getId());
+        // 管理员权限校验
+        if (UserRoleEnum.ADMIN.equals(userRole) && !ReqInfoContext.getContext().isAdmin()) {
+            ResultCode.ACCESS_DENIED.throwException("创建管理员账号需要管理员权限");
+        }
+    }
+
+    /**
+     * 创建用户记录
+     */
+    private UserDO createUser(String username, String password) {
+        UserDO newUser = new UserDO()
+                .setUserName(username)
+                .setPassword(BCryptUtil.encode(password))
+                .setThirdAccountId("")
+                .setLoginType(LoginTypeEnum.USERNAME_PASSWORD.getCode());
+        userDAO.save(newUser);
+        return newUser;
+    }
+
+    /**
+     * 创建用户信息记录
+     */
+    private void createUserInfo(UserDO user, String username, UserRoleEnum userRole) {
+        UserInfoDO userInfo = new UserInfoDO()
+                .setUserId(user.getId())
+                .setUserName(username)
+                .setAvatar("")
+                .setUserRole(userRole.getCode());
+        userInfoDAO.save(userInfo);
     }
 
     /**
@@ -95,8 +115,8 @@ public class AuthServiceImpl implements AuthService {
      * @return 登录成功的 Token
      */
     @Override
-    public String login(String username, String password) {
-        return login(username, password, null);
+    public String login(String username, String password, boolean keepLogin) {
+        return login(username, password, keepLogin, null);
     }
 
     /**
@@ -108,9 +128,9 @@ public class AuthServiceImpl implements AuthService {
      * @return 登录成功的 Token
      */
     @Override
-    public String login(String username, String password, UserRoleEnum userRole) {
+    public String login(String username, String password, boolean keepLogin, UserRoleEnum userRole) {
         // 查找用户
-        UserDO user = userDAO.getUserByUserName(username);
+        UserDO user = userDAO.getUserByUsername(username);
         ExceptionUtil.requireValid(user, ErrorCodeEnum.USER_NOT_EXISTS, username);
 
         // 校验账号是否启用
@@ -118,7 +138,7 @@ public class AuthServiceImpl implements AuthService {
                               ErrorCodeEnum.USER_DISABLED);
 
         // 校验密码
-        ExceptionUtil.errorIf(!BCryptUtil.matches(password, user.getPassword()),
+        ExceptionUtil.errorIf(BCryptUtil.notMatches(password, user.getPassword()),
                               ErrorCodeEnum.USER_USERNAME_OR_PASSWORD_ERROR);
 
         // 获取用户ID和信息
@@ -132,7 +152,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // 生成token
-        String token = jwtUtil.generateToken(userId, userInfoDTO.getRole());
+        String token = jwtUtil.generateToken(userId, userInfoDTO.getRole(), keepLogin);
 
         // 更新上下文
         ReqInfoContext.getContext().setUserId(userId).setUser(userInfoDTO);

@@ -50,7 +50,7 @@ public class AuthManagementController {
     @Operation(summary = "登录账号", description = "校验管理员密码，成功后返回JWT令牌")
     @PostMapping("/login")
     public ResVO<UserInfoVO> login(@Valid @RequestBody AuthReq authReq, HttpServletResponse response) {
-        String token = authService.login(authReq.getUsername(), authReq.getPassword(), UserRoleEnum.ADMIN);
+        String token = authService.login(authReq.getUsername(), authReq.getPassword(), authReq.getKeepLogin(), UserRoleEnum.ADMIN);
         ExceptionUtil.requireValid(token, ErrorCodeEnum.USER_LOGIN_FAILED, "token 为空");
 
         response.setHeader("Authorization", "Bearer " + token);

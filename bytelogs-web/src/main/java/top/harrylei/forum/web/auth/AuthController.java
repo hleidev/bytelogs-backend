@@ -23,8 +23,8 @@ import top.harrylei.forum.service.auth.service.AuthService;
 
 /**
  * 用户认证控制器
- * <p>
- * 提供注册、登录、注销等认证相关接口
+ *
+ * @author harry
  */
 @Tag(name = "用户认证模块", description = "提供注册、登录、退出等接口")
 @Slf4j
@@ -52,16 +52,16 @@ public class AuthController {
     /**
      * 用户登录接口
      *
-     * @param authReq 登录请求体，包含用户名和密码
+     * @param authReq  登录请求体，包含用户名和密码
      * @param response 响应对象，用于设置Token
      * @return 登录结果
      */
     @Operation(summary = "用户登录", description = "校验用户名密码，成功后返回JWT令牌")
     @PostMapping("/login")
     public ResVO<Void> login(@Valid @RequestBody AuthReq authReq, HttpServletResponse response) {
-        String token = authService.login(authReq.getUsername(), authReq.getPassword());
+        String token = authService.login(authReq.getUsername(), authReq.getPassword(), authReq.getKeepLogin());
         ExceptionUtil.requireValid(token, ErrorCodeEnum.USER_LOGIN_FAILED, "token 为空");
-        
+
         response.setHeader("Authorization", "Bearer " + token);
         response.setHeader("Access-Control-Expose-Headers", "Authorization");
 

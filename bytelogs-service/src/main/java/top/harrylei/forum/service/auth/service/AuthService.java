@@ -4,6 +4,8 @@ import top.harrylei.forum.api.enums.user.UserRoleEnum;
 
 /**
  * 用户登录和注册服务接口
+ *
+ * @author harry
  */
 public interface AuthService {
 
@@ -18,26 +20,28 @@ public interface AuthService {
 
     /**
      * 用户登录
-     * 
-     * @param username 用户名
-     * @param password 密码
+     *
+     * @param username  用户名
+     * @param password  密码
+     * @param keepLogin 是否保持登录状态
      * @return JWT token
      */
-    String login(String username, String password);
+    String login(String username, String password, boolean keepLogin);
 
     /**
-     * 带用户角色的登录
+     * 用户登录（带角色验证）
      *
-     * @param username 用户名
-     * @param password 密码
-     * @param userRole 用户角色
+     * @param username  用户名
+     * @param password  密码
+     * @param keepLogin 是否保持登录状态
+     * @param userRole  用户角色
      * @return JWT token
      */
-    String login(String username, String password, UserRoleEnum userRole);
+    String login(String username, String password, boolean keepLogin, UserRoleEnum userRole);
 
     /**
      * 退出登录
-     * 
+     *
      * @param userId JWT令牌
      */
     void logout(Long userId);
