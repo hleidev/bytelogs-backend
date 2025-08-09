@@ -127,7 +127,7 @@ public class UserServiceImpl implements UserService {
         UserDO user = userDAO.getUserById(userId);
         ExceptionUtil.requireValid(user, ErrorCodeEnum.USER_NOT_EXISTS, "userId=" + userId);
 
-        if (!BCryptUtil.matches(oldPassword, user.getPassword())) {
+        if (BCryptUtil.notMatches(oldPassword, user.getPassword())) {
             ExceptionUtil.error(ErrorCodeEnum.USER_PASSWORD_ERROR);
         }
 
@@ -231,7 +231,7 @@ public class UserServiceImpl implements UserService {
         ExceptionUtil.requireValid(userId, ErrorCodeEnum.PARAM_MISSING, "用户ID");
         ExceptionUtil.requireValid(userId, ErrorCodeEnum.PARAM_MISSING, "密码");
         // 校验新密码安全性
-        if (!PasswordUtil.isValid(password)) {
+        if (PasswordUtil.isInvalid(password)) {
             ExceptionUtil.error(ErrorCodeEnum.USER_PASSWORD_INVALID);
         }
 
@@ -239,7 +239,7 @@ public class UserServiceImpl implements UserService {
         ExceptionUtil.requireValid(user, ErrorCodeEnum.USER_NOT_EXISTS, "userId=" + userId);
 
         try {
-            user.setPassword(BCryptUtil.hash(password));
+            user.setPassword(BCryptUtil.encode(password));
             userDAO.updateById(user);
             log.info("用户密码更新成功: userId={}", userId);
         } catch (Exception e) {
