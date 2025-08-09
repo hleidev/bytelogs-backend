@@ -129,7 +129,8 @@ public class AuthServiceImpl implements AuthService {
         // 查找用户
         UserDO user = userDAO.getUserByUsername(username);
         if (user == null) {
-            ResultCode.USER_NOT_EXISTS.throwException(username);
+            // 为了安全，不暴露用户是否存在，统一返回用户名或密码错误
+            ResultCode.USER_USERNAME_OR_PASSWORD_ERROR.throwException();
         }
 
         // 校验账号是否启用
@@ -173,6 +174,10 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public void logout(Long userId) {
+        if (userId == null) {
+            ResultCode.INVALID_PARAMETER.throwException("用户ID不能为空");
+        }
+
         try {
             boolean result = redisUtil.del(RedisKeyConstants.getUserTokenKey(userId));
             userCacheService.clearUserInfoCache(userId);
