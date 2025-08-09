@@ -19,6 +19,7 @@ import lombok.Getter;
  *
  * @author harry
  */
+@Deprecated
 @Getter
 public enum ErrorCodeEnum {
     // ========== 成功状态 ==========
