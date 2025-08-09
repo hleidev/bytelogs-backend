@@ -16,16 +16,15 @@ import top.harrylei.forum.service.user.repository.entity.UserInfoDO;
 
 /**
  * 用户对象转换映射器
- * <p>
- * 负责用户相关DO、DTO、VO之间的转换
- * </p>
+ *
+ * @author harry
  */
 @Mapper(componentModel = "spring")
 public interface UserStructMapper {
 
     /**
      * 将数据库实体对象转换为数据传输对象
-     * 
+     *
      * @param userInfo 用户信息数据库实体
      * @return 用户信息DTO
      */
@@ -115,7 +114,7 @@ public interface UserStructMapper {
 
     /**
      * 将角色代码转换为角色文本显示值
-     * 
+     *
      * @param code 角色代码
      * @return 角色文本
      */
