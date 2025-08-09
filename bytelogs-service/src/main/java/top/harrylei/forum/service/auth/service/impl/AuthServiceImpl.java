@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import top.harrylei.forum.api.enums.ErrorCodeEnum;
 import top.harrylei.forum.api.enums.ResultCode;
 import top.harrylei.forum.api.enums.user.LoginTypeEnum;
 import top.harrylei.forum.api.enums.user.UserRoleEnum;
@@ -12,7 +11,6 @@ import top.harrylei.forum.api.enums.user.UserStatusEnum;
 import top.harrylei.forum.api.model.user.dto.UserInfoDetailDTO;
 import top.harrylei.forum.core.common.constans.RedisKeyConstants;
 import top.harrylei.forum.core.context.ReqInfoContext;
-import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.core.util.BCryptUtil;
 import top.harrylei.forum.core.util.JwtUtil;
 import top.harrylei.forum.core.util.PasswordUtil;
@@ -25,7 +23,6 @@ import top.harrylei.forum.service.user.repository.entity.UserInfoDO;
 import top.harrylei.forum.service.user.service.cache.UserCacheService;
 
 import java.time.Duration;
-import java.util.Objects;
 
 /**
  * 登录注册服务实现类
@@ -73,7 +70,7 @@ public class AuthServiceImpl implements AuthService {
         // 检查用户名是否已存在
         UserDO existingUser = userDAO.getUserByUsername(username);
         if (existingUser != null) {
-            ResultCode.USER_ALREADY_EXISTS.throwException("用户名：" + username);
+            ResultCode.USER_ALREADY_EXISTS.throwException(username);
         }
 
         // 管理员权限校验
@@ -131,34 +128,38 @@ public class AuthServiceImpl implements AuthService {
     public String login(String username, String password, boolean keepLogin, UserRoleEnum userRole) {
         // 查找用户
         UserDO user = userDAO.getUserByUsername(username);
-        ExceptionUtil.requireValid(user, ErrorCodeEnum.USER_NOT_EXISTS, username);
+        if (user == null) {
+            ResultCode.USER_NOT_EXISTS.throwException(username);
+        }
 
         // 校验账号是否启用
-        ExceptionUtil.errorIf(!Objects.equals(user.getStatus(), UserStatusEnum.ENABLED.getCode()),
-                              ErrorCodeEnum.USER_DISABLED);
+        assert user != null;
+        if (!UserStatusEnum.ENABLED.getCode().equals(user.getStatus())) {
+            ResultCode.USER_DISABLED.throwException(username);
+        }
 
         // 校验密码
-        ExceptionUtil.errorIf(BCryptUtil.notMatches(password, user.getPassword()),
-                              ErrorCodeEnum.USER_USERNAME_OR_PASSWORD_ERROR);
+        if (BCryptUtil.notMatches(password, user.getPassword())) {
+            ResultCode.USER_USERNAME_OR_PASSWORD_ERROR.throwException();
+        }
 
         // 获取用户ID和信息
         Long userId = user.getId();
         UserInfoDetailDTO userInfoDTO = userCacheService.getUserInfo(userId);
 
-        // 校验角色权限
-        if (userRole != null && ReqInfoContext.getContext().isAdmin()) {
-            ExceptionUtil.errorIf(!Objects.equals(userInfoDTO.getRole(), userRole), ErrorCodeEnum.FORBID_ERROR_MIXED,
-                                  "当前用户无管理员权限");
+        // 校验角色权限（仅用于管理员登录场景）
+        if (UserRoleEnum.ADMIN.equals(userRole)) {
+            if (!UserRoleEnum.ADMIN.equals(userInfoDTO.getRole())) {
+                ResultCode.ACCESS_DENIED.throwException("用户不具备管理员权限");
+            }
         }
 
         // 生成token
         String token = jwtUtil.generateToken(userId, userInfoDTO.getRole(), keepLogin);
 
-        // 更新上下文
-        ReqInfoContext.getContext().setUserId(userId).setUser(userInfoDTO);
-
         // 缓存token和用户信息
-        redisUtil.set(RedisKeyConstants.getUserTokenKey(userId), token, Duration.ofSeconds(jwtUtil.getExpireSeconds()));
+        Duration tokenExpire = keepLogin ? jwtUtil.getKeepLoginExpire() : jwtUtil.getDefaultExpire();
+        redisUtil.set(RedisKeyConstants.getUserTokenKey(userId), token, tokenExpire);
 
         // 安全相关事件保留日志
         log.info("用户登录成功 userId={}", userId);

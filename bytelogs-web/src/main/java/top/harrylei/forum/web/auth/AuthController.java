@@ -1,21 +1,20 @@
 package top.harrylei.forum.web.auth;
 
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import top.harrylei.forum.api.enums.ErrorCodeEnum;
 import top.harrylei.forum.api.enums.user.UserRoleEnum;
-import top.harrylei.forum.api.model.base.ResVO;
 import top.harrylei.forum.api.model.auth.AuthReq;
+import top.harrylei.forum.api.model.base.ResVO;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.core.security.permission.RequiresLogin;
@@ -60,7 +59,6 @@ public class AuthController {
     @PostMapping("/login")
     public ResVO<Void> login(@Valid @RequestBody AuthReq authReq, HttpServletResponse response) {
         String token = authService.login(authReq.getUsername(), authReq.getPassword(), authReq.getKeepLogin());
-        ExceptionUtil.requireValid(token, ErrorCodeEnum.USER_LOGIN_FAILED, "token 为空");
 
         response.setHeader("Authorization", "Bearer " + token);
         response.setHeader("Access-Control-Expose-Headers", "Authorization");
