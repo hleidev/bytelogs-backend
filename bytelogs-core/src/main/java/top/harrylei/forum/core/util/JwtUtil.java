@@ -6,9 +6,8 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import top.harrylei.forum.api.enums.user.UserRoleEnum;
 import top.harrylei.forum.core.config.JwtProperties;
@@ -23,10 +22,10 @@ import java.util.Optional;
  *
  * @author harry
  */
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtUtil {
-    private final Logger log = LoggerFactory.getLogger(JwtUtil.class);
 
     private final JwtProperties jwtProperties;
 
@@ -46,14 +45,20 @@ public class JwtUtil {
      * @return JWT令牌字符串
      */
     public String generateToken(Long userId, UserRoleEnum role, boolean keepLogin) {
-        checkInit();
+        if (userId == null || role == null) {
+            throw new IllegalArgumentException("用户ID和角色不能为空");
+        }
         long now = System.currentTimeMillis();
         // 根据keepLogin选择过期时间
-        Duration expireDuration = keepLogin ? jwtProperties.getKeepLoginExpire() : jwtProperties.getExpire();
+        Duration expireDuration = keepLogin ? jwtProperties.getKeepLoginExpire() : jwtProperties.getDefaultExpire();
         Date expiryDate = new Date(now + expireDuration.toMillis());
-        return Jwts.builder().setSubject(String.valueOf(userId))
-                .claim("role", role.name()).setIssuer(jwtProperties.getIssuer())
-                .setIssuedAt(new Date(now)).setExpiration(expiryDate).signWith(getSecretKey(), SignatureAlgorithm.HS256)
+        return Jwts.builder()
+                .setSubject(String.valueOf(userId))
+                .claim("role", role.getCode())
+                .setIssuer(jwtProperties.getIssuer())
+                .setIssuedAt(new Date(now))
+                .setExpiration(expiryDate)
+                .signWith(getSecretKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
@@ -63,13 +68,20 @@ public class JwtUtil {
      * @param token JWT令牌
      * @return 用户ID，无效令牌返回null
      */
-    public Long parseUserId(String token) {
-        checkInit();
-        String subject = Optional.ofNullable(parseAllClaims(token)).map(Claims::getSubject).orElse(null);
-        if (StringUtils.isBlank(subject)) {
+    public Long extractUserId(String token) {
+        if (StringUtils.isBlank(token)) {
             return null;
         }
-        return Long.valueOf(subject);
+        try {
+            String subject = Optional.ofNullable(parseClaims(token)).map(Claims::getSubject).orElse(null);
+            if (StringUtils.isBlank(subject)) {
+                return null;
+            }
+            return Long.valueOf(subject);
+        } catch (NumberFormatException e) {
+            log.warn("JWT令牌中用户ID格式错误: {}", token);
+            return null;
+        }
     }
 
     /**
@@ -78,9 +90,14 @@ public class JwtUtil {
      * @param token JWT令牌
      * @return 用户角色，无效令牌返回null
      */
-    public String parseRole(String token) {
-        checkInit();
-        return Optional.ofNullable(parseAllClaims(token)).map(claims -> claims.get("role", String.class)).orElse(null);
+    public UserRoleEnum extractUserRole(String token) {
+        if (StringUtils.isBlank(token)) {
+            return null;
+        }
+        Integer roleCode = Optional.ofNullable(parseClaims(token))
+                .map(claims -> claims.get("role", Integer.class))
+                .orElse(null);
+        return UserRoleEnum.fromCode(roleCode);
     }
 
     /**
@@ -90,8 +107,10 @@ public class JwtUtil {
      * @return 是否已过期
      */
     public boolean isTokenExpired(String token) {
-        checkInit();
-        return getExpiration(token).before(new Date());
+        if (StringUtils.isBlank(token)) {
+            return true;
+        }
+        return getTokenExpiration(token).before(new Date());
     }
 
     /**
@@ -100,9 +119,11 @@ public class JwtUtil {
      * @param token JWT令牌
      * @return 过期时间
      */
-    public Date getExpiration(String token) {
-        checkInit();
-        return Optional.ofNullable(parseAllClaims(token)).map(Claims::getExpiration).orElse(new Date(0));
+    public Date getTokenExpiration(String token) {
+        if (StringUtils.isBlank(token)) {
+            return new Date(0);
+        }
+        return Optional.ofNullable(parseClaims(token)).map(Claims::getExpiration).orElse(new Date(0));
     }
 
     /**
@@ -110,9 +131,17 @@ public class JwtUtil {
      *
      * @return 过期秒数
      */
-    public Long getExpireSeconds() {
-        checkInit();
-        return jwtProperties.getExpire().getSeconds();
+    public Duration getDefaultExpire() {
+        return jwtProperties.getDefaultExpire();
+    }
+
+    /**
+     * 获取保持登录状态的令牌过期时间
+     *
+     * @return 保持登录状态的过期时间
+     */
+    public Duration getKeepLoginExpire() {
+        return jwtProperties.getKeepLoginExpire();
     }
 
     /**
@@ -121,19 +150,16 @@ public class JwtUtil {
      * @param token JWT令牌
      * @return 声明内容，解析失败返回null
      */
-    private Claims parseAllClaims(String token) {
+    private Claims parseClaims(String token) {
         try {
-            return Jwts.parserBuilder().setSigningKey(getSecretKey()).build().parseClaimsJws(token).getBody();
+            return Jwts.parserBuilder()
+                    .setSigningKey(getSecretKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
         } catch (JwtException e) {
             log.warn("JWT令牌解析失败: {}", e.getMessage());
             return null;
         }
-    }
-
-    /**
-     * 检查工具类是否已初始化
-     */
-    private void checkInit() {
-        getSecretKey();
     }
 }

@@ -25,7 +25,7 @@ database:
 jwt:
   issuer: bytelogs # JWT 令牌发布者标识
   secret: your-very-secure-and-long-secret-key-by-bytelogs # JWT 加密用的密钥，必须保密
-  expire: 1d # 默认有效时间
+  default-expire: 1d # 默认有效时间
   keep-login-expire: 3d # 保持登录有效时间
 
 user:

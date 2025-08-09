@@ -29,7 +29,7 @@ public class JwtProperties {
     /**
      * 默认有效期
      */
-    private Duration expire;
+    private Duration defaultExpire;
 
     /**
      * 保持登录有效期
