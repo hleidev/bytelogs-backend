@@ -22,20 +22,20 @@ import top.harrylei.forum.core.util.RedisUtil;
 import top.harrylei.forum.service.user.service.cache.UserCacheService;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * JWT认证过滤器
- * <p>
- * 负责解析请求中的JWT令牌，验证其有效性，并设置用户认证信息和上下文。 这是安全框架的核心组件，确保每个受保护的接口都能正确识别用户身份。
- * </p>
+ *
+ * @author harry
  */
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    private static final String BEARER_PREFIX = "Bearer ";
 
     private final UserCacheService userCacheService;
     private final RedisUtil redisUtil;
@@ -43,9 +43,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     /**
      * 过滤器核心处理方法
-     * <p>
-     * 处理每个HTTP请求，提取JWT令牌并进行认证。 认证成功后，会设置Spring Security上下文和请求上下文，同步获取完整用户信息。
-     * </p>
      *
      * @param request     当前HTTP请求
      * @param response    HTTP响应
@@ -64,8 +61,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 if (userId != null) {
                     // 获取用户角色
-                    String role = jwtUtil.parseRole(token);
-                    boolean isAdmin = "ADMIN".equals(role);
+                    UserRoleEnum role = jwtUtil.extractUserRole(token);
+                    boolean isAdmin = UserRoleEnum.ADMIN.equals(role);
 
                     // 设置用户认证信息到Spring Security上下文
                     setAuthentication(userId, isAdmin);
@@ -75,7 +72,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     // 如果获取失败，创建基本用户信息
                     if (userInfo == null) {
-                        userInfo = new UserInfoDetailDTO().setUserId(userId).setRole(UserRoleEnum.fromName(role));
+                        userInfo = new UserInfoDetailDTO().setUserId(userId).setRole(role);
                     }
 
                     // 设置用户信息到上下文
@@ -101,7 +98,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      */
     private String getTokenFromRequest(@NotNull HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
-        final String BEARER_PREFIX = "Bearer ";
         if (StringUtils.isNotBlank(authHeader) && authHeader.startsWith(BEARER_PREFIX)) {
             return authHeader.substring(BEARER_PREFIX.length());
         }
@@ -122,7 +118,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             // 解析JWT获取用户ID
-            Long userId = jwtUtil.parseUserId(token);
+            Long userId = jwtUtil.extractUserId(token);
             if (userId == null) {
                 return null;
             }
@@ -136,8 +132,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return null;
             }
 
-            // 刷新token过期时间
-            redisUtil.expire(RedisKeyConstants.getUserTokenKey(userId), Duration.ofSeconds(jwtUtil.getExpireSeconds()));
+            // 只有在token即将过期时才刷新
+            refreshTokenIfNeeded(userId);
 
             return userId;
         } catch (Exception e) {
@@ -153,15 +149,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * @param isAdmin 是否为管理员
      */
     private void setAuthentication(Long userId, boolean isAdmin) {
-        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-
-        // 添加基础角色
-        authorities.add(new SimpleGrantedAuthority("ROLE_NORMAL"));
-
-        // 如果是管理员，添加管理员角色
-        if (isAdmin) {
-            authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
-        }
+        List<SimpleGrantedAuthority> authorities = buildAuthorities(isAdmin);
 
         // 创建认证对象
         UsernamePasswordAuthenticationToken authentication =
@@ -179,23 +167,63 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * @param isAdmin  是否为管理员
      */
     private void setUserContext(Long userId, UserInfoDetailDTO userInfo, boolean isAdmin) {
-        // 构建用户上下文信息
-        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority("ROLE_NORMAL"));
+        List<SimpleGrantedAuthority> authorities = buildAuthorities(isAdmin);
 
-        if (isAdmin) {
-            authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
-        }
-
-        // 获取当前上下文（已在ReqInfoContext中确保不为null）
+        // 获取当前上下文
         ReqInfoContext.ReqInfo context = ReqInfoContext.getContext();
 
         // 设置用户信息
         context.setUserId(userId);
         context.setUser(userInfo);
         context.setAuthorities(authorities);
+    }
 
-        // 重新设置上下文（为了保持链式调用的兼容性）
-        ReqInfoContext.setContext(context);
+    /**
+     * 构建用户权限列表
+     *
+     * @param isAdmin 是否为管理员
+     * @return 权限列表
+     */
+    private List<SimpleGrantedAuthority> buildAuthorities(boolean isAdmin) {
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+
+        // 添加基础角色
+        authorities.add(new SimpleGrantedAuthority("ROLE_NORMAL"));
+
+        // 如果是管理员，添加管理员角色
+        if (isAdmin) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        }
+
+        return authorities;
+    }
+
+    /**
+     * 刷新token过期时间
+     *
+     * @param userId 用户ID
+     */
+    private void refreshTokenIfNeeded(Long userId) {
+        try {
+            String tokenKey = RedisKeyConstants.getUserTokenKey(userId);
+            Long ttl = redisUtil.ttl(tokenKey);
+
+            if (ttl == null || ttl <= 0) {
+                // token已过期或不存在，不需要刷新
+                return;
+            }
+
+            // 获取默认过期时间（秒）
+            long defaultExpireSeconds = jwtUtil.getDefaultExpire().getSeconds();
+
+            // 当剩余时间少于总时间的1/3时才刷新
+            if (ttl < defaultExpireSeconds / 3) {
+                redisUtil.expire(tokenKey, jwtUtil.getDefaultExpire());
+                log.debug("Token过期时间已刷新: userId={}, 剩余时间={}秒", userId, ttl);
+            }
+        } catch (Exception e) {
+            // 刷新失败不影响主流程
+            log.warn("Token过期时间刷新失败: userId={}, 错误: {}", userId, e.getMessage());
+        }
     }
 }
