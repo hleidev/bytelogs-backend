@@ -17,7 +17,7 @@ CREATE TABLE `user_account`
     `create_time`      timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time`      timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_user_account_name_type` (`user_name`, `login_type`) COMMENT '用户名和登录类型唯一约束'
+    UNIQUE KEY `uk_user_name` (`user_name`) COMMENT '用户名唯一约束'
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci

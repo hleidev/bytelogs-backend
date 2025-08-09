@@ -4,20 +4,21 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * @author YiHui
- * @date 2023/6/26
+ * 登录类型枚举
+ *
+ * @author harry
  */
 @Getter
 @AllArgsConstructor
 public enum LoginTypeEnum {
     /**
-     * 微信登录
-     */
-    WECHAT(1),
-    /**
      * 用户名+密码登录
      */
-    USER_PWD(0),
-    ;
-    private int code;
+    USERNAME_PASSWORD(0),
+    /**
+     * 邮箱密码登录
+     */
+    EMAIL_PASSWORD(1);
+
+    private final int code;
 }

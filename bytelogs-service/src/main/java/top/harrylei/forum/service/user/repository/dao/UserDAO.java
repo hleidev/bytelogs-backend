@@ -23,7 +23,7 @@ public class UserDAO extends ServiceImpl<UserMapper, UserDO> {
      * @param username 用户名
      * @return 用户账号信息，不存在则返回null
      */
-    public UserDO getUserByUserName(String username) {
+    public UserDO getUserByUsername(String username) {
         if (username == null) {
             return null;
         }
@@ -31,7 +31,6 @@ public class UserDAO extends ServiceImpl<UserMapper, UserDO> {
         return lambdaQuery()
                 .eq(UserDO::getUserName, username)
                 .eq(UserDO::getDeleted, YesOrNoEnum.NO.getCode())
-                .last("limit 1")
                 .one();
     }
 
