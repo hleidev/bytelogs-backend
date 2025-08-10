@@ -24,7 +24,7 @@ public interface NotifyMsgStructMapper {
 
     NotifyMsgVO toVO(NotifyMsgDTO dto);
 
-    default NotifyTypeEnum mapType(Integer code) {
+    default NotifyTypeEnum mapNotifyType(Integer code) {
         return code != null ? NotifyTypeEnum.fromCode(code) : null;
     }
 
@@ -32,7 +32,7 @@ public interface NotifyMsgStructMapper {
         return code != null ? ContentTypeEnum.fromCode(code) : null;
     }
 
-    default NotifyMsgStateEnum mapState(Integer code) {
+    default NotifyMsgStateEnum mapNotifyMsgState(Integer code) {
         return code != null ? NotifyMsgStateEnum.fromCode(code) : null;
     }
 }

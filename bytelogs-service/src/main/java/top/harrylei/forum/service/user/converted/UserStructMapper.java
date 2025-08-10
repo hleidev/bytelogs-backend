@@ -91,32 +91,39 @@ public interface UserStructMapper {
     UserDetailVO toUserDetailVO(UserDetailDTO userDetailDTO);
 
     /**
-     * 将角色代码转换为角色名称（枚举名）
-     *
-     * @param code 角色代码
-     * @return 角色名称
+     * Integer到UserRoleEnum的自动映射
+     */
+    default UserRoleEnum mapUserRole(Integer code) {
+        return UserRoleEnum.fromCode(code);
+    }
+
+    /**
+     * UserRoleEnum到Integer的自动映射
+     */
+    default Integer mapUserRole(UserRoleEnum role) {
+        return role != null ? role.getCode() : null;
+    }
+
+    /**
+     * 角色代码转角色名称
      */
     @Named("codeToRoleName")
-    static String codeToRoleName(Integer code) {
-        return UserRoleEnum.getNameByCode(code);
+    default String codeToRoleName(Integer code) {
+        UserRoleEnum role = UserRoleEnum.fromCode(code);
+        return role != null ? role.name() : UserRoleEnum.NORMAL.name();
     }
 
     /**
-     * 将角色名称转换为角色代码
-     *
-     * @param roleName 角色名称
-     * @return 角色代码
+     * 角色名称转角色代码
      */
     @Named("roleNameToCode")
-    static Integer roleNameToCode(String roleName) {
-        return UserRoleEnum.getCodeByName(roleName);
+    default Integer roleNameToCode(String roleName) {
+        UserRoleEnum role = UserRoleEnum.fromName(roleName);
+        return role != null ? role.getCode() : UserRoleEnum.NORMAL.getCode();
     }
 
     /**
-     * 将角色代码转换为角色文本显示值
-     *
-     * @param code 角色代码
-     * @return 角色文本
+     * 角色代码转显示文本
      */
     @Named("codeToRoleText")
     default String codeToRoleText(Integer code) {
@@ -124,10 +131,7 @@ public interface UserStructMapper {
     }
 
     /**
-     * 将状态码转换为状态文本
-     *
-     * @param status 状态码
-     * @return 状态文本
+     * 状态码转显示文本
      */
     @Named("statusToText")
     default String statusToText(Integer status) {
@@ -135,10 +139,7 @@ public interface UserStructMapper {
     }
 
     /**
-     * 将删除标记转换为删除状态文本
-     *
-     * @param deleted 删除标记
-     * @return 删除状态文本
+     * 删除标记转显示文本
      */
     @Named("deletedToText")
     default String deletedToText(Integer deleted) {
