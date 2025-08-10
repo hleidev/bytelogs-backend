@@ -1,27 +1,29 @@
 package top.harrylei.forum.web.admin;
 
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 import top.harrylei.forum.api.enums.ErrorCodeEnum;
+import top.harrylei.forum.api.enums.ResultCode;
 import top.harrylei.forum.api.enums.user.UserRoleEnum;
-import top.harrylei.forum.api.model.base.ResVO;
 import top.harrylei.forum.api.model.auth.AuthReq;
+import top.harrylei.forum.api.model.base.ResVO;
 import top.harrylei.forum.api.model.user.dto.UserInfoDetailDTO;
 import top.harrylei.forum.api.model.user.req.PasswordUpdateReq;
 import top.harrylei.forum.api.model.user.vo.UserInfoVO;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.core.security.permission.RequiresAdmin;
+import top.harrylei.forum.core.util.JwtUtil;
 import top.harrylei.forum.service.auth.service.AuthService;
 import top.harrylei.forum.service.user.converted.UserStructMapper;
 import top.harrylei.forum.service.user.service.UserService;
+import top.harrylei.forum.service.user.service.cache.UserCacheService;
 
 /**
  * 管理员认证模块
@@ -39,6 +41,8 @@ public class AuthManagementController {
     private final AuthService authService;
     private final UserService userService;
     private final UserStructMapper userStructMapper;
+    private final UserCacheService userCacheService;
+    private final JwtUtil jwtUtil;
 
     /**
      * 管理员登录接口
@@ -50,14 +54,20 @@ public class AuthManagementController {
     @Operation(summary = "登录账号", description = "校验管理员密码，成功后返回JWT令牌")
     @PostMapping("/login")
     public ResVO<UserInfoVO> login(@Valid @RequestBody AuthReq authReq, HttpServletResponse response) {
-        String token = authService.login(authReq.getUsername(), authReq.getPassword(), authReq.getKeepLogin(), UserRoleEnum.ADMIN);
-        ExceptionUtil.requireValid(token, ErrorCodeEnum.USER_LOGIN_FAILED, "token 为空");
+        String token = authService.login(authReq.getUsername(),
+                                         authReq.getPassword(),
+                                         authReq.getKeepLogin(),
+                                         UserRoleEnum.ADMIN);
 
         response.setHeader("Authorization", "Bearer " + token);
         response.setHeader("Access-Control-Expose-Headers", "Authorization");
 
-        UserInfoDetailDTO userInfo = ReqInfoContext.getContext().getUser();
-        ExceptionUtil.requireValid(userInfo, ErrorCodeEnum.USER_INFO_NOT_EXISTS);
+        // 从token中提取用户ID，通过缓存服务获取用户信息
+        Long userId = jwtUtil.extractUserId(token);
+        UserInfoDetailDTO userInfo = userCacheService.getUserInfo(userId);
+        if (userInfo == null) {
+            ResultCode.USER_NOT_EXISTS.throwException();
+        }
 
         return ResVO.ok(userStructMapper.toVO(userInfo));
     }
