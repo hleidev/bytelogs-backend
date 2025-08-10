@@ -14,6 +14,8 @@ import top.harrylei.forum.api.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.enums.user.UserStatusEnum;
 import top.harrylei.forum.api.model.base.ResVO;
 import top.harrylei.forum.api.model.auth.UserCreateReq;
+import top.harrylei.forum.api.model.user.req.PasswordUpdateReq;
+import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.util.PageUtils;
 import top.harrylei.forum.api.model.page.PageVO;
 import top.harrylei.forum.api.model.page.param.UserQueryParam;
@@ -109,6 +111,20 @@ public class UserManagementController {
     public ResVO<Void> updateEmail(@NotNull(message = "用户ID为空") @PathVariable Long userId,
                                    @NotBlank(message = "邮箱为空") @RequestBody String email) {
         // TODO userManagementService.updateEmail(userId, email);
+        return ResVO.ok();
+    }
+
+    /**
+     * 修改管理员自己的密码
+     *
+     * @param passwordUpdateReq 密码更新请求
+     * @return 操作结果
+     */
+    @Operation(summary = "修改管理员密码", description = "管理员修改自己的个人密码")
+    @PostMapping("/password")
+    public ResVO<Void> updatePassword(@Valid @RequestBody PasswordUpdateReq passwordUpdateReq) {
+        Long userId = ReqInfoContext.getContext().getUserId();
+        userService.updatePassword(userId, passwordUpdateReq.getOldPassword(), passwordUpdateReq.getNewPassword());
         return ResVO.ok();
     }
 

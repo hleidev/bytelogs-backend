@@ -7,23 +7,20 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-import top.harrylei.forum.api.enums.ErrorCodeEnum;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import top.harrylei.forum.api.enums.ResultCode;
 import top.harrylei.forum.api.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.auth.AuthReq;
 import top.harrylei.forum.api.model.base.ResVO;
 import top.harrylei.forum.api.model.user.dto.UserInfoDetailDTO;
-import top.harrylei.forum.api.model.user.req.PasswordUpdateReq;
 import top.harrylei.forum.api.model.user.vo.UserInfoVO;
 import top.harrylei.forum.core.context.ReqInfoContext;
-import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.core.security.permission.RequiresAdmin;
-import top.harrylei.forum.core.util.JwtUtil;
 import top.harrylei.forum.service.auth.service.AuthService;
 import top.harrylei.forum.service.user.converted.UserStructMapper;
-import top.harrylei.forum.service.user.service.UserService;
-import top.harrylei.forum.service.user.service.cache.UserCacheService;
 
 /**
  * 管理员认证模块
@@ -39,10 +36,7 @@ import top.harrylei.forum.service.user.service.cache.UserCacheService;
 public class AuthManagementController {
 
     private final AuthService authService;
-    private final UserService userService;
     private final UserStructMapper userStructMapper;
-    private final UserCacheService userCacheService;
-    private final JwtUtil jwtUtil;
 
     /**
      * 管理员登录接口
@@ -62,9 +56,8 @@ public class AuthManagementController {
         response.setHeader("Authorization", "Bearer " + token);
         response.setHeader("Access-Control-Expose-Headers", "Authorization");
 
-        // 从token中提取用户ID，通过缓存服务获取用户信息
-        Long userId = jwtUtil.extractUserId(token);
-        UserInfoDetailDTO userInfo = userCacheService.getUserInfo(userId);
+        // 从请求上下文获取已认证的用户信息
+        UserInfoDetailDTO userInfo = ReqInfoContext.getContext().getUser();
         if (userInfo == null) {
             ResultCode.USER_NOT_EXISTS.throwException();
         }
@@ -82,40 +75,7 @@ public class AuthManagementController {
     @PostMapping("/logout")
     public ResVO<Void> logout() {
         Long userId = ReqInfoContext.getContext().getUserId();
-        ExceptionUtil.requireValid(userId, ErrorCodeEnum.PARAM_VALIDATE_FAILED, "用户ID为空");
         authService.logout(userId);
-        return ResVO.ok();
-    }
-
-    /**
-     * 获取管理员信息
-     *
-     * @return 返回管理员信息
-     */
-    @Operation(summary = "查询管理员信息", description = "从请求上下文中获取管理员用户信息")
-    @RequiresAdmin
-    @GetMapping("/profile")
-    public ResVO<UserInfoVO> getProfile() {
-        UserInfoDetailDTO userInfo = ReqInfoContext.getContext().getUser();
-
-        ExceptionUtil.requireValid(userInfo, ErrorCodeEnum.USER_INFO_NOT_EXISTS);
-        return ResVO.ok(userStructMapper.toVO(userInfo));
-    }
-
-
-    /**
-     * 修改管理员密码
-     *
-     * @param passwordUpdateReq 用户密码更新请求
-     * @return 操作成功响应
-     */
-    @Operation(summary = "修改管理员密码", description = "修改当前管理员的个人密码")
-    @RequiresAdmin
-    @PutMapping("/password")
-    public ResVO<Void> updatePassword(@Valid @RequestBody PasswordUpdateReq passwordUpdateReq) {
-        Long userId = ReqInfoContext.getContext().getUserId();
-        ExceptionUtil.requireValid(userId, ErrorCodeEnum.PARAM_VALIDATE_FAILED, "用户ID为空");
-        userService.updatePassword(userId, passwordUpdateReq.getOldPassword(), passwordUpdateReq.getNewPassword());
         return ResVO.ok();
     }
 }
