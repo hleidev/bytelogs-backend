@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import top.harrylei.forum.api.enums.ErrorCodeEnum;
+import top.harrylei.forum.api.enums.ResultCode;
 import top.harrylei.forum.api.enums.YesOrNoEnum;
 import top.harrylei.forum.api.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.enums.comment.ContentTypeEnum;
@@ -13,13 +14,13 @@ import top.harrylei.forum.api.model.article.req.ArticleQueryParam;
 import top.harrylei.forum.api.model.article.vo.ArticleDetailVO;
 import top.harrylei.forum.api.model.article.vo.ArticleVO;
 import top.harrylei.forum.api.model.article.vo.TagSimpleVO;
-import top.harrylei.forum.core.util.PageUtils;
 import top.harrylei.forum.api.model.page.PageVO;
 import top.harrylei.forum.api.model.statistics.StatisticsVO;
 import top.harrylei.forum.api.model.user.dto.ArticleFootCountDTO;
 import top.harrylei.forum.api.model.user.dto.UserInfoDetailDTO;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
+import top.harrylei.forum.core.util.PageUtils;
 import top.harrylei.forum.service.article.converted.ArticleStructMapper;
 import top.harrylei.forum.service.article.repository.dao.ArticleDAO;
 import top.harrylei.forum.service.article.repository.dao.ArticleDetailDAO;
@@ -32,7 +33,6 @@ import top.harrylei.forum.service.user.converted.UserStructMapper;
 import top.harrylei.forum.service.user.service.UserFootService;
 import top.harrylei.forum.service.user.service.cache.UserCacheService;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -90,14 +90,14 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
         // 创建MyBatis-Plus分页对象
         IPage<ArticleVO> page = PageUtils.of(queryParam);
 
-        // 第一步：分页查询文章基础信息（避免JOIN标签表导致的重复记录）
-        IPage<ArticleVO> result = articleDAO.pageArticleVO(queryParam, page);
+        // 第一步：分页查询文章基础信息
+        IPage<ArticleVO> articlePage = articleDAO.pageArticleVO(queryParam, page);
 
-        // 第二步：批量查询标签信息并填充到结果中（提升性能，便于缓存）
-        fillArticleTags(result.getRecords());
+        // 第二步：批量查询标签信息并填充到结果中
+        fillArticleTags(articlePage.getRecords());
 
-        // 使用PageHelper.build构建分页结果
-        return PageUtils.from(result);
+        // 构建分页结果
+        return PageUtils.from(articlePage);
     }
 
     @Override
@@ -167,9 +167,11 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
 
         // 1. 我的文章查询
         if (Boolean.TRUE.equals(queryParam.getOnlyMine())) {
-            ExceptionUtil.errorIf(!isLogin, ErrorCodeEnum.UNAUTHORIZED, "查询我的文章需要先登录");
+            if (!isLogin) {
+                ResultCode.AUTHENTICATION_FAILED.throwException("查询我的文章需要先登录");
+            }
             queryParam.setUserId(currentUserId);
-            return; // 查看自己所有状态的文章
+            return;
         }
 
         // 2. 指定用户查询
@@ -245,7 +247,7 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
 
         // 填充到各个文章
         articles.forEach(article -> {
-            List<TagSimpleVO> tags = tagsMap.getOrDefault(article.getId(), Collections.emptyList());
+            List<TagSimpleVO> tags = tagsMap.getOrDefault(article.getId(), List.of());
             article.setTags(tags);
         });
     }

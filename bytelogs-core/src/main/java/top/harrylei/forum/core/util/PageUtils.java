@@ -17,6 +17,16 @@ import java.util.function.Function;
  */
 public class PageUtils {
 
+    /**
+     * 排序项分隔符
+     */
+    private static final String SORT_ITEM_SEPARATOR = ";";
+    
+    /**
+     * 排序字段和方向分隔符
+     */
+    private static final String FIELD_DIRECTION_SEPARATOR = ",";
+
     private PageUtils() {
         // 工具类不允许实例化
     }
@@ -29,9 +39,9 @@ public class PageUtils {
      */
     public static <T> PageVO<T> empty() {
         PageVO<T> result = new PageVO<>();
-        result.setContent(Collections.emptyList());
-        result.setPageNum(1);
-        result.setPageSize(10);
+        result.setContent(List.of());
+        result.setPageNum(BasePage.DEFAULT_PAGE_NUM);
+        result.setPageSize(BasePage.DEFAULT_PAGE_SIZE);
         result.setTotalPages(0);
         result.setTotalElements(0);
         result.setHasPrevious(false);
@@ -80,7 +90,7 @@ public class PageUtils {
         }
 
         PageVO<T> result = new PageVO<>();
-        result.setContent(iPage.getRecords() != null ? iPage.getRecords() : Collections.emptyList());
+        result.setContent(iPage.getRecords() != null ? iPage.getRecords() : List.of());
         result.setPageNum(iPage.getCurrent());
         result.setPageSize(iPage.getSize());
         result.setTotalElements(iPage.getTotal());
@@ -152,7 +162,7 @@ public class PageUtils {
      * @return 空的MyBatis-Plus分页对象
      */
     public static <T> IPage<T> of() {
-        return new Page<>(1, 10);
+        return new Page<>(BasePage.DEFAULT_PAGE_NUM, BasePage.DEFAULT_PAGE_SIZE);
     }
 
     /**
@@ -253,9 +263,9 @@ public class PageUtils {
         List<OrderItem> orderItems = new ArrayList<>();
         String sortField = basePage.getSortField();
         if (StringUtils.isNotBlank(sortField)) {
-            String[] sortItems = sortField.split(";");
+            String[] sortItems = sortField.split(SORT_ITEM_SEPARATOR);
             for (String sortItem : sortItems) {
-                String[] parts = sortItem.trim().split(",");
+                String[] parts = sortItem.trim().split(FIELD_DIRECTION_SEPARATOR);
                 if (parts.length == 2) {
                     String field = parts[0].trim();
                     String direction = parts[1].trim();

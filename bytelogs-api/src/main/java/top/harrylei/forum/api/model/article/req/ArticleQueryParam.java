@@ -9,7 +9,6 @@ import top.harrylei.forum.api.model.base.BasePage;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +21,11 @@ import java.util.Map;
 @Data
 @Schema(description = "文章分页查询参数")
 public class ArticleQueryParam extends BasePage {
+
+    /**
+     * 标签ID分隔符
+     */
+    private static final String TAG_ID_SEPARATOR = ",";
 
     /**
      * 标题关键词（模糊搜索）
@@ -100,13 +104,19 @@ public class ArticleQueryParam extends BasePage {
         }
 
         if (StringUtils.hasText(tagIds)) {
-            tagIdList = Arrays.stream(tagIds.split(","))
-                    .map(String::trim)
-                    .map(Long::valueOf)
-                    .toList();
-            return tagIdList;
+            try {
+                tagIdList = Arrays.stream(tagIds.split(TAG_ID_SEPARATOR))
+                        .map(String::trim)
+                        .filter(StringUtils::hasText)
+                        .map(Long::valueOf)
+                        .toList();
+                return tagIdList;
+            } catch (NumberFormatException e) {
+                // 标签ID格式错误时返回空列表，不影响查询
+                return List.of();
+            }
         }
-        return Collections.emptyList();
+        return List.of();
     }
 
     /**

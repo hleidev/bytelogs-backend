@@ -9,6 +9,11 @@ import top.harrylei.forum.service.article.repository.entity.ArticleTagDO;
 
 import java.util.List;
 
+/**
+ * 文章标签关系Mapper
+ *
+ * @author harry
+ */
 public interface ArticleTagMapper extends BaseMapper<ArticleTagDO> {
 
     @Select("select tag_id from article_tag where article_id = #{articleId} and deleted = 0")

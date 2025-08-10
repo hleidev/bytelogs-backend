@@ -3,6 +3,7 @@ package top.harrylei.forum.service.article.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import top.harrylei.forum.api.enums.YesOrNoEnum;
 import top.harrylei.forum.api.model.article.vo.TagSimpleVO;
 import top.harrylei.forum.service.article.repository.dao.ArticleTagDAO;
@@ -109,14 +110,14 @@ public class ArticleTagServiceImpl implements ArticleTagService {
     }
 
     /**
-     * 通过文章ID列表插叙标签简单展示对象
+     * 通过文章ID列表查询标签简单展示对象
      *
      * @param articleIds 文章ID列表
-     * @return 标签简单展示对象
+     * @return 标签简单展示对象列表
      */
     @Override
     public List<TagSimpleVO> listTagSimpleVoByArticleIds(List<Long> articleIds) {
-        if (articleIds == null || articleIds.isEmpty()) {
+        if (CollectionUtils.isEmpty(articleIds)) {
             return List.of();
         }
 
