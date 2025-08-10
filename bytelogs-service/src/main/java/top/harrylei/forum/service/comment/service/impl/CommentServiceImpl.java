@@ -22,7 +22,7 @@ import top.harrylei.forum.api.model.comment.vo.SubCommentVO;
 import top.harrylei.forum.api.model.comment.vo.TopCommentVO;
 import top.harrylei.forum.api.model.page.PageVO;
 import top.harrylei.forum.api.model.user.dto.UserFootDTO;
-import top.harrylei.forum.api.model.user.dto.UserInfoDetailDTO;
+import top.harrylei.forum.api.model.user.dto.UserInfoDTO;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.core.util.KafkaEventPublisher;
@@ -220,7 +220,7 @@ public class CommentServiceImpl implements CommentService {
 
     private void fillCommentInfo(BaseCommentVO comment) {
         // 填充用户信息
-        UserInfoDetailDTO userInfo = userCacheService.getUserInfo(comment.getUserId());
+        UserInfoDTO userInfo = userCacheService.getUserInfo(comment.getUserId());
         if (userInfo == null) {
             comment.setUserName("默认用户");
             comment.setUserAvatar("");

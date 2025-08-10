@@ -6,14 +6,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import top.harrylei.forum.api.enums.ErrorCodeEnum;
+import top.harrylei.forum.api.enums.ResultCode;
 import top.harrylei.forum.api.enums.YesOrNoEnum;
 import top.harrylei.forum.api.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.enums.user.UserStatusEnum;
+import top.harrylei.forum.api.exception.BusinessException;
 import top.harrylei.forum.api.model.auth.UserCreateReq;
 import top.harrylei.forum.api.model.page.PageVO;
 import top.harrylei.forum.api.model.page.param.UserQueryParam;
 import top.harrylei.forum.api.model.user.dto.UserDetailDTO;
-import top.harrylei.forum.api.model.user.dto.UserInfoDetailDTO;
+import top.harrylei.forum.api.model.user.dto.UserInfoDTO;
 import top.harrylei.forum.core.common.constans.RedisKeyConstants;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
@@ -30,7 +32,6 @@ import top.harrylei.forum.service.user.repository.entity.UserInfoDO;
 import top.harrylei.forum.service.user.service.UserService;
 import top.harrylei.forum.service.user.service.cache.UserCacheService;
 
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -51,59 +52,64 @@ public class UserServiceImpl implements UserService {
     private final UserCacheService userCacheService;
 
     /**
-     * 获取用户信息，支持缓存优先
+     * 根据用户ID获取用户信息
      *
-     * @param userId 用户 ID
-     * @return 用户信息 DTO
+     * @param userId 用户ID，不能为空
+     * @return 用户信息DTO
+     * @throws BusinessException 当用户ID为空或用户不存在时抛出
      */
     @Override
-    public UserInfoDetailDTO getUserInfoById(Long userId) {
-        ExceptionUtil.requireValid(userId, ErrorCodeEnum.PARAM_MISSING, "用户ID");
-
-        UserInfoDetailDTO userInfo = userCacheService.getUserInfo(userId);
-        ExceptionUtil.requireValid(userInfo, ErrorCodeEnum.USER_INFO_NOT_EXISTS);
-        return userInfo;
-    }
-
-    @Override
-    public List<UserInfoDetailDTO> batchQueryUserInfo(List<Long> userIds) {
-        if (userIds == null || userIds.isEmpty()) {
-            return List.of();
+    public UserInfoDTO getUserInfoById(Long userId) {
+        // 参数校验
+        if (userId == null) {
+            ResultCode.INVALID_PARAMETER.throwException("用户ID不能为空");
         }
-        List<UserInfoDO> list = userInfoDAO.listByUserIds(userIds);
-        return list.stream().map(userStructMapper::toDTO).toList();
+
+        UserInfoDTO userInfo = userCacheService.getUserInfo(userId);
+        if (userInfo == null) {
+            ResultCode.USER_NOT_EXISTS.throwException();
+        }
+
+        return userInfo;
     }
 
     /**
      * 更新用户信息
      *
-     * @param userInfoDTO 需要更新的用户信息DTO
-     * @throws RuntimeException 更新失败时抛出异常
+     * @param userInfoDTO 需要更新的用户信息DTO，不能为空
+     * @throws BusinessException 当参数无效或用户不存在时抛出
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void updateUserInfo(UserInfoDetailDTO userInfoDTO) {
-        ExceptionUtil.requireValid(userInfoDTO, ErrorCodeEnum.PARAM_MISSING, "用户信息");
-
-        try {
-            // 转换为数据库实体并更新用户个人信息
-            UserInfoDO userInfo = userStructMapper.toDO(userInfoDTO);
-            userInfoDAO.updateById(userInfo);
-
-            UserDO userDO = userDAO.getById(userInfo.getUserId());
-            ExceptionUtil.requireValid(userDO, ErrorCodeEnum.USER_NOT_EXISTS, "userId={}", userInfo.getUserId());
-
-            // 更新用户账户信息
-            userDO.setId(userInfo.getUserId());
-            userDO.setUserName(userInfo.getUserName());
-            userDAO.updateById(userDO);
-
-            redisUtil.del(RedisKeyConstants.getUserInfoKey(userInfo.getUserId()));
-
-            log.info("用户信息更新成功: userId={}", userInfoDTO.getUserId());
-        } catch (Exception e) {
-            ExceptionUtil.error(ErrorCodeEnum.USER_UPDATE_FAILED, "用户信息更新失败，请稍后重试！", e);
+    public void updateUserInfo(UserInfoDTO userInfoDTO) {
+        // 参数校验
+        if (userInfoDTO == null) {
+            ResultCode.INVALID_PARAMETER.throwException("用户信息不能为空");
         }
+
+        Long userId = userInfoDTO.getUserId();
+        if (userId == null) {
+            ResultCode.INVALID_PARAMETER.throwException("用户ID不能为空");
+        }
+
+        // 校验用户存在性
+        UserDO userDO = userDAO.getById(userId);
+        if (userDO == null) {
+            ResultCode.USER_NOT_EXISTS.throwException();
+        }
+
+        // 转换并更新
+        UserInfoDO userInfo = userStructMapper.toDO(userInfoDTO);
+
+        // 原子性更新用户基本信息和详细信息
+        userDO.setUserName(userInfo.getUserName());
+        userDAO.updateById(userDO);
+        userInfoDAO.updateById(userInfo);
+
+        // 事务成功后清理缓存
+        userCacheService.clearUserInfoCache(userId);
+
+        log.info("用户信息更新成功: userId={}", userId);
     }
 
     /**
@@ -147,7 +153,7 @@ public class UserServiceImpl implements UserService {
         ExceptionUtil.requireValid(userId, ErrorCodeEnum.PARAM_MISSING, "用户ID");
         ExceptionUtil.requireValid(avatar, ErrorCodeEnum.PARAM_MISSING, "用户头像");
 
-        UserInfoDetailDTO userInfo = getUserInfoById(userId);
+        UserInfoDTO userInfo = getUserInfoById(userId);
 
         redisUtil.del(RedisKeyConstants.getUserInfoKey(userInfo.getUserId()));
         userCacheService.updateUserInfoCache(userInfo);

@@ -3,7 +3,7 @@ package top.harrylei.forum.service.user.service.cache;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import top.harrylei.forum.api.model.user.dto.UserInfoDetailDTO;
+import top.harrylei.forum.api.model.user.dto.UserInfoDTO;
 import top.harrylei.forum.core.common.constans.RedisKeyConstants;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.util.JwtUtil;
@@ -12,6 +12,7 @@ import top.harrylei.forum.service.user.converted.UserStructMapper;
 import top.harrylei.forum.service.user.repository.dao.UserInfoDAO;
 import top.harrylei.forum.service.user.repository.entity.UserInfoDO;
 
+import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -31,45 +32,89 @@ public class UserCacheService {
     private final JwtUtil jwtUtil;
 
     /**
-     * 获取用户信息，优先从缓存获取
+     * 用户信息查询分布式锁超时时间
+     */
+    private static final Duration LOCK_TIMEOUT = Duration.ofSeconds(30);
+
+    /**
+     * 获取用户信息，优先从缓存获取，使用分布式锁防止缓存击穿
      *
      * @param userId 用户ID
      * @return 用户信息DTO，若不存在则返回null
      */
-    public UserInfoDetailDTO getUserInfo(Long userId) {
+    public UserInfoDTO getUserInfo(Long userId) {
         if (userId == null) {
             return null;
         }
 
         // 1. 尝试从上下文获取
-        UserInfoDetailDTO contextUser = ReqInfoContext.getContext().getUser();
+        UserInfoDTO contextUser = ReqInfoContext.getContext().getUser();
         if (contextUser != null && contextUser.getUserId().equals(userId)) {
             return contextUser;
         }
 
         // 2. 尝试从缓存获取
-        UserInfoDetailDTO userInfoDTO =
-                redisUtil.get(RedisKeyConstants.getUserInfoKey(userId), UserInfoDetailDTO.class);
-
-        // 缓存命中，直接返回
+        UserInfoDTO userInfoDTO = redisUtil.get(RedisKeyConstants.getUserInfoKey(userId), UserInfoDTO.class);
         if (userInfoDTO != null) {
             log.debug("缓存命中: userId={}", userId);
             return userInfoDTO;
         }
 
-        // 3. 缓存未命中，从数据库查询
-        log.debug("缓存未命中，从数据库查询: userId={}", userId);
-        UserInfoDO userInfoDO = userInfoDAO.getById(userId);
-        if (userInfoDO == null) {
-            log.warn("用户信息不存在: userId={}", userId);
-            return null;
+        // 3. 缓存未命中，查询数据库并使用分布式锁防止缓存击穿
+        return processDatabaseQuery(userId);
+    }
+
+    private UserInfoDTO processDatabaseQuery(Long userId) {
+        UserInfoDTO userInfoDTO;
+        String lockKey = RedisKeyConstants.getDistributedLockKey("user_info:" + userId);
+
+        try {
+            // 尝试获取分布式锁
+            boolean lock = redisUtil.setIfAbsent(lockKey, "1", LOCK_TIMEOUT);
+            if (lock) {
+                try {
+                    // 获得锁后再次检查缓存
+                    userInfoDTO = redisUtil.get(RedisKeyConstants.getUserInfoKey(userId), UserInfoDTO.class);
+                    if (userInfoDTO != null) {
+                        log.debug("获取锁后缓存命中: userId={}", userId);
+                        return userInfoDTO;
+                    }
+
+                    // 从数据库查询
+                    log.debug("缓存未命中，从数据库查询: userId={}", userId);
+                    UserInfoDO userInfoDO = userInfoDAO.getById(userId);
+                    if (userInfoDO == null) {
+                        log.warn("用户信息不存在: userId={}", userId);
+                        return null;
+                    }
+
+                    // 转换并缓存
+                    userInfoDTO = userStructMapper.toDTO(userInfoDO);
+                    cacheUserInfo(userId, userInfoDTO);
+
+                    return userInfoDTO;
+                } finally {
+                    // 释放分布式锁
+                    redisUtil.del(lockKey);
+                }
+            } else {
+                // 未获得锁，等待后重试
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return null;
+                }
+
+                // 递归重试获取用户信息
+                return getUserInfo(userId);
+            }
+        } catch (Exception e) {
+            log.error("获取用户信息异常: userId={}", userId, e);
+            // 兜底直接查询数据库
+            UserInfoDO userInfoDO = userInfoDAO.getById(userId);
+            return userInfoDO != null ? userStructMapper.toDTO(userInfoDO) : null;
         }
-
-        // 4. 转换并缓存
-        userInfoDTO = userStructMapper.toDTO(userInfoDO);
-        cacheUserInfo(userId, userInfoDTO);
-
-        return userInfoDTO;
     }
 
     /**
@@ -78,7 +123,7 @@ public class UserCacheService {
      * @param userId      用户ID
      * @param userInfoDTO 用户信息DTO
      */
-    public void cacheUserInfo(Long userId, UserInfoDetailDTO userInfoDTO) {
+    public void cacheUserInfo(Long userId, UserInfoDTO userInfoDTO) {
         if (userId == null || userInfoDTO == null) {
             return;
         }
@@ -96,7 +141,7 @@ public class UserCacheService {
      *
      * @param userInfoDTO 更新后的用户信息
      */
-    public void updateUserInfoCache(UserInfoDetailDTO userInfoDTO) {
+    public void updateUserInfoCache(UserInfoDTO userInfoDTO) {
         if (userInfoDTO == null || userInfoDTO.getUserId() == null) {
             return;
         }
@@ -129,7 +174,7 @@ public class UserCacheService {
      * @param userIds 用户ID列表
      * @return 用户信息列表
      */
-    public List<UserInfoDetailDTO> listUserInfosByIds(List<Long> userIds) {
+    public List<UserInfoDTO> listUserInfosByIds(List<Long> userIds) {
         if (userIds == null || userIds.isEmpty()) {
             return List.of();
         }
@@ -138,16 +183,16 @@ public class UserCacheService {
         List<String> cacheKeys = userIds.stream().map(RedisKeyConstants::getUserInfoKey).toList();
 
         // 2. 批量从Redis获取
-        Map<String, UserInfoDetailDTO> cachedUsers = redisUtil.mGet(cacheKeys, UserInfoDetailDTO.class);
+        Map<String, UserInfoDTO> cachedUsers = redisUtil.mGet(cacheKeys, UserInfoDTO.class);
 
         // 3. 一次遍历收集缓存命中和未命中的用户
-        Map<Long, UserInfoDetailDTO> userMap = new HashMap<>();
+        Map<Long, UserInfoDTO> userMap = new HashMap<>();
         List<Long> missedUserIds = new ArrayList<>();
 
         for (int i = 0; i < userIds.size(); i++) {
             Long userId = userIds.get(i);
             String cacheKey = cacheKeys.get(i);
-            UserInfoDetailDTO cachedUser = cachedUsers.get(cacheKey);
+            UserInfoDTO cachedUser = cachedUsers.get(cacheKey);
             if (cachedUser != null) {
                 userMap.put(userId, cachedUser);
             } else {
@@ -160,7 +205,7 @@ public class UserCacheService {
             log.debug("缓存未命中用户数: {}, userIds: {}", missedUserIds.size(), missedUserIds);
 
             List<UserInfoDO> dbUsers = userInfoDAO.listByUserIds(missedUserIds);
-            List<UserInfoDetailDTO> dbUserList = dbUsers.stream()
+            List<UserInfoDTO> dbUserList = dbUsers.stream()
                     .map(userStructMapper::toDTO)
                     .toList();
 
@@ -185,11 +230,11 @@ public class UserCacheService {
      *
      * @param userInfoList 用户信息列表
      */
-    private void asyncBatchCacheUserInfo(List<UserInfoDetailDTO> userInfoList) {
+    private void asyncBatchCacheUserInfo(List<UserInfoDTO> userInfoList) {
         // 使用虚拟线程异步执行，不阻塞主流程
         Thread.startVirtualThread(() -> {
             try {
-                Map<String, UserInfoDetailDTO> cacheMap = userInfoList.stream()
+                Map<String, UserInfoDTO> cacheMap = userInfoList.stream()
                         .collect(Collectors.toMap(user -> RedisKeyConstants.getUserInfoKey(user.getUserId()),
                                                   user -> user));
 

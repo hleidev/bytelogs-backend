@@ -12,7 +12,7 @@ import top.harrylei.forum.api.model.notify.req.NotifyMsgQueryParam;
 import top.harrylei.forum.api.model.notify.vo.NotifyMsgVO;
 import top.harrylei.forum.core.util.PageUtils;
 import top.harrylei.forum.api.model.page.PageVO;
-import top.harrylei.forum.api.model.user.dto.UserInfoDetailDTO;
+import top.harrylei.forum.api.model.user.dto.UserInfoDTO;
 import top.harrylei.forum.service.notify.converted.NotifyMsgStructMapper;
 import top.harrylei.forum.service.notify.repository.dao.NotifyMsgDAO;
 import top.harrylei.forum.service.notify.repository.entity.NotifyMsgDO;
@@ -87,7 +87,7 @@ public class NotifyMsgServiceImpl implements NotifyMsgService {
      */
     private NotifyMsgDO buildNotifyMessage(NotificationEvent event) {
         // 获取操作用户信息
-        UserInfoDetailDTO operateUser = userCacheService.getUserInfo(event.getOperateUserId());
+        UserInfoDTO operateUser = userCacheService.getUserInfo(event.getOperateUserId());
         String operateUserName = operateUser.getUserName();
 
         // 构建通知消息内容
@@ -169,7 +169,7 @@ public class NotifyMsgServiceImpl implements NotifyMsgService {
 
         // 填充操作用户信息
         if (notifyMsg.getOperateUserId() != null) {
-            UserInfoDetailDTO operateUser = userCacheService.getUserInfo(notifyMsg.getOperateUserId());
+            UserInfoDTO operateUser = userCacheService.getUserInfo(notifyMsg.getOperateUserId());
             if (operateUser != null) {
                 dto.setOperateUserName(operateUser.getUserName());
                 dto.setOperateUserAvatar(operateUser.getAvatar());

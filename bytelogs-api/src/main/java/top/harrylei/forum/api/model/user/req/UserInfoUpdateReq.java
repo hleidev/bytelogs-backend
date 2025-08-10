@@ -8,11 +8,13 @@ import lombok.experimental.Accessors;
 
 /**
  * 用户信息更新请求
+ *
+ * @author harry
  */
 @Data
 @Schema(description = "用户信息更新请求")
 @Accessors(chain = true)
-public class UserInfoReq {
+public class UserInfoUpdateReq {
     /**
      * 用户名
      */

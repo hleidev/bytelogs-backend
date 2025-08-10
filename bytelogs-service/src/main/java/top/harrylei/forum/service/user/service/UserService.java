@@ -7,9 +7,7 @@ import top.harrylei.forum.api.model.auth.UserCreateReq;
 import top.harrylei.forum.api.model.page.PageVO;
 import top.harrylei.forum.api.model.page.param.UserQueryParam;
 import top.harrylei.forum.api.model.user.dto.UserDetailDTO;
-import top.harrylei.forum.api.model.user.dto.UserInfoDetailDTO;
-
-import java.util.List;
+import top.harrylei.forum.api.model.user.dto.UserInfoDTO;
 
 /**
  * 用户服务接口
@@ -24,15 +22,7 @@ public interface UserService {
      * @param userId 用户ID
      * @return 用户信息DTO，不存在则返回null
      */
-    UserInfoDetailDTO getUserInfoById(Long userId);
-
-    /**
-     * 批量获取用户信息
-     *
-     * @param userIds 用户ID列表
-     * @return 用户信息列表
-     */
-    List<UserInfoDetailDTO> batchQueryUserInfo(List<Long> userIds);
+    UserInfoDTO getUserInfoById(Long userId);
 
     /**
      * 更新用户信息
@@ -40,7 +30,7 @@ public interface UserService {
      * @param userInfo 需要更新的用户信息DTO
      * @throws RuntimeException 更新失败时抛出异常
      */
-    void updateUserInfo(UserInfoDetailDTO userInfo);
+    void updateUserInfo(UserInfoDTO userInfo);
 
     /**
      * 更新用户密码
@@ -59,6 +49,12 @@ public interface UserService {
      */
     void updateAvatar(Long userId, String avatar);
 
+    /**
+     * 分页查询用户列表
+     *
+     * @param queryParam 查询参数
+     * @return 分页结果
+     */
     PageVO<UserDetailDTO> pageQuery(UserQueryParam queryParam);
 
     /**

@@ -8,7 +8,7 @@ import top.harrylei.forum.api.enums.ResultCode;
 import top.harrylei.forum.api.enums.user.LoginTypeEnum;
 import top.harrylei.forum.api.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.enums.user.UserStatusEnum;
-import top.harrylei.forum.api.model.user.dto.UserInfoDetailDTO;
+import top.harrylei.forum.api.model.user.dto.UserInfoDTO;
 import top.harrylei.forum.core.common.constans.RedisKeyConstants;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.util.BCryptUtil;
@@ -64,7 +64,7 @@ public class AuthServiceImpl implements AuthService {
     private void validateRegisterParams(String username, String password, UserRoleEnum userRole) {
         // 密码格式校验
         if (PasswordUtil.isInvalid(password)) {
-            ResultCode.USER_PASSWORD_INVALID.throwException("密码必须包含字母、数字，可包含特殊字符，长度为8~20位");
+            ResultCode.AUTH_PASSWORD_INVALID.throwException("密码必须包含字母、数字，可包含特殊字符，长度为8~20位");
         }
 
         // 检查用户名是否已存在
@@ -130,7 +130,7 @@ public class AuthServiceImpl implements AuthService {
         UserDO user = userDAO.getUserByUsername(username);
         if (user == null) {
             // 为了安全，不暴露用户是否存在，统一返回用户名或密码错误
-            ResultCode.USER_USERNAME_OR_PASSWORD_ERROR.throwException();
+            ResultCode.AUTH_LOGIN_FAILED.throwException();
         }
 
         // 校验账号是否启用
@@ -141,12 +141,12 @@ public class AuthServiceImpl implements AuthService {
 
         // 校验密码
         if (BCryptUtil.notMatches(password, user.getPassword())) {
-            ResultCode.USER_USERNAME_OR_PASSWORD_ERROR.throwException();
+            ResultCode.AUTH_LOGIN_FAILED.throwException();
         }
 
         // 获取用户ID和信息
         Long userId = user.getId();
-        UserInfoDetailDTO userInfoDTO = userCacheService.getUserInfo(userId);
+        UserInfoDTO userInfoDTO = userCacheService.getUserInfo(userId);
 
         // 校验角色权限（仅用于管理员登录场景）
         if (UserRoleEnum.ADMIN.equals(userRole)) {

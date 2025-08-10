@@ -10,12 +10,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import top.harrylei.forum.api.enums.ErrorCodeEnum;
+import top.harrylei.forum.api.enums.ResultCode;
 import top.harrylei.forum.api.model.base.ResVO;
 import top.harrylei.forum.api.model.page.PageVO;
-import top.harrylei.forum.api.model.user.dto.UserInfoDetailDTO;
+import top.harrylei.forum.api.model.user.dto.UserInfoDTO;
 import top.harrylei.forum.api.model.user.req.PasswordUpdateReq;
 import top.harrylei.forum.api.model.user.req.UserFollowQueryParam;
-import top.harrylei.forum.api.model.user.req.UserInfoReq;
+import top.harrylei.forum.api.model.user.req.UserInfoUpdateReq;
 import top.harrylei.forum.api.model.user.vo.UserFollowVO;
 import top.harrylei.forum.api.model.user.vo.UserInfoVO;
 import top.harrylei.forum.core.context.ReqInfoContext;
@@ -51,28 +52,30 @@ public class UserController {
     @Operation(summary = "查询用户信息", description = "获取当前登录用户的个人基本信息")
     @GetMapping("/profile")
     public ResVO<UserInfoVO> getUserInfo() {
-        // 从请求上下文中获取当前用户信息
-        UserInfoDetailDTO user = ReqInfoContext.getContext().getUser();
-        ExceptionUtil.requireValid(user, ErrorCodeEnum.USER_INFO_NOT_EXISTS);
-        // 将用户DTO转换为前端展示所需的VO对象
-        return ResVO.ok(userStructMapper.toVO(user));
+        UserInfoDTO userInfo = ReqInfoContext.getContext().getUser();
+        if (userInfo == null) {
+            ResultCode.INTERNAL_ERROR.throwException();
+        }
+        return ResVO.ok(userStructMapper.toVO(userInfo));
     }
 
     /**
      * 更新当前登录用户的个人信息
      *
-     * @param userInfoReq 用户信息更新请求，包含需要更新的字段
+     * @param userInfoUpdateReq 用户信息更新请求，包含需要更新的字段
      * @return 操作成功的响应
      */
     @Operation(summary = "更新用户信息", description = "更新当前登录用户的个人基本信息")
     @PutMapping("/info")
-    public ResVO<Void> updateUserInfo(@Valid @RequestBody UserInfoReq userInfoReq) {
+    public ResVO<Void> updateUserInfo(@Valid @RequestBody UserInfoUpdateReq userInfoUpdateReq) {
         // 获取当前上下文中的用户信息
-        UserInfoDetailDTO userInfo = ReqInfoContext.getContext().getUser();
-        ExceptionUtil.requireValid(userInfo, ErrorCodeEnum.USER_INFO_NOT_EXISTS);
+        UserInfoDTO userInfo = ReqInfoContext.getContext().getUser();
+        if (userInfo == null) {
+            ResultCode.INTERNAL_ERROR.throwException();
+        }
 
         // 直接更新上下文中的用户信息
-        userStructMapper.updateDTOFromReq(userInfoReq, userInfo);
+        userStructMapper.applyUserInfoUpdates(userInfoUpdateReq, userInfo);
 
         // 调用服务层处理更新逻辑
         userService.updateUserInfo(userInfo);

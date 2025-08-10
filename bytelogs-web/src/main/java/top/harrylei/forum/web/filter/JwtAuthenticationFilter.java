@@ -14,7 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import top.harrylei.forum.api.enums.user.UserRoleEnum;
-import top.harrylei.forum.api.model.user.dto.UserInfoDetailDTO;
+import top.harrylei.forum.api.model.user.dto.UserInfoDTO;
 import top.harrylei.forum.core.common.constans.RedisKeyConstants;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.util.JwtUtil;
@@ -68,11 +68,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     setAuthentication(userId, isAdmin);
 
                     // 获取完整用户信息
-                    UserInfoDetailDTO userInfo = userCacheService.getUserInfo(userId);
+                    UserInfoDTO userInfo = userCacheService.getUserInfo(userId);
 
                     // 如果获取失败，创建基本用户信息
                     if (userInfo == null) {
-                        userInfo = new UserInfoDetailDTO().setUserId(userId).setRole(role);
+                        userInfo = new UserInfoDTO().setUserId(userId).setRole(role);
                     }
 
                     // 设置用户信息到上下文
@@ -166,7 +166,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * @param userInfo 用户信息
      * @param isAdmin  是否为管理员
      */
-    private void setUserContext(Long userId, UserInfoDetailDTO userInfo, boolean isAdmin) {
+    private void setUserContext(Long userId, UserInfoDTO userInfo, boolean isAdmin) {
         List<SimpleGrantedAuthority> authorities = buildAuthorities(isAdmin);
 
         // 获取当前上下文

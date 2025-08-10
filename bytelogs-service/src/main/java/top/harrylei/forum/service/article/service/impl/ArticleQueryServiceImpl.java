@@ -17,7 +17,7 @@ import top.harrylei.forum.api.model.article.vo.TagSimpleVO;
 import top.harrylei.forum.api.model.page.PageVO;
 import top.harrylei.forum.api.model.statistics.StatisticsVO;
 import top.harrylei.forum.api.model.user.dto.ArticleFootCountDTO;
-import top.harrylei.forum.api.model.user.dto.UserInfoDetailDTO;
+import top.harrylei.forum.api.model.user.dto.UserInfoDTO;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.core.util.PageUtils;
@@ -73,7 +73,7 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
         recordReadBehavior(articleId, articleVO.getUserId());
 
         // 获取作者信息
-        UserInfoDetailDTO author = userCacheService.getUserInfo(articleVO.getUserId());
+        UserInfoDTO author = userCacheService.getUserInfo(articleVO.getUserId());
 
         ArticleDetailVO result = new ArticleDetailVO();
         result.setArticle(articleVO);

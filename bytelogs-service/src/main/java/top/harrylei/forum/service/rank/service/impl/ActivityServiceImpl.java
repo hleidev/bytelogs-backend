@@ -11,7 +11,7 @@ import top.harrylei.forum.api.event.ActivityRankEvent;
 import top.harrylei.forum.api.model.rank.dto.ActivityRankDTO;
 import top.harrylei.forum.api.model.rank.vo.ActivityRankVO;
 import top.harrylei.forum.api.model.rank.vo.ActivityStatsVO;
-import top.harrylei.forum.api.model.user.dto.UserInfoDetailDTO;
+import top.harrylei.forum.api.model.user.dto.UserInfoDTO;
 import top.harrylei.forum.core.common.constans.RedisKeyConstants;
 import top.harrylei.forum.core.util.NumUtil;
 import top.harrylei.forum.core.util.RedisUtil;
@@ -183,7 +183,7 @@ public class ActivityServiceImpl implements ActivityService {
         }
 
         // 获取用户信息
-        UserInfoDetailDTO userInfo = userCacheService.getUserInfo(userId);
+        UserInfoDTO userInfo = userCacheService.getUserInfo(userId);
         if (userInfo == null) {
             return null;
         }
@@ -566,16 +566,16 @@ public class ActivityServiceImpl implements ActivityService {
         List<Long> userIds = rankedList.stream().map(member -> Long.valueOf(member.getKey())).toList();
 
         // 使用批量缓存查询用户信息
-        List<UserInfoDetailDTO> userInfoList = userCacheService.listUserInfosByIds(userIds);
-        Map<Long, UserInfoDetailDTO> userInfoMap = userInfoList.stream()
-                .collect(Collectors.toMap(UserInfoDetailDTO::getUserId, Function.identity()));
+        List<UserInfoDTO> userInfoList = userCacheService.listUserInfosByIds(userIds);
+        Map<Long, UserInfoDTO> userInfoMap = userInfoList.stream()
+                .collect(Collectors.toMap(UserInfoDTO::getUserId, Function.identity()));
 
         // 构建排行榜结果
         List<ActivityRankDTO> result = new ArrayList<>();
         AtomicInteger rank = new AtomicInteger(1);
         for (Map.Entry<String, Double> member : rankedList) {
             Long userId = Long.valueOf(member.getKey());
-            UserInfoDetailDTO userInfo = userInfoMap.get(userId);
+            UserInfoDTO userInfo = userInfoMap.get(userId);
 
             if (userInfo != null) {
                 result.add(new ActivityRankDTO()
@@ -596,13 +596,13 @@ public class ActivityServiceImpl implements ActivityService {
         List<Long> userIds = dbRanking.stream().map(ActivityRankDO::getUserId).toList();
 
         // 使用批量缓存查询用户信息
-        List<UserInfoDetailDTO> userInfoList = userCacheService.listUserInfosByIds(userIds);
-        Map<Long, UserInfoDetailDTO> userInfoMap = userInfoList.stream()
-                .collect(Collectors.toMap(UserInfoDetailDTO::getUserId, Function.identity()));
+        List<UserInfoDTO> userInfoList = userCacheService.listUserInfosByIds(userIds);
+        Map<Long, UserInfoDTO> userInfoMap = userInfoList.stream()
+                .collect(Collectors.toMap(UserInfoDTO::getUserId, Function.identity()));
 
         List<ActivityRankDTO> result = new ArrayList<>();
         for (ActivityRankDO rank : dbRanking) {
-            UserInfoDetailDTO userInfo = userInfoMap.get(rank.getUserId());
+            UserInfoDTO userInfo = userInfoMap.get(rank.getUserId());
             if (userInfo != null) {
                 result.add(new ActivityRankDTO()
                                    .setUserId(rank.getUserId())

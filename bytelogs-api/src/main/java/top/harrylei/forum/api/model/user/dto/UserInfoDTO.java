@@ -16,7 +16,7 @@ import top.harrylei.forum.api.enums.user.UserRoleEnum;
 @Data
 @Schema(description = "用户基础实体对象")
 @Accessors(chain = true)
-public class UserInfoDetailDTO extends BaseDTO {
+public class UserInfoDTO extends BaseDTO {
     /**
      * 用户id
      */

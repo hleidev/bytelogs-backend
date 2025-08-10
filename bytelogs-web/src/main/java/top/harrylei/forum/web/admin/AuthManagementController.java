@@ -11,16 +11,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import top.harrylei.forum.api.enums.ResultCode;
 import top.harrylei.forum.api.enums.user.UserRoleEnum;
 import top.harrylei.forum.api.model.auth.AuthReq;
 import top.harrylei.forum.api.model.base.ResVO;
-import top.harrylei.forum.api.model.user.dto.UserInfoDetailDTO;
-import top.harrylei.forum.api.model.user.vo.UserInfoVO;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.security.permission.RequiresAdmin;
 import top.harrylei.forum.service.auth.service.AuthService;
-import top.harrylei.forum.service.user.converted.UserStructMapper;
 
 /**
  * 管理员认证模块
@@ -36,7 +32,6 @@ import top.harrylei.forum.service.user.converted.UserStructMapper;
 public class AuthManagementController {
 
     private final AuthService authService;
-    private final UserStructMapper userStructMapper;
 
     /**
      * 管理员登录接口
@@ -47,7 +42,7 @@ public class AuthManagementController {
      */
     @Operation(summary = "登录账号", description = "校验管理员密码，成功后返回JWT令牌")
     @PostMapping("/login")
-    public ResVO<UserInfoVO> login(@Valid @RequestBody AuthReq authReq, HttpServletResponse response) {
+    public ResVO<Void> login(@Valid @RequestBody AuthReq authReq, HttpServletResponse response) {
         String token = authService.login(authReq.getUsername(),
                                          authReq.getPassword(),
                                          authReq.getKeepLogin(),
@@ -55,14 +50,7 @@ public class AuthManagementController {
 
         response.setHeader("Authorization", "Bearer " + token);
         response.setHeader("Access-Control-Expose-Headers", "Authorization");
-
-        // 从请求上下文获取已认证的用户信息
-        UserInfoDetailDTO userInfo = ReqInfoContext.getContext().getUser();
-        if (userInfo == null) {
-            ResultCode.USER_NOT_EXISTS.throwException();
-        }
-
-        return ResVO.ok(userStructMapper.toVO(userInfo));
+        return ResVO.ok();
     }
 
     /**
