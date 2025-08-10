@@ -21,26 +21,28 @@ public enum ResultCode {
     RESOURCE_CONFLICT(40009, "资源已存在"),
     OPERATION_NOT_ALLOWED(40010, "操作不被允许"),
 
-    // ========== 用户模块 41xxx ==========
-    USER_NOT_EXISTS(41001, "用户不存在"),
-    USER_ALREADY_EXISTS(41002, "用户已存在"),
-    USER_DISABLED(41003, "用户已被禁用"),
-    USER_PASSWORD_INVALID(41004, "密码格式不符合要求"),
-    USER_USERNAME_OR_PASSWORD_ERROR(41005, "用户名或密码错误"),
+    // ========== 认证模块 41xxx ==========
+    AUTH_PASSWORD_INVALID(41001, "密码格式不符合要求"),
+    AUTH_LOGIN_FAILED(41002, "用户名或密码错误"),
 
-    // ========== 文章模块 42xxx ==========
-    ARTICLE_NOT_EXISTS(42001, "文章不存在"),
-    ARTICLE_ALREADY_EXISTS(42002, "文章已存在"),
-    ARTICLE_CONTENT_INVALID(42003, "文章内容不符合规范"),
+    // ========== 用户模块 42xxx ==========
+    USER_NOT_EXISTS(42001, "用户不存在"),
+    USER_ALREADY_EXISTS(42002, "用户已存在"),
+    USER_DISABLED(42003, "用户已被禁用"),
 
-    // ========== 评论模块 43xxx ==========
-    COMMENT_NOT_EXISTS(43001, "评论不存在"),
-    COMMENT_CONTENT_INVALID(43002, "评论内容不符合规范"),
+    // ========== 文章模块 43xxx ==========
+    ARTICLE_NOT_EXISTS(43001, "文章不存在"),
+    ARTICLE_ALREADY_EXISTS(43002, "文章已存在"),
+    ARTICLE_CONTENT_INVALID(43003, "文章内容不符合规范"),
 
-    // ========== 分类标签模块 44xxx ==========
-    CATEGORY_NOT_EXISTS(44001, "分类不存在"),
-    TAG_NOT_EXISTS(44002, "标签不存在"),
-    TAG_ALREADY_EXISTS(44003, "标签已存在"),
+    // ========== 评论模块 44xxx ==========
+    COMMENT_NOT_EXISTS(44001, "评论不存在"),
+    COMMENT_CONTENT_INVALID(44002, "评论内容不符合规范"),
+
+    // ========== 分类标签模块 45xxx ==========
+    CATEGORY_NOT_EXISTS(45001, "分类不存在"),
+    TAG_NOT_EXISTS(45002, "标签不存在"),
+    TAG_ALREADY_EXISTS(45003, "标签已存在"),
 
     // ========== 系统错误 5xxxx ==========
     INTERNAL_ERROR(50000, "系统内部错误"),
