@@ -158,6 +158,9 @@ public class UserController {
     public ResVO<PageVO<UserFollowVO>> getFollowingList(@Valid UserFollowQueryParam queryParam) {
         // 如果没传userId，使用当前用户ID
         if (queryParam.getUserId() == null) {
+            if (ReqInfoContext.getContext().getUserId() == null) {
+                ResultCode.INTERNAL_ERROR.throwException();
+            }
             queryParam.setUserId(ReqInfoContext.getContext().getUserId());
         }
 
@@ -175,6 +178,9 @@ public class UserController {
     @GetMapping("/followers")
     public ResVO<PageVO<UserFollowVO>> getFollowersList(@Valid UserFollowQueryParam queryParam) {
         if (queryParam.getFollowUserId() == null) {
+            if (ReqInfoContext.getContext().getUserId() == null) {
+                ResultCode.INTERNAL_ERROR.throwException();
+            }
             queryParam.setFollowUserId(ReqInfoContext.getContext().getUserId());
         }
 
