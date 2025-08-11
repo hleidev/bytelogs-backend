@@ -17,28 +17,30 @@
     <!-- 分页查询用户关注列表 -->
     <select id="pageFollowingList" resultMap="UserFollowVOMap">
         select
-            ui.user_id,
-            ua.user_name,
-            ui.avatar,
-            ui.profile,
-            true as followed,
-            (select count(*) from user_relation ur2
-             where ur2.follow_user_id = ui.user_id
-             and ur2.follow_state = 1
-             and ur2.deleted = 0) as fan_count,
-            (select count(*) from user_relation ur3
-             where ur3.user_id = ui.user_id
-             and ur3.follow_state = 1
-             and ur3.deleted = 0) as follow_count,
+            ui.user_id, ua.user_name, ui.avatar, ui.profile, true as followed,
+            COALESCE(fan_stats.fan_count, 0) as fan_count,
+            COALESCE(follow_stats.follow_count, 0) as follow_count,
             ur.create_time as follow_time
         from user_relation ur
         left join user_info ui on ur.follow_user_id = ui.user_id
         left join user_account ua on ui.user_id = ua.id
+        -- 粉丝数统计：统计有多少人关注了这些用户
+        left join (
+            select follow_user_id, count(*) as fan_count
+            from user_relation
+            where follow_state = 1 and deleted = 0
+            group by follow_user_id
+        ) fan_stats on ui.user_id = fan_stats.follow_user_id
+        -- 关注数统计：统计这些用户关注了多少人
+        left join (
+            select user_id, count(*) as follow_count
+            from user_relation
+            where follow_state = 1 and deleted = 0
+            group by user_id
+        ) follow_stats on ui.user_id = follow_stats.user_id
         <where>
             ur.user_id = #{queryParam.userId}
-            and ur.follow_state = 1
-            and ur.deleted = 0
-            and ua.deleted = 0
+            and ur.follow_state = 1 and ur.deleted = 0 and ua.deleted = 0
             <if test="queryParam.userName != null and queryParam.userName != ''">
                 and ua.user_name like concat('%',#{queryParam.userName},'%')
             </if>
@@ -49,34 +51,46 @@
     <!-- 分页查询用户粉丝列表 -->
     <select id="pageFollowersList" resultMap="UserFollowVOMap">
         select
-            ui.user_id,
-            ua.user_name,
-            ui.avatar,
-            ui.profile,
-            exists(select 1 from user_relation ur1
-                   where ur1.user_id = #{queryParam.followUserId}
-                       and ur1.follow_user_id = ui.user_id
-                       and ur1.follow_state = 1
-                       and ur1.deleted = 0) as followed,
-            (select count(*) from user_relation ur2
-             where ur2.follow_user_id = ui.user_id
-                 and ur2.follow_state = 1
-                 and ur2.deleted = 0) as fan_count,
-            (select count(*) from user_relation ur3
-             where ur3.user_id = ui.user_id
-                 and ur3.follow_state = 1
-                 and ur3.deleted = 0) as follow_count,
-            ur.create_time as follow_time
+        ui.user_id, ua.user_name, ui.avatar, ui.profile,
+        IF(mutual.follow_user_id IS NOT NULL, true, false) as followed,
+        COALESCE(fan_stats.fan_count, 0) as fan_count,
+        COALESCE(follow_stats.follow_count, 0) as follow_count,
+        ur.create_time as follow_time
         from user_relation ur
         left join user_info ui on ur.user_id = ui.user_id
         left join user_account ua on ui.user_id = ua.id
+        left join (
+            -- 互关检查：检查目标用户是否也关注了这些粉丝
+            select follow_user_id
+            from user_relation
+            where user_id = #{queryParam.followUserId}
+            and follow_state = 1
+            and deleted = 0
+        ) mutual on mutual.follow_user_id = ui.user_id
+        left join (
+            -- 粉丝数统计：统计有多少人关注了这些用户
+            select follow_user_id, count(*) as fan_count
+            from user_relation
+            where follow_state = 1 and deleted = 0
+            group by follow_user_id
+        ) fan_stats on ui.user_id = fan_stats.follow_user_id
+        left join (
+            -- 关注数统计：统计这些用户关注了多少人
+            select user_id, count(*) as follow_count
+            from user_relation
+            where follow_state = 1 and deleted = 0
+            group by user_id
+        ) follow_stats on ui.user_id = follow_stats.user_id
         <where>
             ur.follow_user_id = #{queryParam.followUserId}
             and ur.follow_state = 1
             and ur.deleted = 0
             and ua.deleted = 0
             <if test="queryParam.userName != null and queryParam.userName != ''">
-                and ua.user_name like concat('%',#{queryParam.userName},'%')
+                and ua.user_name like concat('%',
+                #{queryParam.userName},
+                '%'
+                )
             </if>
         </where>
         ORDER BY ur.create_time DESC
