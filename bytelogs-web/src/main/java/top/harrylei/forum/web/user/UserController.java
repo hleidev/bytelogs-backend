@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import top.harrylei.forum.api.enums.ErrorCodeEnum;
 import top.harrylei.forum.api.enums.ResultCode;
 import top.harrylei.forum.api.model.base.ResVO;
 import top.harrylei.forum.api.model.page.PageVO;
@@ -20,7 +19,6 @@ import top.harrylei.forum.api.model.user.req.UserInfoUpdateReq;
 import top.harrylei.forum.api.model.user.vo.UserFollowVO;
 import top.harrylei.forum.api.model.user.vo.UserInfoVO;
 import top.harrylei.forum.core.context.ReqInfoContext;
-import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.core.security.permission.RequiresLogin;
 import top.harrylei.forum.service.user.converted.UserStructMapper;
 import top.harrylei.forum.service.user.service.UserFollowService;
@@ -93,22 +91,31 @@ public class UserController {
     @PutMapping("/password")
     public ResVO<Void> updatePassword(@Valid @RequestBody PasswordUpdateReq passwordUpdateReq) {
         Long userId = ReqInfoContext.getContext().getUserId();
-        ExceptionUtil.requireValid(userId, ErrorCodeEnum.PARAM_VALIDATE_FAILED, "用户ID为空");
+        if (userId == null) {
+            ResultCode.INTERNAL_ERROR.throwException();
+        }
+
         userService.updatePassword(userId, passwordUpdateReq.getOldPassword(), passwordUpdateReq.getNewPassword());
+        log.info("用户密码修改成功: userId={}", userId);
         return ResVO.ok();
     }
 
     /**
      * 修改当前登录用户的个人头像
      *
-     * @param avatar 用户头像
-     * @return 操作成功
+     * @param avatar 用户头像URL
+     * @return 操作成功响应
      */
     @Operation(summary = "修改用户头像", description = "修改当前登录用户的个人头像")
     @PutMapping("/avatar")
-    public ResVO<Void> updateAvatar(@NotBlank(message = "用户头像不能为空") String avatar) {
+    public ResVO<Void> updateAvatar(@RequestParam @NotBlank(message = "用户头像不能为空") String avatar) {
         Long userId = ReqInfoContext.getContext().getUserId();
+        if (userId == null) {
+            ResultCode.INTERNAL_ERROR.throwException();
+        }
+
         userService.updateAvatar(userId, avatar);
+        log.info("用户头像更新成功: userId={}", userId);
         return ResVO.ok();
     }
 
@@ -122,6 +129,7 @@ public class UserController {
     @PostMapping("/{followUserId}/follow")
     public ResVO<Void> follow(@NotNull(message = "用户ID不能为空") @PathVariable Long followUserId) {
         userFollowService.followUser(followUserId);
+        log.info("用户关注操作: followUserId={}", followUserId);
         return ResVO.ok();
     }
 
@@ -133,8 +141,9 @@ public class UserController {
      */
     @Operation(summary = "取消关注用户", description = "取消关注指定用户")
     @DeleteMapping("/{followUserId}/follow")
-    public ResVO<Void> unfollow(@PathVariable Long followUserId) {
+    public ResVO<Void> unfollow(@NotNull(message = "用户ID不能为空") @PathVariable Long followUserId) {
         userFollowService.unfollowUser(followUserId);
+        log.info("用户取消关注操作: followUserId={}", followUserId);
         return ResVO.ok();
     }
 

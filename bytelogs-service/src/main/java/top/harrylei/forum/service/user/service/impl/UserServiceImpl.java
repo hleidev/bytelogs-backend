@@ -16,7 +16,6 @@ import top.harrylei.forum.api.model.page.PageVO;
 import top.harrylei.forum.api.model.page.param.UserQueryParam;
 import top.harrylei.forum.api.model.user.dto.UserDetailDTO;
 import top.harrylei.forum.api.model.user.dto.UserInfoDTO;
-import top.harrylei.forum.core.common.constans.RedisKeyConstants;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.core.util.BCryptUtil;
@@ -121,20 +120,25 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public void updatePassword(Long userId, String oldPassword, String newPassword) {
-        ExceptionUtil.requireValid(userId, ErrorCodeEnum.PARAM_MISSING, "用户ID");
-        ExceptionUtil.requireValid(oldPassword, ErrorCodeEnum.PARAM_MISSING, "旧密码");
-        ExceptionUtil.requireValid(newPassword, ErrorCodeEnum.PARAM_MISSING, "新密码");
+        if (userId == null) {
+            ResultCode.INVALID_PARAMETER.throwException("用户ID不能为空");
+        }
+        if (oldPassword == null || newPassword == null) {
+            ResultCode.INVALID_PARAMETER.throwException("旧密码或新密码不能为空");
+        }
 
         if (Objects.equals(oldPassword, newPassword)) {
-            ExceptionUtil.error(ErrorCodeEnum.USER_UPDATE_FAILED, "新密码与旧密码相同");
+            ResultCode.USER_NOT_EXISTS.throwException("新旧密码不能相同");
         }
 
         // 校验旧密码
         UserDO user = userDAO.getUserById(userId);
-        ExceptionUtil.requireValid(user, ErrorCodeEnum.USER_NOT_EXISTS, "userId=" + userId);
+        if (user == null) {
+            ResultCode.USER_NOT_EXISTS.throwException();
+        }
 
         if (BCryptUtil.notMatches(oldPassword, user.getPassword())) {
-            ExceptionUtil.error(ErrorCodeEnum.USER_PASSWORD_ERROR);
+            ResultCode.AUTHENTICATION_FAILED.throwException("旧密码不正确");
         }
 
         resetPassword(userId, newPassword);
@@ -146,25 +150,28 @@ public class UserServiceImpl implements UserService {
      * 更新用户头像
      *
      * @param userId 用户ID
-     * @param avatar 用户头像
+     * @param avatar 用户头像URL
      */
     @Override
     public void updateAvatar(Long userId, String avatar) {
-        ExceptionUtil.requireValid(userId, ErrorCodeEnum.PARAM_MISSING, "用户ID");
-        ExceptionUtil.requireValid(avatar, ErrorCodeEnum.PARAM_MISSING, "用户头像");
+        if (userId == null) {
+            ResultCode.INVALID_PARAMETER.throwException("用户ID不能为空");
+        }
+        if (avatar == null || avatar.trim().isEmpty()) {
+            ResultCode.INVALID_PARAMETER.throwException("用户头像不能为空");
+        }
 
+        // 获取用户信息并校验用户存在性
         UserInfoDTO userInfo = getUserInfoById(userId);
 
-        redisUtil.del(RedisKeyConstants.getUserInfoKey(userInfo.getUserId()));
-        userCacheService.updateUserInfoCache(userInfo);
+        // 更新头像信息
+        userInfo.setAvatar(avatar.trim());
+        userInfoDAO.updateById(userStructMapper.toDO(userInfo));
 
-        try {
-            userInfo.setAvatar(avatar);
-            userInfoDAO.updateById(userStructMapper.toDO(userInfo));
-            log.info("用户头像更新成功: userId={}", userId);
-        } catch (Exception e) {
-            ExceptionUtil.error(ErrorCodeEnum.USER_UPDATE_FAILED, "用户头像更新失败，请稍候重试！", e);
-        }
+        // 删除缓存，确保数据一致性
+        userCacheService.clearUserInfoCache(userId);
+
+        log.info("用户头像更新成功: userId={}", userId);
     }
 
     @Override
