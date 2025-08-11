@@ -70,19 +70,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     // 获取完整用户信息
                     UserInfoDTO userInfo = userCacheService.getUserInfo(userId);
 
-                    // 如果获取失败，创建基本用户信息
-                    if (userInfo == null) {
-                        userInfo = new UserInfoDTO().setUserId(userId).setRole(role);
+                    // 如果获取失败，跳过用户上下文设置
+                    if (userInfo != null) {
+                        // 设置用户信息到上下文
+                        setUserContext(userId, userInfo, isAdmin);
+                    } else {
+                        log.warn("用户信息获取失败，跳过上下文设置: userId={}", userId);
                     }
-
-                    // 设置用户信息到上下文
-                    setUserContext(userId, userInfo, isAdmin);
 
                     log.debug("用户认证成功: userId={}, role={}", userId, role);
                 }
             }
         } catch (Exception e) {
-            log.warn("JWT认证过程发生异常: {}", e.getMessage(), e);
+            log.debug("JWT认证失败: {}", e.getMessage());
             // 不抛出异常，继续执行过滤器链，保证请求能够正常处理
         }
 

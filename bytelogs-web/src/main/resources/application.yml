@@ -30,3 +30,8 @@ jwt:
 
 user:
   default-password: bytelogs@123
+
+# 应用级配置
+app:
+  exception:
+    print-stack-trace: true # 是否打印异常调用栈信息，开发环境建议true，生产环境建议false
