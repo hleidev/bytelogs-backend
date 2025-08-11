@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
@@ -42,13 +43,19 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
 
     /**
+     * 是否启用异常调用栈打印 - 开发/测试环境建议启用，生产环境建议关闭
+     */
+    @Value("${app.exception.print-stack-trace:false}")
+    private boolean printStackTrace;
+
+    /**
      * 处理业务异常 BusinessException
      */
     @ExceptionHandler(BusinessException.class)
     public ResVO<Void> handleBusinessException(BusinessException e,
                                                HttpServletRequest request,
                                                HttpServletResponse response) {
-        logBusinessException("业务异常", e.getMessage(), request);
+        logBusinessException("业务异常", e.getMessage(), request, e);
         // 设置对应的HTTP状态码
         response.setStatus(e.getHttpStatus());
         return ResVO.fail(e.getCode(), e.getMessage());
@@ -60,7 +67,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ForumException.class)
     @ResponseStatus(HttpStatus.OK)
     public ResVO<Void> handleForumException(ForumException e, HttpServletRequest request) {
-        logBusinessException("业务异常", e.getMessage(), request);
+        logBusinessException("业务异常", e.getMessage(), request, e);
         return ResVO.fail(e.getErrorCodeEnum().getCode(), e.getMessage());
     }
 
@@ -73,7 +80,7 @@ public class GlobalExceptionHandler {
     public ResVO<Void> handleMethodArgumentNotValidException(MethodArgumentNotValidException e,
                                                              HttpServletRequest request) {
         String message = buildBindingResultErrorMessage(e.getBindingResult());
-        logBusinessException("参数校验失败", message, request);
+        logBusinessException("参数校验失败", message, request, e);
         return ResVO.fail(ErrorCodeEnum.PARAM_VALIDATE_FAILED, message);
     }
 
@@ -84,7 +91,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResVO<Void> handleBindException(BindException e, HttpServletRequest request) {
         String message = buildBindingResultErrorMessage(e.getBindingResult());
-        logBusinessException("参数绑定失败", message, request);
+        logBusinessException("参数绑定失败", message, request, e);
         return ResVO.fail(ErrorCodeEnum.PARAM_ERROR, message);
     }
 
@@ -96,7 +103,7 @@ public class GlobalExceptionHandler {
     public ResVO<Void> handleConstraintViolationException(ConstraintViolationException e, HttpServletRequest request) {
         Set<ConstraintViolation<?>> violations = e.getConstraintViolations();
         String message = violations.stream().map(ConstraintViolation::getMessage).collect(Collectors.joining("; "));
-        logBusinessException("约束校验失败", message, request);
+        logBusinessException("约束校验失败", message, request, e);
         return ResVO.fail(ErrorCodeEnum.PARAM_VALIDATE_FAILED, message);
     }
 
@@ -108,7 +115,7 @@ public class GlobalExceptionHandler {
     public ResVO<Void> handleMissingServletRequestParameterException(MissingServletRequestParameterException e,
                                                                      HttpServletRequest request) {
         String message = String.format("缺少必需的请求参数: %s", e.getParameterName());
-        logBusinessException("缺少请求参数", message, request);
+        logBusinessException("缺少请求参数", message, request, e);
         return ResVO.fail(ErrorCodeEnum.PARAM_MISSING, e.getParameterName());
     }
 
@@ -118,7 +125,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AuthorizationDeniedException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public ResVO<Void> handleAuthDenied(AuthorizationDeniedException e, HttpServletRequest req) {
-        logBusinessException("权限不足", "访问被拒绝", req);
+        logBusinessException("权限不足", "访问被拒绝", req, e);
         return ResVO.fail(ErrorCodeEnum.FORBIDDEN, "权限不足");
     }
 
@@ -130,7 +137,7 @@ public class GlobalExceptionHandler {
     public ResVO<Void> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e,
                                                                     HttpServletRequest request) {
         String message = String.format("不支持的请求方法: %s", e.getMethod());
-        logBusinessException("请求方法不支持", message, request);
+        logBusinessException("请求方法不支持", message, request, e);
         return ResVO.fail(ErrorCodeEnum.METHOD_NOT_ALLOWED);
     }
 
@@ -141,7 +148,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResVO<Void> handleHttpMessageNotReadableException(HttpMessageNotReadableException e,
                                                              HttpServletRequest request) {
-        logBusinessException("请求体解析失败", "JSON格式错误或请求体为空", request);
+        logBusinessException("请求体解析失败", "JSON格式错误或请求体为空", request, e);
         return ResVO.fail(ErrorCodeEnum.PARAM_ERROR, "请求体格式错误或解析失败");
     }
 
@@ -154,7 +161,7 @@ public class GlobalExceptionHandler {
                                                                  HttpServletRequest request) {
         String type = e.getRequiredType() == null ? "未知" : e.getRequiredType().getSimpleName();
         String message = String.format("参数类型不匹配, 参数 '%s' 应为 %s 类型", e.getName(), type);
-        logBusinessException("参数类型不匹配", message, request);
+        logBusinessException("参数类型不匹配", message, request, e);
         return ResVO.fail(ErrorCodeEnum.PARAM_TYPE_ERROR, message);
     }
 
@@ -164,7 +171,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(JsonProcessingException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResVO<Void> handleJsonProcessingException(JsonProcessingException e, HttpServletRequest request) {
-        logBusinessException("JSON处理异常", "JSON格式错误", request);
+        logBusinessException("JSON处理异常", "JSON格式错误", request, e);
         return ResVO.fail(ErrorCodeEnum.PARAM_ERROR, "JSON格式错误");
     }
 
@@ -175,7 +182,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResVO<Void> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e,
                                                             HttpServletRequest request) {
-        logBusinessException("文件上传大小超限", "上传文件过大", request);
+        logBusinessException("文件上传大小超限", "上传文件过大", request, e);
         return ResVO.fail(ErrorCodeEnum.PARAM_ERROR, "上传文件大小超过限制");
     }
 
@@ -187,7 +194,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.CONFLICT)
     public ResVO<Void> handleOptimisticLockingFailureException(OptimisticLockingFailureException e,
                                                                HttpServletRequest request) {
-        logBusinessException("乐观锁冲突", "数据并发修改冲突", request);
+        logBusinessException("乐观锁冲突", "数据并发修改冲突", request, e);
         return ResVO.fail(ErrorCodeEnum.SYSTEM_ERROR, "数据已被其他用户修改，请刷新后重试");
     }
 
@@ -214,13 +221,50 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * 记录业务异常日志（WARN级别，不记录堆栈）
+     * 记录业务异常日志
      * 格式: [异常类型] 错误信息 | 路径: {} | 用户: {} | 方法: {}
      */
-    private void logBusinessException(String exceptionType, String message, HttpServletRequest request) {
+    private void logBusinessException(String exceptionType, String message, HttpServletRequest request, Exception e) {
         Long userId = getCurrentUserId();
-        log.warn("[{}] {} | 路径: {} | 用户: {} | 方法: {}",
-                 exceptionType, message, request.getRequestURI(), userId, request.getMethod());
+
+        if (printStackTrace && e != null) {
+            // 启用调用栈打印：完整异常信息，便于开发调试
+            log.warn("[{}] {} | 路径: {} | 用户: {} | 方法: {}",
+                     exceptionType, message, request.getRequestURI(), userId, request.getMethod(), e);
+        } else {
+            // 关闭调用栈打印：简洁日志，适合生产环境
+            String location = getBusinessCodeLocation(e);
+            log.warn("[{}] {} | 位置: {} | 路径: {} | 用户: {} | 方法: {}",
+                     exceptionType, message, location, request.getRequestURI(), userId, request.getMethod());
+        }
+    }
+
+    /**
+     * 获取业务代码位置（不打印完整调用栈时使用）
+     */
+    private String getBusinessCodeLocation(Exception e) {
+        if (e == null || e.getStackTrace().length == 0) {
+            return "未知位置";
+        }
+
+        StackTraceElement[] stackTrace = e.getStackTrace();
+        for (StackTraceElement element : stackTrace) {
+            String className = element.getClassName();
+
+            // 查找第一个业务代码位置
+            if (className.startsWith("top.harrylei.forum.service")
+                    || className.startsWith("top.harrylei.forum.web")
+                    || className.startsWith("top.harrylei.forum.core")) {
+
+                String simpleClassName = className.substring(className.lastIndexOf('.') + 1);
+                return String.format("%s.%s:%d", simpleClassName, element.getMethodName(), element.getLineNumber());
+            }
+        }
+
+        // 如果没有找到业务代码，返回第一个栈帧
+        StackTraceElement first = stackTrace[0];
+        String simpleClassName = first.getClassName().substring(first.getClassName().lastIndexOf('.') + 1);
+        return String.format("%s.%s:%d", simpleClassName, first.getMethodName(), first.getLineNumber());
     }
 
     /**
