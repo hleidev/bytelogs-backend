@@ -5,20 +5,19 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import top.harrylei.forum.api.enums.ErrorCodeEnum;
+import top.harrylei.forum.api.enums.ResultCode;
+import top.harrylei.forum.api.enums.YesOrNoEnum;
+import top.harrylei.forum.api.enums.comment.ContentTypeEnum;
 import top.harrylei.forum.api.enums.notify.NotifyTypeEnum;
 import top.harrylei.forum.api.enums.rank.ActivityActionEnum;
 import top.harrylei.forum.api.enums.rank.ActivityTargetEnum;
-import top.harrylei.forum.api.enums.YesOrNoEnum;
-import top.harrylei.forum.api.enums.comment.ContentTypeEnum;
 import top.harrylei.forum.api.enums.user.UserFollowStatusEnum;
-import top.harrylei.forum.core.util.PageUtils;
 import top.harrylei.forum.api.model.page.PageVO;
 import top.harrylei.forum.api.model.user.req.UserFollowQueryParam;
 import top.harrylei.forum.api.model.user.vo.UserFollowVO;
 import top.harrylei.forum.core.context.ReqInfoContext;
-import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.core.util.KafkaEventPublisher;
+import top.harrylei.forum.core.util.PageUtils;
 import top.harrylei.forum.core.util.RedisUtil;
 import top.harrylei.forum.service.user.repository.dao.UserDAO;
 import top.harrylei.forum.service.user.repository.dao.UserFollowDAO;
@@ -59,16 +58,13 @@ public class UserFollowServiceImpl implements UserFollowService {
     @Transactional(rollbackFor = Exception.class)
     public void followUser(Long followUserId) {
         Long currentUserId = ReqInfoContext.getContext().getUserId();
-
-        // 参数校验
         validateFollowParams(currentUserId, followUserId);
-
         // 检查用户是否存在
         validateUsersExist(currentUserId, followUserId);
 
         // 不能关注自己
         if (Objects.equals(currentUserId, followUserId)) {
-            ExceptionUtil.error(ErrorCodeEnum.PARAM_VALIDATE_FAILED, "不能关注自己");
+            ResultCode.INVALID_PARAMETER.throwException("不能关注自己");
         }
 
         // 防重复提交检查
@@ -90,15 +86,11 @@ public class UserFollowServiceImpl implements UserFollowService {
                     .setFollowUserId(followUserId)
                     .setFollowState(UserFollowStatusEnum.FOLLOWED.getCode())
                     .setDeleted(YesOrNoEnum.NO.getCode());
-            boolean saved = userFollowDAO.save(newFollow);
-            ExceptionUtil.errorIf(!saved, ErrorCodeEnum.UNEXPECT_ERROR, "关注失败");
+            userFollowDAO.save(newFollow);
             success = true;
-        } else if (!Objects.equals(existingFollow.getFollowState(), UserFollowStatusEnum.FOLLOWED.getCode())) {
+        } else if (!UserFollowStatusEnum.FOLLOWED.getCode().equals(existingFollow.getFollowState())) {
             // 更新现有关注关系状态
-            boolean updated = userFollowDAO.updateFollowStatus(currentUserId,
-                                                               followUserId,
-                                                               UserFollowStatusEnum.FOLLOWED);
-            ExceptionUtil.errorIf(!updated, ErrorCodeEnum.UNEXPECT_ERROR, "关注失败");
+            userFollowDAO.updateFollowStatus(currentUserId, followUserId, UserFollowStatusEnum.FOLLOWED);
             success = true;
         } else {
             // 已经关注，无需重复操作
@@ -125,15 +117,16 @@ public class UserFollowServiceImpl implements UserFollowService {
     public void unfollowUser(Long followUserId) {
         Long currentUserId = ReqInfoContext.getContext().getUserId();
 
-        // 参数校验
+        // 统一使用校验方法
         validateFollowParams(currentUserId, followUserId);
 
         // 检查是否已关注
         UserFollowDO relation = userFollowDAO.getFollowRelation(currentUserId, followUserId);
-        ExceptionUtil.errorIf(relation == null || !Objects.equals(relation.getFollowState(),
-                                                                  UserFollowStatusEnum.FOLLOWED.getCode()),
-                              ErrorCodeEnum.PARAM_VALIDATE_FAILED,
-                              "未关注该用户，无法取消关注");
+
+        // 如果没有关注关系或状态不是已关注，则直接返回
+        if (relation == null || !Objects.equals(relation.getFollowState(), UserFollowStatusEnum.FOLLOWED.getCode())) {
+            return;
+        }
 
         // 防重复提交检查
         String duplicateKey = buildFollowDuplicateKey(currentUserId, followUserId, "UNFOLLOW");
@@ -143,10 +136,7 @@ public class UserFollowServiceImpl implements UserFollowService {
         }
 
         // 更新关注状态为未关注
-        boolean updated = userFollowDAO.updateFollowStatus(currentUserId,
-                                                           followUserId,
-                                                           UserFollowStatusEnum.UNFOLLOWED);
-        ExceptionUtil.errorIf(!updated, ErrorCodeEnum.SYSTEM_ERROR, "取消关注失败");
+        userFollowDAO.updateFollowStatus(currentUserId, followUserId, UserFollowStatusEnum.UNFOLLOWED);
 
         // 发布取消关注活跃度事件
         publishFollowActivityEvent(currentUserId, followUserId, ActivityActionEnum.CANCEL_FOLLOW);
@@ -198,18 +188,23 @@ public class UserFollowServiceImpl implements UserFollowService {
      * @param followUserId 被关注者ID
      */
     private void validateFollowParams(Long userId, Long followUserId) {
-        ExceptionUtil.requireValid(userId, ErrorCodeEnum.PARAM_VALIDATE_FAILED, "关注者ID不能为空");
-        ExceptionUtil.requireValid(followUserId, ErrorCodeEnum.PARAM_VALIDATE_FAILED, "被关注者ID不能为空");
+        if (userId == null || followUserId == null) {
+            ResultCode.INVALID_PARAMETER.throwException("用户ID或被关注用户ID不能为空");
+        }
     }
 
     private void validateUsersExist(Long userId, Long followUserId) {
         // 检查关注者是否存在
         UserDO user = userDAO.getUserById(userId);
-        ExceptionUtil.requireValid(user, ErrorCodeEnum.USER_NOT_EXISTS, "关注者不存在");
+        if (user == null) {
+            ResultCode.USER_NOT_EXISTS.throwException("关注者不存在");
+        }
 
         // 检查被关注者是否存在
         UserDO followUser = userDAO.getUserById(followUserId);
-        ExceptionUtil.requireValid(followUser, ErrorCodeEnum.USER_NOT_EXISTS, "被关注者不存在");
+        if (followUser == null) {
+            ResultCode.USER_NOT_EXISTS.throwException("被关注用户不存在");
+        }
     }
 
     /**
