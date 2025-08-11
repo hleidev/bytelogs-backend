@@ -32,6 +32,11 @@ public class UserCacheService {
     private final JwtUtil jwtUtil;
 
     /**
+     * 用户信息缓存过期时间：30分钟
+     */
+    private static final Duration USER_INFO_CACHE_EXPIRE = Duration.ofMinutes(30);
+
+    /**
      * 用户信息查询分布式锁超时时间
      */
     private static final Duration LOCK_TIMEOUT = Duration.ofSeconds(30);
@@ -129,25 +134,11 @@ public class UserCacheService {
         }
 
         try {
-            redisUtil.set(RedisKeyConstants.getUserInfoKey(userId), userInfoDTO, jwtUtil.getDefaultExpire());
-            log.debug("用户信息已缓存: userId={}", userId);
+            redisUtil.set(RedisKeyConstants.getUserInfoKey(userId), userInfoDTO, USER_INFO_CACHE_EXPIRE);
+            log.debug("用户信息已缓存: userId={}, 过期时间: {}分钟", userId, USER_INFO_CACHE_EXPIRE.toMinutes());
         } catch (Exception e) {
             log.error("缓存用户信息失败: userId={}", userId, e);
         }
-    }
-
-    /**
-     * 更新缓存中的用户信息
-     *
-     * @param userInfoDTO 更新后的用户信息
-     */
-    public void updateUserInfoCache(UserInfoDTO userInfoDTO) {
-        if (userInfoDTO == null || userInfoDTO.getUserId() == null) {
-            return;
-        }
-
-        // 更新缓存
-        cacheUserInfo(userInfoDTO.getUserId(), userInfoDTO);
     }
 
     /**
@@ -238,8 +229,9 @@ public class UserCacheService {
                         .collect(Collectors.toMap(user -> RedisKeyConstants.getUserInfoKey(user.getUserId()),
                                                   user -> user));
 
-                redisUtil.mSet(cacheMap, jwtUtil.getDefaultExpire());
-                log.debug("批量缓存用户信息完成: count={}", userInfoList.size());
+                redisUtil.mSet(cacheMap, USER_INFO_CACHE_EXPIRE);
+                log.debug("批量缓存用户信息完成: count={}, 过期时间: {}分钟",
+                          userInfoList.size(), USER_INFO_CACHE_EXPIRE.toMinutes());
             } catch (Exception e) {
                 log.error("批量缓存用户信息失败", e);
             }
