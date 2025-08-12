@@ -75,7 +75,7 @@ public class AuthServiceImpl implements AuthService {
 
         // 管理员权限校验
         if (UserRoleEnum.ADMIN.equals(userRole) && !ReqInfoContext.getContext().isAdmin()) {
-            ResultCode.ACCESS_DENIED.throwException("创建管理员账号需要管理员权限");
+            ResultCode.FORBIDDEN.throwException("创建管理员账号需要管理员权限");
         }
     }
 
@@ -151,7 +151,7 @@ public class AuthServiceImpl implements AuthService {
         // 校验角色权限（仅用于管理员登录场景）
         if (UserRoleEnum.ADMIN.equals(userRole)) {
             if (!UserRoleEnum.ADMIN.equals(userInfoDTO.getRole())) {
-                ResultCode.ACCESS_DENIED.throwException("用户不具备管理员权限");
+                ResultCode.FORBIDDEN.throwException("用户不具备管理员权限");
             }
         }
 

@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
-import top.harrylei.forum.api.enums.ErrorCodeEnum;
+import top.harrylei.forum.api.enums.ResultCode;
 import top.harrylei.forum.api.exception.BusinessException;
 import top.harrylei.forum.api.model.base.ResVO;
 import top.harrylei.forum.core.context.ReqInfoContext;
@@ -73,7 +73,6 @@ public class GlobalExceptionHandler {
 
     /**
      * 处理参数校验异常（Bean Validation 注解校验）
-     * 参数异常属于客户端错误，使用WARN级别，不记录堆栈
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -81,7 +80,7 @@ public class GlobalExceptionHandler {
                                                              HttpServletRequest request) {
         String message = buildBindingResultErrorMessage(e.getBindingResult());
         logBusinessException("参数校验失败", message, request, e);
-        return ResVO.fail(ErrorCodeEnum.PARAM_VALIDATE_FAILED, message);
+        return ResVO.fail(ResultCode.INVALID_PARAMETER, message);
     }
 
     /**
@@ -92,7 +91,7 @@ public class GlobalExceptionHandler {
     public ResVO<Void> handleBindException(BindException e, HttpServletRequest request) {
         String message = buildBindingResultErrorMessage(e.getBindingResult());
         logBusinessException("参数绑定失败", message, request, e);
-        return ResVO.fail(ErrorCodeEnum.PARAM_ERROR, message);
+        return ResVO.fail(ResultCode.INVALID_PARAMETER, message);
     }
 
     /**
@@ -104,7 +103,7 @@ public class GlobalExceptionHandler {
         Set<ConstraintViolation<?>> violations = e.getConstraintViolations();
         String message = violations.stream().map(ConstraintViolation::getMessage).collect(Collectors.joining("; "));
         logBusinessException("约束校验失败", message, request, e);
-        return ResVO.fail(ErrorCodeEnum.PARAM_VALIDATE_FAILED, message);
+        return ResVO.fail(ResultCode.INVALID_PARAMETER, message);
     }
 
     /**
@@ -116,7 +115,7 @@ public class GlobalExceptionHandler {
                                                                      HttpServletRequest request) {
         String message = String.format("缺少必需的请求参数: %s", e.getParameterName());
         logBusinessException("缺少请求参数", message, request, e);
-        return ResVO.fail(ErrorCodeEnum.PARAM_MISSING, e.getParameterName());
+        return ResVO.fail(ResultCode.INVALID_PARAMETER, e.getParameterName());
     }
 
     /**
@@ -126,7 +125,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public ResVO<Void> handleAuthDenied(AuthorizationDeniedException e, HttpServletRequest req) {
         logBusinessException("权限不足", "访问被拒绝", req, e);
-        return ResVO.fail(ErrorCodeEnum.FORBIDDEN, "权限不足");
+        return ResVO.fail(ResultCode.FORBIDDEN, "权限不足");
     }
 
     /**
@@ -138,7 +137,7 @@ public class GlobalExceptionHandler {
                                                                     HttpServletRequest request) {
         String message = String.format("不支持的请求方法: %s", e.getMethod());
         logBusinessException("请求方法不支持", message, request, e);
-        return ResVO.fail(ErrorCodeEnum.METHOD_NOT_ALLOWED);
+        return ResVO.fail(ResultCode.METHOD_NOT_ALLOWED);
     }
 
     /**
@@ -149,7 +148,7 @@ public class GlobalExceptionHandler {
     public ResVO<Void> handleHttpMessageNotReadableException(HttpMessageNotReadableException e,
                                                              HttpServletRequest request) {
         logBusinessException("请求体解析失败", "JSON格式错误或请求体为空", request, e);
-        return ResVO.fail(ErrorCodeEnum.PARAM_ERROR, "请求体格式错误或解析失败");
+        return ResVO.fail(ResultCode.INVALID_PARAMETER, "请求体格式错误或解析失败");
     }
 
     /**
@@ -162,7 +161,7 @@ public class GlobalExceptionHandler {
         String type = e.getRequiredType() == null ? "未知" : e.getRequiredType().getSimpleName();
         String message = String.format("参数类型不匹配, 参数 '%s' 应为 %s 类型", e.getName(), type);
         logBusinessException("参数类型不匹配", message, request, e);
-        return ResVO.fail(ErrorCodeEnum.PARAM_TYPE_ERROR, message);
+        return ResVO.fail(ResultCode.INVALID_PARAMETER, message);
     }
 
     /**
@@ -172,7 +171,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResVO<Void> handleJsonProcessingException(JsonProcessingException e, HttpServletRequest request) {
         logBusinessException("JSON处理异常", "JSON格式错误", request, e);
-        return ResVO.fail(ErrorCodeEnum.PARAM_ERROR, "JSON格式错误");
+        return ResVO.fail(ResultCode.INVALID_PARAMETER, "JSON格式错误");
     }
 
     /**
@@ -183,7 +182,7 @@ public class GlobalExceptionHandler {
     public ResVO<Void> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e,
                                                             HttpServletRequest request) {
         logBusinessException("文件上传大小超限", "上传文件过大", request, e);
-        return ResVO.fail(ErrorCodeEnum.PARAM_ERROR, "上传文件大小超过限制");
+        return ResVO.fail(ResultCode.INVALID_PARAMETER, "上传文件大小超过限制");
     }
 
     /**
@@ -195,7 +194,7 @@ public class GlobalExceptionHandler {
     public ResVO<Void> handleOptimisticLockingFailureException(OptimisticLockingFailureException e,
                                                                HttpServletRequest request) {
         logBusinessException("乐观锁冲突", "数据并发修改冲突", request, e);
-        return ResVO.fail(ErrorCodeEnum.SYSTEM_ERROR, "数据已被其他用户修改，请刷新后重试");
+        return ResVO.fail(ResultCode.INTERNAL_ERROR, "数据已被其他用户修改，请刷新后重试");
     }
 
     /**
@@ -206,7 +205,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResVO<Void> handleDataAccessException(DataAccessException e, HttpServletRequest request) {
         logSystemException("数据库访问异常", e, request);
-        return ResVO.fail(ErrorCodeEnum.SYSTEM_ERROR, "数据库操作异常");
+        return ResVO.fail(ResultCode.INTERNAL_ERROR, "数据库操作异常");
     }
 
     /**
@@ -217,7 +216,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResVO<Void> handleException(Exception e, HttpServletRequest request) {
         logSystemException("未处理的异常", e, request);
-        return ResVO.fail(ErrorCodeEnum.SYSTEM_ERROR, "服务器内部错误");
+        return ResVO.fail(ResultCode.INTERNAL_ERROR, "服务器内部错误");
     }
 
     /**
