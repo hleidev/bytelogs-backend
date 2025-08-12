@@ -16,8 +16,9 @@ public enum ResultCode {
     // ========== 通用错误 4xxxx ==========
     INVALID_PARAMETER(40000, "参数错误"),
     AUTHENTICATION_FAILED(40001, "认证失败"),
-    ACCESS_DENIED(40003, "权限不足"),
+    FORBIDDEN(40003, "权限不足"),
     RESOURCE_NOT_FOUND(40004, "资源不存在"),
+    METHOD_NOT_ALLOWED(40005, "请求方法不支持"),
     RESOURCE_CONFLICT(40009, "资源已存在"),
     OPERATION_NOT_ALLOWED(40010, "操作不被允许"),
 

@@ -3,6 +3,7 @@ package top.harrylei.forum.api.model.base;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import top.harrylei.forum.api.enums.ErrorCodeEnum;
+import top.harrylei.forum.api.enums.ResultCode;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -17,7 +18,7 @@ import java.io.Serializable;
 public class ResVO<T> implements Serializable {
     @Serial
     private static final long serialVersionUID = -510306209659393854L;
-    
+
     /**
      * 业务状态码
      */
@@ -39,7 +40,8 @@ public class ResVO<T> implements Serializable {
     /**
      * 默认构造函数
      */
-    public ResVO() {}
+    public ResVO() {
+    }
 
     /**
      * 完整构造函数
@@ -63,7 +65,7 @@ public class ResVO<T> implements Serializable {
      * 构造成功响应
      *
      * @param data 业务数据
-     * @param <T> 数据类型
+     * @param <T>  数据类型
      * @return 成功响应
      */
     public static <T> ResVO<T> ok(T data) {
@@ -82,9 +84,9 @@ public class ResVO<T> implements Serializable {
     /**
      * 构建失败响应
      *
-     * @param code 错误码
+     * @param code    错误码
      * @param message 错误消息
-     * @param <T> 数据类型
+     * @param <T>     数据类型
      * @return 失败响应
      */
     public static <T> ResVO<T> fail(int code, String message) {
@@ -95,15 +97,27 @@ public class ResVO<T> implements Serializable {
      * 使用状态枚举构建失败响应
      *
      * @param status 状态枚举
-     * @param args 消息格式化参数
-     * @param <T> 数据类型
+     * @param args   消息格式化参数
+     * @param <T>    数据类型
      * @return 失败响应
      */
     public static <T> ResVO<T> fail(ErrorCodeEnum status, Object... args) {
         String message = formatMessage(status.getMessage(), args);
         return fail(status.getCode(), message);
     }
-    
+
+    /**
+     * 构建失败响应
+     *
+     * @param status 状态枚举
+     * @param args   参数列表
+     * @return 失败响应
+     */
+    public static <T> ResVO<T> fail(ResultCode status, Object... args) {
+        String message = formatMessage(status.getMessage(), args);
+        return fail(status.getCode(), message);
+    }
+
     /**
      * 格式化错误消息
      */
