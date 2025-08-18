@@ -45,6 +45,14 @@ public enum ResultCode {
     TAG_NOT_EXISTS(45002, "标签不存在"),
     TAG_ALREADY_EXISTS(45003, "标签已存在"),
 
+    // ========== AI模块 46xxx ==========
+    AI_MESSAGE_TOO_LONG(46001, "消息长度超过限制"),
+    AI_HOURLY_LIMIT_EXCEEDED(46002, "每小时消息数量已达上限"),
+    AI_DAILY_LIMIT_EXCEEDED(46003, "今日使用量已达上限"),
+    AI_CONVERSATION_NOT_EXISTS(46004, "对话不存在或无访问权限"),
+    AI_RESPONSE_EMPTY(46005, "AI响应为空"),
+    AI_REPLY_CONTENT_EMPTY(46006, "AI回复内容为空"),
+
     // ========== 系统错误 5xxxx ==========
     INTERNAL_ERROR(50000, "系统内部错误"),
     SERVICE_UNAVAILABLE(50003, "服务暂不可用"),
