@@ -14,6 +14,7 @@ spring:
     import: 
       - application-dal.yml # 引入数据库相关配置文件
       - application-mq.yml # 引入消息队列相关配置文件
+      - application-ai.yml # 引入AI服务相关配置文件
 
 mybatis-plus:
   configuration:

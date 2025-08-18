@@ -282,3 +282,68 @@ CREATE TABLE `activity_rank`
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci
     COMMENT = '用户活跃度排行榜表';
+
+-- AI对话表
+CREATE TABLE `ai_conversation`
+(
+    `id`                   bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '对话ID',
+    `user_id`              bigint unsigned NOT NULL DEFAULT 0 COMMENT '用户ID',
+    `title`                varchar(80)     NOT NULL DEFAULT '' COMMENT '对话标题',
+    `status`               tinyint         NOT NULL DEFAULT 1 COMMENT '对话状态：1-进行中，2-已归档',
+    `message_count`        int             NOT NULL DEFAULT 0 COMMENT '消息数量',
+    `last_message_time`    timestamp                DEFAULT NULL COMMENT '最后消息时间',
+    `last_message_preview` varchar(200)    NOT NULL DEFAULT '' COMMENT '最后消息内容预览',
+    `deleted`              tinyint         NOT NULL DEFAULT 0 COMMENT '是否删除：0-未删除，1-已删除',
+    `create_time`          timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time`          timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_user_status` (`user_id`, `status`, `deleted`),
+    KEY `idx_last_message_time` (`last_message_time`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_general_ci
+    COMMENT = 'AI对话表';
+
+-- AI消息表
+CREATE TABLE `ai_message`
+(
+    `id`              bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '消息ID',
+    `conversation_id` bigint unsigned NOT NULL DEFAULT 0 COMMENT '对话ID',
+    `user_id`         bigint unsigned NOT NULL DEFAULT 0 COMMENT '用户ID',
+    `role`            tinyint         NOT NULL DEFAULT 1 COMMENT '消息角色：1-用户，2-AI助手，3-系统',
+    `content`         longtext        NOT NULL COMMENT '消息内容',
+    `model`           tinyint         NOT NULL DEFAULT 1 COMMENT '使用的AI客户端类型：1-DeepSeek，2-通义千问',
+    `input_tokens`       int             NOT NULL DEFAULT 0 COMMENT '输入Token消耗（用户消息和上下文）',
+    `output_tokens`      int             NOT NULL DEFAULT 0 COMMENT 'AI生成Token消耗',
+    `total_tokens`       int             NOT NULL DEFAULT 0 COMMENT '总Token消耗',
+    `deleted`         tinyint         NOT NULL DEFAULT 0 COMMENT '是否删除：0-未删除，1-已删除',
+    `create_time`     timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time`     timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_conversation_id` (`conversation_id`),
+    KEY `idx_user_id` (`user_id`),
+    KEY `idx_create_time` (`create_time`),
+    KEY `idx_conversation_time` (`conversation_id`, `create_time`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_general_ci
+    COMMENT = 'AI消息表';
+
+-- AI使用统计表
+CREATE TABLE `ai_usage_stats`
+(
+    `id`                 bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '统计ID',
+    `user_id`            bigint unsigned NOT NULL DEFAULT 0 COMMENT '用户ID',
+    `date`               date            NOT NULL COMMENT '统计日期',
+    `message_count`      int             NOT NULL DEFAULT 0 COMMENT '消息数量',
+    `tokens_used`        int             NOT NULL DEFAULT 0 COMMENT 'Token消耗总量',
+    `conversation_count` int             NOT NULL DEFAULT 0 COMMENT '对话数量',
+    `create_time`        timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time`        timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_user_date` (`user_id`, `date`),
+    KEY `idx_date` (`date`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_general_ci
+    COMMENT = 'AI使用统计表';
