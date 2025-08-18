@@ -4,13 +4,16 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
  * VO 基类，统一通用展示字段
+ *
+ * @author harry
  */
 @Data
-public class BaseVO {
+public class BaseVO implements Serializable {
 
     /**
      * 主键ID
