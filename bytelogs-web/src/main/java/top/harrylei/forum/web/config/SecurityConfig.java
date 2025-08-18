@@ -37,10 +37,6 @@ public class SecurityConfig {
 
     /**
      * 配置Spring Security过滤器链
-     * <p>
-     * 定义系统安全策略，包括： - 禁用CSRF（跨站请求伪造）保护，因为使用JWT进行无状态认证 - 启用CORS（跨域资源共享）支持 - 配置无状态会话管理，不使用Session - 配置接口访问权限规则 -
-     * 添加JWT认证过滤器处理令牌认证
-     * </p>
      *
      * @param http HttpSecurity配置对象
      * @return 配置完成的SecurityFilterChain
