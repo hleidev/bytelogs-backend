@@ -1,6 +1,7 @@
 package top.harrylei.forum.core.util;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -111,6 +112,25 @@ public class JsonUtil {
             return fromJson(jsonStr, clazz);
         } catch (Exception e) {
             log.error("字节数组转对象失败: 目标类型={}, 错误信息={}", clazz.getSimpleName(), e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * 将JSON字符串解析为JsonNode对象
+     *
+     * @param jsonStr JSON字符串
+     * @return JsonNode对象，失败返回null
+     */
+    public static JsonNode parseToNode(String jsonStr) {
+        if (StringUtils.isBlank(jsonStr)) {
+            return null;
+        }
+
+        try {
+            return MAPPER.readTree(jsonStr);
+        } catch (Exception e) {
+            log.error("JSON解析为JsonNode失败: JSON={}, 错误信息={}", jsonStr, e.getMessage(), e);
             return null;
         }
     }

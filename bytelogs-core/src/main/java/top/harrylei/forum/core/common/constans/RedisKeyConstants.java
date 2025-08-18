@@ -15,6 +15,7 @@ public class RedisKeyConstants {
     public static final String LOCK = GLOBAL_PREFIX + "lock:";
     public static final String KAFKA = GLOBAL_PREFIX + "kafka:";
     public static final String ACTIVITY = GLOBAL_PREFIX + "activity:";
+    public static final String AI = GLOBAL_PREFIX + "ai:";
 
     // 功能分类
     public static final String USER_TOKEN = USER + "token:";
@@ -25,6 +26,8 @@ public class RedisKeyConstants {
     public static final String ACTIVITY_RANK = ACTIVITY + "rank:";
     public static final String ACTIVITY_DAILY = ACTIVITY + "idempotency:";
     public static final String HEALTH_CHECK = GLOBAL_PREFIX + "health:check";
+    public static final String AI_HOURLY_LIMIT = AI + "hourly_limit:";
+    public static final String AI_DAILY_USAGE = AI + "daily_usage:";
 
 
     /**
@@ -94,6 +97,27 @@ public class RedisKeyConstants {
      */
     public static String getActivityDailyRankKey(String date) {
         return ACTIVITY_RANK + "daily:" + date;
+    }
+
+    /**
+     * 构建AI每小时限制key
+     *
+     * @param userId 用户ID
+     * @return AI每小时限制key
+     */
+    public static String getAIHourlyLimitKey(Long userId) {
+        return AI_HOURLY_LIMIT + userId;
+    }
+
+    /**
+     * 构建AI每日使用量缓存key
+     *
+     * @param userId 用户ID
+     * @param date   日期(yyyy-MM-dd格式)
+     * @return AI每日使用量key
+     */
+    public static String getAIDailyUsageKey(Long userId, String date) {
+        return AI_DAILY_USAGE + userId + ":" + date;
     }
 
     /**
