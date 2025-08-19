@@ -53,11 +53,11 @@ public class AIConversationDAO extends ServiceImpl<AIConversationMapper, AIConve
     /**
      * 分页查询用户的对话列表
      */
-    public IPage<AIConversationDO> pageQueryConversations(Long userId, IPage<AIConversationDO> page) {
+    public IPage<AIConversationDO> pageQueryConversations(Long userId, IPage<AIConversationDO> page, AIConversationStatusEnum status) {
         return lambdaQuery()
                 .eq(AIConversationDO::getUserId, userId)
                 .eq(AIConversationDO::getDeleted, YesOrNoEnum.NO.getCode())
-                .eq(AIConversationDO::getStatus, AIConversationStatusEnum.ACTIVE.getCode())
+                .eq(AIConversationDO::getStatus, status.getCode())
                 .orderByDesc(AIConversationDO::getLastMessageTime)
                 .page(page);
     }

@@ -1,6 +1,7 @@
 package top.harrylei.forum.service.ai.service;
 
 import top.harrylei.forum.api.enums.ai.AIClientTypeEnum;
+import top.harrylei.forum.api.enums.ai.AIConversationStatusEnum;
 import top.harrylei.forum.api.model.ai.dto.AIConversationDTO;
 import top.harrylei.forum.api.model.ai.dto.AIMessageDTO;
 import top.harrylei.forum.api.model.ai.req.ConversationsQueryParam;
@@ -29,9 +30,10 @@ public interface AIService {
      *
      * @param userId 用户ID
      * @param page   分页参数
+     * @param status 对话状态
      * @return 对话列表
      */
-    PageVO<AIConversationDTO> pageQueryConversations(Long userId, ConversationsQueryParam page);
+    PageVO<AIConversationDTO> pageQueryConversations(Long userId, ConversationsQueryParam page, AIConversationStatusEnum status);
 
     /**
      * 获取对话详情（包含消息历史）

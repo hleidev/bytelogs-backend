@@ -9,6 +9,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import top.harrylei.forum.api.enums.ResultCode;
 import top.harrylei.forum.api.enums.ai.AIClientTypeEnum;
+import top.harrylei.forum.api.enums.ai.AIConversationStatusEnum;
 import top.harrylei.forum.api.enums.ai.AIMessageRoleEnum;
 import top.harrylei.forum.api.model.ai.dto.AIConversationDTO;
 import top.harrylei.forum.api.model.ai.dto.AIMessageDTO;
@@ -61,7 +62,7 @@ public class AIServiceImpl implements AIService {
     public AIMessageDTO chat(String message, Long conversationId, AIClientTypeEnum model) {
         Long userId = getCurrentUserId();
         log.info("用户发起AI对话，userId: {}, conversationId: {}, model: {}, message长度: {}",
-                 userId, conversationId, model, message.length());
+                userId, conversationId, model, message.length());
 
         // 1. 验证请求
         validateChatRequest(message, userId);
@@ -79,17 +80,20 @@ public class AIServiceImpl implements AIService {
     }
 
     @Override
-    public PageVO<AIConversationDTO> pageQueryConversations(Long userId, ConversationsQueryParam queryParam) {
+    public PageVO<AIConversationDTO> pageQueryConversations(Long userId, ConversationsQueryParam queryParam, AIConversationStatusEnum status) {
         // 参数校验
         if (userId == null) {
             ResultCode.AUTHENTICATION_FAILED.throwException("用户ID不能为空");
+        }
+        if (status == null) {
+            status = AIConversationStatusEnum.ACTIVE;
         }
 
         // 创建MyBatis-Plus分页对象
         IPage<AIConversationDO> page = PageUtils.of(queryParam);
 
         // 分页查询对话列表
-        IPage<AIConversationDO> conversationPage = AIConversationDAO.pageQueryConversations(userId, page);
+        IPage<AIConversationDO> conversationPage = AIConversationDAO.pageQueryConversations(userId, page, status);
 
         // 转换为DTO并构建分页结果
         return PageUtils.from(conversationPage, aiConversationStructMapper::toDTO);
@@ -120,7 +124,7 @@ public class AIServiceImpl implements AIService {
 
         // 分页查询消息列表
         IPage<AIMessageDO> messagePage = aiMessageDAO.pageQueryMessages(conversationId, pageQuery,
-                                                                        queryParam.getBeforeTime());
+                queryParam.getBeforeTime());
 
         // 转换为DTO并构建分页结果
         return PageUtils.from(messagePage, aiMessageStructMapper::toDTO);

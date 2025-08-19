@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import top.harrylei.forum.api.enums.ResultCode;
+import top.harrylei.forum.api.enums.ai.AIConversationStatusEnum;
 import top.harrylei.forum.api.model.ai.dto.AIConversationDTO;
 import top.harrylei.forum.api.model.ai.dto.AIMessageDTO;
 import top.harrylei.forum.api.model.ai.req.ChatReq;
@@ -58,10 +59,18 @@ public class AIController {
     }
 
     @GetMapping("/conversations/page")
-    @Operation(summary = "获取对话列表", description = "获取当前用户的对话列表")
+    @Operation(summary = "获取对话列表", description = "获取当前用户的对话列表（进行中）")
     public ResVO<PageVO<AIConversationVO>> pageQuery(@Valid ConversationsQueryParam queryParam) {
         Long userId = getCurrentUserId();
-        PageVO<AIConversationDTO> conversationPage = aiService.pageQueryConversations(userId, queryParam);
+        PageVO<AIConversationDTO> conversationPage = aiService.pageQueryConversations(userId, queryParam, AIConversationStatusEnum.ACTIVE);
+        return ResVO.ok(PageUtils.map(conversationPage, aiConversationStructMapper::toVO));
+    }
+
+    @GetMapping("/conversations/archived/page")
+    @Operation(summary = "获取归档对话列表", description = "获取当前用户的归档对话列表")
+    public ResVO<PageVO<AIConversationVO>> pageQueryArchived(@Valid ConversationsQueryParam queryParam) {
+        Long userId = getCurrentUserId();
+        PageVO<AIConversationDTO> conversationPage = aiService.pageQueryConversations(userId, queryParam, AIConversationStatusEnum.ARCHIVED);
         return ResVO.ok(PageUtils.map(conversationPage, aiConversationStructMapper::toVO));
     }
 
