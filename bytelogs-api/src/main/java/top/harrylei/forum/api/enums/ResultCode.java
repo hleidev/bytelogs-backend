@@ -52,6 +52,7 @@ public enum ResultCode {
     AI_CONVERSATION_NOT_EXISTS(46004, "对话不存在或无访问权限"),
     AI_RESPONSE_EMPTY(46005, "AI响应为空"),
     AI_REPLY_CONTENT_EMPTY(46006, "AI回复内容为空"),
+    AI_MODEL_NOT_SUPPORTED(46007, "不支持的AI厂商或模型"),
 
     // ========== 系统错误 5xxxx ==========
     INTERNAL_ERROR(50000, "系统内部错误"),

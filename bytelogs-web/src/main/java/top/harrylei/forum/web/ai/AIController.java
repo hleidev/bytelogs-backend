@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import top.harrylei.forum.api.enums.ResultCode;
+import top.harrylei.forum.api.enums.ai.AIClientTypeEnum;
 import top.harrylei.forum.api.enums.ai.AIConversationStatusEnum;
 import top.harrylei.forum.api.model.ai.dto.AIConversationDTO;
 import top.harrylei.forum.api.model.ai.dto.AIMessageDTO;
@@ -19,6 +20,7 @@ import top.harrylei.forum.api.model.ai.vo.AIMessageVO;
 import top.harrylei.forum.api.model.ai.vo.AIUsageStatsVO;
 import top.harrylei.forum.api.model.base.ResVO;
 import top.harrylei.forum.api.model.page.PageVO;
+import top.harrylei.forum.core.config.AIConfig;
 import top.harrylei.forum.core.config.AILimitConfig;
 import top.harrylei.forum.core.context.ReqInfoContext;
 import top.harrylei.forum.core.security.permission.RequiresLogin;
@@ -31,6 +33,8 @@ import top.harrylei.forum.service.ai.service.AIService;
 import top.harrylei.forum.service.ai.service.AIUsageService;
 
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * AI对话控制器
@@ -47,13 +51,14 @@ public class AIController {
     private final AIService aiService;
     private final AIUsageService aiUsageService;
     private final AILimitConfig aiLimitConfig;
+    private final AIConfig aiConfig;
     private final AIConversationStructMapper aiConversationStructMapper;
     private final AIMessageStructMapper aiMessageStructMapper;
 
     @PostMapping("/chat")
     @Operation(summary = "发起AI对话", description = "发送消息给AI并获取回复")
     public ResVO<AIMessageVO> chat(@Valid @RequestBody ChatReq req) {
-        AIMessageDTO aiMessage = aiService.chat(req.getMessage(), req.getConversationId(), req.getModel());
+        AIMessageDTO aiMessage = aiService.chat(req);
         AIMessageVO messageVO = aiMessageStructMapper.toVO(aiMessage);
         return ResVO.ok(messageVO);
     }
@@ -162,6 +167,66 @@ public class AIController {
         result.setRemainingTokens(remainingTokens);
 
         return ResVO.ok(result);
+    }
+
+    @GetMapping("/models")
+    @Operation(summary = "获取可用模型列表", description = "获取所有可用的厂商和模型信息")
+    public ResVO<Map<String, Object>> getAvailableModels() {
+        Map<String, Object> result = new HashMap<>();
+
+        // 设置默认配置
+        result.put("defaultVendor", aiConfig.getDefaultClient());
+        result.put("defaultModel", aiConfig.getDefaultModel());
+
+        // 构建厂商和模型信息
+        Map<String, Map<String, Object>> vendors = new HashMap<>();
+
+        if (aiConfig.getClients() != null) {
+            for (Map.Entry<String, AIConfig.ClientConfig> entry : aiConfig.getClients().entrySet()) {
+                String vendorKey = entry.getKey();
+                AIConfig.ClientConfig clientConfig = entry.getValue();
+
+                Map<String, Object> vendorInfo = new HashMap<>();
+
+                // 尝试根据配置key获取厂商枚举
+                try {
+                    AIClientTypeEnum vendorEnum = AIClientTypeEnum.fromConfigKey(vendorKey);
+                    vendorInfo.put("name", vendorEnum.getLabel());
+                    vendorInfo.put("code", vendorEnum.getCode());
+                } catch (IllegalArgumentException e) {
+                    vendorInfo.put("name", vendorKey);
+                    vendorInfo.put("code", vendorKey);
+                }
+
+                // 添加模型列表
+                Map<String, Object> models = getStringObjectMap(clientConfig);
+                vendorInfo.put("models", models);
+
+                vendors.put(vendorKey, vendorInfo);
+            }
+        }
+
+        result.put("vendors", vendors);
+
+        return ResVO.ok(result);
+    }
+
+    private static Map<String, Object> getStringObjectMap(AIConfig.ClientConfig clientConfig) {
+        Map<String, Object> models = new HashMap<>();
+        if (clientConfig.getModels() != null) {
+            for (Map.Entry<String, AIConfig.ModelConfig> modelEntry : clientConfig.getModels().entrySet()) {
+                String modelKey = modelEntry.getKey();
+                AIConfig.ModelConfig modelConfig = modelEntry.getValue();
+
+                Map<String, Object> modelInfo = new HashMap<>();
+                modelInfo.put("displayName", modelConfig.getDisplayName());
+                modelInfo.put("maxTokens", modelConfig.getMaxTokens());
+                modelInfo.put("temperature", modelConfig.getTemperature());
+
+                models.put(modelKey, modelInfo);
+            }
+        }
+        return models;
     }
 
 }

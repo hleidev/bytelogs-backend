@@ -13,6 +13,7 @@ import top.harrylei.forum.api.enums.ai.AIConversationStatusEnum;
 import top.harrylei.forum.api.enums.ai.AIMessageRoleEnum;
 import top.harrylei.forum.api.model.ai.dto.AIConversationDTO;
 import top.harrylei.forum.api.model.ai.dto.AIMessageDTO;
+import top.harrylei.forum.api.model.ai.req.ChatReq;
 import top.harrylei.forum.api.model.ai.req.ConversationsQueryParam;
 import top.harrylei.forum.api.model.ai.req.MessagesQueryParam;
 import top.harrylei.forum.api.model.base.BaseDO;
@@ -59,23 +60,23 @@ public class AIServiceImpl implements AIService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public AIMessageDTO chat(String message, Long conversationId, AIClientTypeEnum model) {
+    public AIMessageDTO chat(ChatReq chatReq) {
         Long userId = getCurrentUserId();
-        log.info("用户发起AI对话，userId: {}, conversationId: {}, model: {}, message长度: {}",
-                userId, conversationId, model, message.length());
+        log.info("用户发起AI对话，userId: {}, conversationId: {}, vendor: {}, model: {}, message长度: {}",
+                userId, chatReq.getConversationId(), chatReq.getVendor(), chatReq.getModel(), chatReq.getMessage().length());
 
         // 1. 验证请求
-        validateChatRequest(message, userId);
+        validateChatRequest(chatReq.getMessage(), userId, chatReq.getVendor(), chatReq.getModel());
 
         // 2. 准备对话
-        boolean isNewConversation = (conversationId == null);
-        conversationId = prepareConversation(conversationId, userId, message);
+        boolean isNewConversation = (chatReq.getConversationId() == null);
+        Long conversationId = prepareConversation(chatReq.getConversationId(), userId, chatReq.getMessage());
 
         // 3. 执行AI调用
-        ChatResponse response = executeAIChat(conversationId, message, model);
+        ChatResponse response = executeChat(conversationId, chatReq.getMessage(), chatReq.getVendor(), chatReq.getModel());
 
         // 4. 保存结果并返回
-        return saveResults(conversationId, userId, response, model, isNewConversation);
+        return saveResults(conversationId, userId, response, chatReq.getVendor(), chatReq.getModel(), isNewConversation);
 
     }
 
@@ -217,10 +218,25 @@ public class AIServiceImpl implements AIService {
     /**
      * 验证聊天请求
      */
-    private void validateChatRequest(String message, Long userId) {
+    private void validateChatRequest(String message, Long userId, AIClientTypeEnum vendor, String model) {
         // 验证消息长度限制
         if (message.length() > aiLimitConfig.getMaxMessageLength()) {
             ResultCode.AI_MESSAGE_TOO_LONG.throwException();
+        }
+
+        // 验证厂商和模型的有效性
+        if (vendor == null) {
+            ResultCode.AI_MODEL_NOT_SUPPORTED.throwException("厂商类型不能为空");
+        }
+
+        // 如果没有指定模型，使用默认模型
+        if (model == null || model.trim().isEmpty()) {
+            model = aiConfig.getDefaultModel();
+        }
+
+        assert vendor != null;
+        if (!aiConfig.isValidVendorAndModel(vendor.getConfigKey(), model)) {
+            ResultCode.AI_MODEL_NOT_SUPPORTED.throwException("不支持的厂商或模型: " + vendor.getLabel() + "/" + model);
         }
 
         // 验证每小时使用量限制
@@ -258,7 +274,12 @@ public class AIServiceImpl implements AIService {
     /**
      * 执行AI调用
      */
-    private ChatResponse executeAIChat(Long conversationId, String message, AIClientTypeEnum model) {
+    private ChatResponse executeChat(Long conversationId, String message, AIClientTypeEnum vendor, String model) {
+        // 如果没有指定模型，使用默认模型
+        if (model == null || model.trim().isEmpty()) {
+            model = aiConfig.getDefaultModel();
+        }
+
         // 保存用户消息
         aiMessageDAO.saveUserMessage(conversationId, getCurrentUserId(), message);
 
@@ -266,7 +287,7 @@ public class AIServiceImpl implements AIService {
         ChatRequest request = buildChatRequestWithContext(conversationId, message);
 
         // 调用AI API
-        ChatResponse response = aiClientFactory.getClient(model).chat(request);
+        ChatResponse response = aiClientFactory.getClient(vendor).chat(request, model);
 
         if (!response.isSuccess() || !StringUtils.hasText(response.getContent())) {
             ResultCode.AI_RESPONSE_EMPTY.throwException();
@@ -278,9 +299,14 @@ public class AIServiceImpl implements AIService {
     /**
      * 保存结果并返回
      */
-    private AIMessageDTO saveResults(Long conversationId, Long userId,
-                                     ChatResponse response, AIClientTypeEnum model, boolean isNewConversation) {
+    private AIMessageDTO saveResults(Long conversationId, Long userId, ChatResponse response,
+                                     AIClientTypeEnum vendor, String model, boolean isNewConversation) {
         String aiContent = response.getContent();
+
+        // 如果没有指定模型，使用默认模型
+        if (model == null || model.trim().isEmpty()) {
+            model = aiConfig.getDefaultModel();
+        }
 
         // 构建AI消息DO对象
         AIMessageDO aiMessageDO = new AIMessageDO();
@@ -288,6 +314,7 @@ public class AIServiceImpl implements AIService {
         aiMessageDO.setUserId(userId);
         aiMessageDO.setRole(AIMessageRoleEnum.ASSISTANT);
         aiMessageDO.setContent(aiContent);
+        aiMessageDO.setVendor(vendor);
         aiMessageDO.setModel(model);
         aiMessageDO.setInputTokens(response.getInputTokens());
         aiMessageDO.setOutputTokens(response.getOutputTokens());
@@ -312,7 +339,7 @@ public class AIServiceImpl implements AIService {
         // 转换为DTO并返回
         AIMessageDTO aiMessage = aiMessageStructMapper.toDTO(aiMessageDO);
 
-        log.info("AI对话完成，conversationId: {}", conversationId);
+        log.info("AI对话完成，conversationId: {}, vendor: {}, model: {}", conversationId, vendor.getLabel(), model);
         return aiMessage;
     }
 }

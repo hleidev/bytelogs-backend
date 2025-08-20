@@ -34,24 +34,30 @@ public class QwenClient implements AIClient {
     }
 
     @Override
-    public ChatResponse chat(ChatRequest request) {
+    public ChatResponse chat(ChatRequest request, String modelName) {
         AIConfig.ClientConfig config = aiConfig.getClientConfig(getType().getConfigKey());
         if (config == null || config.getApiKey() == null) {
             return ChatResponse.error("Qwen配置未找到");
         }
 
+        // 获取具体模型配置
+        AIConfig.ModelConfig modelConfig = aiConfig.getModelConfig(getType().getConfigKey(), modelName);
+        if (modelConfig == null) {
+            return ChatResponse.error("Qwen模型配置未找到: " + modelName);
+        }
+
         try {
             // 构建请求体 - 通义千问API格式
             Map<String, Object> body = new HashMap<>();
-            body.put("model", config.getModel());
+            body.put("model", modelName);
 
             Map<String, Object> input = new HashMap<>();
             input.put("messages", convertMessages(request.getMessages()));
             body.put("input", input);
 
             Map<String, Object> parameters = new HashMap<>();
-            parameters.put("max_tokens", config.getMaxTokens());
-            parameters.put("temperature", config.getTemperature());
+            parameters.put("max_tokens", modelConfig.getMaxTokens());
+            parameters.put("temperature", modelConfig.getTemperature());
             body.put("parameters", parameters);
 
             String jsonBody = JsonUtil.toJson(body);
@@ -80,7 +86,7 @@ public class QwenClient implements AIClient {
                 return ChatResponse.error("API调用失败: " + response.statusCode());
             }
 
-            return parseResponse(response.body(), config.getModel());
+            return parseResponse(response.body(), modelName);
 
         } catch (Exception e) {
             log.error("Qwen请求异常", e);

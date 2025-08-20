@@ -47,10 +47,16 @@ public class AIMessageDO extends BaseDO {
     private String content;
 
     /**
-     * 使用的AI客户端类型
+     * 使用的AI厂商类型
+     */
+    @TableField("vendor")
+    private AIClientTypeEnum vendor;
+
+    /**
+     * 具体模型名称
      */
     @TableField("model")
-    private AIClientTypeEnum model;
+    private String model;
 
     /**
      * 输入Token消耗（用户消息和上下文）

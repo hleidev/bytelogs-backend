@@ -312,10 +312,11 @@ CREATE TABLE `ai_message`
     `user_id`         bigint unsigned NOT NULL DEFAULT 0 COMMENT '用户ID',
     `role`            tinyint         NOT NULL DEFAULT 1 COMMENT '消息角色：1-用户，2-AI助手，3-系统',
     `content`         longtext        NOT NULL COMMENT '消息内容',
-    `model`           tinyint         NOT NULL DEFAULT 1 COMMENT '使用的AI客户端类型：1-DeepSeek，2-通义千问',
-    `input_tokens`       int             NOT NULL DEFAULT 0 COMMENT '输入Token消耗（用户消息和上下文）',
-    `output_tokens`      int             NOT NULL DEFAULT 0 COMMENT 'AI生成Token消耗',
-    `total_tokens`       int             NOT NULL DEFAULT 0 COMMENT '总Token消耗',
+    `vendor`          tinyint         NOT NULL DEFAULT 1 COMMENT '使用的AI厂商类型：1-DeepSeek，2-通义千问',
+    `model`           varchar(50)     NOT NULL DEFAULT '' COMMENT '具体模型名称（如：qwen-turbo、deepseek-chat）',
+    `input_tokens`    int             NOT NULL DEFAULT 0 COMMENT '输入Token消耗（用户消息和上下文）',
+    `output_tokens`   int             NOT NULL DEFAULT 0 COMMENT 'AI生成Token消耗',
+    `total_tokens`    int             NOT NULL DEFAULT 0 COMMENT '总Token消耗',
     `deleted`         tinyint         NOT NULL DEFAULT 0 COMMENT '是否删除：0-未删除，1-已删除',
     `create_time`     timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time`     timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -323,7 +324,8 @@ CREATE TABLE `ai_message`
     KEY `idx_conversation_id` (`conversation_id`),
     KEY `idx_user_id` (`user_id`),
     KEY `idx_create_time` (`create_time`),
-    KEY `idx_conversation_time` (`conversation_id`, `create_time`)
+    KEY `idx_conversation_time` (`conversation_id`, `create_time`),
+    KEY `idx_vendor_model` (`vendor`, `model`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci

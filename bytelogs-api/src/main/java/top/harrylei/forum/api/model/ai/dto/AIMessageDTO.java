@@ -29,7 +29,9 @@ public class AIMessageDTO extends BaseDTO {
 
     private String content;
 
-    private AIClientTypeEnum model;
+    private AIClientTypeEnum vendor;
+    
+    private String model;
 
     private Integer inputTokens;
     

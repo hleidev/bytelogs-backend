@@ -28,6 +28,9 @@ public class ChatReq implements Serializable {
     @Schema(description = "对话ID，新对话时不传")
     private Long conversationId;
 
-    @Schema(description = "AI客户端类型")
-    private AIClientTypeEnum model;
+    @Schema(description = "AI厂商类型", example = "2")
+    private AIClientTypeEnum vendor;
+
+    @Schema(description = "具体模型名称，不传时使用默认模型", example = "qwen-turbo")
+    private String model;
 }

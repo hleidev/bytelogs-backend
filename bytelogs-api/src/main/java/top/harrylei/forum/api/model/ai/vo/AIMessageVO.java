@@ -32,11 +32,14 @@ public class AIMessageVO extends BaseVO {
     private String content;
 
     @Schema(description = "使用的AI客户端类型")
-    private AIClientTypeEnum model;
+    private AIClientTypeEnum vendor;
+
+    @Schema(description = "使用的模型名称")
+    private String model;
 
     @Schema(description = "输入Token消耗")
     private Integer inputTokens;
-    
-    @Schema(description = "AI生成Token消耗")  
+
+    @Schema(description = "AI生成Token消耗")
     private Integer outputTokens;
 }

@@ -1,5 +1,6 @@
 package top.harrylei.forum.api.model.ai.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -19,6 +20,7 @@ public class AIUsageStatsVO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Schema(description = "统计日期")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate date;
 
     @Schema(description = "消息数量")

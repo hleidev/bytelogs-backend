@@ -18,12 +18,17 @@ import java.util.Map;
 public class AIConfig {
 
     /**
-     * 默认使用的模型类型
+     * 默认使用的厂商类型
      */
     private String defaultClient;
 
     /**
-     * 各个模型的配置
+     * 默认使用的模型
+     */
+    private String defaultModel;
+
+    /**
+     * 各个厂商的配置
      */
     private Map<String, ClientConfig> clients;
 
@@ -36,8 +41,16 @@ public class AIConfig {
     public static class ClientConfig {
         private String apiKey;
         private String baseUrl;
-        private String model;
         private Duration timeout;
+        /**
+         * 支持的模型列表
+         */
+        private Map<String, ModelConfig> models;
+    }
+
+    @Data
+    public static class ModelConfig {
+        private String displayName;
         private Integer maxTokens;
         private Double temperature;
     }
@@ -56,13 +69,38 @@ public class AIConfig {
         return getClientConfig(defaultClient);
     }
 
+    /**
+     * 获取指定厂商的模型配置
+     */
+    public ModelConfig getModelConfig(String clientType, String modelName) {
+        ClientConfig clientConfig = getClientConfig(clientType);
+        if (clientConfig == null || clientConfig.getModels() == null) {
+            return null;
+        }
+        return clientConfig.getModels().get(modelName);
+    }
+
+    /**
+     * 获取默认模型配置
+     */
+    public ModelConfig getDefaultModelConfig() {
+        return getModelConfig(defaultClient, defaultModel);
+    }
+
+    /**
+     * 验证厂商和模型的有效性
+     */
+    public boolean isValidVendorAndModel(String clientType, String modelName) {
+        return getModelConfig(clientType, modelName) != null;
+    }
+
     @Data
     public static class HttpConfig {
         /**
          * 连接超时时间
          */
         private Duration connectTimeout = Duration.ofSeconds(30);
-        
+
         /**
          * 读取超时时间
          */

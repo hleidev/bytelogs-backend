@@ -1,9 +1,9 @@
 package top.harrylei.forum.service.ai.service;
 
-import top.harrylei.forum.api.enums.ai.AIClientTypeEnum;
 import top.harrylei.forum.api.enums.ai.AIConversationStatusEnum;
 import top.harrylei.forum.api.model.ai.dto.AIConversationDTO;
 import top.harrylei.forum.api.model.ai.dto.AIMessageDTO;
+import top.harrylei.forum.api.model.ai.req.ChatReq;
 import top.harrylei.forum.api.model.ai.req.ConversationsQueryParam;
 import top.harrylei.forum.api.model.ai.req.MessagesQueryParam;
 import top.harrylei.forum.api.model.page.PageVO;
@@ -18,12 +18,10 @@ public interface AIService {
     /**
      * 发送聊天消息
      *
-     * @param message        用户消息
-     * @param conversationId 对话ID（可选，新对话时为null）
-     * @param model          AI客户端类型
+     * @param chatReq 聊天请求参数
      * @return AI回复的消息
      */
-    AIMessageDTO chat(String message, Long conversationId, AIClientTypeEnum model);
+    AIMessageDTO chat(ChatReq chatReq);
 
     /**
      * 获取用户的对话列表

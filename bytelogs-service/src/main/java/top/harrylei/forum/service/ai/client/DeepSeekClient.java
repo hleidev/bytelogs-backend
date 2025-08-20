@@ -34,19 +34,25 @@ public class DeepSeekClient implements AIClient {
     }
 
     @Override
-    public ChatResponse chat(ChatRequest request) {
+    public ChatResponse chat(ChatRequest request, String modelName) {
         AIConfig.ClientConfig config = aiConfig.getClientConfig(getType().getConfigKey());
         if (config == null || config.getApiKey() == null) {
             return ChatResponse.error("DeepSeek配置未找到");
         }
 
+        // 获取具体模型配置
+        AIConfig.ModelConfig modelConfig = aiConfig.getModelConfig(getType().getConfigKey(), modelName);
+        if (modelConfig == null) {
+            return ChatResponse.error("DeepSeek模型配置未找到: " + modelName);
+        }
+
         try {
             // 构建请求体
             Map<String, Object> body = new HashMap<>();
-            body.put("model", config.getModel());
+            body.put("model", modelName);
             body.put("messages", convertMessages(request.getMessages()));
-            body.put("max_tokens", config.getMaxTokens());
-            body.put("temperature", config.getTemperature());
+            body.put("max_tokens", modelConfig.getMaxTokens());
+            body.put("temperature", modelConfig.getTemperature());
 
             String jsonBody = JsonUtil.toJson(body);
 
