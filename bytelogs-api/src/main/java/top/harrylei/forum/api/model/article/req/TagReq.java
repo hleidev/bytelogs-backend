@@ -1,13 +1,17 @@
 package top.harrylei.forum.api.model.article.req;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
-import top.harrylei.forum.api.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.enums.article.TagTypeEnum;
 
 /**
  * 新建标签请求参数
+ *
+ * @author harry
  */
 @Data
 @Schema(description = "标签请求")
@@ -26,23 +30,9 @@ public class TagReq {
     private String tagName;
 
     /**
-     * 标签类型：1-系统标签，2-自定义标签
+     * 标签类型：1-系统标签，2-用户标签
      */
     @NotNull(message = "标签类型不能为空")
     @Schema(description = "标签类型，1-系统标签，2-自定义标签", example = "1")
     private TagTypeEnum tagType;
-
-    /**
-     * 类目ID
-     */
-    @NotNull(message = "类目ID不能为空")
-    @Schema(description = "类目ID", example = "1")
-    private Long categoryId;
-
-    /**
-     * 状态：0-未发布，1-已发布
-     */
-    @NotNull(message = "标签状态不能为空")
-    @Schema(description = "标签状态", example = "0")
-    private PublishStatusEnum status;
 }

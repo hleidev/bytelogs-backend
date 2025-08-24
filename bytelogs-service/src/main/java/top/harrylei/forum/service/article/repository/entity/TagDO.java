@@ -27,19 +27,14 @@ public class TagDO extends BaseDO {
     private String tagName;
 
     /**
-     * 标签类型：1-系统标签，2-自定义标签
+     * 标签类型：1-系统标签，2-用户标签
      */
     private Integer tagType;
 
     /**
-     * 所属类目ID
+     * 创建者ID（0-系统标签）
      */
-    private Long categoryId;
-
-    /**
-     * 状态：0-未发布，1-已发布
-     */
-    private Integer status;
+    private Long creatorId;
 
     /**
      * 是否删除：0-未删除，1-已删除

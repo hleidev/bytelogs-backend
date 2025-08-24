@@ -1,22 +1,23 @@
 package top.harrylei.forum.api.enums.article;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import top.harrylei.forum.api.enums.base.CodeLabelEnum;
 import top.harrylei.forum.api.enums.base.EnumCodeLabelJsonSerializer;
 
+import java.util.Arrays;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 /**
  * 标签类型枚举
+ *
+ * @author harry
  */
 @Getter
 @AllArgsConstructor
@@ -28,9 +29,9 @@ public enum TagTypeEnum implements CodeLabelEnum {
      */
     SYSTEM(1, "系统标签"),
     /**
-     * 自定义标签
+     * 用户标签
      */
-    CUSTOM(2, "自定义标签");
+    USER(2, "用户标签");
 
     // 编码（唯一标识）
     @EnumValue
@@ -41,10 +42,7 @@ public enum TagTypeEnum implements CodeLabelEnum {
 
     // 根据编码快速定位枚举实例
     private static final Map<Integer, TagTypeEnum> CODE_MAP =
-        Arrays.stream(values()).collect(Collectors.toMap(TagTypeEnum::getCode, Function.identity()));
-    // 根据枚举名称（不区分大小写）快速定位枚举实例
-    private static final Map<String, TagTypeEnum> NAME_MAP =
-        Arrays.stream(values()).collect(Collectors.toMap(e -> e.name().toUpperCase(), Function.identity()));
+            Arrays.stream(values()).collect(Collectors.toMap(TagTypeEnum::getCode, Function.identity()));
 
     /**
      * 获取码
@@ -52,6 +50,7 @@ public enum TagTypeEnum implements CodeLabelEnum {
      * @return 编码
      */
     @JsonValue
+    @Override
     public Integer getCode() {
         return code;
     }
