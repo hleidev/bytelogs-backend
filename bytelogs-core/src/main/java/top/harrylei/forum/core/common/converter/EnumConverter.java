@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 
 import top.harrylei.forum.api.enums.YesOrNoEnum;
 import top.harrylei.forum.api.enums.article.PublishStatusEnum;
+import top.harrylei.forum.api.enums.article.TagTypeEnum;
 
 /**
  * 通用枚举转换器
@@ -42,6 +43,16 @@ public class EnumConverter {
     @Named("CodeToYesOrNoEnum")
     public YesOrNoEnum codeToYesOrNoEnum(Integer code) {
         return code == null ? null : YesOrNoEnum.fromCode(code);
+    }
+
+    @Named("TagTypeEnumToCode")
+    public Integer tagTypeEnumToCode(TagTypeEnum tagTypeEnum) {
+        return tagTypeEnum == null ? null : tagTypeEnum.getCode();
+    }
+
+    @Named("CodeToTagTypeEnum")
+    public TagTypeEnum codeToTagTypeEnum(Integer code) {
+        return code == null ? null : TagTypeEnum.fromCode(code);
     }
 
 }

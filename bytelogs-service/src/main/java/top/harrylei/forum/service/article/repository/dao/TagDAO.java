@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Repository;
 import top.harrylei.forum.api.enums.YesOrNoEnum;
-import top.harrylei.forum.api.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.page.param.TagQueryParam;
 import top.harrylei.forum.service.article.repository.entity.TagDO;
 import top.harrylei.forum.service.article.repository.mapper.TagMapper;
@@ -23,22 +22,19 @@ public class TagDAO extends ServiceImpl<TagMapper, TagDO> {
         return lambdaQuery()
                 .eq(TagDO::getTagName, tag.getTagName())
                 .eq(TagDO::getTagType, tag.getTagType())
-                .eq(TagDO::getCategoryId, tag.getCategoryId())
-                .eq(TagDO::getStatus, tag.getStatus())
                 .eq(TagDO::getDeleted, YesOrNoEnum.NO.getCode())
                 .one() != null;
     }
 
-    public IPage<TagDO> pageQuery(TagQueryParam queryParam, IPage<TagDO> page) {
+    public IPage<TagDO> pageQuery(TagQueryParam queryParam, IPage<TagDO> page, boolean deleted) {
+        YesOrNoEnum yesOrNoEnum = deleted ? YesOrNoEnum.YES : YesOrNoEnum.NO;
         return lambdaQuery()
                 .like(queryParam.getTagName() != null && !queryParam.getTagName().isEmpty(),
-                      TagDO::getTagName, queryParam.getTagName())
+                        TagDO::getTagName, queryParam.getTagName())
                 .eq(queryParam.getTagType() != null, TagDO::getTagType, queryParam.getTagType())
-                .eq(queryParam.getCategoryId() != null, TagDO::getCategoryId, queryParam.getCategoryId())
-                .eq(queryParam.getStatus() != null, TagDO::getStatus, queryParam.getStatus())
                 .ge(queryParam.getStartTime() != null, TagDO::getCreateTime, queryParam.getStartTime())
                 .le(queryParam.getEndTime() != null, TagDO::getCreateTime, queryParam.getEndTime())
-                .eq(TagDO::getDeleted, YesOrNoEnum.NO.getCode())
+                .eq(TagDO::getDeleted, yesOrNoEnum)
                 .page(page);
     }
 
@@ -49,16 +45,37 @@ public class TagDAO extends ServiceImpl<TagMapper, TagDO> {
                 .one();
     }
 
-    public List<TagDO> listDeleted() {
+    public List<TagDO> listSimpleTag() {
         return lambdaQuery()
-                .eq(TagDO::getDeleted, YesOrNoEnum.YES.getCode())
+                .eq(TagDO::getDeleted, YesOrNoEnum.NO.getCode())
+                .orderByAsc(TagDO::getTagName)
                 .list();
     }
 
-    public List<TagDO> listPublishedAndUndeleted() {
+    /**
+     * 标签搜索
+     *
+     * @param keyword 搜索关键词
+     * @return 匹配的标签列表
+     */
+    public List<TagDO> searchByKeyword(String keyword) {
         return lambdaQuery()
-                .eq(TagDO::getStatus, PublishStatusEnum.PUBLISHED.getCode())
                 .eq(TagDO::getDeleted, YesOrNoEnum.NO.getCode())
+                .like(TagDO::getTagName, keyword)
+                .orderByAsc(TagDO::getTagName)
                 .list();
+    }
+
+    /**
+     * 根据标签名查找标签
+     *
+     * @param tagName 标签名称
+     * @return 标签对象，未找到时返回null
+     */
+    public TagDO getByTagName(String tagName) {
+        return lambdaQuery()
+                .eq(TagDO::getTagName, tagName)
+                .eq(TagDO::getDeleted, YesOrNoEnum.NO.getCode())
+                .one();
     }
 }
