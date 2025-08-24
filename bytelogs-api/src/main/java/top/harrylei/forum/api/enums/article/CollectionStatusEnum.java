@@ -13,8 +13,8 @@ import java.util.stream.Collectors;
 
 /**
  * 收藏状态枚举
+ *
  * @author harry
-
  */
 @Getter
 @AllArgsConstructor

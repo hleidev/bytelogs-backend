@@ -109,15 +109,15 @@ CREATE TABLE `tag`
 (
     `id`          bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     `tag_name`    varchar(64)     NOT NULL COMMENT '标签名称',
-    `tag_type`    tinyint         NOT NULL DEFAULT 1 COMMENT '标签类型：1-系统标签，2-自定义标签',
-    `category_id` bigint unsigned NOT NULL DEFAULT 0 COMMENT '类目ID',
-    `status`      tinyint         NOT NULL DEFAULT 0 COMMENT '状态：0-未发布，1-已发布',
+    `tag_type`    tinyint         NOT NULL DEFAULT 1 COMMENT '标签类型：1-系统标签，2-用户标签',
+    `creator_id`  bigint unsigned NOT NULL DEFAULT 0 COMMENT '创建者ID（0-系统标签）',
     `deleted`     tinyint         NOT NULL DEFAULT 0 COMMENT '是否删除：0-未删除，1-已删除',
     `create_time` timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `update_time` timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
+    `update_time` timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_tag_name_category` (`tag_name`, `category_id`, `deleted`) COMMENT '标签名称类目唯一约束',
-    KEY `idx_category_id` (`category_id`) COMMENT '类目ID索引'
+    UNIQUE KEY `uk_tag_name` (`tag_name`) COMMENT '标签名称唯一约束',
+    KEY `idx_creator_id` (`creator_id`) COMMENT '创建者ID索引',
+    KEY `idx_tag_type` (`tag_type`) COMMENT '标签类型索引'
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci

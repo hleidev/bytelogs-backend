@@ -1,8 +1,5 @@
 package top.harrylei.forum.api.enums;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+
 import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -11,6 +8,12 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import top.harrylei.forum.api.enums.base.CodeLabelEnum;
 import top.harrylei.forum.api.enums.base.EnumCodeLabelJsonSerializer;
+
+import java.util.Arrays;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 /**
  * 删除标识枚举
  *
@@ -21,7 +24,7 @@ import top.harrylei.forum.api.enums.base.EnumCodeLabelJsonSerializer;
 @JsonSerialize(using = EnumCodeLabelJsonSerializer.class)
 public enum YesOrNoEnum implements CodeLabelEnum {
     NO(0, "N"),
-    YES(1,"Y");
+    YES(1, "Y");
     // 编码（唯一标识）
     @EnumValue
     private final Integer code;
@@ -30,18 +33,18 @@ public enum YesOrNoEnum implements CodeLabelEnum {
     // 根据编码快速定位枚举实例
     private static final Map<Integer, YesOrNoEnum> CODE_MAP =
             Arrays.stream(values()).collect(Collectors.toMap(YesOrNoEnum::getCode, Function.identity()));
-    // 根据枚举名称（不区分大小写）快速定位枚举实例
-    private static final Map<String, YesOrNoEnum> NAME_MAP =
-            Arrays.stream(values()).collect(Collectors.toMap(e -> e.name().toUpperCase(), Function.identity()));
+
     /**
      * 获取码
      *
      * @return 编码
      */
     @JsonValue
+    @Override
     public Integer getCode() {
         return code;
     }
+
     /**
      * 根据编码获取枚举对象
      *

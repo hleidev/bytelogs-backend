@@ -41,9 +41,6 @@ public interface UserStructMapper {
 
     /**
      * 将请求对象中的数据更新到DTO对象
-     * <p>
-     * 只更新非空字段，空字符串也视为空值不更新
-     * </p>
      *
      * @param req 用户信息请求对象
      * @param dto 目标用户信息DTO对象

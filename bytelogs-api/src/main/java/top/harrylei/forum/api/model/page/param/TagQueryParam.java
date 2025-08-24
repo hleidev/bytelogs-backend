@@ -28,8 +28,6 @@ public class TagQueryParam extends BasePage {
             "id", "id",
             "tagName", "tag_name",
             "tagType", "tag_type",
-            "categoryId", "category_id",
-            "status", "status",
             "createTime", "create_time",
             "updateTime", "update_time"
     );
@@ -45,18 +43,6 @@ public class TagQueryParam extends BasePage {
      */
     @Schema(description = "标签类型：1-系统标签，2-自定义标签")
     private Integer tagType;
-
-    /**
-     * 所属分类ID
-     */
-    @Schema(description = "所属分类ID")
-    private Long categoryId;
-
-    /**
-     * 标签状态
-     */
-    @Schema(description = "标签状态")
-    private Integer status;
 
     /**
      * 起始时间
