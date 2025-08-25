@@ -58,10 +58,6 @@ public class TagServiceImpl implements TagService {
         }
     }
 
-    @Override
-    public PageVO<TagDTO> pageQuery(TagQueryParam queryParam) {
-        return pageQuery(queryParam, false);
-    }
 
     /**
      * 标签分页查询

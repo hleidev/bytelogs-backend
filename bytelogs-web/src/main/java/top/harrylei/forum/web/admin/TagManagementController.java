@@ -62,7 +62,7 @@ public class TagManagementController {
     @Operation(summary = "分页查询", description = "支持按名称、类型、时间等多条件分页查询")
     @GetMapping("/page")
     public ResVO<PageVO<TagVO>> page(TagQueryParam queryParam) {
-        PageVO<TagDTO> dtoPage = tagService.pageQuery(queryParam);
+        PageVO<TagDTO> dtoPage = tagService.pageQuery(queryParam, false);
         return ResVO.ok(PageUtils.map(dtoPage, tagStructMapper::toVO));
     }
 
@@ -93,14 +93,18 @@ public class TagManagementController {
     }
 
     /**
-     * 已删标签
+     * 已删标签分页查询
      *
-     * @return 已经删除的标签详细信息列表
+     * @param queryParam 查询参数
+     * @return 已删除标签分页列表
      */
-    @Operation(summary = "已删标签", description = "后台查看已删除的标签")
+    @Operation(summary = "已删标签分页查询", description = "支持分页查看已删除的标签")
     @GetMapping("/deleted")
-    public ResVO<PageVO<TagVO>> pageDeleted() {
-        PageVO<TagDTO> deletedTags = tagService.pageQuery(new TagQueryParam(), true);
+    public ResVO<PageVO<TagVO>> pageDeleted(TagQueryParam queryParam) {
+        // 为了分页查询已删除标签，创建一个只有分页信息的查询参数
+        TagQueryParam deletedQuery = new TagQueryParam();
+
+        PageVO<TagDTO> deletedTags = tagService.pageQuery(deletedQuery, true);
         return ResVO.ok(PageUtils.map(deletedTags, tagStructMapper::toVO));
     }
 }

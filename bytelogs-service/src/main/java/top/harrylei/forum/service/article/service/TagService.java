@@ -26,16 +26,8 @@ public interface TagService {
      * 标签分页查询
      *
      * @param queryParam 标签及筛选参数
-     * @return 标签分类列表
-     */
-    PageVO<TagDTO> pageQuery(TagQueryParam queryParam);
-
-    /**
-     * 标签分页查询
-     *
-     * @param queryParam 标签及筛选参数
-     * @param deleted    是否查询已删除标签
-     * @return 标签分类列表
+     * @param deleted    是否查询已删除标签，true查询已删除，false查询未删除
+     * @return 标签列表
      */
     PageVO<TagDTO> pageQuery(TagQueryParam queryParam, boolean deleted);
 
