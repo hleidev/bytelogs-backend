@@ -1,16 +1,17 @@
 package top.harrylei.forum.service.article.repository.entity;
 
-import java.io.Serial;
-
 import com.baomidou.mybatisplus.annotation.TableName;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 import top.harrylei.forum.api.model.base.BaseDO;
 
+import java.io.Serial;
+
 /**
  * 分类实体对象
+ *
+ * @author harry
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -25,11 +26,6 @@ public class CategoryDO extends BaseDO {
      * 类目名称
      */
     private String categoryName;
-
-    /**
-     * 状态：0-未发布，1-已发布
-     */
-    private Integer status;
 
     /**
      * 排序值（越大越靠前）
