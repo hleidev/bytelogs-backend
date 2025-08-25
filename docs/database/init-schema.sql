@@ -92,7 +92,6 @@ CREATE TABLE `category`
 (
     `id`            bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     `category_name` varchar(64)     NOT NULL DEFAULT '' COMMENT '类目名称',
-    `status`        tinyint         NOT NULL DEFAULT 0 COMMENT '状态：0-未发布，1-已发布',
     `sort`          int             NOT NULL DEFAULT 0 COMMENT '排序值（越大越靠前）',
     `deleted`       tinyint         NOT NULL DEFAULT 0 COMMENT '是否删除：0-未删除，1-已删除',
     `create_time`   timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
