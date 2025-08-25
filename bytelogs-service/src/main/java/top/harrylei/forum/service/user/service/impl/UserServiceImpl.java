@@ -183,6 +183,7 @@ public class UserServiceImpl implements UserService {
             IPage<UserDetailDTO> result = userDAO.pageUsers(queryParam, page);
             return PageUtils.from(result);
         } catch (Exception e) {
+            log.error("查询用户列表异常: ", e);
             ExceptionUtil.error(ErrorCodeEnum.SYSTEM_ERROR, "查询用户列表异常", e);
             return null;
         }
@@ -290,9 +291,9 @@ public class UserServiceImpl implements UserService {
             userInfo.setDeleted(status.getCode());
             userInfoDAO.updateById(userInfo);
             log.info("用户删除状态更新成功: userId={}, deleted={}, operatorId={}",
-                     userId,
-                     status.getLabel(),
-                     operatorId);
+                    userId,
+                    status.getLabel(),
+                    operatorId);
         } catch (Exception e) {
             ExceptionUtil.error(ErrorCodeEnum.USER_DELETE_FAILED, e);
         }

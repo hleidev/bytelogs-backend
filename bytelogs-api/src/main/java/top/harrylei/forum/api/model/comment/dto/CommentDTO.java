@@ -5,6 +5,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import top.harrylei.forum.api.model.base.BaseDTO;
+import top.harrylei.forum.api.enums.YesOrNoEnum;
 
 import java.io.Serial;
 
@@ -50,5 +51,5 @@ public class CommentDTO extends BaseDTO {
     /**
      * 是否删除：0-未删除，1-已删除
      */
-    private Integer deleted;
+    private YesOrNoEnum deleted;
 }

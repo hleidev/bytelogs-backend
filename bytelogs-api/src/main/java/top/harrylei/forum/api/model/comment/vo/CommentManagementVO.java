@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import top.harrylei.forum.api.model.base.BaseVO;
+import top.harrylei.forum.api.enums.YesOrNoEnum;
 
 /**
  * 评论管理VO
@@ -61,5 +62,5 @@ public class CommentManagementVO extends BaseVO {
      * 删除状态：0-未删除，1-已删除
      */
     @Schema(description = "删除状态：0-未删除，1-已删除")
-    private Integer deleted;
+    private YesOrNoEnum deleted;
 }

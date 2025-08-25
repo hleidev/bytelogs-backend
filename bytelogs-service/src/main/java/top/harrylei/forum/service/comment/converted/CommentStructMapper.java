@@ -31,7 +31,11 @@ public interface CommentStructMapper {
     @Mapping(target = "createTime", ignore = true)
     CommentDTO toDTO(CommentSaveReq req);
 
+    @Mapping(target = "deleted", source = "deleted", qualifiedByName = "YesOrNoEnumToCode")
     CommentDO toDO(CommentDTO dto);
+
+    @Mapping(target = "deleted", source = "deleted", qualifiedByName = "CodeToYesOrNoEnum")
+    CommentDTO toDTO(CommentDO commentDO);
 
     @Mapping(target = "userName", ignore = true)
     @Mapping(target = "userAvatar", ignore = true)
