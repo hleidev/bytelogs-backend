@@ -4,15 +4,13 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import top.harrylei.forum.api.enums.ErrorCodeEnum;
+import top.harrylei.forum.api.enums.ResultCode;
 import top.harrylei.forum.api.enums.YesOrNoEnum;
-import top.harrylei.forum.api.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.article.dto.CategoryDTO;
 import top.harrylei.forum.api.model.article.req.CategoryReq;
 import top.harrylei.forum.api.model.page.PageVO;
 import top.harrylei.forum.api.model.page.param.CategoryQueryParam;
 import top.harrylei.forum.core.context.ReqInfoContext;
-import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.core.util.PageUtils;
 import top.harrylei.forum.service.article.converted.CategoryStructMapper;
 import top.harrylei.forum.service.article.repository.dao.CategoryDAO;
@@ -43,18 +41,19 @@ public class CategoryServiceImpl implements CategoryService {
      */
     @Override
     public void save(CategoryReq req) {
-        ExceptionUtil.requireValid(req, ErrorCodeEnum.PARAM_MISSING, "分类请求参数");
+        if (req == null || req.getCategoryName() == null || req.getCategoryName().trim().isEmpty()) {
+            ResultCode.INVALID_PARAMETER.throwException("分类请求参数不能为空");
+        }
 
-        CategoryDO category = new CategoryDO().
-                setCategoryName(req.getCategoryName())
-                .setStatus(req.getStatus().getCode())
+        CategoryDO category = new CategoryDO()
+                .setCategoryName(req.getCategoryName())
                 .setSort(req.getSort());
 
         try {
             categoryDAO.save(category);
             log.info("新建分类成功 category={}", category.getCategoryName());
         } catch (Exception e) {
-            ExceptionUtil.error(ErrorCodeEnum.SYSTEM_ERROR, "新建分类失败", e);
+            ResultCode.INTERNAL_ERROR.throwException();
         }
     }
 
@@ -66,18 +65,24 @@ public class CategoryServiceImpl implements CategoryService {
      */
     @Override
     public CategoryDTO update(CategoryDTO categoryDTO) {
-        ExceptionUtil.requireValid(categoryDTO, ErrorCodeEnum.PARAM_MISSING, "分类传输对象");
+        if (categoryDTO == null || categoryDTO.getId() == null) {
+            ResultCode.INVALID_PARAMETER.throwException("分类更新参数不能为空");
+        }
 
         CategoryDO category = categoryDAO.getByCategoryId(categoryDTO.getId());
-        ExceptionUtil.requireValid(category, ErrorCodeEnum.CATEGORY_NOT_EXISTS);
+        if (category == null) {
+            ResultCode.CATEGORY_NOT_EXISTS.throwException();
+        }
 
-        categoryStructMapper.updateDOFromDTO(categoryDTO, category);
+        // 手动更新可编辑字段，保持ID和审计字段不变
+        category.setCategoryName(categoryDTO.getCategoryName());
+        category.setSort(categoryDTO.getSort());
 
         try {
             categoryDAO.updateById(category);
             return categoryStructMapper.toDTO(category);
         } catch (Exception e) {
-            ExceptionUtil.error(ErrorCodeEnum.CATEGORY_UPDATE_FAILED, "新建分类失败", e);
+            ResultCode.INTERNAL_ERROR.throwException();
             return null;
         }
     }
@@ -90,7 +95,9 @@ public class CategoryServiceImpl implements CategoryService {
      */
     @Override
     public PageVO<CategoryDTO> pageQuery(CategoryQueryParam queryParam) {
-        ExceptionUtil.requireValid(queryParam, ErrorCodeEnum.PARAM_MISSING, "分页请求参数");
+        if (queryParam == null) {
+            ResultCode.INVALID_PARAMETER.throwException("分页请求参数不能为空");
+        }
         // 分页查询
         IPage<CategoryDO> page = PageUtils.of(queryParam);
         IPage<CategoryDO> result = categoryDAO.pageQuery(queryParam, page);
@@ -99,38 +106,6 @@ public class CategoryServiceImpl implements CategoryService {
         return PageUtils.from(result, categoryStructMapper::toDTO);
     }
 
-    /**
-     * 更新分类状态
-     *
-     * @param categoryId 分类ID
-     * @param status     新状态
-     */
-    @Override
-    public void updateStatus(Long categoryId, PublishStatusEnum status) {
-        ExceptionUtil.requireValid(categoryId, ErrorCodeEnum.PARAM_MISSING, "分类ID");
-        ExceptionUtil.requireValid(status, ErrorCodeEnum.PARAM_MISSING, "分类状态");
-
-        CategoryDO category = categoryDAO.getByCategoryId(categoryId);
-        ExceptionUtil.requireValid(category, ErrorCodeEnum.CATEGORY_NOT_EXISTS);
-
-        if (Objects.equals(status.getCode(), category.getStatus())) {
-            log.warn("分类状态未变更，无需更新");
-            return;
-        }
-
-        Long operatorId = ReqInfoContext.getContext().getUserId();
-
-        try {
-            category.setStatus(status.getCode());
-            categoryDAO.updateById(category);
-            log.info("更新分类状态成功 category={} status={} operatorId={}",
-                     category.getCategoryName(),
-                     status.getLabel(),
-                     operatorId);
-        } catch (Exception e) {
-            ExceptionUtil.error(ErrorCodeEnum.CATEGORY_UPDATE_FAILED, "更新状态失败", e);
-        }
-    }
 
     /**
      * 更新删除状态
@@ -140,11 +115,17 @@ public class CategoryServiceImpl implements CategoryService {
      */
     @Override
     public void updateDeleted(Long categoryId, YesOrNoEnum status) {
-        ExceptionUtil.requireValid(categoryId, ErrorCodeEnum.PARAM_MISSING, "分类ID");
-        ExceptionUtil.requireValid(status, ErrorCodeEnum.PARAM_MISSING, "删除状态");
+        if (categoryId == null) {
+            ResultCode.INVALID_PARAMETER.throwException("分类ID不能为空");
+        }
+        if (status == null) {
+            ResultCode.INVALID_PARAMETER.throwException("删除状态不能为空");
+        }
 
         CategoryDO category = categoryDAO.getById(categoryId);
-        ExceptionUtil.requireValid(category, ErrorCodeEnum.CATEGORY_NOT_EXISTS);
+        if (category == null) {
+            ResultCode.CATEGORY_NOT_EXISTS.throwException();
+        }
 
         if (Objects.equals(status.getCode(), category.getDeleted())) {
             log.warn("分类删除状态未变更，无需更新");
@@ -158,34 +139,21 @@ public class CategoryServiceImpl implements CategoryService {
             categoryDAO.updateById(category);
             log.info("更新分类删除状态成功 category={} operatorId={}", category.getCategoryName(), operatorId);
         } catch (Exception e) {
-            ExceptionUtil.error(ErrorCodeEnum.CATEGORY_UPDATE_FAILED, "更新删除状态失败", e);
+            ResultCode.INTERNAL_ERROR.throwException();
         }
-    }
-
-    /**
-     * 已删分类
-     *
-     * @return 已删分类列表
-     */
-    @Override
-    public List<CategoryDTO> listDeleted() {
-        List<CategoryDO> categoryList = categoryDAO.getDeleted();
-        ExceptionUtil.requireValid(categoryList, ErrorCodeEnum.CATEGORY_NOT_EXISTS);
-
-        return categoryList.stream().map(categoryStructMapper::toDTO).toList();
     }
 
     /**
      * 分类列表
      *
+     * @param deleted 是否查询已删除分类，true查询已删除，false查询未删除
      * @return 分类列表
      */
     @Override
-    public List<CategoryDTO> list() {
-        List<CategoryDO> category = categoryDAO.listPublishedAndUndeleted();
+    public List<CategoryDTO> listCategory(boolean deleted) {
+        List<CategoryDO> category = categoryDAO.listCategory(deleted);
 
         return category.stream()
-                .filter(Objects::nonNull)
                 .map(categoryStructMapper::toDTO)
                 .sorted(Comparator.comparingInt(CategoryDTO::getSort).reversed())
                 .toList();

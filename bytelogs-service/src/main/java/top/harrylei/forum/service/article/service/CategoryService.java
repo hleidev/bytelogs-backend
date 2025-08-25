@@ -1,7 +1,6 @@
 package top.harrylei.forum.service.article.service;
 
 import top.harrylei.forum.api.enums.YesOrNoEnum;
-import top.harrylei.forum.api.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.article.dto.CategoryDTO;
 import top.harrylei.forum.api.model.article.req.CategoryReq;
 import top.harrylei.forum.api.model.page.PageVO;
@@ -11,6 +10,8 @@ import java.util.List;
 
 /**
  * 分类服务接口类
+ *
+ * @author harry
  */
 public interface CategoryService {
 
@@ -38,31 +39,18 @@ public interface CategoryService {
     PageVO<CategoryDTO> pageQuery(CategoryQueryParam queryParam);
 
     /**
-     * 更新分类状态
-     *
-     * @param categoryId 分类ID
-     * @param status 新状态
-     */
-    void updateStatus(Long categoryId, PublishStatusEnum status);
-
-    /**
      * 更新删除状态
      *
      * @param categoryId 分类ID
+     * @param status     删除状态
      */
     void updateDeleted(Long categoryId, YesOrNoEnum status);
 
     /**
-     * 已删分类
-     *
-     * @return 已删分类列表
-     */
-    List<CategoryDTO> listDeleted();
-
-    /**
      * 分类列表
      *
+     * @param deleted 是否查询已删除分类，true查询已删除，false查询未删除
      * @return 分类列表
      */
-    List<CategoryDTO> list();
+    List<CategoryDTO> listCategory(boolean deleted);
 }
