@@ -6,6 +6,8 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 
 import top.harrylei.forum.api.enums.user.UserRoleEnum;
+import top.harrylei.forum.api.enums.YesOrNoEnum;
+import top.harrylei.forum.core.common.converter.EnumConverter;
 import top.harrylei.forum.api.model.user.dto.UserInfoDTO;
 import top.harrylei.forum.api.model.user.dto.UserDetailDTO;
 import top.harrylei.forum.api.model.user.req.UserInfoUpdateReq;
@@ -19,7 +21,7 @@ import top.harrylei.forum.service.user.repository.entity.UserInfoDO;
  *
  * @author harry
  */
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {EnumConverter.class})
 public interface UserStructMapper {
 
     /**
@@ -28,7 +30,8 @@ public interface UserStructMapper {
      * @param userInfo 用户信息数据库实体
      * @return 用户信息DTO
      */
-    @Mapping(source = "userRole", target = "role", qualifiedByName = "codeToRoleName")
+    @Mapping(target = "deleted", source = "deleted", qualifiedByName = "CodeToYesOrNoEnum")
+    @Mapping(target = "role", source = "userRole")
     UserInfoDTO toDTO(UserInfoDO userInfo);
 
     /**
@@ -62,7 +65,8 @@ public interface UserStructMapper {
      * @param userInfoDTO 数据传输对象
      * @return 数据库实体对象
      */
-    @Mapping(target = "userRole", source = "role", qualifiedByName = "roleNameToCode")
+    @Mapping(target = "deleted", source = "deleted", qualifiedByName = "YesOrNoEnumToCode")
+    @Mapping(target = "userRole", source = "role")
     UserInfoDO toDO(UserInfoDTO userInfoDTO);
 
     /**
@@ -71,9 +75,7 @@ public interface UserStructMapper {
      * @param userDetailDTO 完整用户DTO
      * @return 用户列表项视图对象
      */
-    @Mapping(source = "userRole", target = "role", qualifiedByName = "codeToRoleText")
-    @Mapping(source = "status", target = "status", qualifiedByName = "statusToText")
-    @Mapping(source = "deleted", target = "deleted", qualifiedByName = "deletedToText")
+    @Mapping(source = "userRole", target = "role")
     UserListItemVO toUserListItemVO(UserDetailDTO userDetailDTO);
 
     /**
@@ -82,9 +84,7 @@ public interface UserStructMapper {
      * @param userDetailDTO 完整用户DTO
      * @return 用户详情视图对象
      */
-    @Mapping(source = "userRole", target = "role", qualifiedByName = "codeToRoleText")
-    @Mapping(source = "status", target = "status", qualifiedByName = "statusToText")
-    @Mapping(source = "deleted", target = "deleted", qualifiedByName = "deletedToText")
+    @Mapping(source = "userRole", target = "role")
     UserDetailVO toUserDetailVO(UserDetailDTO userDetailDTO);
 
     /**
@@ -101,45 +101,4 @@ public interface UserStructMapper {
         return role != null ? role.getCode() : null;
     }
 
-    /**
-     * 角色代码转角色名称
-     */
-    @Named("codeToRoleName")
-    default String codeToRoleName(Integer code) {
-        UserRoleEnum role = UserRoleEnum.fromCode(code);
-        return role != null ? role.name() : UserRoleEnum.NORMAL.name();
-    }
-
-    /**
-     * 角色名称转角色代码
-     */
-    @Named("roleNameToCode")
-    default Integer roleNameToCode(String roleName) {
-        UserRoleEnum role = UserRoleEnum.fromName(roleName);
-        return role != null ? role.getCode() : UserRoleEnum.NORMAL.getCode();
-    }
-
-    /**
-     * 角色代码转显示文本
-     */
-    @Named("codeToRoleText")
-    default String codeToRoleText(Integer code) {
-        return UserRoleEnum.getLabelByCode(code);
-    }
-
-    /**
-     * 状态码转显示文本
-     */
-    @Named("statusToText")
-    default String statusToText(Integer status) {
-        return status != null && status == 1 ? "启用" : "禁用";
-    }
-
-    /**
-     * 删除标记转显示文本
-     */
-    @Named("deletedToText")
-    default String deletedToText(Integer deleted) {
-        return deleted != null && deleted == 1 ? "已删除" : "未删除";
-    }
 }

@@ -6,6 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 import top.harrylei.forum.api.model.base.BaseDTO;
 import top.harrylei.forum.api.enums.user.UserRoleEnum;
+import top.harrylei.forum.api.enums.YesOrNoEnum;
 
 /**
  * 用户基础实体对象
@@ -67,7 +68,7 @@ public class UserInfoDTO extends BaseDTO {
      * 是否删除
      */
     @Schema(hidden = true, description = "用户是否被删除")
-    private Integer deleted;
+    private YesOrNoEnum deleted;
 
     /**
      * 用户的邮箱

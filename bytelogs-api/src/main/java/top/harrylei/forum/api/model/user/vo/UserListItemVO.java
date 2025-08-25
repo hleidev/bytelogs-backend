@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 import java.time.LocalDateTime;
+import top.harrylei.forum.api.enums.user.UserRoleEnum;
+import top.harrylei.forum.api.enums.YesOrNoEnum;
 
 /**
  * 用户列表项展示对象
@@ -32,14 +34,14 @@ public class UserListItemVO {
     /**
      * 用户状态
      */
-    @Schema(description = "账号状态：禁用，启用", example = "启用")
-    private String status;
+    @Schema(description = "账号状态：0-禁用，1-启用", example = "1")
+    private Integer status;
 
     /**
      * 用户角色
      */
-    @Schema(description = "角色", example = "管理员")
-    private String role;
+    @Schema(description = "角色", example = "ADMIN")
+    private UserRoleEnum role;
 
     /**
      * 用户头像URL
@@ -56,8 +58,8 @@ public class UserListItemVO {
     /**
      * 删除标记
      */
-    @Schema(description = "是否已删除", example = "未删除")
-    private String deleted;
+    @Schema(description = "是否已删除", example = "NO")
+    private YesOrNoEnum deleted;
 
     /**
      * 创建时间

@@ -5,8 +5,12 @@ import top.harrylei.forum.api.enums.user.UserStatusEnum;
 import top.harrylei.forum.api.model.auth.UserCreateReq;
 import top.harrylei.forum.api.model.user.dto.UserDetailDTO;
 
+/**
+ * 用户管理服务接口
+ *
+ * @author harry
+ */
 public interface UserManagementService {
-
 
     /**
      * 查询用户详细信息
@@ -49,7 +53,7 @@ public interface UserManagementService {
      * 修改用户角色
      *
      * @param userId 用户ID
-     * @param role 角色枚举
+     * @param role   角色枚举
      */
     void updateUserRole(Long userId, UserRoleEnum role);
 

@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 import top.harrylei.forum.api.model.base.BaseDTO;
+import top.harrylei.forum.api.enums.user.UserRoleEnum;
+import top.harrylei.forum.api.enums.YesOrNoEnum;
 
 /**
  * 用户完整信息DTO
@@ -47,7 +49,7 @@ public class UserDetailDTO extends BaseDTO {
      * 删除标记，0-未删除，1-已删除
      */
     @Schema(description = "删除标记，0-未删除，1-已删除")
-    private Integer deleted;
+    private YesOrNoEnum deleted;
 
     /**
      * 第三方账号ID
@@ -97,5 +99,5 @@ public class UserDetailDTO extends BaseDTO {
      * 用户角色，0-普通用户，1-超级管理员
      */
     @Schema(description = "用户角色，0-普通用户，1-超级管理员")
-    private Integer userRole;
+    private UserRoleEnum userRole;
 }

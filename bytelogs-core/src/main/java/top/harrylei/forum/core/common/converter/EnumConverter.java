@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import top.harrylei.forum.api.enums.YesOrNoEnum;
 import top.harrylei.forum.api.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.enums.article.TagTypeEnum;
+import top.harrylei.forum.api.enums.user.UserRoleEnum;
 
 /**
  * 通用枚举转换器
