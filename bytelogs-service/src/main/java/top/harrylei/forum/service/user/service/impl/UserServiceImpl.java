@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import top.harrylei.forum.api.enums.ErrorCodeEnum;
 import top.harrylei.forum.api.enums.ResultCode;
 import top.harrylei.forum.api.enums.YesOrNoEnum;
 import top.harrylei.forum.api.enums.user.UserRoleEnum;
@@ -17,11 +16,9 @@ import top.harrylei.forum.api.model.page.param.UserQueryParam;
 import top.harrylei.forum.api.model.user.dto.UserDetailDTO;
 import top.harrylei.forum.api.model.user.dto.UserInfoDTO;
 import top.harrylei.forum.core.context.ReqInfoContext;
-import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.core.util.BCryptUtil;
 import top.harrylei.forum.core.util.PageUtils;
 import top.harrylei.forum.core.util.PasswordUtil;
-import top.harrylei.forum.core.util.RedisUtil;
 import top.harrylei.forum.service.auth.service.AuthService;
 import top.harrylei.forum.service.user.converted.UserStructMapper;
 import top.harrylei.forum.service.user.repository.dao.UserDAO;
@@ -46,7 +43,6 @@ public class UserServiceImpl implements UserService {
     private final UserInfoDAO userInfoDAO;
     private final UserStructMapper userStructMapper;
     private final UserDAO userDAO;
-    private final RedisUtil redisUtil;
     private final AuthService authService;
     private final UserCacheService userCacheService;
 
@@ -82,7 +78,7 @@ public class UserServiceImpl implements UserService {
     @Transactional(rollbackFor = Exception.class)
     public void updateUserInfo(UserInfoDTO userInfoDTO) {
         // 参数校验
-        if (userInfoDTO == null) {
+        if (userInfoDTO == null && userInfoDTO.getUserId() == null) {
             ResultCode.INVALID_PARAMETER.throwException("用户信息不能为空");
         }
 
@@ -176,7 +172,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public PageVO<UserDetailDTO> pageQuery(UserQueryParam queryParam) {
-        ExceptionUtil.requireValid(queryParam, ErrorCodeEnum.PARAM_MISSING, "请求参数");
+        if (queryParam == null) {
+            ResultCode.INVALID_PARAMETER.throwException();
+        }
 
         try {
             IPage<UserDetailDTO> page = PageUtils.of(queryParam);
@@ -184,7 +182,7 @@ public class UserServiceImpl implements UserService {
             return PageUtils.from(result);
         } catch (Exception e) {
             log.error("查询用户列表异常: ", e);
-            ExceptionUtil.error(ErrorCodeEnum.SYSTEM_ERROR, "查询用户列表异常", e);
+            ResultCode.INTERNAL_ERROR.throwException();
             return null;
         }
     }
@@ -197,12 +195,14 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public UserDetailDTO getUserDetail(Long userId) {
-        ExceptionUtil.requireValid(userId, ErrorCodeEnum.PARAM_MISSING, "用户ID");
+        if (userId == null) {
+            ResultCode.INVALID_PARAMETER.throwException();
+        }
 
         try {
             return userDAO.getUserDetail(userId);
         } catch (Exception e) {
-            ExceptionUtil.error(ErrorCodeEnum.SYSTEM_ERROR, "查询用户详细信息异常", e);
+            ResultCode.INTERNAL_ERROR.throwException();
             return null;
         }
     }
@@ -215,11 +215,17 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public void updateStatus(Long userId, UserStatusEnum status) {
-        ExceptionUtil.requireValid(userId, ErrorCodeEnum.PARAM_MISSING, "用户ID");
-        ExceptionUtil.requireValid(status, ErrorCodeEnum.PARAM_MISSING, "用户状态");
+        if (userId == null) {
+            ResultCode.INVALID_PARAMETER.throwException();
+        }
+        if (status == null) {
+            ResultCode.INVALID_PARAMETER.throwException();
+        }
 
         UserDO user = userDAO.getById(userId);
-        ExceptionUtil.requireValid(user, ErrorCodeEnum.USER_NOT_EXISTS, "userId=" + userId);
+        if (user == null) {
+            ResultCode.USER_NOT_EXISTS.throwException();
+        }
 
         if (Objects.equals(status.getCode(), user.getStatus())) {
             log.warn("用户状态未改变，无需更新");
@@ -230,7 +236,7 @@ public class UserServiceImpl implements UserService {
             userDAO.updateById(user);
             log.info("更新用户状态成功: userId={}", userId);
         } catch (Exception e) {
-            ExceptionUtil.error(ErrorCodeEnum.USER_UPDATE_FAILED, "用户状态更新失败，请稍后重试", e);
+            ResultCode.INTERNAL_ERROR.throwException();
         }
     }
 
@@ -242,22 +248,28 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public void resetPassword(Long userId, String password) {
-        ExceptionUtil.requireValid(userId, ErrorCodeEnum.PARAM_MISSING, "用户ID");
-        ExceptionUtil.requireValid(userId, ErrorCodeEnum.PARAM_MISSING, "密码");
+        if (userId == null) {
+            ResultCode.INVALID_PARAMETER.throwException();
+        }
+        if (password == null) {
+            ResultCode.INVALID_PARAMETER.throwException();
+        }
         // 校验新密码安全性
         if (PasswordUtil.isInvalid(password)) {
-            ExceptionUtil.error(ErrorCodeEnum.USER_PASSWORD_INVALID);
+            ResultCode.AUTH_PASSWORD_INVALID.throwException();
         }
 
         UserDO user = userDAO.getUserById(userId);
-        ExceptionUtil.requireValid(user, ErrorCodeEnum.USER_NOT_EXISTS, "userId=" + userId);
+        if (user == null) {
+            ResultCode.USER_NOT_EXISTS.throwException();
+        }
 
         try {
             user.setPassword(BCryptUtil.encode(password));
             userDAO.updateById(user);
             log.info("用户密码更新成功: userId={}", userId);
         } catch (Exception e) {
-            ExceptionUtil.error(ErrorCodeEnum.USER_UPDATE_FAILED, "用户密码更新失败，请稍后重试！", e);
+            ResultCode.INTERNAL_ERROR.throwException();
         }
     }
 
@@ -269,14 +281,22 @@ public class UserServiceImpl implements UserService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void updateDeleted(Long userId, YesOrNoEnum status) {
-        ExceptionUtil.requireValid(userId, ErrorCodeEnum.PARAM_MISSING, "用户ID");
-        ExceptionUtil.requireValid(status, ErrorCodeEnum.PARAM_MISSING, "删除状态");
+        if (userId == null) {
+            ResultCode.INVALID_PARAMETER.throwException();
+        }
+        if (status == null) {
+            ResultCode.INVALID_PARAMETER.throwException();
+        }
 
         UserDO user = userDAO.getById(userId);
-        ExceptionUtil.requireValid(user, ErrorCodeEnum.USER_NOT_EXISTS, "userId=" + userId);
+        if (user == null) {
+            ResultCode.USER_NOT_EXISTS.throwException();
+        }
 
         UserInfoDO userInfo = userInfoDAO.getById(userId);
-        ExceptionUtil.requireValid(userInfo, ErrorCodeEnum.USER_INFO_NOT_EXISTS, "userId=" + userId);
+        if (userInfo == null) {
+            ResultCode.USER_NOT_EXISTS.throwException();
+        }
 
         if (Objects.equals(user.getDeleted(), status.getCode())) {
             log.warn("用户删除状态未变更，无需更新");
@@ -295,7 +315,7 @@ public class UserServiceImpl implements UserService {
                     status.getLabel(),
                     operatorId);
         } catch (Exception e) {
-            ExceptionUtil.error(ErrorCodeEnum.USER_DELETE_FAILED, e);
+            ResultCode.INTERNAL_ERROR.throwException();
         }
     }
 
@@ -307,11 +327,17 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public void updateUserRole(Long userId, UserRoleEnum role) {
-        ExceptionUtil.requireValid(userId, ErrorCodeEnum.PARAM_MISSING, "用户ID");
-        ExceptionUtil.requireValid(role, ErrorCodeEnum.PARAM_MISSING, "角色");
+        if (userId == null) {
+            ResultCode.INVALID_PARAMETER.throwException();
+        }
+        if (role == null) {
+            ResultCode.INVALID_PARAMETER.throwException();
+        }
 
         UserInfoDO userInfo = userInfoDAO.getByUserId(userId);
-        ExceptionUtil.requireValid(userInfo, ErrorCodeEnum.USER_INFO_NOT_EXISTS, "userId=" + userId);
+        if (userInfo == null) {
+            ResultCode.USER_NOT_EXISTS.throwException();
+        }
 
         Long operatorId = ReqInfoContext.getContext().getUserId();
 
@@ -325,7 +351,7 @@ public class UserServiceImpl implements UserService {
             userInfoDAO.updateById(userInfo);
             log.info("更新用户角色成功: userId={}, role={}, operatorId={}", userId, role.getLabel(), operatorId);
         } catch (Exception e) {
-            ExceptionUtil.error(ErrorCodeEnum.USER_UPDATE_FAILED, "更新用户角色失败 userId=" + userId, e);
+            ResultCode.INTERNAL_ERROR.throwException();
         }
     }
 
@@ -336,9 +362,13 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public void save(UserCreateReq req) {
-        ExceptionUtil.requireValid(req, ErrorCodeEnum.PARAM_MISSING, "请求参数");
+        if (req == null) {
+            ResultCode.INVALID_PARAMETER.throwException();
+        }
 
-        ExceptionUtil.requireValid(req.getRole(), ErrorCodeEnum.PARAM_VALIDATE_FAILED, "角色代码异常");
+        if (req.getRole() == null) {
+            ResultCode.INVALID_PARAMETER.throwException();
+        }
 
         Long operatorId = ReqInfoContext.getContext().getUserId();
 
@@ -346,7 +376,7 @@ public class UserServiceImpl implements UserService {
             authService.register(req.getUsername(), req.getPassword(), req.getRole());
             log.info("新建用户账号成功: username={}, operatorId={}", req.getUsername(), operatorId);
         } catch (Exception e) {
-            ExceptionUtil.error(ErrorCodeEnum.UNEXPECT_ERROR, "更新用户角色失败");
+            ResultCode.INTERNAL_ERROR.throwException();
         }
     }
 }
