@@ -3,12 +3,10 @@ package top.harrylei.forum.api.enums.user;
 import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import top.harrylei.forum.api.enums.article.CollectionStatusEnum;
 import top.harrylei.forum.api.enums.base.CodeLabelEnum;
-import top.harrylei.forum.api.enums.base.EnumCodeLabelJsonSerializer;
 import top.harrylei.forum.api.enums.comment.CommentStatusEnum;
 
 import java.util.Arrays;
@@ -23,7 +21,6 @@ import java.util.stream.Collectors;
  */
 @Getter
 @AllArgsConstructor
-@JsonSerialize(using = EnumCodeLabelJsonSerializer.class)
 public enum OperateTypeEnum implements CodeLabelEnum {
 
     /**

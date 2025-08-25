@@ -9,6 +9,8 @@ import top.harrylei.forum.api.enums.article.TagTypeEnum;
 
 /**
  * 管理端标签详情展示对象
+ *
+ * @author harry
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
