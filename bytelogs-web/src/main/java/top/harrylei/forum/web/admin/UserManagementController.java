@@ -1,5 +1,6 @@
 package top.harrylei.forum.web.admin;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,9 +24,9 @@ import top.harrylei.forum.api.model.user.dto.UserDetailDTO;
 import top.harrylei.forum.api.model.user.vo.UserDetailVO;
 import top.harrylei.forum.api.model.user.vo.UserListItemVO;
 import top.harrylei.forum.core.security.permission.RequiresAdmin;
-import top.harrylei.forum.service.user.service.UserManagementService;
 import top.harrylei.forum.service.user.service.UserService;
 import top.harrylei.forum.service.user.converted.UserStructMapper;
+import top.harrylei.forum.api.enums.YesOrNoEnum;
 
 /**
  * 用户管理模块
@@ -41,7 +42,9 @@ import top.harrylei.forum.service.user.converted.UserStructMapper;
 @Validated
 public class UserManagementController {
 
-    private final UserManagementService userManagementService;
+    @Value("${user.default-password}")
+    private String defaultPassword;
+
     private final UserService userService;
     private final UserStructMapper userStructMapper;
 
@@ -55,7 +58,7 @@ public class UserManagementController {
     @GetMapping("/page")
     public ResVO<PageVO<UserListItemVO>> page(UserQueryParam queryParam) {
         PageVO<UserDetailDTO> pageVO = userService.pageQuery(queryParam);
-        return ResVO.ok(PageUtils.map(pageVO, userStructMapper::toUserDetailVO));
+        return ResVO.ok(PageUtils.map(pageVO, userStructMapper::toUserListItemVO));
     }
 
     /**
@@ -67,7 +70,7 @@ public class UserManagementController {
     @Operation(summary = "获取用户详情", description = "根据用户ID获取用户详细信息")
     @GetMapping("/{userId}")
     public ResVO<UserDetailVO> getUserDetail(@NotNull(message = "用户ID为空") @PathVariable Long userId) {
-        UserDetailDTO userDetailDTO = userManagementService.getUserDetail(userId);
+        UserDetailDTO userDetailDTO = userService.getUserDetail(userId);
         return ResVO.ok(userStructMapper.toUserDetailVO(userDetailDTO));
     }
 
@@ -82,7 +85,7 @@ public class UserManagementController {
     @PutMapping("/{userId}/status")
     public ResVO<Void> updateStatus(@NotNull(message = "用户ID为空") @PathVariable Long userId,
                                     @NotNull(message = "状态为空") @RequestBody UserStatusEnum status) {
-        userManagementService.updateStatus(userId, status);
+        userService.updateStatus(userId, status);
         return ResVO.ok();
     }
 
@@ -95,7 +98,7 @@ public class UserManagementController {
     @Operation(summary = "重置用户密码", description = "将用户密码重置为系统默认密码并通知用户")
     @PutMapping("/{userId}/password/reset")
     public ResVO<Void> resetPassword(@NotNull(message = "用户ID为空") @PathVariable Long userId) {
-        userManagementService.resetPassword(userId);
+        userService.resetPassword(userId, defaultPassword);
         return ResVO.ok();
     }
 
@@ -137,7 +140,7 @@ public class UserManagementController {
     @Operation(summary = "删除用户账户", description = "将用户标记为已删除状态")
     @DeleteMapping("/{userId}")
     public ResVO<Void> deleteUser(@NotNull(message = "用户ID为空") @PathVariable Long userId) {
-        userManagementService.delete(userId);
+        userService.updateDeleted(userId, YesOrNoEnum.YES);
         return ResVO.ok();
     }
 
@@ -150,7 +153,7 @@ public class UserManagementController {
     @Operation(summary = "恢复用户账户", description = "将用户标记为未删除状态")
     @PostMapping("/{userId}/restore")
     public ResVO<Void> restoreUser(@NotNull(message = "用户ID为空") @PathVariable Long userId) {
-        userManagementService.restore(userId);
+        userService.updateDeleted(userId, YesOrNoEnum.NO);
         return ResVO.ok();
     }
 
@@ -165,7 +168,7 @@ public class UserManagementController {
     @PutMapping("/{userId}/role")
     public ResVO<Void> updateUserRole(@NotNull(message = "用户ID为空") @PathVariable Long userId,
                                       @NotNull(message = "角色为空") @RequestBody UserRoleEnum role) {
-        userManagementService.updateUserRole(userId, role);
+        userService.updateUserRole(userId, role);
         return ResVO.ok();
     }
 
@@ -178,7 +181,7 @@ public class UserManagementController {
     @Operation(summary = "新建用户账号", description = "后台管理端新建用户")
     @PostMapping
     public ResVO<Void> saveUser(@Valid @RequestBody UserCreateReq req) {
-        userManagementService.save(req);
+        userService.save(req);
         return ResVO.ok();
     }
 }
