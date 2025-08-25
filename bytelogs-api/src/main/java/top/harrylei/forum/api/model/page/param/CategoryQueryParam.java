@@ -27,7 +27,6 @@ public class CategoryQueryParam extends BasePage {
     private static final Map<String, String> FIELD_MAPPING = Map.of(
             "id", "id",
             "categoryName", "category_name",
-            "status", "status",
             "sortWeight", "sort",
             "createTime", "create_time",
             "updateTime", "update_time"
@@ -39,11 +38,6 @@ public class CategoryQueryParam extends BasePage {
     @Schema(description = "分类名")
     private String categoryName;
 
-    /**
-     * 分类状态
-     */
-    @Schema(description = "分类状态")
-    private Integer status;
 
     /**
      * 分类排序

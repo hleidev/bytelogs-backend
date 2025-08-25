@@ -5,10 +5,12 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import top.harrylei.forum.api.model.base.BaseDTO;
-import top.harrylei.forum.api.enums.article.PublishStatusEnum;
+import top.harrylei.forum.api.enums.YesOrNoEnum;
 
 /**
  * 分类传输对象
+ *
+ * @author harry
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -22,11 +24,6 @@ public class CategoryDTO extends BaseDTO {
     private String categoryName;
 
     /**
-     * 状态：0-未发布，1-已发布
-     */
-    private PublishStatusEnum status;
-
-    /**
      * 排序值（越大越靠前）
      */
     private Integer sort;
@@ -34,5 +31,5 @@ public class CategoryDTO extends BaseDTO {
     /**
      * 是否删除：0-未删除，1-已删除
      */
-    private Integer deleted;
+    private YesOrNoEnum deleted;
 }

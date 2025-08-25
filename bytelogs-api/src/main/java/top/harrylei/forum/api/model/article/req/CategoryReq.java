@@ -3,10 +3,11 @@ package top.harrylei.forum.api.model.article.req;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.Data;
-import top.harrylei.forum.api.enums.article.PublishStatusEnum;
 
 /**
  * 新建分类请求参数
+ *
+ * @author harry
  */
 @Data
 @Schema(description = "分类请求")
@@ -23,12 +24,6 @@ public class CategoryReq {
     @Schema(description = "分类名称", example = "编程", requiredMode = Schema.RequiredMode.REQUIRED)
     private String categoryName;
 
-    /**
-     * 状态：0-未发布，1-已发布
-     */
-    @NotNull(message = "分类状态不能为空")
-    @Schema(description = "分类状态", example = "0")
-    private PublishStatusEnum status;
 
     /**
      * 排序值（越大越靠前）

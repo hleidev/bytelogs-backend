@@ -7,6 +7,8 @@ import top.harrylei.forum.api.model.base.BaseVO;
 
 /**
  * 管理端分类详细展示对象
+ *
+ * @author harry
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -19,11 +21,6 @@ public class CategoryVO extends BaseVO {
     @Schema(description = "分类名", example = "笔记")
     private String categoryName;
 
-    /**
-     * 分类状态
-     */
-    @Schema(description = "分类状态", example = "1")
-    private Integer status;
 
     /**
      * 分类排序
