@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import top.harrylei.forum.api.enums.ErrorCodeEnum;
 import top.harrylei.forum.api.enums.ResultCode;
 import top.harrylei.forum.api.enums.YesOrNoEnum;
 import top.harrylei.forum.api.enums.article.PublishStatusEnum;
@@ -19,7 +18,6 @@ import top.harrylei.forum.api.model.statistics.StatisticsVO;
 import top.harrylei.forum.api.model.user.dto.ArticleFootCountDTO;
 import top.harrylei.forum.api.model.user.dto.UserInfoDTO;
 import top.harrylei.forum.core.context.ReqInfoContext;
-import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.core.util.PageUtils;
 import top.harrylei.forum.service.article.converted.ArticleStructMapper;
 import top.harrylei.forum.service.article.repository.dao.ArticleDAO;
@@ -103,7 +101,9 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
     @Override
     public ArticleDO getArticleById(Long articleId) {
         ArticleDO article = articleDAO.getById(articleId);
-        ExceptionUtil.requireValid(article, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "articleId" + articleId);
+        if (article == null) {
+            ResultCode.ARTICLE_NOT_EXISTS.throwException();
+        }
         return article;
     }
 
@@ -112,7 +112,9 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
      */
     private ArticleDetailDO getPublishedVersion(Long articleId) {
         ArticleDetailDO publishedVersion = articleDetailDAO.getPublishedVersion(articleId);
-        ExceptionUtil.requireValid(publishedVersion, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "articleId" + articleId);
+        if (publishedVersion == null) {
+            ResultCode.ARTICLE_NOT_EXISTS.throwException();
+        }
         return publishedVersion;
     }
 
@@ -121,13 +123,13 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
      */
     private void validatePublicViewPermission(ArticleVO articleVO) {
         // 只校验已发布且未删除的文章
-        ExceptionUtil.errorIf(YesOrNoEnum.YES.equals(articleVO.getDeleted()),
-                              ErrorCodeEnum.ARTICLE_NOT_EXISTS,
-                              "文章不存在");
+        if (YesOrNoEnum.YES.equals(articleVO.getDeleted())) {
+            ResultCode.ARTICLE_NOT_EXISTS.throwException();
+        }
 
-        ExceptionUtil.errorIf(!PublishStatusEnum.PUBLISHED.equals(articleVO.getStatus()),
-                              ErrorCodeEnum.ARTICLE_NOT_EXISTS,
-                              "文章尚未发布");
+        if (!PublishStatusEnum.PUBLISHED.equals(articleVO.getStatus())) {
+            ResultCode.ARTICLE_NOT_EXISTS.throwException();
+        }
     }
 
     /**
@@ -221,9 +223,9 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
      */
     private ArticleDetailDO getLatestVersion(Long articleId) {
         ArticleDetailDO latestVersion = articleDetailDAO.getLatestVersion(articleId);
-        ExceptionUtil.requireValid(latestVersion,
-                                   ErrorCodeEnum.ARTICLE_NOT_EXISTS,
-                                   "文章最新版本不存在 articleId=" + articleId);
+        if (latestVersion == null) {
+            ResultCode.ARTICLE_NOT_EXISTS.throwException();
+        }
         return latestVersion;
     }
 

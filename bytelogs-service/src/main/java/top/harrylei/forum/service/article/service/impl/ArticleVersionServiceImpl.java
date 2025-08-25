@@ -3,13 +3,12 @@ package top.harrylei.forum.service.article.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import top.harrylei.forum.api.enums.ErrorCodeEnum;
+import top.harrylei.forum.api.enums.ResultCode;
 import top.harrylei.forum.api.model.article.vo.ArticleVO;
 import top.harrylei.forum.api.model.article.vo.ArticleVersionVO;
 import top.harrylei.forum.api.model.article.vo.TagSimpleVO;
 import top.harrylei.forum.api.model.article.vo.VersionDiffVO;
 import top.harrylei.forum.core.context.ReqInfoContext;
-import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.core.util.DiffUtil;
 import top.harrylei.forum.service.article.converted.ArticleStructMapper;
 import top.harrylei.forum.service.article.repository.dao.ArticleDetailDAO;
@@ -60,7 +59,9 @@ public class ArticleVersionServiceImpl implements ArticleVersionService {
         boolean isAdmin = isCurrentUserAdmin();
         boolean isAuthor = Objects.equals(authorId, currentUserId);
 
-        ExceptionUtil.errorIf(!isAdmin && !isAuthor, ErrorCodeEnum.FORBID_ERROR_MIXED, "无权限访问版本管理功能");
+        if (!isAdmin && !isAuthor) {
+            ResultCode.FORBIDDEN.throwException();
+        }
     }
 
     @Override
@@ -126,7 +127,9 @@ public class ArticleVersionServiceImpl implements ArticleVersionService {
      */
     private ArticleDetailDO getArticleVersion(Long articleId, Integer version) {
         ArticleDetailDO detail = articleDetailDAO.getByArticleIdAndVersion(articleId, version);
-        ExceptionUtil.requireValid(detail, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "请求的版本不存在，请检查版本号是否正确");
+        if (detail == null) {
+            ResultCode.ARTICLE_NOT_EXISTS.throwException();
+        }
         return detail;
     }
 

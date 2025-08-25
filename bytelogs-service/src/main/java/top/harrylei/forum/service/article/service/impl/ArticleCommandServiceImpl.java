@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import top.harrylei.forum.api.enums.ErrorCodeEnum;
+import top.harrylei.forum.api.enums.ResultCode;
 import top.harrylei.forum.api.enums.notify.NotifyTypeEnum;
 import top.harrylei.forum.api.event.NotificationEvent;
 import top.harrylei.forum.api.enums.comment.ContentTypeEnum;
@@ -15,7 +15,6 @@ import top.harrylei.forum.api.enums.article.PublishStatusEnum;
 import top.harrylei.forum.api.model.article.dto.ArticleDTO;
 import top.harrylei.forum.api.model.article.vo.ArticleVO;
 import top.harrylei.forum.core.context.ReqInfoContext;
-import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.core.util.KafkaEventPublisher;
 import top.harrylei.forum.service.article.converted.ArticleStructMapper;
 import top.harrylei.forum.service.article.repository.dao.ArticleDAO;
@@ -80,7 +79,9 @@ public class ArticleCommandServiceImpl implements ArticleCommandService {
     @Override
     public ArticleVO updateArticle(ArticleDTO articleDTO) {
         Long articleId = articleDTO.getId();
-        ExceptionUtil.requireValid(articleId, ErrorCodeEnum.PARAM_ERROR, "文章ID不能为空");
+        if (articleId == null) {
+            ResultCode.INVALID_PARAMETER.throwException();
+        }
 
         // 1. 权限校验并获取原文章
         ArticleDO article = getArticleWithPermissionCheck(articleId);
@@ -144,7 +145,9 @@ public class ArticleCommandServiceImpl implements ArticleCommandService {
                 articleDetailDAO.getLatestVersion(articleId) :
                 articleDetailDAO.getPublishedVersion(articleId);
 
-        ExceptionUtil.requireValid(targetDetail, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "articleId=" + articleId);
+        if (targetDetail == null) {
+            ResultCode.ARTICLE_NOT_EXISTS.throwException();
+        }
 
         // 处理状态变更逻辑
         PublishStatusEnum finalStatus = determinePublishStatus(status);
@@ -196,7 +199,9 @@ public class ArticleCommandServiceImpl implements ArticleCommandService {
 
         // 获取目标版本
         ArticleDetailDO targetVersion = articleDetailDAO.getByArticleIdAndVersion(articleId, version);
-        ExceptionUtil.requireValid(targetVersion, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "指定版本不存在");
+        if (targetVersion == null) {
+            ResultCode.ARTICLE_NOT_EXISTS.throwException();
+        }
 
         // 创建新版本（基于目标版本的内容）
         Integer newVersion = article.getVersionCount() + 1;
@@ -276,18 +281,23 @@ public class ArticleCommandServiceImpl implements ArticleCommandService {
 
     private ArticleDO getArticleWithPermissionCheck(Long articleId, boolean allowDeleted) {
         ArticleDO article = articleDAO.getById(articleId);
-        ExceptionUtil.requireValid(article, ErrorCodeEnum.ARTICLE_NOT_EXISTS);
+        if (article == null) {
+            ResultCode.ARTICLE_NOT_EXISTS.throwException();
+        }
 
         // 权限校验：只允许作者操作自己的文章
         Long currentUserId = ReqInfoContext.getContext().getUserId();
         boolean isLogin = ReqInfoContext.getContext().isLoggedIn();
-        ExceptionUtil.errorIf(!isLogin, ErrorCodeEnum.UNAUTHORIZED);
-        ExceptionUtil.errorIf(!Objects.equals(article.getUserId(), currentUserId),
-                              ErrorCodeEnum.FORBIDDEN, "无权限操作他人文章");
+        if (!isLogin) {
+            ResultCode.AUTHENTICATION_FAILED.throwException();
+        }
+        if (!Objects.equals(article.getUserId(), currentUserId)) {
+            ResultCode.FORBIDDEN.throwException();
+        }
 
         // 删除状态校验
         if (!allowDeleted && YesOrNoEnum.YES.getCode().equals(article.getDeleted())) {
-            ExceptionUtil.error(ErrorCodeEnum.ARTICLE_NOT_EXISTS, "文章已删除");
+            ResultCode.ARTICLE_NOT_EXISTS.throwException();
         }
 
         return article;
@@ -368,8 +378,8 @@ public class ArticleCommandServiceImpl implements ArticleCommandService {
     private void validateAuthorPermission(ArticleVO articleVO) {
         Long currentUserId = ReqInfoContext.getContext().getUserId();
 
-        ExceptionUtil.errorIf(!Objects.equals(articleVO.getUserId(), currentUserId),
-                              ErrorCodeEnum.FORBID_ERROR_MIXED,
-                              "无权访问该文章草稿");
+        if (!Objects.equals(articleVO.getUserId(), currentUserId)) {
+            ResultCode.FORBIDDEN.throwException();
+        }
     }
 }
