@@ -1,5 +1,6 @@
 package top.harrylei.forum.api.enums.user;
 
+import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AllArgsConstructor;
@@ -31,6 +32,7 @@ public enum UserRoleEnum {
     ADMIN(1, "管理员");
 
     // 角色编码（唯一标识）
+    @EnumValue
     private final Integer code;
 
     // 角色描述（用于展示）

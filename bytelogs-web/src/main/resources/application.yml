@@ -19,6 +19,7 @@ spring:
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true # 数据库字段下划线命名自动映射为 Java 驼峰命名
+    default-enum-type-handler: com.baomidou.mybatisplus.core.handlers.MybatisEnumTypeHandler # 使用MyBatis-Plus的枚举类型处理器
 
 database:
   name: byte_logs # 自定义字段，数据库名称（可用于多数据源识别）
