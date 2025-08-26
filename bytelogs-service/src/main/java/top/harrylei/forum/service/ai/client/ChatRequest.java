@@ -18,7 +18,6 @@ public class ChatRequest {
      */
     private List<Message> messages;
 
-
     @Data
     public static class Message {
         private AIMessageRoleEnum role;

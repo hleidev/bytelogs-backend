@@ -46,7 +46,7 @@ import java.util.Map;
 @Tag(name = "AI对话模块", description = "AI对话相关接口")
 @RequiresLogin
 @RequiredArgsConstructor
-public class AIController {
+public class ChatController {
 
     private final AIService aiService;
     private final AIUsageService aiUsageService;

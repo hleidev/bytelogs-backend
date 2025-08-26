@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import top.harrylei.forum.api.enums.base.CodeLabelEnum;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -19,7 +18,7 @@ import java.util.stream.Collectors;
  */
 @Getter
 @AllArgsConstructor
-public enum AIMessageRoleEnum implements CodeLabelEnum {
+public enum AIMessageRoleEnum {
 
     USER(1, "user", "用户"),
     ASSISTANT(2, "assistant", "AI助手"),
@@ -40,7 +39,6 @@ public enum AIMessageRoleEnum implements CodeLabelEnum {
      * @return 编码
      */
     @JsonValue
-    @Override
     public Integer getCode() {
         return code;
     }
