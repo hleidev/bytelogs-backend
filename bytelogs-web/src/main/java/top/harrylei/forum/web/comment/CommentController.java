@@ -10,9 +10,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import top.harrylei.forum.api.enums.ErrorCodeEnum;
+import top.harrylei.forum.api.enums.ResultCode;
 import top.harrylei.forum.api.model.base.ResVO;
-import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.api.model.comment.dto.CommentDTO;
 import top.harrylei.forum.api.model.comment.req.CommentQueryParam;
 import top.harrylei.forum.api.model.comment.req.CommentMyQueryParam;
@@ -68,7 +67,7 @@ public class CommentController {
     @GetMapping("/page")
     public ResVO<PageVO<TopCommentVO>> page(@Valid CommentQueryParam param) {
         if (param.getArticleId() == null) {
-            return ResVO.fail(ErrorCodeEnum.PARAM_MISSING, "文章ID不能为空");
+            ResultCode.INVALID_PARAMETER.throwException();
         }
         PageVO<TopCommentVO> result = commentService.pageQuery(param);
         return ResVO.ok(result);
@@ -137,7 +136,7 @@ public class CommentController {
     public ResVO<Void> action(@Valid @RequestBody CommentActionReq req) {
         // 验证操作类型，评论只允许点赞操作，不支持收藏
         if (!req.getType().isPraise()) {
-            ExceptionUtil.error(ErrorCodeEnum.PARAM_VALIDATE_FAILED, "评论只支持点赞操作");
+            ResultCode.INVALID_PARAMETER.throwException();
         }
 
         commentService.actionComment(req.getCommentId(), req.getType());

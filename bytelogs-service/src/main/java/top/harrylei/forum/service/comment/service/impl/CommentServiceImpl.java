@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import top.harrylei.forum.api.enums.ErrorCodeEnum;
+import top.harrylei.forum.api.enums.ResultCode;
 import top.harrylei.forum.api.enums.YesOrNoEnum;
 import top.harrylei.forum.api.enums.comment.ContentTypeEnum;
 import top.harrylei.forum.api.enums.notify.NotifyTypeEnum;
@@ -24,7 +24,6 @@ import top.harrylei.forum.api.model.page.PageVO;
 import top.harrylei.forum.api.model.user.dto.UserFootDTO;
 import top.harrylei.forum.api.model.user.dto.UserInfoDTO;
 import top.harrylei.forum.core.context.ReqInfoContext;
-import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.core.util.KafkaEventPublisher;
 import top.harrylei.forum.core.util.NumUtil;
 import top.harrylei.forum.core.util.PageUtils;
@@ -158,15 +157,16 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public void actionComment(Long commentId, OperateTypeEnum type) {
         CommentDO comment = getCommentById(commentId);
-        ExceptionUtil.requireValid(comment, ErrorCodeEnum.COMMENT_NOT_EXISTS, "评论不存在 commentId=" + commentId);
+        if (comment == null) {
+            ResultCode.COMMENT_NOT_EXISTS.throwException();
+        }
 
         Long currentUserId = ReqInfoContext.getContext().getUserId();
 
-        Boolean success = userFootService.actionComment(currentUserId,
-                                                        type,
-                                                        comment.getUserId(),
-                                                        commentId);
-        ExceptionUtil.errorIf(!success, ErrorCodeEnum.FORBIDDEN_OPERATION, "操作失败，请稍后重试");
+        Boolean success = userFootService.actionComment(currentUserId, type, comment.getUserId(), commentId);
+        if (!success) {
+            ResultCode.INTERNAL_ERROR.throwException();
+        }
 
         log.info("评论{}操作成功 commentId={} type={}", type.getLabel(), commentId, type);
     }
@@ -255,7 +255,9 @@ public class CommentServiceImpl implements CommentService {
     private CommentDO insertComment(CommentDTO dto) {
         // 验证文章是否存在
         ArticleDO article = articleQueryService.getArticleById(dto.getArticleId());
-        ExceptionUtil.requireValid(article, ErrorCodeEnum.ARTICLE_NOT_EXISTS, "articleId=" + dto.getArticleId());
+        if (article == null) {
+            ResultCode.ARTICLE_NOT_EXISTS.throwException();
+        }
 
         // 验证父评论是否存在
         CommentDO parent = getParentComment(dto.getParentCommentId());
@@ -333,7 +335,9 @@ public class CommentServiceImpl implements CommentService {
      */
     private CommentDO getCommentById(Long commentId) {
         CommentDO comment = commentDAO.getById(commentId);
-        ExceptionUtil.requireValid(comment, ErrorCodeEnum.COMMENT_NOT_EXISTS, "评论不存在，commentId=" + commentId);
+        if (comment == null) {
+            ResultCode.COMMENT_NOT_EXISTS.throwException();
+        }
         return comment;
     }
 
@@ -347,8 +351,9 @@ public class CommentServiceImpl implements CommentService {
         boolean isDeleted = Objects.equals(comment.getDeleted(), YesOrNoEnum.YES.getCode());
 
         // 管理员可以操作已删除评论，普通用户不能操作已删除评论
-        ExceptionUtil.errorIf(isDeleted && !isAdmin,
-                              ErrorCodeEnum.COMMENT_NOT_EXISTS, "评论已删除，无法操作");
+        if (isDeleted && !isAdmin) {
+            ResultCode.COMMENT_NOT_EXISTS.throwException();
+        }
     }
 
     /**
@@ -359,9 +364,9 @@ public class CommentServiceImpl implements CommentService {
     private void validateCommentAuthorPermission(Long authorId) {
         boolean isAdmin = ReqInfoContext.getContext().isAdmin();
         boolean isAuthor = Objects.equals(authorId, ReqInfoContext.getContext().getUserId());
-        ExceptionUtil.errorIf(!isAdmin && !isAuthor,
-                              ErrorCodeEnum.FORBID_ERROR_MIXED,
-                              "非管理员无权限操作他人评论");
+        if (!isAdmin && !isAuthor) {
+            ResultCode.FORBIDDEN.throwException();
+        }
     }
 
 
@@ -376,8 +381,9 @@ public class CommentServiceImpl implements CommentService {
 
         // 验证编辑时间窗口（24小时内可编辑）
         Duration timeDiff = Duration.between(comment.getCreateTime(), LocalDateTime.now());
-        ExceptionUtil.errorIf(timeDiff.toHours() > 24,
-                              ErrorCodeEnum.FORBIDDEN_OPERATION, "评论发布超过24小时，不允许编辑");
+        if (timeDiff.toHours() > 24) {
+            ResultCode.OPERATION_NOT_ALLOWED.throwException();
+        }
     }
 
     /**
@@ -436,7 +442,9 @@ public class CommentServiceImpl implements CommentService {
 
         CommentDO parent = commentDAO.getById(parentCommentId);
 
-        ExceptionUtil.requireValid(parent, ErrorCodeEnum.COMMENT_NOT_EXISTS, "parentCommentI=" + parentCommentId);
+        if (parent == null) {
+            ResultCode.COMMENT_NOT_EXISTS.throwException();
+        }
         return parent;
     }
 
@@ -464,7 +472,7 @@ public class CommentServiceImpl implements CommentService {
                 try {
                     CommentDO parentComment = commentDAO.getById(comment.getParentCommentId());
                     if (parentComment != null && !Objects.equals(parentComment.getDeleted(),
-                                                                 YesOrNoEnum.YES.getCode())) {
+                            YesOrNoEnum.YES.getCode())) {
                         commentMy.setParentContent(parentComment.getContent());
                     }
                     // 父评论已删除时，保持parentContent为null，由前端处理显示
@@ -492,23 +500,17 @@ public class CommentServiceImpl implements CommentService {
             // 1. 对文章的评论通知
             if (!comment.getUserId().equals(article.getUserId())) {
                 kafkaEventPublisher.publishUserBehaviorEvent(comment.getUserId(),
-                                                             article.getUserId(),
-                                                             article.getId(),
-                                                             ContentTypeEnum.ARTICLE,
-                                                             NotifyTypeEnum.COMMENT);
+                        article.getUserId(), article.getId(), ContentTypeEnum.ARTICLE, NotifyTypeEnum.COMMENT);
                 log.debug("发布评论文章通知事件: commentUserId={}, articleAuthorId={}, articleId={}",
-                          comment.getUserId(), article.getUserId(), article.getId());
+                        comment.getUserId(), article.getUserId(), article.getId());
             }
 
             // 2. 对父评论的回复通知
             if (parent != null && !comment.getUserId().equals(parent.getUserId())) {
                 kafkaEventPublisher.publishUserBehaviorEvent(comment.getUserId(),
-                                                             parent.getUserId(),
-                                                             parent.getId(),
-                                                             ContentTypeEnum.COMMENT,
-                                                             NotifyTypeEnum.REPLY);
+                        parent.getUserId(), parent.getId(), ContentTypeEnum.COMMENT, NotifyTypeEnum.REPLY);
                 log.debug("发布回复评论通知事件: replyUserId={}, parentCommentAuthorId={}, parentCommentId={}",
-                          comment.getUserId(), parent.getUserId(), parent.getId());
+                        comment.getUserId(), parent.getUserId(), parent.getId());
             }
 
         } catch (Exception e) {
@@ -527,17 +529,15 @@ public class CommentServiceImpl implements CommentService {
         try {
             // 发布评论活跃度事件，用于积分计算
             kafkaEventPublisher.publishUserActivityEvent(comment.getUserId(),
-                                                         comment.getArticleId(),
-                                                         ActivityTargetEnum.ARTICLE,
-                                                         actionType);
+                    comment.getArticleId(), ActivityTargetEnum.ARTICLE, actionType);
 
             log.debug("发布评论活跃度事件: userId={}, articleId={}, action={}",
-                      comment.getUserId(), comment.getArticleId(), actionType.getLabel());
+                    comment.getUserId(), comment.getArticleId(), actionType.getLabel());
 
         } catch (Exception e) {
             // 事件发布失败不影响主业务流程
             log.error("发布评论活跃度事件失败: commentId={}, articleId={}, userId={}, action={}",
-                      comment.getId(), comment.getArticleId(), comment.getUserId(), actionType.getLabel(), e);
+                    comment.getId(), comment.getArticleId(), comment.getUserId(), actionType.getLabel(), e);
         }
     }
 }
