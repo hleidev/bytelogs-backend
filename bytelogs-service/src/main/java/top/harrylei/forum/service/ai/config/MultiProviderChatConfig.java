@@ -27,22 +27,9 @@ public class MultiProviderChatConfig {
             @Value("${spring.ai.deepseek.api-key}") String apiKey,
             @Value("${spring.ai.deepseek.base-url}") String baseUrl) {
 
+        log.info("初始化 DeepSeek ChatClient");
         OpenAiApi deepseekApi = new OpenAiApi(baseUrl, apiKey);
         OpenAiChatModel deepseekModel = new OpenAiChatModel(deepseekApi);
-
-        /*DeepSeekApi deepSeekApi = new DeepSeekApi.Builder()
-                .baseUrl(baseUrl)
-                .apiKey(apiKey)
-                .build();
-
-        DeepSeekChatModel deepSeekChatModel = DeepSeekChatModel.builder()
-                .deepSeekApi(deepSeekApi)
-                .defaultOptions(DeepSeekChatOptions.builder()
-                        .model(DeepSeekApi.ChatModel.DEEPSEEK_CHAT)
-                        .temperature(0.7)
-                        .maxTokens(4000)
-                        .build())
-                .build();*/
 
         return ChatClient.create(deepseekModel);
     }
@@ -56,24 +43,10 @@ public class MultiProviderChatConfig {
             @Value("${spring.ai.qwen.api-key}") String apiKey,
             @Value("${spring.ai.qwen.base-url}") String baseUrl) {
 
+        log.info("初始化 Qwen ChatClient");
         OpenAiApi qwenApi = new OpenAiApi(baseUrl, apiKey);
         OpenAiChatModel qwenModel = new OpenAiChatModel(qwenApi);
 
         return ChatClient.create(qwenModel);
-    }
-
-    /**
-     * OpenAI
-     */
-    @Bean
-    @Qualifier("openaiChatClient")
-    public ChatClient openaiChatClient(
-            @Value("${spring.ai.openai.api-key}") String apiKey,
-            @Value("${spring.ai.openai.base-url}") String baseUrl) {
-
-        OpenAiApi openaiApi = new OpenAiApi(baseUrl, apiKey);
-        OpenAiChatModel openaiModel = new OpenAiChatModel(openaiApi);
-
-        return ChatClient.create(openaiModel);
     }
 }

@@ -35,12 +35,6 @@
             <artifactId>spring-ai-openai-spring-boot-starter</artifactId>
         </dependency>
 
-        <!-- Spring AI DeepSeek -->
-        <!--<dependency>
-            <groupId>org.springframework.ai</groupId>
-            <artifactId>spring-ai-deepseek</artifactId>
-        </dependency>-->
-
         <!-- MySQL数据库驱动 -->
         <dependency>
             <groupId>com.mysql</groupId>

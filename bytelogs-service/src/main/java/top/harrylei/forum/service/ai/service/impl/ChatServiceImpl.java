@@ -56,8 +56,6 @@ public class ChatServiceImpl implements ChatService {
     private final ChatClient deepseekChatClient;
     @Qualifier("qwenChatClient")
     private final ChatClient qwenChatClient;
-    @Qualifier("openaiChatClient")
-    private final ChatClient openaiChatClient;
 
     private final ChatConversationDAO chatConversationDAO;
     private final ChatMessageDAO chatMessageDAO;
@@ -330,13 +328,13 @@ public class ChatServiceImpl implements ChatService {
      */
     private ChatClient selectChatClient(ChatClientTypeEnum provider) {
         if (provider == null) {
-            return qwenChatClient;
+            return deepseekChatClient;
         }
 
         return switch (provider) {
             case ChatClientTypeEnum.DEEPSEEK -> deepseekChatClient;
             case ChatClientTypeEnum.QWEN -> qwenChatClient;
-            case ChatClientTypeEnum.OPENAI -> openaiChatClient;
+            default -> deepseekChatClient;
         };
     }
 
