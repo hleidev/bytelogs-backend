@@ -1,17 +1,17 @@
 package top.harrylei.forum.service.article.repository.dao;
 
-import java.util.List;
-
-import org.springframework.stereotype.Repository;
-
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-
+import org.springframework.stereotype.Repository;
 import top.harrylei.forum.api.model.article.vo.TagSimpleVO;
 import top.harrylei.forum.service.article.repository.entity.ArticleTagDO;
 import top.harrylei.forum.service.article.repository.mapper.ArticleTagMapper;
 
+import java.util.List;
+
 /**
  * 文章标签关系访问对象
+ *
+ * @author harry
  */
 @Repository
 public class ArticleTagDAO extends ServiceImpl<ArticleTagMapper, ArticleTagDO> {

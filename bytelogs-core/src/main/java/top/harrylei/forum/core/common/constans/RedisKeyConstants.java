@@ -105,7 +105,7 @@ public class RedisKeyConstants {
      * @param userId 用户ID
      * @return AI每小时限制key
      */
-    public static String getAIHourlyLimitKey(Long userId) {
+    public static String getChatHourlyLimitKey(Long userId) {
         return AI_HOURLY_LIMIT + userId;
     }
 
@@ -116,7 +116,7 @@ public class RedisKeyConstants {
      * @param date   日期(yyyy-MM-dd格式)
      * @return AI每日使用量key
      */
-    public static String getAIDailyUsageKey(Long userId, String date) {
+    public static String getChatDailyUsageKey(Long userId, String date) {
         return AI_DAILY_USAGE + userId + ":" + date;
     }
 

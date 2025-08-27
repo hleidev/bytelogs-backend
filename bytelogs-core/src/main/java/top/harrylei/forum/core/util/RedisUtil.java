@@ -176,9 +176,9 @@ public class RedisUtil {
                 if (duration != null) {
                     validatePositiveDuration(duration);
                     return connection.stringCommands().set(keyBytes,
-                                                           valueBytes,
-                                                           Expiration.seconds(duration.getSeconds()),
-                                                           RedisStringCommands.SetOption.UPSERT);
+                            valueBytes,
+                            Expiration.seconds(duration.getSeconds()),
+                            RedisStringCommands.SetOption.UPSERT);
                 } else {
                     return connection.stringCommands().set(keyBytes, valueBytes);
                 }
@@ -210,12 +210,12 @@ public class RedisUtil {
                     return false;
                 }
                 return connection.stringCommands().set(keyBytes, valueBytes,
-                                                       Expiration.seconds(duration.getSeconds()),
-                                                       RedisStringCommands.SetOption.SET_IF_ABSENT);
+                        Expiration.seconds(duration.getSeconds()),
+                        RedisStringCommands.SetOption.SET_IF_ABSENT);
             });
         } catch (Exception e) {
             log.error("setIfAbsent带过期时间设置值失败: key={}, duration={}, error={}",
-                      key, duration, e.getMessage(), e);
+                    key, duration, e.getMessage(), e);
             return false;
         }
     }
@@ -521,7 +521,7 @@ public class RedisUtil {
             });
         } catch (Exception e) {
             log.error("删除哈希字段失败: key={}, fields={}, error={}",
-                      key, Arrays.toString(fields), e.getMessage(), e);
+                    key, Arrays.toString(fields), e.getMessage(), e);
             return 0L;
         }
     }
@@ -540,7 +540,7 @@ public class RedisUtil {
                     connection.hashCommands().hExists(keyToBytes(key), field.getBytes(CHARSET)));
         } catch (Exception e) {
             log.error("检查哈希字段是否存在失败: key={}, field={}, error={}",
-                      key, field, e.getMessage(), e);
+                    key, field, e.getMessage(), e);
             return false;
         }
     }
@@ -560,7 +560,7 @@ public class RedisUtil {
                     connection.hashCommands().hIncrBy(keyToBytes(key), field.getBytes(CHARSET), delta));
         } catch (Exception e) {
             log.error("哈希字段自增失败: key={}, field={}, delta={}, error={}",
-                      key, field, delta, e.getMessage(), e);
+                    key, field, delta, e.getMessage(), e);
             return null;
         }
     }
@@ -730,7 +730,7 @@ public class RedisUtil {
             });
         } catch (Exception e) {
             log.error("批量设置值和过期时间失败: keys={}, duration={}, error={}",
-                      map.keySet(), duration, e.getMessage(), e);
+                    map.keySet(), duration, e.getMessage(), e);
             return false;
         }
     }
@@ -868,7 +868,7 @@ public class RedisUtil {
                     connection.zSetCommands().zAdd(keyToBytes(key), score, member.getBytes(CHARSET)));
         } catch (Exception e) {
             log.error("添加有序集合成员失败: key={}, member={}, score={}, error={}",
-                      key, member, score, e.getMessage(), e);
+                    key, member, score, e.getMessage(), e);
             return false;
         }
     }
@@ -888,7 +888,7 @@ public class RedisUtil {
                     connection.zSetCommands().zIncrBy(keyToBytes(key), delta, member.getBytes(CHARSET)));
         } catch (Exception e) {
             log.error("增加有序集合成员分数失败: key={}, member={}, delta={}, error={}",
-                      key, member, delta, e.getMessage(), e);
+                    key, member, delta, e.getMessage(), e);
             return null;
         }
     }
@@ -907,7 +907,7 @@ public class RedisUtil {
                     connection.zSetCommands().zScore(keyToBytes(key), member.getBytes(CHARSET)));
         } catch (Exception e) {
             log.error("获取有序集合成员分数失败: key={}, member={}, error={}",
-                      key, member, e.getMessage(), e);
+                    key, member, e.getMessage(), e);
             return null;
         }
     }
@@ -926,7 +926,7 @@ public class RedisUtil {
                     connection.zSetCommands().zRank(keyToBytes(key), member.getBytes(CHARSET)));
         } catch (Exception e) {
             log.error("获取有序集合成员排名失败: key={}, member={}, error={}",
-                      key, member, e.getMessage(), e);
+                    key, member, e.getMessage(), e);
             return null;
         }
     }
@@ -945,7 +945,7 @@ public class RedisUtil {
                     connection.zSetCommands().zRevRank(keyToBytes(key), member.getBytes(CHARSET)));
         } catch (Exception e) {
             log.error("获取有序集合成员逆序排名失败: key={}, member={}, error={}",
-                      key, member, e.getMessage(), e);
+                    key, member, e.getMessage(), e);
             return null;
         }
     }
@@ -973,7 +973,7 @@ public class RedisUtil {
             });
         } catch (Exception e) {
             log.error("删除有序集合成员失败: key={}, members={}, error={}",
-                      key, Arrays.toString(members), e.getMessage(), e);
+                    key, Arrays.toString(members), e.getMessage(), e);
             return 0L;
         }
     }
@@ -1024,7 +1024,7 @@ public class RedisUtil {
             });
         } catch (Exception e) {
             log.error("获取有序集合逆序范围成员和分数失败: key={}, start={}, end={}, error={}",
-                      key, start, end, e.getMessage(), e);
+                    key, start, end, e.getMessage(), e);
             return List.of();
         }
     }

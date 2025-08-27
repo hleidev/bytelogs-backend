@@ -2,7 +2,7 @@ package top.harrylei.forum.service.ai.repository.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
-import top.harrylei.forum.service.ai.repository.entity.AIUsageStatsDO;
+import top.harrylei.forum.service.ai.repository.entity.ChatUsageStatsDO;
 
 /**
  * AI使用统计Mapper接口
@@ -10,5 +10,5 @@ import top.harrylei.forum.service.ai.repository.entity.AIUsageStatsDO;
  * @author harry
  */
 @Mapper
-public interface AIUsageStatsMapper extends BaseMapper<AIUsageStatsDO> {
+public interface ChatUsageStatsMapper extends BaseMapper<ChatUsageStatsDO> {
 }

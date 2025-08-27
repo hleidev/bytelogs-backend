@@ -18,10 +18,11 @@ import java.util.stream.Collectors;
  */
 @Getter
 @AllArgsConstructor
-public enum AIClientTypeEnum {
+public enum ChatClientTypeEnum {
 
     DEEPSEEK(1, "DeepSeek"),
-    QWEN(2, "通义千问");
+    QWEN(2, "通义千问"),
+    OPENAI(3, "OpenAI");
 
     // 编码（唯一标识）
     @EnumValue
@@ -31,8 +32,8 @@ public enum AIClientTypeEnum {
     private final String label;
 
     // 根据编码快速定位枚举实例
-    private static final Map<Integer, AIClientTypeEnum> CODE_MAP =
-            Arrays.stream(values()).collect(Collectors.toMap(AIClientTypeEnum::getCode, Function.identity()));
+    private static final Map<Integer, ChatClientTypeEnum> CODE_MAP =
+            Arrays.stream(values()).collect(Collectors.toMap(ChatClientTypeEnum::getCode, Function.identity()));
 
     /**
      * 获取编码
@@ -51,14 +52,14 @@ public enum AIClientTypeEnum {
      * @return 对应的枚举，若无匹配则返回 null
      */
     @JsonCreator
-    public static AIClientTypeEnum fromCode(Integer code) {
+    public static ChatClientTypeEnum fromCode(Integer code) {
         return code == null ? null : CODE_MAP.get(code);
     }
 
     /**
      * 根据配置key获取枚举
      */
-    public static AIClientTypeEnum fromConfigKey(String configKey) {
+    public static ChatClientTypeEnum fromConfigKey(String configKey) {
         try {
             return valueOf(configKey.toUpperCase());
         } catch (IllegalArgumentException e) {

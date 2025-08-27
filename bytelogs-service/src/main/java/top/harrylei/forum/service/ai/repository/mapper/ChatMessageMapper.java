@@ -2,7 +2,7 @@ package top.harrylei.forum.service.ai.repository.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
-import top.harrylei.forum.service.ai.repository.entity.AIMessageDO;
+import top.harrylei.forum.service.ai.repository.entity.ChatMessageDO;
 
 /**
  * AI消息Mapper接口
@@ -10,5 +10,5 @@ import top.harrylei.forum.service.ai.repository.entity.AIMessageDO;
  * @author harry
  */
 @Mapper
-public interface AIMessageMapper extends BaseMapper<AIMessageDO> {
+public interface ChatMessageMapper extends BaseMapper<ChatMessageDO> {
 }

@@ -12,26 +12,24 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * AI消息角色枚举
+ * AI对话状态枚举
  *
  * @author harry
  */
 @Getter
 @AllArgsConstructor
-public enum AIMessageRoleEnum {
+public enum ChatConversationStatusEnum {
 
-    USER(1, "user", "用户"),
-    ASSISTANT(2, "assistant", "AI助手"),
-    SYSTEM(3, "system", "系统");
+    ACTIVE(1, "进行中"),
+    ARCHIVED(2, "已归档");
 
     @EnumValue
     private final int code;
-    private final String role;
     private final String label;
 
     // 根据编码快速定位枚举实例
-    private static final Map<Integer, AIMessageRoleEnum> CODE_MAP =
-            Arrays.stream(values()).collect(Collectors.toMap(AIMessageRoleEnum::getCode, Function.identity()));
+    private static final Map<Integer, ChatConversationStatusEnum> CODE_MAP =
+            Arrays.stream(values()).collect(Collectors.toMap(ChatConversationStatusEnum::getCode, Function.identity()));
 
     /**
      * 获取编码
@@ -50,7 +48,7 @@ public enum AIMessageRoleEnum {
      * @return 对应的枚举，若无匹配则返回 null
      */
     @JsonCreator
-    public static AIMessageRoleEnum fromCode(Integer code) {
+    public static ChatConversationStatusEnum fromCode(Integer code) {
         return code == null ? null : CODE_MAP.get(code);
     }
 }

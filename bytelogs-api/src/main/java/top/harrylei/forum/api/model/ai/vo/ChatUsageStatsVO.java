@@ -15,7 +15,7 @@ import java.time.LocalDate;
  */
 @Data
 @Schema(description = "AI使用统计")
-public class AIUsageStatsVO implements Serializable {
+public class ChatUsageStatsVO implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
@@ -27,7 +27,7 @@ public class AIUsageStatsVO implements Serializable {
     private Integer messageCount;
 
     @Schema(description = "Token消耗量")
-    private Integer tokensUsed;
+    private Long tokensUsed;
 
     @Schema(description = "对话数量")
     private Integer conversationCount;
@@ -42,5 +42,5 @@ public class AIUsageStatsVO implements Serializable {
     private Integer dailyTokenLimit;
 
     @Schema(description = "剩余Token数量")
-    private Integer remainingTokens;
+    private Long remainingTokens;
 }

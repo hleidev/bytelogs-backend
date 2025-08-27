@@ -3,8 +3,8 @@ package top.harrylei.forum.api.model.ai.dto;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
-import top.harrylei.forum.api.enums.ai.AIClientTypeEnum;
-import top.harrylei.forum.api.enums.ai.AIMessageRoleEnum;
+import top.harrylei.forum.api.enums.ai.ChatClientTypeEnum;
+import top.harrylei.forum.api.enums.ai.ChatMessageRoleEnum;
 import top.harrylei.forum.api.model.base.BaseDTO;
 
 import java.io.Serial;
@@ -17,7 +17,7 @@ import java.io.Serial;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Accessors(chain = true)
-public class AIMessageDTO extends BaseDTO {
+public class ChatMessageDTO extends BaseDTO {
     @Serial
     private static final long serialVersionUID = 1L;
 
@@ -25,17 +25,17 @@ public class AIMessageDTO extends BaseDTO {
 
     private Long userId;
 
-    private AIMessageRoleEnum role;
+    private ChatMessageRoleEnum role;
 
     private String content;
 
-    private AIClientTypeEnum vendor;
+    private ChatClientTypeEnum vendor;
     
     private String model;
 
-    private Integer inputTokens;
+    private Long promptTokens;
     
-    private Integer outputTokens;
+    private Long completionTokens;
     
-    private Integer totalTokens;
+    private Long totalTokens;
 }

@@ -1,18 +1,17 @@
 package top.harrylei.forum.web.filter;
 
-import java.io.IOException;
-
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
-
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 import top.harrylei.forum.core.context.ReqInfoContext;
+
+import java.io.IOException;
 
 /**
  * 请求上下文过滤器
@@ -65,7 +64,7 @@ public class ReqInfoContextFilter extends OncePerRequestFilter {
         } catch (Exception e) {
             // 记录异常但不中断请求处理
             log.error("请求处理异常: uri={}", requestUri, e);
-            throw e; // 重新抛出异常，让容器处理
+            throw e;
         } finally {
             // 请求结束时清理上下文，即使发生异常也会执行
             ReqInfoContext.clear();

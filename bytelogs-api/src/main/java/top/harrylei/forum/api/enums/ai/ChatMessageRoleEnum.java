@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import top.harrylei.forum.api.enums.base.CodeLabelEnum;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -13,24 +12,26 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * AI对话状态枚举
+ * 聊天消息角色枚举
  *
  * @author harry
  */
 @Getter
 @AllArgsConstructor
-public enum AIConversationStatusEnum implements CodeLabelEnum {
+public enum ChatMessageRoleEnum {
 
-    ACTIVE(1, "进行中"),
-    ARCHIVED(2, "已归档");
+    USER(1, "user", "用户"),
+    ASSISTANT(2, "assistant", "AI助手"),
+    SYSTEM(3, "system", "系统");
 
     @EnumValue
     private final int code;
+    private final String role;
     private final String label;
 
     // 根据编码快速定位枚举实例
-    private static final Map<Integer, AIConversationStatusEnum> CODE_MAP =
-            Arrays.stream(values()).collect(Collectors.toMap(AIConversationStatusEnum::getCode, Function.identity()));
+    private static final Map<Integer, ChatMessageRoleEnum> CODE_MAP =
+            Arrays.stream(values()).collect(Collectors.toMap(ChatMessageRoleEnum::getCode, Function.identity()));
 
     /**
      * 获取编码
@@ -38,7 +39,6 @@ public enum AIConversationStatusEnum implements CodeLabelEnum {
      * @return 编码
      */
     @JsonValue
-    @Override
     public Integer getCode() {
         return code;
     }
@@ -50,7 +50,7 @@ public enum AIConversationStatusEnum implements CodeLabelEnum {
      * @return 对应的枚举，若无匹配则返回 null
      */
     @JsonCreator
-    public static AIConversationStatusEnum fromCode(Integer code) {
+    public static ChatMessageRoleEnum fromCode(Integer code) {
         return code == null ? null : CODE_MAP.get(code);
     }
 }

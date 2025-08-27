@@ -4,18 +4,18 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
-import top.harrylei.forum.api.enums.ai.AIClientTypeEnum;
+import top.harrylei.forum.api.enums.ai.ChatClientTypeEnum;
 
 import java.io.Serial;
 import java.io.Serializable;
 
 /**
- * AI对话请求
+ * 聊天对话请求
  *
  * @author harry
  */
 @Data
-@Schema(description = "AI对话请求")
+@Schema(description = "聊天对话请求")
 public class ChatReq implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
@@ -28,9 +28,15 @@ public class ChatReq implements Serializable {
     @Schema(description = "对话ID，新对话时不传")
     private Long conversationId;
 
-    @Schema(description = "AI厂商类型", example = "2")
-    private AIClientTypeEnum vendor;
+    @Schema(description = "AI提供商：deepseek、qwen、openai", example = "1")
+    private ChatClientTypeEnum provider;
 
-    @Schema(description = "具体模型名称，不传时使用默认模型", example = "qwen-turbo")
+    @Schema(description = "模型名称", example = "deepseek-chat")
     private String model;
+
+    @Schema(description = "温度参数，控制创造性", example = "0.7")
+    private Float temperature;
+
+    @Schema(description = "最大token数", example = "4000")
+    private Integer maxTokens;
 }

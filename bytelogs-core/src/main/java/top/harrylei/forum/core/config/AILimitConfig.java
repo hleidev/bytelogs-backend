@@ -30,7 +30,7 @@ public class AILimitConfig {
     private Integer dailyConversationLimit = 10;
 
     /**
-     * 每小时最大消息数量（防刷）
+     * 每小时最大消息数量
      */
     private Integer hourlyMessageLimit = 20;
 

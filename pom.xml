@@ -38,11 +38,29 @@
         <transmittable.version>2.14.5</transmittable.version>
         <jetbrains-annotations.version>24.1.0</jetbrains-annotations.version>
         <hutool.version>5.8.25</hutool.version>
+        <spring-ai.version>1.0.0-M4</spring-ai.version>
+        <spring-ai-deepseek.version>1.0.1</spring-ai-deepseek.version>
     </properties>
 
     <!-- 依赖管理，统一控制版本 -->
     <dependencyManagement>
         <dependencies>
+            <!-- Spring AI BOM -->
+            <dependency>
+                <groupId>org.springframework.ai</groupId>
+                <artifactId>spring-ai-bom</artifactId>
+                <version>${spring-ai.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Spring AI DeepSeek -->
+            <dependency>
+                <groupId>org.springframework.ai</groupId>
+                <artifactId>spring-ai-deepseek</artifactId>
+                <version>${spring-ai-deepseek.version}</version>
+            </dependency>
+            
             <!-- 内部模块依赖 -->
             <!-- API模块：包含DTO/VO/异常定义等 -->
             <dependency>

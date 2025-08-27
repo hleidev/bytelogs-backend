@@ -1,26 +1,25 @@
 package top.harrylei.forum.service.ai.repository.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import top.harrylei.forum.api.enums.ai.AIConversationStatusEnum;
+import top.harrylei.forum.api.enums.YesOrNoEnum;
+import top.harrylei.forum.api.enums.ai.ChatConversationStatusEnum;
 import top.harrylei.forum.api.model.base.BaseDO;
 
 import java.io.Serial;
 import java.time.LocalDateTime;
 
 /**
- * AI对话表实体
+ * 聊天会话表实体
  *
  * @author harry
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@TableName("ai_conversation")
-public class AIConversationDO extends BaseDO {
+@TableName("chat_conversation")
+public class ChatConversationDO extends BaseDO {
     @Serial
     private static final long serialVersionUID = 1L;
 
@@ -37,10 +36,10 @@ public class AIConversationDO extends BaseDO {
     private String title;
 
     /**
-     * 对话状态
+     * 会话状态
      */
     @TableField("status")
-    private AIConversationStatusEnum status;
+    private ChatConversationStatusEnum status;
 
     /**
      * 消息数量
@@ -64,5 +63,5 @@ public class AIConversationDO extends BaseDO {
      * 是否删除：0-未删除，1-已删除
      */
     @TableField("deleted")
-    private Integer deleted;
+    private YesOrNoEnum deleted;
 }

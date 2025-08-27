@@ -1,6 +1,7 @@
 package top.harrylei.forum.service.ai.service;
 
-import top.harrylei.forum.service.ai.repository.entity.AIUsageStatsDO;
+import top.harrylei.forum.service.ai.repository.entity.ChatUsageStatsDO;
+import top.harrylei.forum.api.enums.ai.ChatClientTypeEnum;
 
 import java.time.LocalDate;
 
@@ -9,7 +10,7 @@ import java.time.LocalDate;
  *
  * @author harry
  */
-public interface AIUsageService {
+public interface ChatUsageService {
 
     /**
      * 检查用户今日使用量是否超限
@@ -31,11 +32,17 @@ public interface AIUsageService {
      * 记录用户使用情况
      *
      * @param userId            用户ID
+     * @param provider          AI提供商
+     * @param modelName         模型名称
      * @param messageCount      消息数量增量
-     * @param tokensUsed        Token消耗增量
+     * @param promptTokens      提示词Token消耗增量
+     * @param completionTokens  完成Token消耗增量
+     * @param totalTokens       总Token消耗增量
      * @param conversationCount 对话数量增量
      */
-    void recordUsage(Long userId, Integer messageCount, Integer tokensUsed, Integer conversationCount);
+    void recordUsage(Long userId, ChatClientTypeEnum provider, String modelName, 
+                    Integer messageCount, Long promptTokens, Long completionTokens,
+                    Long totalTokens, Integer conversationCount);
 
     /**
      * 获取用户今日使用统计
@@ -44,7 +51,7 @@ public interface AIUsageService {
      * @param date   日期
      * @return 使用统计
      */
-    AIUsageStatsDO getDailyUsage(Long userId, LocalDate date);
+    ChatUsageStatsDO getDailyUsage(Long userId, LocalDate date);
 
     /**
      * 获取用户今日剩余可用消息数量

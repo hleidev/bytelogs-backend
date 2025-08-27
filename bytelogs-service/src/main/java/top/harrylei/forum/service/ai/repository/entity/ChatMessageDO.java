@@ -4,21 +4,22 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import top.harrylei.forum.api.enums.ai.AIClientTypeEnum;
-import top.harrylei.forum.api.enums.ai.AIMessageRoleEnum;
+import top.harrylei.forum.api.enums.YesOrNoEnum;
+import top.harrylei.forum.api.enums.ai.ChatMessageRoleEnum;
+import top.harrylei.forum.api.enums.ai.ChatClientTypeEnum;
 import top.harrylei.forum.api.model.base.BaseDO;
 
 import java.io.Serial;
 
 /**
- * AI消息表实体
+ * 聊天消息表实体
  *
  * @author harry
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@TableName("ai_message")
-public class AIMessageDO extends BaseDO {
+@TableName("chat_message")
+public class ChatMessageDO extends BaseDO {
     @Serial
     private static final long serialVersionUID = 1L;
 
@@ -35,10 +36,10 @@ public class AIMessageDO extends BaseDO {
     private Long userId;
 
     /**
-     * 消息角色
+     * 消息类型
      */
-    @TableField("role")
-    private AIMessageRoleEnum role;
+    @TableField("message_type")
+    private ChatMessageRoleEnum messageType;
 
     /**
      * 消息内容
@@ -47,38 +48,38 @@ public class AIMessageDO extends BaseDO {
     private String content;
 
     /**
-     * 使用的AI厂商类型
+     * AI提供商
      */
-    @TableField("vendor")
-    private AIClientTypeEnum vendor;
+    @TableField("provider")
+    private ChatClientTypeEnum provider;
 
     /**
-     * 具体模型名称
+     * 模型名称
      */
-    @TableField("model")
-    private String model;
+    @TableField("model_name")
+    private String modelName;
 
     /**
-     * 输入Token消耗（用户消息和上下文）
+     * 提示词Token数
      */
-    @TableField("input_tokens")
-    private Integer inputTokens;
+    @TableField("prompt_tokens")
+    private Long promptTokens = 0L;
 
     /**
-     * AI生成Token消耗
+     * 完成Token数
      */
-    @TableField("output_tokens")
-    private Integer outputTokens;
+    @TableField("completion_tokens")
+    private Long completionTokens = 0L;
 
     /**
-     * 总Token消耗
+     * 总Token数
      */
     @TableField("total_tokens")
-    private Integer totalTokens;
+    private Long totalTokens = 0L;
 
     /**
      * 是否删除：0-未删除，1-已删除
      */
     @TableField("deleted")
-    private Integer deleted;
+    private YesOrNoEnum deleted;
 }

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import top.harrylei.forum.api.enums.ai.AIConversationStatusEnum;
+import top.harrylei.forum.api.enums.ai.ChatConversationStatusEnum;
 import top.harrylei.forum.api.model.base.BaseVO;
 
 import java.io.Serial;
@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Schema(description = "对话信息")
-public class AIConversationVO extends BaseVO {
+public class ChatConversationVO extends BaseVO {
     @Serial
     private static final long serialVersionUID = 1L;
 
@@ -26,7 +26,7 @@ public class AIConversationVO extends BaseVO {
     private String title;
 
     @Schema(description = "对话状态")
-    private AIConversationStatusEnum status;
+    private ChatConversationStatusEnum status;
 
     @Schema(description = "消息数量")
     private Integer messageCount;
