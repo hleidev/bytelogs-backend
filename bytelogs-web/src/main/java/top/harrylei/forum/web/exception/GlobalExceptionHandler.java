@@ -27,7 +27,6 @@ import top.harrylei.forum.api.enums.ResultCode;
 import top.harrylei.forum.api.exception.BusinessException;
 import top.harrylei.forum.api.model.base.ResVO;
 import top.harrylei.forum.core.context.ReqInfoContext;
-import top.harrylei.forum.core.exception.ForumException;
 
 import java.util.List;
 import java.util.Set;
@@ -61,15 +60,6 @@ public class GlobalExceptionHandler {
         return ResVO.fail(e.getCode(), e.getMessage());
     }
 
-    /**
-     * 处理业务异常 ForumException (向后兼容)
-     */
-    @ExceptionHandler(ForumException.class)
-    @ResponseStatus(HttpStatus.OK)
-    public ResVO<Void> handleForumException(ForumException e, HttpServletRequest request) {
-        logBusinessException("业务异常", e.getMessage(), request, e);
-        return ResVO.fail(e.getErrorCodeEnum().getCode(), e.getMessage());
-    }
 
     /**
      * 处理参数校验异常（Bean Validation 注解校验）
@@ -229,12 +219,12 @@ public class GlobalExceptionHandler {
         if (printStackTrace && e != null) {
             // 启用调用栈打印：完整异常信息，便于开发调试
             log.warn("[{}] {} | 路径: {} | 用户: {} | 方法: {}",
-                     exceptionType, message, request.getRequestURI(), userId, request.getMethod(), e);
+                    exceptionType, message, request.getRequestURI(), userId, request.getMethod(), e);
         } else {
             // 关闭调用栈打印：简洁日志，适合生产环境
             String location = getBusinessCodeLocation(e);
             log.warn("[{}] {} | 位置: {} | 路径: {} | 用户: {} | 方法: {}",
-                     exceptionType, message, location, request.getRequestURI(), userId, request.getMethod());
+                    exceptionType, message, location, request.getRequestURI(), userId, request.getMethod());
         }
     }
 
@@ -273,7 +263,7 @@ public class GlobalExceptionHandler {
     private void logSystemException(String exceptionType, Exception e, HttpServletRequest request) {
         Long userId = getCurrentUserId();
         log.error("[{}] 系统异常 | 路径: {} | 用户: {} | 方法: {} | 异常: {}",
-                  exceptionType, request.getRequestURI(), userId, request.getMethod(), e.getClass().getSimpleName(), e);
+                exceptionType, request.getRequestURI(), userId, request.getMethod(), e.getClass().getSimpleName(), e);
     }
 
     /**

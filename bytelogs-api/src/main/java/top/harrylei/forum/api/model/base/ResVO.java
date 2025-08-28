@@ -2,7 +2,6 @@ package top.harrylei.forum.api.model.base;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import top.harrylei.forum.api.enums.ErrorCodeEnum;
 import top.harrylei.forum.api.enums.ResultCode;
 
 import java.io.Serial;
@@ -12,6 +11,7 @@ import java.io.Serializable;
  * 通用响应封装类
  *
  * @param <T> 返回结果的数据类型
+ * @author harry
  */
 @Data
 @Schema(description = "统一响应结构")
@@ -93,18 +93,6 @@ public class ResVO<T> implements Serializable {
         return new ResVO<>(code, message, null);
     }
 
-    /**
-     * 使用状态枚举构建失败响应
-     *
-     * @param status 状态枚举
-     * @param args   消息格式化参数
-     * @param <T>    数据类型
-     * @return 失败响应
-     */
-    public static <T> ResVO<T> fail(ErrorCodeEnum status, Object... args) {
-        String message = formatMessage(status.getMessage(), args);
-        return fail(status.getCode(), message);
-    }
 
     /**
      * 构建失败响应

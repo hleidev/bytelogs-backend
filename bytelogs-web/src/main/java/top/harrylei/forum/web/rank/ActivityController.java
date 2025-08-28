@@ -9,7 +9,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import top.harrylei.forum.api.enums.ErrorCodeEnum;
+import top.harrylei.forum.api.enums.ResultCode;
 import top.harrylei.forum.api.enums.rank.ActivityRankTypeEnum;
 import top.harrylei.forum.api.model.base.ResVO;
 import top.harrylei.forum.api.model.rank.dto.ActivityRankDTO;
@@ -17,7 +17,6 @@ import top.harrylei.forum.api.model.rank.vo.ActivityRankListVO;
 import top.harrylei.forum.api.model.rank.vo.ActivityRankVO;
 import top.harrylei.forum.api.model.rank.vo.ActivityStatsVO;
 import top.harrylei.forum.core.context.ReqInfoContext;
-import top.harrylei.forum.core.exception.ExceptionUtil;
 import top.harrylei.forum.service.rank.service.ActivityService;
 
 import java.util.List;
@@ -72,7 +71,9 @@ public class ActivityController {
     @GetMapping("/stats")
     public ResVO<ActivityStatsVO> getActivityStats() {
         Long currentUserId = ReqInfoContext.getContext().getUserId();
-        ExceptionUtil.errorIf(currentUserId == null, ErrorCodeEnum.UNAUTHORIZED);
+        if (currentUserId == null) {
+            ResultCode.AUTHENTICATION_FAILED.throwException();
+        }
 
         ActivityStatsVO stats = activityService.getUserStats(currentUserId);
         return ResVO.ok(stats);
