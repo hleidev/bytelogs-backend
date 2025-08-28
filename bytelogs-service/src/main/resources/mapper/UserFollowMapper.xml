@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="top.harrylei.forum.service.user.repository.mapper.UserFollowMapper">
+<mapper namespace="top.harrylei.community.service.user.repository.mapper.UserFollowMapper">
 
     <!-- 用户关注展示对象结果映射 -->
-    <resultMap id="UserFollowVOMap" type="top.harrylei.forum.api.model.user.vo.UserFollowVO">
+    <resultMap id="UserFollowVOMap" type="top.harrylei.community.api.model.user.vo.UserFollowVO">
         <result column="user_id" property="userId"/>
         <result column="user_name" property="userName"/>
         <result column="avatar" property="avatar"/>

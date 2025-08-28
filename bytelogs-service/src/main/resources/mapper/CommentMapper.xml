@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="top.harrylei.forum.service.comment.repository.mapper.CommentMapper">
+<mapper namespace="top.harrylei.community.service.comment.repository.mapper.CommentMapper">
 
     <!-- 管理端评论VO映射 -->
-    <resultMap id="CommentManagementVOMap" type="top.harrylei.forum.api.model.comment.vo.CommentManagementVO">
+    <resultMap id="CommentManagementVOMap" type="top.harrylei.community.api.model.comment.vo.CommentManagementVO">
         <id column="id" property="id"/>
         <result column="content" property="content"/>
         <result column="user_id" property="userId"/>

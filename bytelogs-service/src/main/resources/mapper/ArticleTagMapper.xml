@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="top.harrylei.forum.service.article.repository.mapper.ArticleTagMapper">
+<mapper namespace="top.harrylei.community.service.article.repository.mapper.ArticleTagMapper">
 
-    <select id="listTagSimpleVoByArticleIds" resultType="top.harrylei.forum.api.model.article.vo.TagSimpleVO">
+    <select id="listTagSimpleVoByArticleIds" resultType="top.harrylei.community.api.model.article.vo.TagSimpleVO">
         select at.article_id as articleId,
                t.id as tagId,
                t.tag_name as tagName,

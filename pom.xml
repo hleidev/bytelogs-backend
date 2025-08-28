@@ -15,11 +15,11 @@
         <version>3.5.0</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>top.harrylei.forum</groupId>
-    <artifactId>bytelogs-forum</artifactId>
+    <groupId>top.harrylei.community</groupId>
+    <artifactId>bytelogs-community</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>bytelogs-forum</name>
-    <description>简洁的技术论坛，基于Java和Spring框架</description>
+    <name>bytelogs-community</name>
+    <description>简洁的技术社区，基于Java和Spring框架</description>
 
     <!-- 统一管理版本号 -->
     <properties>
@@ -56,28 +56,28 @@
             <!-- 内部模块依赖 -->
             <!-- API模块：包含DTO/VO/异常定义等 -->
             <dependency>
-                <groupId>top.harrylei.forum</groupId>
+                <groupId>top.harrylei.community</groupId>
                 <artifactId>bytelogs-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <!-- 核心模块：包含工具类、配置、上下文等 -->
             <dependency>
-                <groupId>top.harrylei.forum</groupId>
+                <groupId>top.harrylei.community</groupId>
                 <artifactId>bytelogs-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <!-- 服务模块：包含业务逻辑实现 -->
             <dependency>
-                <groupId>top.harrylei.forum</groupId>
+                <groupId>top.harrylei.community</groupId>
                 <artifactId>bytelogs-service</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <!-- Web模块：包含控制器、过滤器等 -->
             <dependency>
-                <groupId>top.harrylei.forum</groupId>
+                <groupId>top.harrylei.community</groupId>
                 <artifactId>bytelogs-web</artifactId>
                 <version>${project.version}</version>
             </dependency>

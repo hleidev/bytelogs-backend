@@ -3,8 +3,8 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <groupId>top.harrylei.forum</groupId>
-        <artifactId>bytelogs-forum</artifactId>
+        <groupId>top.harrylei.community</groupId>
+        <artifactId>bytelogs-community</artifactId>
         <version>0.0.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
@@ -20,7 +20,7 @@
     <dependencies>
         <!-- 依赖 API 模块，提供基础数据结构 -->
         <dependency>
-            <groupId>top.harrylei.forum</groupId>
+            <groupId>top.harrylei.community</groupId>
             <artifactId>bytelogs-api</artifactId>
         </dependency>
 

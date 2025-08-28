@@ -107,7 +107,7 @@
     </appender>
 
     <!-- API请求日志记录器 -->
-    <logger name="top.harrylei.forum.web.filter.ReqInfoContextFilter" level="INFO" additivity="false">
+    <logger name="top.harrylei.community.web.filter.ReqInfoContextFilter" level="INFO" additivity="false">
         <appender-ref ref="ASYNC_API_LOG"/>
     </logger>
 

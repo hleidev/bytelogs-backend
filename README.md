@@ -1,7 +1,7 @@
-# ByteLogs 论坛后端
+# ByteLogs 社区后端
 
-ByteLogs 是一个现代化的论坛系统后端，采用 Spring Boot 3.5.0 和 JDK 21
-构建，实现了一个完整的论坛平台，包括用户管理、文章发布、评论系统、活动排行和通知系统，采用事件驱动架构设计。
+ByteLogs 是一个现代化的技术社区系统后端，采用 Spring Boot 3.5.0 和 JDK 21
+构建，实现了一个完整的社区平台，包括用户管理、文章发布、评论系统、活动排行和通知系统，采用事件驱动架构设计。
 
 ## 项目特色
 
@@ -175,7 +175,7 @@ mvn clean install -DskipTests
 # 运行应用
 java -jar bytelogs-web/target/bytelogs-web-0.0.1-SNAPSHOT.jar
 
-# 或者通过 IDE 运行主类：top.harrylei.forum.web.QuickWebApplication
+# 或者通过 IDE 运行主类：top.harrylei.community.web.QuickWebApplication
 ```
 
 ### 5. 访问应用
