@@ -10,8 +10,8 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 import top.harrylei.forum.api.event.NotificationEvent;
 import top.harrylei.forum.core.common.constans.KafkaTopics;
-import top.harrylei.forum.core.exception.NonRetryableException;
-import top.harrylei.forum.core.exception.RetryableException;
+import top.harrylei.forum.api.exception.NonRetryableException;
+import top.harrylei.forum.api.exception.RetryableException;
 import top.harrylei.forum.service.notify.service.KafkaIdempotencyService;
 import top.harrylei.forum.service.notify.service.NotifyMsgService;
 

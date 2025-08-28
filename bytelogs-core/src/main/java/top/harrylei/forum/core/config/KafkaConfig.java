@@ -17,7 +17,7 @@ import org.springframework.util.backoff.ExponentialBackOff;
 import top.harrylei.forum.api.event.ActivityRankEvent;
 import top.harrylei.forum.api.event.NotificationEvent;
 import top.harrylei.forum.core.common.constans.KafkaTopics;
-import top.harrylei.forum.core.exception.NonRetryableException;
+import top.harrylei.forum.api.exception.NonRetryableException;
 
 import java.util.Map;
 

@@ -1,4 +1,4 @@
-package top.harrylei.forum.core.exception;
+package top.harrylei.forum.api.exception;
 
 /**
  * 不可重试异常
