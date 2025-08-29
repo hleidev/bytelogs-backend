@@ -16,6 +16,7 @@ public class RedisKeyConstants {
     public static final String KAFKA = GLOBAL_PREFIX + "kafka:";
     public static final String ACTIVITY = GLOBAL_PREFIX + "activity:";
     public static final String AI = GLOBAL_PREFIX + "ai:";
+    public static final String ARTICLE = GLOBAL_PREFIX + "article:";
 
     // 功能分类
     public static final String USER_TOKEN = USER + "token:";
@@ -28,6 +29,7 @@ public class RedisKeyConstants {
     public static final String HEALTH_CHECK = GLOBAL_PREFIX + "health:check";
     public static final String AI_HOURLY_LIMIT = AI + "hourly_limit:";
     public static final String AI_DAILY_USAGE = AI + "daily_usage:";
+    public static final String ARTICLE_READ_COUNT_LOCK = ARTICLE + "read_count_lock:";
 
 
     /**
@@ -140,5 +142,17 @@ public class RedisKeyConstants {
      */
     public static String getActivityDailyKey(Long userId, String date) {
         return ACTIVITY_DAILY + date + ":" + userId;
+    }
+
+    /**
+     * 构建文章阅读量统计防重复锁key
+     *
+     * @param articleId  文章ID
+     * @param identifier 标识符(用户ID或IP)
+     * @param type       类型(user或ip)
+     * @return 文章阅读量统计防重复锁key
+     */
+    public static String getArticleReadCountLockKey(Long articleId, String identifier, String type) {
+        return ARTICLE_READ_COUNT_LOCK + articleId + ":" + type + ":" + identifier;
     }
 }

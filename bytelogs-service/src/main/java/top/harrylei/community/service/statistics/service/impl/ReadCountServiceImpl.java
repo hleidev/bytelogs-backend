@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import top.harrylei.community.api.enums.article.ContentTypeEnum;
+import top.harrylei.community.api.enums.response.ResultCode;
+import top.harrylei.community.core.common.constans.RedisKeyConstants;
 import top.harrylei.community.core.context.ReqInfoContext;
 import top.harrylei.community.core.util.RedisUtil;
 import top.harrylei.community.service.statistics.repository.dao.ReadCountDAO;
@@ -52,14 +54,19 @@ public class ReadCountServiceImpl implements ReadCountService {
      * 构建防重复锁Key
      */
     private String buildLockKey(Long contentId, ContentTypeEnum contentType) {
+        // 目前只支持文章阅读量统计
+        if (contentType != ContentTypeEnum.ARTICLE) {
+            ResultCode.OPERATION_NOT_ALLOWED.throwException("不支持的内容类型");
+        }
+
         if (ReqInfoContext.getContext().isLoggedIn()) {
             // 登录用户：精确到用户
             Long userId = ReqInfoContext.getContext().getUserId();
-            return "read_lock:" + contentId + ":" + contentType + ":user:" + userId;
+            return RedisKeyConstants.getArticleReadCountLockKey(contentId, userId.toString(), "user");
         } else {
             // 未登录用户：按IP粗粒度控制
             String ip = ReqInfoContext.getContext().getClientIp();
-            return "read_lock:" + contentId + ":" + contentType + ":ip:" + ip;
+            return RedisKeyConstants.getArticleReadCountLockKey(contentId, ip, "ip");
         }
     }
 
