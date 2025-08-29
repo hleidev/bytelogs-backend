@@ -4,19 +4,18 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
-import top.harrylei.community.api.enums.article.ContentTypeEnum;
 import top.harrylei.community.api.model.base.BaseDO;
 
 import java.io.Serial;
 
 /**
- * 内容访问计数实体对象
+ * 文章统计实体对象
  *
  * @author harry
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@TableName("read_count")
+@TableName("article_statistics")
 @Accessors(chain = true)
 public class ReadCountDO extends BaseDO {
 
@@ -24,17 +23,27 @@ public class ReadCountDO extends BaseDO {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 内容ID
+     * 文章ID
      */
-    private Long contentId;
+    private Long articleId;
 
     /**
-     * 内容类型：1-文章，2-评论
+     * 阅读次数
      */
-    private ContentTypeEnum contentType;
+    private Integer readCount;
 
     /**
-     * 访问计数
+     * 点赞次数
      */
-    private Integer cnt;
+    private Integer praiseCount;
+
+    /**
+     * 收藏次数
+     */
+    private Integer collectCount;
+
+    /**
+     * 评论次数
+     */
+    private Integer commentCount;
 }

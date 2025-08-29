@@ -230,21 +230,25 @@ CREATE TABLE `notify_msg`
   COLLATE = utf8mb4_general_ci
     COMMENT = '消息通知表';
 
--- 内容访问计数表
-CREATE TABLE `read_count`
+-- 文章统计表
+CREATE TABLE `article_statistics`
 (
-    `id`           bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-    `content_id`   bigint unsigned NOT NULL DEFAULT 0 COMMENT '内容ID（文章或评论）',
-    `content_type` tinyint         NOT NULL DEFAULT 1 COMMENT '内容类型：1-文章，2-评论',
-    `cnt`          int unsigned    NOT NULL DEFAULT 0 COMMENT '访问计数',
-    `create_time`  timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `update_time`  timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
+    `id`            bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    `article_id`    bigint unsigned NOT NULL DEFAULT 0 COMMENT '文章ID',
+    `read_count`    int unsigned    NOT NULL DEFAULT 0 COMMENT '阅读次数',
+    `praise_count`  int unsigned    NOT NULL DEFAULT 0 COMMENT '点赞次数',
+    `collect_count` int unsigned    NOT NULL DEFAULT 0 COMMENT '收藏次数',
+    `comment_count` int unsigned    NOT NULL DEFAULT 0 COMMENT '评论次数',
+    `create_time`   timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time`   timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_content_id_type` (`content_id`, `content_type`) COMMENT '内容类型唯一约束'
+    UNIQUE KEY `uk_article_id` (`article_id`) COMMENT '文章ID唯一约束',
+    KEY `idx_read_count` (`read_count` DESC) COMMENT '阅读量排序索引',
+    KEY `idx_praise_count` (`praise_count` DESC) COMMENT '点赞量排序索引'
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci
-    COMMENT = '内容访问计数表';
+    COMMENT = '文章统计表';
 
 -- 请求计数表
 CREATE TABLE `request_count`
