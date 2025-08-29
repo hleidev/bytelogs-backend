@@ -3,13 +3,14 @@ package top.harrylei.community.service.article.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import top.harrylei.community.api.enums.ResultCode;
-import top.harrylei.community.api.enums.YesOrNoEnum;
-import top.harrylei.community.api.enums.article.ArticleStatusTypeEnum;
-import top.harrylei.community.api.enums.article.PublishStatusEnum;
+import top.harrylei.community.api.enums.response.ResultCode;
+import top.harrylei.community.api.enums.article.ArticlePublishStatusEnum;
+import top.harrylei.community.api.enums.article.CreamStatusEnum;
+import top.harrylei.community.api.enums.article.OfficialStatusEnum;
+import top.harrylei.community.api.enums.article.ToppingStatusEnum;
 import top.harrylei.community.core.context.ReqInfoContext;
-import top.harrylei.community.service.article.service.ArticleManagementService;
 import top.harrylei.community.service.article.service.ArticleCommandService;
+import top.harrylei.community.service.article.service.ArticleManagementService;
 
 import java.util.List;
 
@@ -32,7 +33,7 @@ public class ArticleManagementServiceImpl implements ArticleManagementService {
      * @param status     审核状态
      */
     @Override
-    public void auditArticles(List<Long> articleIds, PublishStatusEnum status) {
+    public void auditArticles(List<Long> articleIds, ArticlePublishStatusEnum status) {
         // 参数校验
         validateAuditStatus(status);
 
@@ -98,33 +99,55 @@ public class ArticleManagementServiceImpl implements ArticleManagementService {
         log.info("批量恢复完成 total={} operatorId={}", articleIds.size(), operatorId);
     }
 
-    /**
-     * 批量更新文章属性标识（置顶/加精/官方）
-     *
-     * @param articleIds 文章ID列表
-     * @param statusType 状态类型
-     * @param status     是否启用
-     */
     @Override
-    public void updateArticleProperty(List<Long> articleIds, ArticleStatusTypeEnum statusType, YesOrNoEnum status) {
-        Long operatorId = ReqInfoContext.getContext().getUserId();
+    public void updateArticleTopping(List<Long> articleIds, ToppingStatusEnum toppingStat) {
+        Long operationId = ReqInfoContext.getContext().getUserId();
 
-        // 批量处理文章属性更新
+        // 批量处理文章置顶状态更新
         for (Long articleId : articleIds) {
             try {
-                articleCommandService.updateArticleProperty(articleId, statusType, status);
+                articleCommandService.updateArticleTopping(articleId, toppingStat);
             } catch (Exception e) {
-                log.error("更新文章{}属性失败 articleId={} enabled={} operatorId={} error={}",
-                        statusType.name(), articleId, status, operatorId, e.getMessage(), e);
+                log.error("更新文章置顶状态失败 articleId={} toppingStat={} operatorId={} error={}",
+                        articleId, toppingStat, operationId, e.getMessage(), e);
                 // 继续处理其他文章，不因单个失败而中断
             }
         }
-
-        log.info("批量更新文章{}属性完成 total={} enabled={} operatorId={}",
-                statusType.name(), articleIds.size(), status, operatorId);
     }
 
-    private void validateAuditStatus(PublishStatusEnum status) {
+    @Override
+    public void updateArticleCream(List<Long> articleIds, CreamStatusEnum creamStat) {
+        Long operationId = ReqInfoContext.getContext().getUserId();
+
+        // 批量处理文章加精状态更新
+        for (Long articleId : articleIds) {
+            try {
+                articleCommandService.updateArticleCream(articleId, creamStat);
+            } catch (Exception e) {
+                log.error("更新文章加精状态失败 articleId={} creamStat={} operatorId={} error={}",
+                        articleId, creamStat, operationId, e.getMessage(), e);
+                // 继续处理其他文章，不因单个失败而中断
+            }
+        }
+    }
+
+    @Override
+    public void updateArticleOfficial(List<Long> articleIds, OfficialStatusEnum officialStat) {
+        Long operationId = ReqInfoContext.getContext().getUserId();
+
+        // 批量处理文章官方状态更新
+        for (Long articleId : articleIds) {
+            try {
+                articleCommandService.updateArticleOfficial(articleId, officialStat);
+            } catch (Exception e) {
+                log.error("更新文章官方状态失败 articleId={} officialStat={} operatorId={} error={}",
+                        articleId, officialStat, operationId, e.getMessage(), e);
+                // 继续处理其他文章，不因单个失败而中断
+            }
+        }
+    }
+
+    private void validateAuditStatus(ArticlePublishStatusEnum status) {
         switch (status) {
             case PUBLISHED, REJECTED -> {
                 // 有效状态，什么都不做

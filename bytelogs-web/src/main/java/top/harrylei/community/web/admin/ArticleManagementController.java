@@ -8,12 +8,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import top.harrylei.community.api.model.base.ResVO;
-import top.harrylei.community.api.model.article.req.ArticleAuditReq;
-import top.harrylei.community.api.model.article.req.ArticleQueryParam;
-import top.harrylei.community.api.model.article.req.ArticleStatusUpdateReq;
+import top.harrylei.community.api.model.article.req.*;
 import top.harrylei.community.api.model.article.vo.ArticleDetailVO;
 import top.harrylei.community.api.model.article.vo.ArticleVO;
+import top.harrylei.community.api.model.base.ResVO;
 import top.harrylei.community.api.model.page.PageVO;
 import top.harrylei.community.core.security.permission.RequiresAdmin;
 import top.harrylei.community.service.article.service.ArticleManagementService;
@@ -97,17 +95,41 @@ public class ArticleManagementController {
     }
 
     /**
-     * 更新文章属性标识（置顶/加精/官方）
+     * 更新置顶标识
      *
      * @param request 属性更新请求
      * @return 操作结果
      */
-    @Operation(summary = "更新属性", description = "管理员更新文章属性标识（置顶/加精/官方），支持批量操作")
-    @PutMapping("/property")
-    public ResVO<Void> updateArticleProperty(@RequestBody @Valid ArticleStatusUpdateReq request) {
-        articleManagementService.updateArticleProperty(request.getArticleIds(),
-                                                       request.getStatusType(),
-                                                       request.getStatus());
+    @Operation(summary = "更新属性", description = "管理员更新文章属性标识置顶，支持批量操作")
+    @PutMapping("/topping")
+    public ResVO<Void> updateArticleTopping(@RequestBody @Valid ArticleToppingUpdateReq request) {
+        articleManagementService.updateArticleTopping(request.getArticleIds(), request.getToppingStat());
+        return ResVO.ok();
+    }
+
+    /**
+     * 更新加精标识
+     *
+     * @param request 属性更新请求
+     * @return 操作结果
+     */
+    @Operation(summary = "更新属性", description = "管理员更新文章属性标识加精，支持批量操作")
+    @PutMapping("/cream")
+    public ResVO<Void> updateArticleCream(@RequestBody @Valid ArticleCreamUpdateReq request) {
+        articleManagementService.updateArticleCream(request.getArticleIds(), request.getCreamStat());
+        return ResVO.ok();
+    }
+
+    /**
+     * 更新官方标识
+     *
+     * @param request 属性更新请求
+     * @return 操作结果
+     */
+    @Operation(summary = "更新属性", description = "管理员更新文章属性标识官方，支持批量操作")
+    @PutMapping("/official")
+    public ResVO<Void> updateArticleOfficial(@RequestBody @Valid ArticleOfficialUpdateReq request) {
+        articleManagementService.updateArticleOfficial(request.getArticleIds(), request.getOfficialStat());
         return ResVO.ok();
     }
 }

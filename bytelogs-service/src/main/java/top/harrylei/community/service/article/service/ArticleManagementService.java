@@ -1,8 +1,9 @@
 package top.harrylei.community.service.article.service;
 
-import top.harrylei.community.api.enums.YesOrNoEnum;
-import top.harrylei.community.api.enums.article.ArticleStatusTypeEnum;
-import top.harrylei.community.api.enums.article.PublishStatusEnum;
+import top.harrylei.community.api.enums.article.ArticlePublishStatusEnum;
+import top.harrylei.community.api.enums.article.CreamStatusEnum;
+import top.harrylei.community.api.enums.article.OfficialStatusEnum;
+import top.harrylei.community.api.enums.article.ToppingStatusEnum;
 
 import java.util.List;
 
@@ -19,7 +20,7 @@ public interface ArticleManagementService {
      * @param articleIds 文章ID列表（单个文章传单元素列表）
      * @param status     审核状态
      */
-    void auditArticles(List<Long> articleIds, PublishStatusEnum status);
+    void auditArticles(List<Long> articleIds, ArticlePublishStatusEnum status);
 
     /**
      * 删除文章（支持单个和批量）
@@ -36,11 +37,26 @@ public interface ArticleManagementService {
     void restoreArticles(List<Long> articleIds);
 
     /**
-     * 批量更新文章属性标识（置顶/加精/官方）
+     * 批量更新文章置顶状态
+     *
+     * @param articleIds  文章ID列表
+     * @param toppingStat 置顶状态
+     */
+    void updateArticleTopping(List<Long> articleIds, ToppingStatusEnum toppingStat);
+
+    /**
+     * 批量更新文章加精状态
      *
      * @param articleIds 文章ID列表
-     * @param statusType 状态类型
-     * @param status    是否启用
+     * @param creamStat  加精状态
      */
-    void updateArticleProperty(List<Long> articleIds, ArticleStatusTypeEnum statusType, YesOrNoEnum status);
+    void updateArticleCream(List<Long> articleIds, CreamStatusEnum creamStat);
+
+    /**
+     * 批量更新文章官方状态
+     *
+     * @param articleIds 文章ID列表
+     * @param officialStat  官方状态
+     */
+    void updateArticleOfficial(List<Long> articleIds, OfficialStatusEnum officialStat);
 }
