@@ -1,4 +1,4 @@
-package top.harrylei.community.api.enums.comment;
+package top.harrylei.community.api.enums.article;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonCreator;

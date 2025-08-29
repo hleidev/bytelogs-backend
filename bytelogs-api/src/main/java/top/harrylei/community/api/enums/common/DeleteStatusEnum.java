@@ -1,4 +1,4 @@
-package top.harrylei.community.api.enums;
+package top.harrylei.community.api.enums.common;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -18,17 +18,17 @@ import java.util.stream.Collectors;
  */
 @Getter
 @AllArgsConstructor
-public enum YesOrNoEnum {
-    NO(0, "N"),
-    YES(1, "Y");
+public enum DeleteStatusEnum {
+    NOT_DELETED(0, "未删除"),
+    DELETED(1, "已删除");
     // 编码（唯一标识）
     @EnumValue
     private final Integer code;
     // 描述（用于展示）
     private final String label;
     // 根据编码快速定位枚举实例
-    private static final Map<Integer, YesOrNoEnum> CODE_MAP =
-            Arrays.stream(values()).collect(Collectors.toMap(YesOrNoEnum::getCode, Function.identity()));
+    private static final Map<Integer, DeleteStatusEnum> CODE_MAP =
+            Arrays.stream(values()).collect(Collectors.toMap(DeleteStatusEnum::getCode, Function.identity()));
 
     /**
      * 获取码
@@ -47,7 +47,7 @@ public enum YesOrNoEnum {
      * @return 对应的枚举，若无匹配则返回 null
      */
     @JsonCreator
-    public static YesOrNoEnum fromCode(Integer code) {
+    public static DeleteStatusEnum fromCode(Integer code) {
         return code == null ? null : CODE_MAP.get(code);
     }
 }

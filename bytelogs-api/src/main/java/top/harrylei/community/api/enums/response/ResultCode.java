@@ -1,4 +1,4 @@
-package top.harrylei.community.api.enums;
+package top.harrylei.community.api.enums.response;
 
 import lombok.Getter;
 import top.harrylei.community.api.exception.BusinessException;

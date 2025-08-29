@@ -1,4 +1,4 @@
-package top.harrylei.community.api.enums.comment;
+package top.harrylei.community.api.enums.article;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -18,40 +18,33 @@ import java.util.stream.Collectors;
  */
 @Getter
 @AllArgsConstructor
-public enum ToppingStatEnum {
+public enum ToppingStatusEnum {
 
+    /**
+     * 不置顶
+     */
     NOT_TOPPING(0, "不置顶"),
+
+    /**
+     * 置顶
+     */
     TOPPING(1, "置顶");
 
-    // 编码（唯一标识）
     @EnumValue
     private final Integer code;
 
-    // 描述（用于展示）
     private final String label;
 
-    // 根据编码快速定位枚举实例
-    private static final Map<Integer, ToppingStatEnum> CODE_MAP =
-            Arrays.stream(values()).collect(Collectors.toMap(ToppingStatEnum::getCode, Function.identity()));
+    private static final Map<Integer, ToppingStatusEnum> CODE_MAP =
+            Arrays.stream(values()).collect(Collectors.toMap(ToppingStatusEnum::getCode, Function.identity()));
 
-    /**
-     * 获取码
-     *
-     * @return 编码
-     */
     @JsonValue
     public Integer getCode() {
         return code;
     }
 
-    /**
-     * 根据编码获取枚举对象
-     *
-     * @param code 编码
-     * @return 对应的枚举，若无匹配则返回 null
-     */
     @JsonCreator
-    public static ToppingStatEnum fromCode(Integer code) {
+    public static ToppingStatusEnum fromCode(Integer code) {
         return code == null ? null : CODE_MAP.get(code);
     }
 }

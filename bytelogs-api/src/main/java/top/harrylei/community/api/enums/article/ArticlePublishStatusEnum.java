@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import top.harrylei.community.api.enums.base.CodeLabelEnum;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -19,7 +18,7 @@ import java.util.stream.Collectors;
  */
 @Getter
 @AllArgsConstructor
-public enum PublishStatusEnum implements CodeLabelEnum {
+public enum ArticlePublishStatusEnum {
 
     /**
      * 未发布
@@ -49,8 +48,8 @@ public enum PublishStatusEnum implements CodeLabelEnum {
     private final String label;
 
     // 根据状态编码快速定位枚举实例
-    private static final Map<Integer, PublishStatusEnum> CODE_MAP =
-            Arrays.stream(values()).collect(Collectors.toMap(PublishStatusEnum::getCode, Function.identity()));
+    private static final Map<Integer, ArticlePublishStatusEnum> CODE_MAP =
+            Arrays.stream(values()).collect(Collectors.toMap(ArticlePublishStatusEnum::getCode, Function.identity()));
 
     /**
      * 获取状态码
@@ -58,7 +57,6 @@ public enum PublishStatusEnum implements CodeLabelEnum {
      * @return 状态码
      */
     @JsonValue
-    @Override
     public Integer getCode() {
         return code;
     }
@@ -70,7 +68,7 @@ public enum PublishStatusEnum implements CodeLabelEnum {
      * @return 对应的状态枚举，若无匹配则返回 null
      */
     @JsonCreator
-    public static PublishStatusEnum fromCode(Integer code) {
+    public static ArticlePublishStatusEnum fromCode(Integer code) {
         return code == null ? null : CODE_MAP.get(code);
     }
 }
