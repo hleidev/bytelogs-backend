@@ -51,7 +51,7 @@ public class UserFootDAO extends ServiceImpl<UserFootMapper, UserFootDO> {
                 .eq(UserFootDO::getContentId, articleId)
                 .eq(UserFootDO::getContentType, ContentTypeEnum.ARTICLE)
                 .eq(UserFootDO::getCollectionState, CollectionStatusEnum.COLLECTION)
-                .eq(UserFootDO::getDeleted, DeleteStatusEnum.DELETED)
+                .eq(UserFootDO::getDeleted, DeleteStatusEnum.NOT_DELETED)
                 .count();
     }
 

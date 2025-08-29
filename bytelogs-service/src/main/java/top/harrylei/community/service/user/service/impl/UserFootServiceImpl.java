@@ -170,20 +170,11 @@ public class UserFootServiceImpl implements UserFootService {
      * @param contentType     内容类型
      * @return 是否成功操作
      */
-    private Boolean userFootAction(Long userId,
-                                   OperateTypeEnum type,
-                                   Long contentAuthorId,
-                                   Long contentId,
-                                   ContentTypeEnum contentType) {
-        if (NumUtil.nullOrZero(userId) || type == null || NumUtil.nullOrZero(contentId) ||
-                NumUtil.nullOrZero(contentAuthorId)) {
-            log.warn(
-                    "执行{}操作参数无效: userId={} operateTypeEnum={} contentAuthorId={} contentId={}",
-                    contentType.getLabel(),
-                    userId,
-                    type,
-                    contentAuthorId,
-                    contentId);
+    private Boolean userFootAction(Long userId, OperateTypeEnum type, Long contentAuthorId,
+                                   Long contentId, ContentTypeEnum contentType) {
+        if (NumUtil.nullOrZero(userId) || type == null || NumUtil.nullOrZero(contentId) || NumUtil.nullOrZero(contentAuthorId)) {
+            log.warn("执行{}操作参数无效: userId={} operateTypeEnum={} contentAuthorId={} contentId={}",
+                    contentType.getLabel(), userId, type, contentAuthorId, contentId);
             return false;
         }
 
@@ -197,9 +188,9 @@ public class UserFootServiceImpl implements UserFootService {
             }
         }
 
-        UserFootDO userFoot = saveOrUpdateUserFoot(userId, type, contentAuthorId, contentId, contentType);
+        boolean success = saveOrUpdateUserFoot(userId, type, contentAuthorId, contentId, contentType);
 
-        if (userFoot == null) {
+        if (!success) {
             log.warn("保存或更新{}用户足迹失败: userId={} operateTypeEnum={} contentAuthorId={} contentId={}",
                     contentType.getLabel(), userId, type, contentAuthorId, contentId);
             return false;
@@ -223,10 +214,8 @@ public class UserFootServiceImpl implements UserFootService {
      * @param contentId       内容id
      * @param contentTypeEnum 内容类型：博文 + 评论
      */
-    public UserFootDO saveOrUpdateUserFoot(Long userId,
-                                           OperateTypeEnum operateTypeEnum,
-                                           Long authorId,
-                                           Long contentId, ContentTypeEnum contentTypeEnum) {
+    public boolean saveOrUpdateUserFoot(Long userId, OperateTypeEnum operateTypeEnum, Long authorId,
+                                        Long contentId, ContentTypeEnum contentTypeEnum) {
         UserFootDO userFoot = userFootDAO.getByContentAndUserId(userId, contentId, contentTypeEnum);
         if (userFoot == null) {
             userFoot = new UserFootDO()
@@ -235,33 +224,31 @@ public class UserFootServiceImpl implements UserFootService {
                     .setContentUserId(authorId)
                     .setContentType(contentTypeEnum);
             setUserFootState(userFoot, operateTypeEnum);
-            userFootDAO.save(userFoot);
+            return userFootDAO.save(userFoot);
         } else if (setUserFootState(userFoot, operateTypeEnum)) {
-            userFootDAO.updateById(userFoot);
+            return userFootDAO.updateById(userFoot);
+        } else {
+            // 状态未变化，无需更新
+            return false;
         }
-        return userFoot;
     }
 
     private boolean setUserFootState(UserFootDO userFoot, OperateTypeEnum operateTypeEnum) {
         switch (operateTypeEnum) {
             case READ -> {
-                return compareAndUpdate(userFoot::getReadState,
-                        userFoot::setReadState,
+                return compareAndUpdate(userFoot::getReadState, userFoot::setReadState,
                         (ReadStatusEnum) operateTypeEnum.getStatus());
             }
             case COMMENT, DELETE_COMMENT -> {
-                return compareAndUpdate(userFoot::getCommentState,
-                        userFoot::setCommentState,
+                return compareAndUpdate(userFoot::getCommentState, userFoot::setCommentState,
                         (CommentStatusEnum) operateTypeEnum.getStatus());
             }
             case PRAISE, CANCEL_PRAISE -> {
-                return compareAndUpdate(userFoot::getPraiseState,
-                        userFoot::setPraiseState,
+                return compareAndUpdate(userFoot::getPraiseState, userFoot::setPraiseState,
                         (PraiseStatusEnum) operateTypeEnum.getStatus());
             }
             case COLLECTION, CANCEL_COLLECTION -> {
-                return compareAndUpdate(userFoot::getCollectionState,
-                        userFoot::setCollectionState,
+                return compareAndUpdate(userFoot::getCollectionState, userFoot::setCollectionState,
                         (CollectionStatusEnum) operateTypeEnum.getStatus());
             }
             default -> {
