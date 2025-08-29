@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import top.harrylei.community.api.enums.comment.ContentTypeEnum;
+import top.harrylei.community.api.enums.article.ContentTypeEnum;
 import top.harrylei.community.core.context.ReqInfoContext;
 import top.harrylei.community.core.util.RedisUtil;
 import top.harrylei.community.service.statistics.repository.dao.ReadCountDAO;
@@ -28,12 +28,12 @@ public class ReadCountServiceImpl implements ReadCountService {
     @Override
     @Async("statisticsExecutor")
     public void incrementReadCount(Long contentId, ContentTypeEnum contentType) {
-        String lockKey = buildLockKey(contentId, contentType.getCode());
+        String lockKey = buildLockKey(contentId, contentType);
         Duration duration = getLockExpiration();
 
         try {
             if (redisUtil.setIfAbsent(lockKey, "1", duration)) {
-                readCountDAO.incrementReadCount(contentId, contentType.getCode());
+                readCountDAO.incrementReadCount(contentId, contentType);
                 log.debug("阅读量统计成功: {}", lockKey);
             } else {
                 log.debug("重复访问，跳过统计: {}", lockKey);
@@ -45,13 +45,13 @@ public class ReadCountServiceImpl implements ReadCountService {
 
     @Override
     public Long getReadCount(Long contentId, ContentTypeEnum contentType) {
-        return readCountDAO.getReadCount(contentId, contentType.getCode());
+        return readCountDAO.getReadCount(contentId, contentType);
     }
 
     /**
      * 构建防重复锁Key
      */
-    private String buildLockKey(Long contentId, Integer contentType) {
+    private String buildLockKey(Long contentId, ContentTypeEnum contentType) {
         if (ReqInfoContext.getContext().isLoggedIn()) {
             // 登录用户：精确到用户
             Long userId = ReqInfoContext.getContext().getUserId();

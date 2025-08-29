@@ -6,7 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 import top.harrylei.community.api.model.base.BaseDTO;
 import top.harrylei.community.api.enums.user.UserRoleEnum;
-import top.harrylei.community.api.enums.YesOrNoEnum;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 
 /**
  * 用户基础实体对象
@@ -34,7 +34,7 @@ public class UserInfoDTO extends BaseDTO {
      * 用户角色 admin, normal
      */
     @Schema(description = "角色", example = "ADMIN|NORMAL")
-    private UserRoleEnum role;
+    private UserRoleEnum userRole;
 
     /**
      * 用户图像
@@ -68,7 +68,7 @@ public class UserInfoDTO extends BaseDTO {
      * 是否删除
      */
     @Schema(hidden = true, description = "用户是否被删除")
-    private YesOrNoEnum deleted;
+    private DeleteStatusEnum deleted;
 
     /**
      * 用户的邮箱

@@ -3,7 +3,7 @@ package top.harrylei.community.service.ai.repository.dao;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Repository;
-import top.harrylei.community.api.enums.YesOrNoEnum;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 import top.harrylei.community.service.ai.repository.entity.ChatMessageDO;
 import top.harrylei.community.service.ai.repository.mapper.ChatMessageMapper;
 
@@ -17,20 +17,6 @@ import java.util.List;
  */
 @Repository
 public class ChatMessageDAO extends ServiceImpl<ChatMessageMapper, ChatMessageDO> {
-
-    /**
-     * 保存用户消息
-     */
-    public Long saveUserMessage(Long conversationId, Long userId, String content) {
-        ChatMessageDO message = new ChatMessageDO();
-        message.setConversationId(conversationId);
-        message.setUserId(userId);
-        message.setContent(content);
-
-        save(message);
-        return message.getId();
-    }
-
     /**
      * 分页查询对话的消息列表
      */
@@ -38,7 +24,7 @@ public class ChatMessageDAO extends ServiceImpl<ChatMessageMapper, ChatMessageDO
                                                   LocalDateTime beforeTime) {
         return lambdaQuery()
                 .eq(ChatMessageDO::getConversationId, conversationId)
-                .eq(ChatMessageDO::getDeleted, YesOrNoEnum.NO)
+                .eq(ChatMessageDO::getDeleted, DeleteStatusEnum.NOT_DELETED)
                 .lt(beforeTime != null, ChatMessageDO::getCreateTime, beforeTime)
                 .orderByDesc(ChatMessageDO::getCreateTime)
                 .page(page);
@@ -50,7 +36,7 @@ public class ChatMessageDAO extends ServiceImpl<ChatMessageMapper, ChatMessageDO
     public List<ChatMessageDO> getRecentMessages(Long conversationId, Integer limit) {
         return lambdaQuery()
                 .eq(ChatMessageDO::getConversationId, conversationId)
-                .eq(ChatMessageDO::getDeleted, YesOrNoEnum.NO)
+                .eq(ChatMessageDO::getDeleted, DeleteStatusEnum.NOT_DELETED)
                 .orderByDesc(ChatMessageDO::getCreateTime)
                 .last("LIMIT " + limit)
                 .list();
@@ -59,10 +45,11 @@ public class ChatMessageDAO extends ServiceImpl<ChatMessageMapper, ChatMessageDO
     /**
      * 软删除对话下的所有消息
      */
-    public void deleteMessagesByConversationId(Long conversationId) {
+    public void deleteByConversationId(Long conversationId) {
         lambdaUpdate()
                 .eq(ChatMessageDO::getConversationId, conversationId)
-                .set(ChatMessageDO::getDeleted, YesOrNoEnum.YES)
+                .eq(ChatMessageDO::getDeleted, DeleteStatusEnum.NOT_DELETED)
+                .set(ChatMessageDO::getDeleted, DeleteStatusEnum.DELETED)
                 .update();
     }
 }

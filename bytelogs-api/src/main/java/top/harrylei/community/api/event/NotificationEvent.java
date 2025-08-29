@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import top.harrylei.community.api.enums.article.ContentTypeEnum;
+import top.harrylei.community.api.enums.notify.NotifyTypeEnum;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -47,12 +49,12 @@ public class NotificationEvent implements Serializable {
     /**
      * 通知类型（点赞、评论、关注等）
      */
-    private Integer notifyType;
+    private NotifyTypeEnum notifyType;
 
     /**
      * 内容类型（文章、评论）
      */
-    private Integer contentType;
+    private ContentTypeEnum contentType;
 
     /**
      * 事件发生时间

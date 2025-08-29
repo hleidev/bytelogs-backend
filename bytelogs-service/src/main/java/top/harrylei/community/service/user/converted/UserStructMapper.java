@@ -3,11 +3,8 @@ package top.harrylei.community.service.user.converted;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
-
-import top.harrylei.community.api.enums.user.UserRoleEnum;
-import top.harrylei.community.core.common.converter.EnumConverter;
-import top.harrylei.community.api.model.user.dto.UserInfoDTO;
 import top.harrylei.community.api.model.user.dto.UserDetailDTO;
+import top.harrylei.community.api.model.user.dto.UserInfoDTO;
 import top.harrylei.community.api.model.user.req.UserInfoUpdateReq;
 import top.harrylei.community.api.model.user.vo.UserDetailVO;
 import top.harrylei.community.api.model.user.vo.UserInfoVO;
@@ -19,7 +16,7 @@ import top.harrylei.community.service.user.repository.entity.UserInfoDO;
  *
  * @author harry
  */
-@Mapper(componentModel = "spring", uses = {EnumConverter.class})
+@Mapper(componentModel = "spring")
 public interface UserStructMapper {
 
     /**
@@ -28,8 +25,6 @@ public interface UserStructMapper {
      * @param userInfo 用户信息数据库实体
      * @return 用户信息DTO
      */
-    @Mapping(target = "deleted", source = "deleted", qualifiedByName = "CodeToYesOrNoEnum")
-    @Mapping(target = "role", source = "userRole")
     UserInfoDTO toDTO(UserInfoDO userInfo);
 
     /**
@@ -48,7 +43,7 @@ public interface UserStructMapper {
      */
     @Mapping(target = "userId", ignore = true)
     @Mapping(target = "updateTime", ignore = true)
-    @Mapping(target = "role", ignore = true)
+    @Mapping(target = "userRole", ignore = true)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "extend", ignore = true)
     @Mapping(target = "email", ignore = true)
@@ -63,8 +58,6 @@ public interface UserStructMapper {
      * @param userInfoDTO 数据传输对象
      * @return 数据库实体对象
      */
-    @Mapping(target = "deleted", source = "deleted", qualifiedByName = "YesOrNoEnumToCode")
-    @Mapping(target = "userRole", source = "role")
     UserInfoDO toDO(UserInfoDTO userInfoDTO);
 
     /**
@@ -73,7 +66,6 @@ public interface UserStructMapper {
      * @param userDetailDTO 完整用户DTO
      * @return 用户列表项视图对象
      */
-    @Mapping(source = "userRole", target = "role")
     UserListItemVO toUserListItemVO(UserDetailDTO userDetailDTO);
 
     /**
@@ -82,21 +74,5 @@ public interface UserStructMapper {
      * @param userDetailDTO 完整用户DTO
      * @return 用户详情视图对象
      */
-    @Mapping(source = "userRole", target = "role")
     UserDetailVO toUserDetailVO(UserDetailDTO userDetailDTO);
-
-    /**
-     * Integer到UserRoleEnum的自动映射
-     */
-    default UserRoleEnum mapUserRole(Integer code) {
-        return UserRoleEnum.fromCode(code);
-    }
-
-    /**
-     * UserRoleEnum到Integer的自动映射
-     */
-    default Integer mapUserRole(UserRoleEnum role) {
-        return role != null ? role.getCode() : null;
-    }
-
 }

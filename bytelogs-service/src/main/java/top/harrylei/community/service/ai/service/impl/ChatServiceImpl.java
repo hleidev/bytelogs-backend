@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-import top.harrylei.community.api.enums.ResultCode;
+import top.harrylei.community.api.enums.response.ResultCode;
 import top.harrylei.community.api.enums.ai.ChatClientTypeEnum;
 import top.harrylei.community.api.enums.ai.ChatConversationStatusEnum;
 import top.harrylei.community.api.enums.ai.ChatMessageRoleEnum;
@@ -130,10 +130,9 @@ public class ChatServiceImpl implements ChatService {
     public void deleteConversation(Long conversationId, Long userId) {
         log.info("删除对话，conversationId: {}, userId: {}", conversationId, userId);
 
-        validateConversationAccess(conversationId, userId);
-        boolean deleted = chatConversationDAO.deleteConversation(conversationId, userId);
+        boolean deleted = chatConversationDAO.delete(conversationId, userId);
         if (deleted) {
-            chatMessageDAO.deleteMessagesByConversationId(conversationId);
+            chatMessageDAO.deleteByConversationId(conversationId);
         }
     }
 
@@ -142,8 +141,7 @@ public class ChatServiceImpl implements ChatService {
     public void archiveConversation(Long conversationId, Long userId) {
         log.info("归档对话，conversationId: {}, userId: {}", conversationId, userId);
 
-        validateConversationAccess(conversationId, userId);
-        chatConversationDAO.archiveConversation(conversationId, userId);
+        chatConversationDAO.archive(conversationId, userId);
     }
 
     private Long getCurrentUserId() {
@@ -178,7 +176,7 @@ public class ChatServiceImpl implements ChatService {
         if (conversationId == null) {
             // 新对话：让AI生成标题
             String title = generateConversationTitle(message);
-            conversationId = chatConversationDAO.createConversation(userId, title);
+            conversationId = chatConversationDAO.create(userId, title);
             log.info("创建新对话，conversationId: {}, title: {}", conversationId, title);
             return conversationId;
         }
@@ -196,7 +194,7 @@ public class ChatServiceImpl implements ChatService {
      */
     private String generateConversationTitle(String message) {
         try {
-            // 使用Spring AI推荐的ChatClient fluent API生成标题
+            // 生成标题
             String title = deepseekChatClient.prompt()
                     .system("你是一个标题生成助手，请为用户问题生成一个简洁的标题。要求：1）不超过20个字符 2）不包含引号 3）直接返回标题内容")
                     .user("请为以下问题生成标题：" + message)
@@ -257,7 +255,7 @@ public class ChatServiceImpl implements ChatService {
             List<Message> messages = new ArrayList<>();
 
             // 添加系统消息
-            messages.add(new SystemMessage("你是一个有用的AI助手，请用中文回答问题。"));
+            messages.add(new SystemMessage("你是一个牛逼的AI助手，请用中文回答问题。"));
 
             // 5. 添加历史消息作为上下文
             if (!CollectionUtils.isEmpty(recentMessages)) {
@@ -286,7 +284,7 @@ public class ChatServiceImpl implements ChatService {
             }
 
             // 9. 构建结果对象
-            return getChatResult(chatReq, content, response);
+            return getChatResult(chatReq, response);
         } catch (Exception e) {
             log.error("AI调用失败，Provider: {}, Error: {} - {}",
                     chatReq.getProvider(), e.getClass().getSimpleName(), e.getMessage(), e);
@@ -303,9 +301,9 @@ public class ChatServiceImpl implements ChatService {
         }
     }
 
-    private static ChatResult getChatResult(ChatReq chatReq, String content, ChatResponse response) {
+    private static ChatResult getChatResult(ChatReq chatReq, ChatResponse response) {
         ChatResult result = new ChatResult();
-        result.setContent(content);
+        result.setContent(response.getResult().getOutput().getContent());
         result.setProvider(chatReq.getProvider());
 
         // 提取Token使用量和模型信息
@@ -328,13 +326,12 @@ public class ChatServiceImpl implements ChatService {
      */
     private ChatClient selectChatClient(ChatClientTypeEnum provider) {
         if (provider == null) {
-            return deepseekChatClient;
+            return qwenChatClient;
         }
 
         return switch (provider) {
             case ChatClientTypeEnum.DEEPSEEK -> deepseekChatClient;
-            case ChatClientTypeEnum.QWEN -> qwenChatClient;
-            default -> deepseekChatClient;
+            default -> qwenChatClient;
         };
     }
 
@@ -395,15 +392,5 @@ public class ChatServiceImpl implements ChatService {
         chatMessage.setCompletionTokens(chatResult.getCompletionTokens());
         chatMessage.setTotalTokens(chatResult.getTotalTokens());
         return chatMessage;
-    }
-
-    /**
-     * 验证对话访问权限
-     */
-    private void validateConversationAccess(Long conversationId, Long userId) {
-        ChatConversationDO conversation = chatConversationDAO.getByIdAndUserId(conversationId, userId);
-        if (conversation == null) {
-            ResultCode.AI_CONVERSATION_NOT_EXISTS.throwException();
-        }
     }
 }

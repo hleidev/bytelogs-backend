@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import top.harrylei.community.api.enums.YesOrNoEnum;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 import top.harrylei.community.api.enums.ai.ChatMessageRoleEnum;
 import top.harrylei.community.api.enums.ai.ChatClientTypeEnum;
 import top.harrylei.community.api.model.base.BaseDO;
@@ -81,5 +81,5 @@ public class ChatMessageDO extends BaseDO {
      * 是否删除：0-未删除，1-已删除
      */
     @TableField("deleted")
-    private YesOrNoEnum deleted;
+    private DeleteStatusEnum deleted;
 }

@@ -9,7 +9,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import top.harrylei.community.api.enums.ResultCode;
+import top.harrylei.community.api.enums.response.ResultCode;
 import top.harrylei.community.api.enums.rank.ActivityRankTypeEnum;
 import top.harrylei.community.api.model.base.ResVO;
 import top.harrylei.community.api.model.rank.dto.ActivityRankDTO;

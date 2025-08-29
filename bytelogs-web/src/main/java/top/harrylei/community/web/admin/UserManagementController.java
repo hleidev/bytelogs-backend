@@ -26,7 +26,7 @@ import top.harrylei.community.api.model.user.vo.UserListItemVO;
 import top.harrylei.community.core.security.permission.RequiresAdmin;
 import top.harrylei.community.service.user.service.UserService;
 import top.harrylei.community.service.user.converted.UserStructMapper;
-import top.harrylei.community.api.enums.YesOrNoEnum;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 
 /**
  * 用户管理模块
@@ -140,7 +140,7 @@ public class UserManagementController {
     @Operation(summary = "删除用户账户", description = "将用户标记为已删除状态")
     @DeleteMapping("/{userId}")
     public ResVO<Void> deleteUser(@NotNull(message = "用户ID为空") @PathVariable Long userId) {
-        userService.updateDeleted(userId, YesOrNoEnum.YES);
+        userService.updateDeleted(userId, DeleteStatusEnum.DELETED);
         return ResVO.ok();
     }
 
@@ -153,7 +153,7 @@ public class UserManagementController {
     @Operation(summary = "恢复用户账户", description = "将用户标记为未删除状态")
     @PostMapping("/{userId}/restore")
     public ResVO<Void> restoreUser(@NotNull(message = "用户ID为空") @PathVariable Long userId) {
-        userService.updateDeleted(userId, YesOrNoEnum.NO);
+        userService.updateDeleted(userId, DeleteStatusEnum.NOT_DELETED);
         return ResVO.ok();
     }
 

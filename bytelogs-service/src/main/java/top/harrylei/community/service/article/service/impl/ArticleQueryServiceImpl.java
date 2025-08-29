@@ -5,10 +5,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import top.harrylei.community.api.enums.ResultCode;
-import top.harrylei.community.api.enums.YesOrNoEnum;
-import top.harrylei.community.api.enums.article.PublishStatusEnum;
-import top.harrylei.community.api.enums.comment.ContentTypeEnum;
+import top.harrylei.community.api.enums.response.ResultCode;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
+import top.harrylei.community.api.enums.article.ArticlePublishStatusEnum;
+import top.harrylei.community.api.enums.article.ContentTypeEnum;
 import top.harrylei.community.api.model.article.req.ArticleQueryParam;
 import top.harrylei.community.api.model.article.vo.ArticleDetailVO;
 import top.harrylei.community.api.model.article.vo.ArticleVO;
@@ -123,11 +123,11 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
      */
     private void validatePublicViewPermission(ArticleVO articleVO) {
         // 只校验已发布且未删除的文章
-        if (YesOrNoEnum.YES.equals(articleVO.getDeleted())) {
+        if (DeleteStatusEnum.DELETED.equals(articleVO.getDeleted())) {
             ResultCode.ARTICLE_NOT_EXISTS.throwException();
         }
 
-        if (!PublishStatusEnum.PUBLISHED.equals(articleVO.getStatus())) {
+        if (!ArticlePublishStatusEnum.PUBLISHED.equals(articleVO.getStatus())) {
             ResultCode.ARTICLE_NOT_EXISTS.throwException();
         }
     }
@@ -181,8 +181,8 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
             boolean isAuthor = Objects.equals(queryParam.getUserId(), currentUserId);
             if (!isAuthor && !isAdmin) {
                 // 查看他人文章，只能看已发布的
-                queryParam.setStatus(PublishStatusEnum.PUBLISHED.getCode());
-                queryParam.setDeleted(YesOrNoEnum.NO.getCode());
+                queryParam.setStatus(ArticlePublishStatusEnum.PUBLISHED);
+                queryParam.setDeleted(DeleteStatusEnum.NOT_DELETED);
             }
             return;
         }
@@ -190,8 +190,8 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
         // 3. 公开查询
         if (!isAdmin) {
             // 普通用户只能看已发布且未删除的文章
-            queryParam.setStatus(PublishStatusEnum.PUBLISHED.getCode());
-            queryParam.setDeleted(YesOrNoEnum.NO.getCode());
+            queryParam.setStatus(ArticlePublishStatusEnum.PUBLISHED);
+            queryParam.setDeleted(DeleteStatusEnum.NOT_DELETED);
         }
     }
 

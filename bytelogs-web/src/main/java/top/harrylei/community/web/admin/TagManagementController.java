@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import top.harrylei.community.api.enums.YesOrNoEnum;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 import top.harrylei.community.api.model.article.dto.TagDTO;
 import top.harrylei.community.api.model.article.req.TagReq;
 import top.harrylei.community.api.model.article.vo.TagVO;
@@ -75,7 +75,7 @@ public class TagManagementController {
     @Operation(summary = "删除标签", description = "后台删除标签")
     @DeleteMapping("/{tagId}")
     public ResVO<Void> delete(@NotNull(message = "标签ID为空") @PathVariable Long tagId) {
-        tagService.updateDelete(tagId, YesOrNoEnum.YES);
+        tagService.updateDelete(tagId, DeleteStatusEnum.DELETED);
         return ResVO.ok();
     }
 
@@ -88,7 +88,7 @@ public class TagManagementController {
     @Operation(summary = "恢复标签", description = "后台恢复标签")
     @PutMapping("/{tagId}/restore")
     public ResVO<Void> restore(@NotNull(message = "标签ID为空") @PathVariable Long tagId) {
-        tagService.updateDelete(tagId, YesOrNoEnum.NO);
+        tagService.updateDelete(tagId, DeleteStatusEnum.NOT_DELETED);
         return ResVO.ok();
     }
 

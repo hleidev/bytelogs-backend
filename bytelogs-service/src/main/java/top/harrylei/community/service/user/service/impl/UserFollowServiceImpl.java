@@ -5,9 +5,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import top.harrylei.community.api.enums.ResultCode;
-import top.harrylei.community.api.enums.YesOrNoEnum;
-import top.harrylei.community.api.enums.comment.ContentTypeEnum;
+import top.harrylei.community.api.enums.response.ResultCode;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
+import top.harrylei.community.api.enums.article.ContentTypeEnum;
 import top.harrylei.community.api.enums.notify.NotifyTypeEnum;
 import top.harrylei.community.api.enums.rank.ActivityActionEnum;
 import top.harrylei.community.api.enums.rank.ActivityTargetEnum;
@@ -84,11 +84,11 @@ public class UserFollowServiceImpl implements UserFollowService {
             UserFollowDO newFollow = new UserFollowDO()
                     .setUserId(currentUserId)
                     .setFollowUserId(followUserId)
-                    .setFollowState(UserFollowStatusEnum.FOLLOWED.getCode())
-                    .setDeleted(YesOrNoEnum.NO.getCode());
+                    .setFollowState(UserFollowStatusEnum.FOLLOWED)
+                    .setDeleted(DeleteStatusEnum.NOT_DELETED);
             userFollowDAO.save(newFollow);
             success = true;
-        } else if (!UserFollowStatusEnum.FOLLOWED.getCode().equals(existingFollow.getFollowState())) {
+        } else if (!UserFollowStatusEnum.FOLLOWED.equals(existingFollow.getFollowState())) {
             // 更新现有关注关系状态
             userFollowDAO.updateFollowStatus(currentUserId, followUserId, UserFollowStatusEnum.FOLLOWED);
             success = true;
@@ -124,7 +124,7 @@ public class UserFollowServiceImpl implements UserFollowService {
         UserFollowDO relation = userFollowDAO.getFollowRelation(currentUserId, followUserId);
 
         // 如果没有关注关系或状态不是已关注，则直接返回
-        if (relation == null || !Objects.equals(relation.getFollowState(), UserFollowStatusEnum.FOLLOWED.getCode())) {
+        if (relation == null || !UserFollowStatusEnum.FOLLOWED.equals(relation.getFollowState())) {
             return;
         }
 

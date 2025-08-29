@@ -2,6 +2,7 @@ package top.harrylei.community.service.rank.repository.dao;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Repository;
+import top.harrylei.community.api.enums.rank.ActivityRankTypeEnum;
 import top.harrylei.community.service.rank.repository.entity.ActivityRankDO;
 import top.harrylei.community.service.rank.repository.mapper.ActivityRankMapper;
 
@@ -18,7 +19,7 @@ public class ActivityRankDAO extends ServiceImpl<ActivityRankMapper, ActivityRan
     /**
      * 物理删除指定类型和期间的排行榜数据
      */
-    public boolean removeByTypeAndPeriod(Integer rankType, String rankPeriod) {
+    public boolean removeByTypeAndPeriod(ActivityRankTypeEnum rankType, String rankPeriod) {
         return lambdaUpdate()
                 .eq(ActivityRankDO::getRankType, rankType)
                 .eq(ActivityRankDO::getRankPeriod, rankPeriod)
@@ -28,7 +29,7 @@ public class ActivityRankDAO extends ServiceImpl<ActivityRankMapper, ActivityRan
     /**
      * 查询指定类型和期间的历史排行榜数据
      */
-    public List<ActivityRankDO> listRanking(Integer rankType, String rankPeriod) {
+    public List<ActivityRankDO> listRanking(ActivityRankTypeEnum rankType, String rankPeriod) {
         return lambdaQuery()
                 .eq(ActivityRankDO::getRankType, rankType)
                 .eq(ActivityRankDO::getRankPeriod, rankPeriod)
@@ -40,7 +41,7 @@ public class ActivityRankDAO extends ServiceImpl<ActivityRankMapper, ActivityRan
     /**
      * 查询指定用户在某期间某类型排行榜中的排名和积分
      */
-    public ActivityRankDO getUserHistoryRank(Long userId, Integer rankType, String rankPeriod) {
+    public ActivityRankDO getUserHistoryRank(Long userId, ActivityRankTypeEnum rankType, String rankPeriod) {
         return lambdaQuery()
                 .eq(ActivityRankDO::getUserId, userId)
                 .eq(ActivityRankDO::getRankType, rankType)

@@ -1,6 +1,6 @@
 package top.harrylei.community.service.article.service;
 
-import top.harrylei.community.api.enums.YesOrNoEnum;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 import top.harrylei.community.api.model.article.dto.TagDTO;
 import top.harrylei.community.api.model.article.vo.TagSimpleVO;
 import top.harrylei.community.api.model.page.PageVO;
@@ -43,9 +43,9 @@ public interface TagService {
      * 更新标签
      *
      * @param tagId       标签ID
-     * @param yesOrNoEnum 删除标识
+     * @param deleteStatusEnum 删除标识
      */
-    void updateDelete(Long tagId, YesOrNoEnum yesOrNoEnum);
+    void updateDelete(Long tagId, DeleteStatusEnum deleteStatusEnum);
 
     /**
      * 标签列表

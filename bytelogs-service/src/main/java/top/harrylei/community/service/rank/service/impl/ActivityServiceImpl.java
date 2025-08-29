@@ -62,28 +62,28 @@ public class ActivityServiceImpl implements ActivityService {
 
     @Override
     public void handleActivityEvent(ActivityRankEvent event) {
+        ActivityActionEnum actionType = event.getActionType();
         try {
             // 基础验证
-            ActivityActionEnum actionEnum = ActivityActionEnum.fromCode(event.getActionType());
-            if (actionEnum == null) {
-                log.error("无效的活跃度行为类型: actionType={}", event.getActionType());
+            if (actionType == null) {
+                log.error("无效的活跃度行为类型: actionType={}", actionType);
                 return;
             }
 
-            if (actionEnum.getScore() == 0) {
-                log.debug("积分为0，跳过处理: userId={}, action={}", event.getUserId(), event.getActionType());
+            if (actionType.getScore() == 0) {
+                log.debug("积分为0，跳过处理: userId={}, action={}", event.getUserId(), actionType);
                 return;
             }
 
             // 根据积分类型分发处理
-            if (actionEnum.getScore() < 0) {
+            if (actionType.getScore() < 0) {
                 handleNegativeScore(event);
             } else {
-                handlePositiveScore(event, actionEnum);
+                handlePositiveScore(event, actionType);
             }
 
         } catch (Exception e) {
-            log.error("处理活跃度事件失败: userId={}, action={}", event.getUserId(), event.getActionType(), e);
+            log.error("处理活跃度事件失败: userId={}, action={}", event.getUserId(), actionType, e);
             throw e;
         }
     }
@@ -110,7 +110,7 @@ public class ActivityServiceImpl implements ActivityService {
         updateUserScore(event.getUserId(), actualScore);
 
         log.debug("正分事件处理完成: userId={}, action={}, baseScore={}, actualScore={}",
-                  event.getUserId(), event.getActionType(), actionEnum.getScore(), actualScore);
+                event.getUserId(), event.getActionType(), actionEnum.getScore(), actualScore);
     }
 
     @Override
@@ -310,7 +310,7 @@ public class ActivityServiceImpl implements ActivityService {
         updateUserScore(event.getUserId(), -originalScore);
 
         log.debug("负分事件处理成功: userId={}, action={}, deductedScore={}",
-                  event.getUserId(), event.getActionType(), -originalScore);
+                event.getUserId(), event.getActionType(), -originalScore);
     }
 
     /**
@@ -320,34 +320,11 @@ public class ActivityServiceImpl implements ActivityService {
      * @return 对应的正分操作字段名
      */
     private String buildPositiveOperationField(ActivityRankEvent event) {
-        Integer positiveActionType = getCorrespondingPositiveAction(event.getActionType());
-        if (positiveActionType == null) {
+        if (event.getActionType() == null) {
             return null;
         }
 
-        return "op:" + positiveActionType + ":" + event.getTargetType() + ":" + event.getTargetId();
-    }
-
-    /**
-     * 获取负分操作对应的正分操作类型
-     *
-     * @param negativeActionType 负分操作类型
-     * @return 对应的正分操作类型，若无对应关系则返回null
-     */
-    private Integer getCorrespondingPositiveAction(Integer negativeActionType) {
-        ActivityActionEnum actionEnum = ActivityActionEnum.fromCode(negativeActionType);
-        if (actionEnum == null) {
-            return null;
-        }
-
-        return switch (actionEnum) {
-            case CANCEL_PRAISE -> ActivityActionEnum.PRAISE.getCode();
-            case CANCEL_COLLECT -> ActivityActionEnum.COLLECT.getCode();
-            case CANCEL_FOLLOW -> ActivityActionEnum.FOLLOW.getCode();
-            case DELETE_COMMENT -> ActivityActionEnum.COMMENT.getCode();
-            case DELETE_ARTICLE -> ActivityActionEnum.ARTICLE.getCode();
-            default -> null;
-        };
+        return "op:" + event.getActionType() + ":" + event.getTargetType() + ":" + event.getTargetId();
     }
 
     /**
@@ -444,7 +421,7 @@ public class ActivityServiceImpl implements ActivityService {
 
         // 如果Redis中没有数据且是历史查询，从MySQL查询
         if ((score == null || rank == null) && period != null) {
-            ActivityRankDO userRank = activityRankDAO.getUserHistoryRank(userId, rankType.getCode(), period);
+            ActivityRankDO userRank = activityRankDAO.getUserHistoryRank(userId, rankType, period);
             if (userRank != null) {
                 return new Integer[]{userRank.getRank(), userRank.getScore()};
             }
@@ -485,7 +462,7 @@ public class ActivityServiceImpl implements ActivityService {
         for (Map.Entry<String, Double> entry : rankedList) {
             ActivityRankDO rankDO = new ActivityRankDO()
                     .setUserId(Long.valueOf(entry.getKey()))
-                    .setRankType(rankType.getCode())
+                    .setRankType(rankType)
                     .setRankPeriod(period)
                     .setScore(entry.getValue().intValue())
                     .setRank(rank++);
@@ -493,7 +470,7 @@ public class ActivityServiceImpl implements ActivityService {
         }
 
         // 先物理删除该期间的历史数据
-        activityRankDAO.removeByTypeAndPeriod(rankType.getCode(), period);
+        activityRankDAO.removeByTypeAndPeriod(rankType, period);
 
         // 插入新数据
         activityRankDAO.saveBatch(rankDataList);
@@ -539,7 +516,7 @@ public class ActivityServiceImpl implements ActivityService {
      */
     private List<ActivityRankDTO> getHistoryRanking(ActivityRankTypeEnum rankType, String period, String rankKey) {
         // 从MySQL查询历史数据
-        List<ActivityRankDO> dbRanking = activityRankDAO.listRanking(rankType.getCode(), period);
+        List<ActivityRankDO> dbRanking = activityRankDAO.listRanking(rankType, period);
         if (dbRanking.isEmpty()) {
             return List.of();
         }
@@ -579,11 +556,11 @@ public class ActivityServiceImpl implements ActivityService {
 
             if (userInfo != null) {
                 result.add(new ActivityRankDTO()
-                                   .setUserId(userId)
-                                   .setUserName(userInfo.getUserName())
-                                   .setAvatar(userInfo.getAvatar())
-                                   .setScore(member.getValue().intValue())
-                                   .setRank(rank.getAndIncrement()));
+                        .setUserId(userId)
+                        .setUserName(userInfo.getUserName())
+                        .setAvatar(userInfo.getAvatar())
+                        .setScore(member.getValue().intValue())
+                        .setRank(rank.getAndIncrement()));
             }
         }
         return result;
@@ -605,14 +582,13 @@ public class ActivityServiceImpl implements ActivityService {
             UserInfoDTO userInfo = userInfoMap.get(rank.getUserId());
             if (userInfo != null) {
                 result.add(new ActivityRankDTO()
-                                   .setUserId(rank.getUserId())
-                                   .setUserName(userInfo.getUserName())
-                                   .setAvatar(userInfo.getAvatar())
-                                   .setRank(rank.getRank())
-                                   .setScore(rank.getScore()));
+                        .setUserId(rank.getUserId())
+                        .setUserName(userInfo.getUserName())
+                        .setAvatar(userInfo.getAvatar())
+                        .setRank(rank.getRank())
+                        .setScore(rank.getScore()));
             }
         }
         return result;
     }
-
 }

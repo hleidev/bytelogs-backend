@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import top.harrylei.community.api.enums.article.ContentTypeEnum;
 import top.harrylei.community.api.model.base.BaseDO;
 
 import java.io.Serial;
@@ -30,7 +31,7 @@ public class ReadCountDO extends BaseDO {
     /**
      * 内容类型：1-文章，2-评论
      */
-    private Integer contentType;
+    private ContentTypeEnum contentType;
 
     /**
      * 访问计数

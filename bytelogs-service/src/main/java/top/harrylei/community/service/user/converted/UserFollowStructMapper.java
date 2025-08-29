@@ -1,11 +1,7 @@
 package top.harrylei.community.service.user.converted;
 
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Named;
-import top.harrylei.community.api.enums.user.UserFollowStatusEnum;
 import top.harrylei.community.api.model.user.dto.UserFollowDTO;
-import top.harrylei.community.core.common.converter.EnumConverter;
 import top.harrylei.community.service.user.repository.entity.UserFollowDO;
 
 /**
@@ -16,7 +12,7 @@ import top.harrylei.community.service.user.repository.entity.UserFollowDO;
  *
  * @author harry
  */
-@Mapper(componentModel = "spring", uses = {EnumConverter.class})
+@Mapper(componentModel = "spring")
 public interface UserFollowStructMapper {
 
     /**
@@ -25,8 +21,6 @@ public interface UserFollowStructMapper {
      * @param userFollowDO 用户关注数据库实体
      * @return 用户关注DTO
      */
-    @Mapping(source = "followState", target = "followState", qualifiedByName = "CodeToStatusEnum")
-    @Mapping(source = "deleted", target = "deleted", qualifiedByName = "CodeToYesOrNoEnum")
     UserFollowDTO toDTO(UserFollowDO userFollowDO);
 
     /**
@@ -35,29 +29,5 @@ public interface UserFollowStructMapper {
      * @param userFollowDTO 用户关注DTO
      * @return 用户关注数据库实体
      */
-    @Mapping(source = "followState", target = "followState", qualifiedByName = "StatusEnumToCode")
-    @Mapping(source = "deleted", target = "deleted", qualifiedByName = "YesOrNoEnumToCode")
     UserFollowDO toDO(UserFollowDTO userFollowDTO);
-
-    /**
-     * 将关注状态代码转换为枚举
-     *
-     * @param code 状态代码
-     * @return 关注状态枚举
-     */
-    @Named("CodeToStatusEnum")
-    static UserFollowStatusEnum codeToStatusEnum(Integer code) {
-        return UserFollowStatusEnum.fromCode(code);
-    }
-
-    /**
-     * 将关注状态枚举转换为代码
-     *
-     * @param status 关注状态枚举
-     * @return 状态代码
-     */
-    @Named("StatusEnumToCode")
-    static Integer statusEnumToCode(UserFollowStatusEnum status) {
-        return status != null ? status.getCode() : null;
-    }
 }

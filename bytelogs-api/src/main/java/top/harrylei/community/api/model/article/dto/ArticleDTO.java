@@ -3,10 +3,13 @@ package top.harrylei.community.api.model.article.dto;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import top.harrylei.community.api.model.base.BaseDTO;
-import top.harrylei.community.api.enums.YesOrNoEnum;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 import top.harrylei.community.api.enums.article.ArticleSourceEnum;
 import top.harrylei.community.api.enums.article.ArticleTypeEnum;
-import top.harrylei.community.api.enums.article.PublishStatusEnum;
+import top.harrylei.community.api.enums.article.CreamStatusEnum;
+import top.harrylei.community.api.enums.article.OfficialStatusEnum;
+import top.harrylei.community.api.enums.article.ArticlePublishStatusEnum;
+import top.harrylei.community.api.enums.article.ToppingStatusEnum;
 
 import java.util.List;
 
@@ -72,22 +75,22 @@ public class ArticleDTO extends BaseDTO {
     /**
      * 官方标记
      */
-    private YesOrNoEnum official;
+    private OfficialStatusEnum official;
 
     /**
      * 置顶标记
      */
-    private YesOrNoEnum topping;
+    private ToppingStatusEnum topping;
 
     /**
      * 加精标记
      */
-    private YesOrNoEnum cream;
+    private CreamStatusEnum cream;
 
     /**
      * 状态：0-未发布，1-已发布
      */
-    private PublishStatusEnum status;
+    private ArticlePublishStatusEnum status;
 
     /**
      * 版本总数
@@ -102,6 +105,6 @@ public class ArticleDTO extends BaseDTO {
     /**
      * 是否删除
      */
-    private YesOrNoEnum deleted;
+    private DeleteStatusEnum deleted;
 
 }

@@ -6,7 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 import org.springframework.format.annotation.DateTimeFormat;
 import top.harrylei.community.api.model.base.BasePage;
-import top.harrylei.community.api.enums.YesOrNoEnum;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -52,7 +52,7 @@ public class UserQueryParam extends BasePage {
      * 删除标识
      */
     @Schema(description = "是否删除")
-    private YesOrNoEnum deleted;
+    private DeleteStatusEnum deleted;
 
     /**
      * 注册起始时间

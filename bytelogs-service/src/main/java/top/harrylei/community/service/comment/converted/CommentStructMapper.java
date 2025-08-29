@@ -9,7 +9,6 @@ import top.harrylei.community.api.model.comment.vo.CommentMyVO;
 import top.harrylei.community.api.model.comment.vo.CommentVO;
 import top.harrylei.community.api.model.comment.vo.SubCommentVO;
 import top.harrylei.community.api.model.comment.vo.TopCommentVO;
-import top.harrylei.community.core.common.converter.EnumConverter;
 import top.harrylei.community.service.comment.repository.entity.CommentDO;
 
 import java.util.List;
@@ -20,7 +19,7 @@ import java.util.stream.Collectors;
  *
  * @author harry
  */
-@Mapper(componentModel = "spring", uses = {EnumConverter.class})
+@Mapper(componentModel = "spring")
 public interface CommentStructMapper {
 
     @Mapping(target = "userId", ignore = true)
@@ -31,10 +30,8 @@ public interface CommentStructMapper {
     @Mapping(target = "createTime", ignore = true)
     CommentDTO toDTO(CommentSaveReq req);
 
-    @Mapping(target = "deleted", source = "deleted", qualifiedByName = "YesOrNoEnumToCode")
     CommentDO toDO(CommentDTO dto);
 
-    @Mapping(target = "deleted", source = "deleted", qualifiedByName = "CodeToYesOrNoEnum")
     CommentDTO toDTO(CommentDO commentDO);
 
     @Mapping(target = "userName", ignore = true)

@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import top.harrylei.community.api.enums.ResultCode;
+import top.harrylei.community.api.enums.response.ResultCode;
 import top.harrylei.community.api.model.base.ResVO;
 import top.harrylei.community.api.model.page.PageVO;
 import top.harrylei.community.api.model.user.dto.UserInfoDTO;

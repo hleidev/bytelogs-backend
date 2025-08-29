@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Component;
-import top.harrylei.community.api.enums.comment.ContentTypeEnum;
+import top.harrylei.community.api.enums.article.ContentTypeEnum;
 import top.harrylei.community.api.enums.notify.NotifyTypeEnum;
 import top.harrylei.community.api.enums.rank.ActivityActionEnum;
 import top.harrylei.community.api.enums.rank.ActivityTargetEnum;
@@ -89,8 +89,8 @@ public class KafkaEventPublisher {
                 .operateUserId(operateUserId)
                 .targetUserId(targetUserId)
                 .relatedId(relatedId)
-                .notifyType(notifyType.getCode())
-                .contentType(contentType.getCode())
+                .notifyType(notifyType)
+                .contentType(contentType)
                 .extra(extra)
                 .source("user-behavior")
                 .build();
@@ -129,8 +129,8 @@ public class KafkaEventPublisher {
                                          String extra) {
         ActivityRankEvent event = ActivityRankEvent.builder()
                 .userId(userId)
-                .actionType(actionType.getCode())
-                .targetType(targetType.getCode())
+                .actionType(actionType)
+                .targetType(targetType)
                 .targetId(targetId)
                 .extra(extra)
                 .source("activity-rank")

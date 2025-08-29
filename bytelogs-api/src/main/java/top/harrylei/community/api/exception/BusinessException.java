@@ -2,7 +2,7 @@ package top.harrylei.community.api.exception;
 
 import lombok.Getter;
 import lombok.Setter;
-import top.harrylei.community.api.enums.ResultCode;
+import top.harrylei.community.api.enums.response.ResultCode;
 
 /**
  * 业务异常类

@@ -1,13 +1,14 @@
 package top.harrylei.community.service.user.repository.entity;
 
-import java.io.Serial;
-
 import com.baomidou.mybatisplus.annotation.TableName;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
+import top.harrylei.community.api.enums.user.UserFollowStatusEnum;
 import top.harrylei.community.api.model.base.BaseDO;
+
+import java.io.Serial;
 
 /**
  * 用户关注实体对象
@@ -36,10 +37,10 @@ public class UserFollowDO extends BaseDO {
     /**
      * 关注状态：0-未关注，1-已关注
      */
-    private Integer followState;
+    private UserFollowStatusEnum followState;
 
     /**
      * 删除标记：0-正常，1-已删除
      */
-    private Integer deleted;
+    private DeleteStatusEnum deleted;
 }

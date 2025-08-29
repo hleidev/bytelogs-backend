@@ -1,9 +1,10 @@
 package top.harrylei.community.service.article.service;
 
-import top.harrylei.community.api.enums.YesOrNoEnum;
-import top.harrylei.community.api.enums.article.ArticleStatusTypeEnum;
+import top.harrylei.community.api.enums.article.ArticlePublishStatusEnum;
+import top.harrylei.community.api.enums.article.CreamStatusEnum;
+import top.harrylei.community.api.enums.article.OfficialStatusEnum;
+import top.harrylei.community.api.enums.article.ToppingStatusEnum;
 import top.harrylei.community.api.enums.user.OperateTypeEnum;
-import top.harrylei.community.api.enums.article.PublishStatusEnum;
 import top.harrylei.community.api.model.article.dto.ArticleDTO;
 import top.harrylei.community.api.model.article.vo.ArticleVO;
 
@@ -65,16 +66,7 @@ public interface ArticleCommandService {
      * @param articleId 文章ID
      * @param status    目标状态
      */
-    void updateArticleStatus(Long articleId, PublishStatusEnum status);
-
-    /**
-     * 更新文章属性（置顶/加精/官方）
-     *
-     * @param articleId  文章ID
-     * @param statusType 状态类型
-     * @param status     是否启用
-     */
-    void updateArticleProperty(Long articleId, ArticleStatusTypeEnum statusType, YesOrNoEnum status);
+    void updateArticleStatus(Long articleId, ArticlePublishStatusEnum status);
 
     /**
      * 文章操作（点赞/收藏等）
@@ -101,4 +93,28 @@ public interface ArticleCommandService {
      * @return 文章VO
      */
     ArticleVO getArticleDraft(Long articleId);
+
+    /**
+     * 更新文章置顶状态
+     *
+     * @param articleId   文章ID
+     * @param toppingStat 置顶状态
+     */
+    void updateArticleTopping(Long articleId, ToppingStatusEnum toppingStat);
+
+    /**
+     * 更新文章加精状态
+     *
+     * @param articleId 文章ID
+     * @param creamStat 加精状态
+     */
+    void updateArticleCream(Long articleId, CreamStatusEnum creamStat);
+
+    /**
+     * 更新文章官方状态
+     *
+     * @param articleId    文章ID
+     * @param officialStat 官方状态
+     */
+    void updateArticleOfficial(Long articleId, OfficialStatusEnum officialStat);
 }

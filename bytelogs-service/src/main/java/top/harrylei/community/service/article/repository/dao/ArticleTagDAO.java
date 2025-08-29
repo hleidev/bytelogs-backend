@@ -2,6 +2,7 @@ package top.harrylei.community.service.article.repository.dao;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Repository;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 import top.harrylei.community.api.model.article.vo.TagSimpleVO;
 import top.harrylei.community.service.article.repository.entity.ArticleTagDO;
 import top.harrylei.community.service.article.repository.mapper.ArticleTagMapper;
@@ -24,8 +25,11 @@ public class ArticleTagDAO extends ServiceImpl<ArticleTagMapper, ArticleTagDO> {
         return getBaseMapper().listIdAndTagIdByArticleId(articleId);
     }
 
-    public void updateDeleted(Long articleId, Integer deleted) {
-        getBaseMapper().updateDeleted(articleId, deleted);
+    public boolean updateDeleted(Long articleId, DeleteStatusEnum deleted) {
+        return lambdaUpdate()
+                .eq(ArticleTagDO::getArticleId, articleId)
+                .set(ArticleTagDO::getDeleted, deleted)
+                .update();
     }
 
     public List<TagSimpleVO> listTagSimpleVoByArticleIds(List<Long> articleIds) {

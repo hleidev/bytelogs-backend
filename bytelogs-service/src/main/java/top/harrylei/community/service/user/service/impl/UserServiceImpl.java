@@ -5,8 +5,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import top.harrylei.community.api.enums.ResultCode;
-import top.harrylei.community.api.enums.YesOrNoEnum;
+import top.harrylei.community.api.enums.response.ResultCode;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 import top.harrylei.community.api.enums.user.UserRoleEnum;
 import top.harrylei.community.api.enums.user.UserStatusEnum;
 import top.harrylei.community.api.exception.BusinessException;
@@ -227,12 +227,12 @@ public class UserServiceImpl implements UserService {
             ResultCode.USER_NOT_EXISTS.throwException();
         }
 
-        if (Objects.equals(status.getCode(), user.getStatus())) {
+        if (Objects.equals(status, user.getStatus())) {
             log.warn("用户状态未改变，无需更新");
         }
 
         try {
-            user.setStatus(status.getCode());
+            user.setStatus(status);
             userDAO.updateById(user);
             log.info("更新用户状态成功: userId={}", userId);
         } catch (Exception e) {
@@ -280,7 +280,7 @@ public class UserServiceImpl implements UserService {
      */
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void updateDeleted(Long userId, YesOrNoEnum status) {
+    public void updateDeleted(Long userId, DeleteStatusEnum status) {
         if (userId == null) {
             ResultCode.INVALID_PARAMETER.throwException();
         }
@@ -298,7 +298,7 @@ public class UserServiceImpl implements UserService {
             ResultCode.USER_NOT_EXISTS.throwException();
         }
 
-        if (Objects.equals(user.getDeleted(), status.getCode())) {
+        if (Objects.equals(user.getDeleted(), status)) {
             log.warn("用户删除状态未变更，无需更新");
             return;
         }
@@ -306,9 +306,9 @@ public class UserServiceImpl implements UserService {
         Long operatorId = ReqInfoContext.getContext().getUserId();
 
         try {
-            user.setDeleted(status.getCode());
+            user.setDeleted(status);
             userDAO.updateById(user);
-            userInfo.setDeleted(status.getCode());
+            userInfo.setDeleted(status);
             userInfoDAO.updateById(userInfo);
             log.info("用户删除状态更新成功: userId={}, deleted={}, operatorId={}",
                     userId,
@@ -342,12 +342,12 @@ public class UserServiceImpl implements UserService {
         Long operatorId = ReqInfoContext.getContext().getUserId();
 
         // 判断新旧角色是否一致，避免无效写入
-        if (Objects.equals(userInfo.getUserRole(), role.getCode())) {
+        if (Objects.equals(userInfo.getUserRole(), role)) {
             log.warn("用户角色未变更，无需更新");
         }
 
         try {
-            userInfo.setUserRole(role.getCode());
+            userInfo.setUserRole(role);
             userInfoDAO.updateById(userInfo);
             log.info("更新用户角色成功: userId={}, role={}, operatorId={}", userId, role.getLabel(), operatorId);
         } catch (Exception e) {

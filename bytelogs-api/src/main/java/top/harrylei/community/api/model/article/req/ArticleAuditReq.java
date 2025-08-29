@@ -3,7 +3,7 @@ package top.harrylei.community.api.model.article.req;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import top.harrylei.community.api.enums.article.PublishStatusEnum;
+import top.harrylei.community.api.enums.article.ArticlePublishStatusEnum;
 
 import java.util.List;
 
@@ -22,5 +22,5 @@ public class ArticleAuditReq {
 
     @NotNull(message = "审核状态不能为空")
     @Schema(description = "审核后的状态：1-通过发布，3-驳回", example = "1")
-    private PublishStatusEnum status;
+    private ArticlePublishStatusEnum status;
 }

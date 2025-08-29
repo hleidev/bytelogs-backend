@@ -2,7 +2,7 @@ package top.harrylei.community.api.model.base;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import top.harrylei.community.api.enums.ResultCode;
+import top.harrylei.community.api.enums.response.ResultCode;
 
 import java.io.Serial;
 import java.io.Serializable;

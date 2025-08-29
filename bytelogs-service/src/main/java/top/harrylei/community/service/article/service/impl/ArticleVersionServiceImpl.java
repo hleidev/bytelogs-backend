@@ -3,7 +3,7 @@ package top.harrylei.community.service.article.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import top.harrylei.community.api.enums.ResultCode;
+import top.harrylei.community.api.enums.response.ResultCode;
 import top.harrylei.community.api.model.article.vo.ArticleVO;
 import top.harrylei.community.api.model.article.vo.ArticleVersionVO;
 import top.harrylei.community.api.model.article.vo.TagSimpleVO;

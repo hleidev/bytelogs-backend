@@ -5,9 +5,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import top.harrylei.community.api.enums.article.ArticlePublishStatusEnum;
 import top.harrylei.community.api.enums.article.ArticleSourceEnum;
 import top.harrylei.community.api.enums.article.ArticleTypeEnum;
-import top.harrylei.community.api.enums.article.PublishStatusEnum;
 
 import java.util.List;
 
@@ -103,5 +103,5 @@ public class ArticleUpdateReq {
      */
     @NotNull(message = "文章状态不能为空")
     @Schema(description = "文章状态，0-未发布，1-已发布", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
-    private PublishStatusEnum status;
+    private ArticlePublishStatusEnum status;
 }

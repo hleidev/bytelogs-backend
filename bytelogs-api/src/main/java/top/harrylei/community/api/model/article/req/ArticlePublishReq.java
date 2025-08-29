@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import top.harrylei.community.api.enums.YesOrNoEnum;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 
 import java.time.LocalDateTime;
 
@@ -30,7 +30,7 @@ public class ArticlePublishReq {
      */
     @NotNull(message = "发布类型不能为空")
     @Schema(description = "是否立即发布，1-立即发布，0-定时发布", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
-    private YesOrNoEnum immediate;
+    private DeleteStatusEnum immediate;
 
     /**
      * 定时发布时间

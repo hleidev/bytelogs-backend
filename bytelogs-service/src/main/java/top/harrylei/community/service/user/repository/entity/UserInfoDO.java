@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
+import top.harrylei.community.api.enums.user.UserRoleEnum;
 import top.harrylei.community.api.model.base.BaseDO;
 
 import java.io.Serial;
@@ -60,13 +62,13 @@ public class UserInfoDO extends BaseDO {
     /**
      * 删除标记
      */
-    private Integer deleted;
+    private DeleteStatusEnum deleted;
 
     /**
      * 0 普通用户
      * 1 超级管理员
      */
-    private Integer userRole;
+    private UserRoleEnum userRole;
 
     /**
      * 用户的邮箱

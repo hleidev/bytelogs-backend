@@ -3,11 +3,10 @@ package top.harrylei.community.api.model.article.vo;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import top.harrylei.community.api.enums.article.*;
 import top.harrylei.community.api.model.base.BaseVO;
-import top.harrylei.community.api.enums.YesOrNoEnum;
-import top.harrylei.community.api.enums.article.ArticleSourceEnum;
-import top.harrylei.community.api.enums.article.ArticleTypeEnum;
-import top.harrylei.community.api.enums.article.PublishStatusEnum;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
+import top.harrylei.community.api.enums.article.ArticlePublishStatusEnum;
 
 import java.util.List;
 
@@ -86,25 +85,25 @@ public class ArticleVO extends BaseVO {
      * 是否官方：0-非官方，1-官方
      */
     @Schema(description = "是否官方：0-非官方，1-官方", example = "{\"code\":1,\"label\":\"官方\"}")
-    private YesOrNoEnum official;
+    private OfficialStatusEnum official;
 
     /**
      * 是否置顶：0-不置顶，1-置顶
      */
     @Schema(description = "是否置顶：0-不置顶，1-置顶", example = "{\"code\":1,\"label\":\"置顶\"}")
-    private YesOrNoEnum topping;
+    private ToppingStatusEnum topping;
 
     /**
      * 是否加精：0-不加精，1-加精
      */
     @Schema(description = "是否加精：0-不加精，1-加精", example = "{\"code\":1,\"label\":\"加精\"}")
-    private YesOrNoEnum cream;
+    private CreamStatusEnum cream;
 
     /**
      * 文章状态：0-未发布，1-已发布，2-待审核
      */
     @Schema(description = "文章状态：0-未发布，1-已发布，2-待审核", example = "{\"code\":2,\"label\":\"已发布\"}")
-    private PublishStatusEnum status;
+    private ArticlePublishStatusEnum status;
 
     /**
      * 版本总数
@@ -122,5 +121,5 @@ public class ArticleVO extends BaseVO {
      * 是否删除：0-未删除，1-已删除
      */
     @Schema(description = "是否删除：0-未删除，1-已删除", example = "{\"code\":0,\"label\":\"未删除\"}")
-    private YesOrNoEnum deleted;
+    private DeleteStatusEnum deleted;
 }

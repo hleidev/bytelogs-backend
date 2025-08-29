@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import top.harrylei.community.api.model.base.BaseVO;
-import top.harrylei.community.api.enums.YesOrNoEnum;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 import top.harrylei.community.api.enums.article.TagTypeEnum;
 
 /**
@@ -39,5 +39,5 @@ public class TagVO extends BaseVO {
      * 是否删除：0-未删除，1-已删除
      */
     @Schema(description = "是否删除：0-未删除，1-已删除", example = "{\"code\":0,\"label\":\"未删除\"}")
-    private YesOrNoEnum deleted;
+    private DeleteStatusEnum deleted;
 }

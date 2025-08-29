@@ -1,6 +1,6 @@
 package top.harrylei.community.service.user.service;
 
-import top.harrylei.community.api.enums.YesOrNoEnum;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 import top.harrylei.community.api.enums.user.UserRoleEnum;
 import top.harrylei.community.api.enums.user.UserStatusEnum;
 import top.harrylei.community.api.model.auth.UserCreateReq;
@@ -87,7 +87,7 @@ public interface UserService {
      * @param userId 用户ID
      * @param status 删除状态
      */
-    void updateDeleted(Long userId, YesOrNoEnum status);
+    void updateDeleted(Long userId, DeleteStatusEnum status);
 
     /**
      * 修改用户角色

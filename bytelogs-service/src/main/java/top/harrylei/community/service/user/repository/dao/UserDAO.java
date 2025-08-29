@@ -3,7 +3,7 @@ package top.harrylei.community.service.user.repository.dao;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Repository;
-import top.harrylei.community.api.enums.YesOrNoEnum;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 import top.harrylei.community.api.model.page.param.UserQueryParam;
 import top.harrylei.community.api.model.user.dto.UserDetailDTO;
 import top.harrylei.community.service.user.repository.entity.UserDO;
@@ -30,7 +30,7 @@ public class UserDAO extends ServiceImpl<UserMapper, UserDO> {
 
         return lambdaQuery()
                 .eq(UserDO::getUserName, username)
-                .eq(UserDO::getDeleted, YesOrNoEnum.NO.getCode())
+                .eq(UserDO::getDeleted, DeleteStatusEnum.NOT_DELETED)
                 .one();
     }
 
@@ -58,7 +58,7 @@ public class UserDAO extends ServiceImpl<UserMapper, UserDO> {
     public UserDO getUserById(Long userId) {
         return lambdaQuery()
                 .eq(UserDO::getId, userId)
-                .eq(UserDO::getDeleted, YesOrNoEnum.NO.getCode())
+                .eq(UserDO::getDeleted, DeleteStatusEnum.NOT_DELETED)
                 .one();
     }
 }

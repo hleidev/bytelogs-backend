@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import top.harrylei.community.api.enums.ResultCode;
+import top.harrylei.community.api.enums.response.ResultCode;
 import top.harrylei.community.api.enums.user.LoginTypeEnum;
 import top.harrylei.community.api.enums.user.UserRoleEnum;
 import top.harrylei.community.api.enums.user.UserStatusEnum;
@@ -100,7 +100,7 @@ public class AuthServiceImpl implements AuthService {
                 .setUserId(user.getId())
                 .setUserName(username)
                 .setAvatar("")
-                .setUserRole(userRole.getCode());
+                .setUserRole(userRole);
         userInfoDAO.save(userInfo);
     }
 
@@ -135,7 +135,7 @@ public class AuthServiceImpl implements AuthService {
 
         // 校验账号是否启用
         assert user != null;
-        if (!UserStatusEnum.ENABLED.getCode().equals(user.getStatus())) {
+        if (!UserStatusEnum.ENABLED.equals(user.getStatus())) {
             ResultCode.USER_DISABLED.throwException(username);
         }
 
@@ -150,13 +150,13 @@ public class AuthServiceImpl implements AuthService {
 
         // 校验角色权限（仅用于管理员登录场景）
         if (UserRoleEnum.ADMIN.equals(userRole)) {
-            if (!UserRoleEnum.ADMIN.equals(userInfoDTO.getRole())) {
+            if (!UserRoleEnum.ADMIN.equals(userInfoDTO.getUserRole())) {
                 ResultCode.FORBIDDEN.throwException("用户不具备管理员权限");
             }
         }
 
         // 生成token
-        String token = jwtUtil.generateToken(userId, userInfoDTO.getRole(), keepLogin);
+        String token = jwtUtil.generateToken(userId, userInfoDTO.getUserRole(), keepLogin);
 
         // 缓存token和用户信息
         Duration tokenExpire = keepLogin ? jwtUtil.getKeepLoginExpire() : jwtUtil.getDefaultExpire();

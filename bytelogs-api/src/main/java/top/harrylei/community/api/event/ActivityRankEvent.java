@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import top.harrylei.community.api.enums.rank.ActivityActionEnum;
+import top.harrylei.community.api.enums.rank.ActivityTargetEnum;
 
 import java.time.LocalDateTime;
 
@@ -32,12 +34,12 @@ public class ActivityRankEvent {
     /**
      * 行为类型
      */
-    private Integer actionType;
+    private ActivityActionEnum actionType;
 
     /**
      * 目标类型
      */
-    private Integer targetType;
+    private ActivityTargetEnum targetType;
 
     /**
      * 目标ID

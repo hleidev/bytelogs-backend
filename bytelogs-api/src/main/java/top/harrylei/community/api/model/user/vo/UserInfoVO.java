@@ -2,6 +2,7 @@ package top.harrylei.community.api.model.user.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import top.harrylei.community.api.enums.user.UserRoleEnum;
 
 /**
  * 用户信息展示对象
@@ -28,7 +29,7 @@ public class UserInfoVO {
      * 用户角色（ADMIN、NORMAL）
      */
     @Schema(description = "角色", example = "ADMIN")
-    private String role;
+    private UserRoleEnum userRole;
 
     /**
      * 用户头像URL

@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import top.harrylei.community.api.model.base.BaseVO;
-import top.harrylei.community.api.enums.YesOrNoEnum;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 
 /**
  * 管理端分类详细展示对象
@@ -33,5 +33,5 @@ public class CategoryVO extends BaseVO {
      * 删除标识
      */
     @Schema(description = "是否删除", example = "0")
-    private YesOrNoEnum deleted;
+    private DeleteStatusEnum deleted;
 }

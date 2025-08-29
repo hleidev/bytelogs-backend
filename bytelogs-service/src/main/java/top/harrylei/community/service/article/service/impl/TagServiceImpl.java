@@ -5,8 +5,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
-import top.harrylei.community.api.enums.ResultCode;
-import top.harrylei.community.api.enums.YesOrNoEnum;
+import top.harrylei.community.api.enums.response.ResultCode;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 import top.harrylei.community.api.enums.article.TagTypeEnum;
 import top.harrylei.community.api.model.article.dto.TagDTO;
 import top.harrylei.community.api.model.article.vo.TagSimpleVO;
@@ -98,7 +98,7 @@ public class TagServiceImpl implements TagService {
 
         // 手动更新可编辑字段，保持ID和审计字段不变
         tagDO.setTagName(tagDTO.getTagName());
-        tagDO.setTagType(tagDTO.getTagType().getCode());
+        tagDO.setTagType(tagDTO.getTagType());
         tagDAO.updateById(tagDO);
         return tagStructMapper.toDTO(tagDO);
     }
@@ -107,21 +107,21 @@ public class TagServiceImpl implements TagService {
      * 更新标签
      *
      * @param tagId       标签ID
-     * @param yesOrNoEnum 删除标识
+     * @param deleteStatusEnum 删除标识
      */
     @Override
-    public void updateDelete(Long tagId, YesOrNoEnum yesOrNoEnum) {
+    public void updateDelete(Long tagId, DeleteStatusEnum deleteStatusEnum) {
         TagDO tag = tagDAO.getById(tagId);
         if (tag == null) {
             ResultCode.TAG_NOT_EXISTS.throwException();
         }
 
-        if (Objects.equals(tag.getDeleted(), yesOrNoEnum.getCode())) {
+        if (Objects.equals(tag.getDeleted(), deleteStatusEnum)) {
             log.warn("标签删除状态未变更，无需更新");
             return;
         }
 
-        tag.setDeleted(yesOrNoEnum.getCode());
+        tag.setDeleted(deleteStatusEnum);
         tagDAO.updateById(tag);
     }
 
@@ -156,9 +156,9 @@ public class TagServiceImpl implements TagService {
         // 创建新标签
         TagDO newTag = new TagDO()
                 .setTagName(tagName)
-                .setTagType(TagTypeEnum.USER.getCode())
+                .setTagType(TagTypeEnum.USER)
                 .setCreatorId(userId)
-                .setDeleted(YesOrNoEnum.NO.getCode());
+                .setDeleted(DeleteStatusEnum.NOT_DELETED);
 
         tagDAO.save(newTag);
         return newTag.getId();

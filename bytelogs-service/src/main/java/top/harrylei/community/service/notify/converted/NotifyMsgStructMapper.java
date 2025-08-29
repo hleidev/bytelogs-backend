@@ -2,9 +2,6 @@ package top.harrylei.community.service.notify.converted;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import top.harrylei.community.api.enums.notify.NotifyMsgStateEnum;
-import top.harrylei.community.api.enums.notify.NotifyTypeEnum;
-import top.harrylei.community.api.enums.comment.ContentTypeEnum;
 import top.harrylei.community.api.model.notify.dto.NotifyMsgDTO;
 import top.harrylei.community.api.model.notify.vo.NotifyMsgVO;
 import top.harrylei.community.service.notify.repository.entity.NotifyMsgDO;
@@ -23,16 +20,4 @@ public interface NotifyMsgStructMapper {
     NotifyMsgDTO toDTO(NotifyMsgDO notifyMsg);
 
     NotifyMsgVO toVO(NotifyMsgDTO dto);
-
-    default NotifyTypeEnum mapNotifyType(Integer code) {
-        return code != null ? NotifyTypeEnum.fromCode(code) : null;
-    }
-
-    default ContentTypeEnum mapContentType(Integer code) {
-        return code != null ? ContentTypeEnum.fromCode(code) : null;
-    }
-
-    default NotifyMsgStateEnum mapNotifyMsgState(Integer code) {
-        return code != null ? NotifyMsgStateEnum.fromCode(code) : null;
-    }
 }

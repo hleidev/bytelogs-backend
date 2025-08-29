@@ -2,7 +2,7 @@ package top.harrylei.community.service.article.repository.dao;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Repository;
-import top.harrylei.community.api.enums.YesOrNoEnum;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 import top.harrylei.community.service.article.repository.entity.ArticleDetailDO;
 import top.harrylei.community.service.article.repository.mapper.ArticleDetailMapper;
 
@@ -16,7 +16,7 @@ import java.util.List;
 @Repository
 public class ArticleDetailDAO extends ServiceImpl<ArticleDetailMapper, ArticleDetailDO> {
 
-    public void updateDeleted(Long articleId, Integer deleted) {
+    public void updateDeleted(Long articleId, DeleteStatusEnum deleted) {
         lambdaUpdate()
                 .eq(ArticleDetailDO::getArticleId, articleId)
                 .set(ArticleDetailDO::getDeleted, deleted)
@@ -33,8 +33,8 @@ public class ArticleDetailDAO extends ServiceImpl<ArticleDetailMapper, ArticleDe
     public ArticleDetailDO getLatestVersion(Long articleId) {
         return lambdaQuery()
                 .eq(ArticleDetailDO::getArticleId, articleId)
-                .eq(ArticleDetailDO::getLatest, YesOrNoEnum.YES.getCode())
-                .eq(ArticleDetailDO::getDeleted, YesOrNoEnum.NO.getCode())
+                .eq(ArticleDetailDO::getLatest, DeleteStatusEnum.DELETED)
+                .eq(ArticleDetailDO::getDeleted, DeleteStatusEnum.NOT_DELETED)
                 .one();
     }
 
@@ -44,8 +44,8 @@ public class ArticleDetailDAO extends ServiceImpl<ArticleDetailMapper, ArticleDe
     public ArticleDetailDO getPublishedVersion(Long articleId) {
         return lambdaQuery()
                 .eq(ArticleDetailDO::getArticleId, articleId)
-                .eq(ArticleDetailDO::getPublished, YesOrNoEnum.YES.getCode())
-                .eq(ArticleDetailDO::getDeleted, YesOrNoEnum.NO.getCode())
+                .eq(ArticleDetailDO::getPublished, DeleteStatusEnum.DELETED)
+                .eq(ArticleDetailDO::getDeleted, DeleteStatusEnum.NOT_DELETED)
                 .one();
     }
 
@@ -55,9 +55,9 @@ public class ArticleDetailDAO extends ServiceImpl<ArticleDetailMapper, ArticleDe
     public void clearLatestFlag(Long articleId) {
         lambdaUpdate()
                 .eq(ArticleDetailDO::getArticleId, articleId)
-                .eq(ArticleDetailDO::getLatest, YesOrNoEnum.YES.getCode())
-                .eq(ArticleDetailDO::getDeleted, YesOrNoEnum.NO.getCode())
-                .set(ArticleDetailDO::getLatest, YesOrNoEnum.NO.getCode())
+                .eq(ArticleDetailDO::getLatest, DeleteStatusEnum.DELETED)
+                .eq(ArticleDetailDO::getDeleted, DeleteStatusEnum.NOT_DELETED)
+                .set(ArticleDetailDO::getLatest, DeleteStatusEnum.NOT_DELETED)
                 .update();
     }
 
@@ -67,9 +67,9 @@ public class ArticleDetailDAO extends ServiceImpl<ArticleDetailMapper, ArticleDe
     public void clearPublishedFlag(Long articleId) {
         lambdaUpdate()
                 .eq(ArticleDetailDO::getArticleId, articleId)
-                .eq(ArticleDetailDO::getPublished, YesOrNoEnum.YES.getCode())
-                .eq(ArticleDetailDO::getDeleted, YesOrNoEnum.NO.getCode())
-                .set(ArticleDetailDO::getPublished, YesOrNoEnum.NO.getCode())
+                .eq(ArticleDetailDO::getPublished, DeleteStatusEnum.DELETED)
+                .eq(ArticleDetailDO::getDeleted, DeleteStatusEnum.NOT_DELETED)
+                .set(ArticleDetailDO::getPublished, DeleteStatusEnum.NOT_DELETED)
                 .update();
     }
 
@@ -79,7 +79,7 @@ public class ArticleDetailDAO extends ServiceImpl<ArticleDetailMapper, ArticleDe
     public List<ArticleDetailDO> getVersionHistory(Long articleId) {
         return lambdaQuery()
                 .eq(ArticleDetailDO::getArticleId, articleId)
-                .eq(ArticleDetailDO::getDeleted, YesOrNoEnum.NO.getCode())
+                .eq(ArticleDetailDO::getDeleted, DeleteStatusEnum.NOT_DELETED)
                 .orderByDesc(ArticleDetailDO::getVersion)
                 .list();
     }
@@ -95,7 +95,7 @@ public class ArticleDetailDAO extends ServiceImpl<ArticleDetailMapper, ArticleDe
         return lambdaQuery()
                 .eq(ArticleDetailDO::getArticleId, articleId)
                 .eq(ArticleDetailDO::getVersion, version)
-                .eq(ArticleDetailDO::getDeleted, YesOrNoEnum.NO.getCode())
+                .eq(ArticleDetailDO::getDeleted, DeleteStatusEnum.NOT_DELETED)
                 .one();
     }
 }

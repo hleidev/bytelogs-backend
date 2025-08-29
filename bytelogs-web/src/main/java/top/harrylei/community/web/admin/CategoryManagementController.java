@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import top.harrylei.community.api.enums.YesOrNoEnum;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 import top.harrylei.community.api.model.base.ResVO;
 import top.harrylei.community.api.model.article.dto.CategoryDTO;
 import top.harrylei.community.api.model.article.req.CategoryReq;
@@ -92,7 +92,7 @@ public class CategoryManagementController {
     @Operation(summary = "删除分类", description = "根据分类ID删除分类")
     @DeleteMapping("/{categoryId}")
     public ResVO<Void> delete(@NotNull(message = "分类ID为空") @PathVariable Long categoryId) {
-        categoryService.updateDeleted(categoryId, YesOrNoEnum.YES);
+        categoryService.updateDeleted(categoryId, DeleteStatusEnum.DELETED);
         return ResVO.ok();
     }
 
@@ -105,7 +105,7 @@ public class CategoryManagementController {
     @Operation(summary = "恢复分类", description = "根据分类ID恢复分类")
     @PutMapping("/{categoryId}/restore")
     public ResVO<Void> restore(@NotNull(message = "分类ID为空") @PathVariable Long categoryId) {
-        categoryService.updateDeleted(categoryId, YesOrNoEnum.NO);
+        categoryService.updateDeleted(categoryId, DeleteStatusEnum.NOT_DELETED);
         return ResVO.ok();
     }
 

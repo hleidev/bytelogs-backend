@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
+import top.harrylei.community.api.enums.user.UserRoleEnum;
 
 import java.time.LocalDateTime;
-import top.harrylei.community.api.enums.user.UserRoleEnum;
-import top.harrylei.community.api.enums.YesOrNoEnum;
 
 /**
  * 用户列表项展示对象
@@ -41,7 +41,7 @@ public class UserListItemVO {
      * 用户角色
      */
     @Schema(description = "角色", example = "ADMIN")
-    private UserRoleEnum role;
+    private UserRoleEnum userRole;
 
     /**
      * 用户头像URL
@@ -59,7 +59,7 @@ public class UserListItemVO {
      * 删除标记
      */
     @Schema(description = "是否已删除", example = "NO")
-    private YesOrNoEnum deleted;
+    private DeleteStatusEnum deleted;
 
     /**
      * 创建时间

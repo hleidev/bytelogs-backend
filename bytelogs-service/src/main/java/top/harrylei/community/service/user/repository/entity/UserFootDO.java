@@ -4,6 +4,12 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
+import top.harrylei.community.api.enums.article.CollectionStatusEnum;
+import top.harrylei.community.api.enums.comment.CommentStatusEnum;
+import top.harrylei.community.api.enums.article.ContentTypeEnum;
+import top.harrylei.community.api.enums.user.PraiseStatusEnum;
+import top.harrylei.community.api.enums.user.ReadStatusEnum;
 import top.harrylei.community.api.model.base.BaseDO;
 
 import java.io.Serial;
@@ -35,7 +41,7 @@ public class UserFootDO extends BaseDO {
     /**
      * 内容类型：1-文章，2-评论
      */
-    private Integer contentType;
+    private ContentTypeEnum contentType;
 
     /**
      * 内容所属用户ID
@@ -45,25 +51,25 @@ public class UserFootDO extends BaseDO {
     /**
      * 收藏状态
      */
-    private Integer collectionState;
+    private CollectionStatusEnum collectionState;
 
     /**
      * 阅读状态
      */
-    private Integer readState;
+    private ReadStatusEnum readState;
 
     /**
      * 评论状态
      */
-    private Integer commentState;
+    private CommentStatusEnum commentState;
 
     /**
      * 点赞状态
      */
-    private Integer praiseState;
+    private PraiseStatusEnum praiseState;
 
     /**
      * 是否删除：0-未删除，1-已删除
      */
-    private Integer deleted;
+    private DeleteStatusEnum deleted;
 }

@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import top.harrylei.community.api.enums.article.CollectionStatusEnum;
-import top.harrylei.community.api.enums.base.CodeLabelEnum;
 import top.harrylei.community.api.enums.comment.CommentStatusEnum;
 
 import java.util.Arrays;
@@ -21,7 +20,7 @@ import java.util.stream.Collectors;
  */
 @Getter
 @AllArgsConstructor
-public enum OperateTypeEnum implements CodeLabelEnum {
+public enum OperateTypeEnum {
 
     /**
      * 空操作
@@ -80,7 +79,6 @@ public enum OperateTypeEnum implements CodeLabelEnum {
      * @return 操作码
      */
     @JsonValue
-    @Override
     public Integer getCode() {
         return code;
     }
@@ -101,16 +99,16 @@ public enum OperateTypeEnum implements CodeLabelEnum {
      *
      * @return 数据库状态码
      */
-    public int getStatusCode() {
+    public Enum<?> getStatus() {
         return switch (this) {
-            case READ -> ReadStatusEnum.READ.getCode();
-            case PRAISE -> PraiseStatusEnum.PRAISE.getCode();
-            case COLLECTION -> CollectionStatusEnum.COLLECTION.getCode();
-            case CANCEL_PRAISE -> PraiseStatusEnum.NOT_PRAISE.getCode();
-            case CANCEL_COLLECTION -> CollectionStatusEnum.NOT_COLLECTION.getCode();
-            case COMMENT -> CommentStatusEnum.COMMENT.getCode();
-            case DELETE_COMMENT -> CommentStatusEnum.NOT_COMMENT.getCode();
-            default -> 0;
+            case READ -> ReadStatusEnum.READ;
+            case PRAISE -> PraiseStatusEnum.PRAISE;
+            case COLLECTION -> CollectionStatusEnum.COLLECTION;
+            case CANCEL_PRAISE -> PraiseStatusEnum.NOT_PRAISE;
+            case CANCEL_COLLECTION -> CollectionStatusEnum.NOT_COLLECTION;
+            case COMMENT -> CommentStatusEnum.COMMENT;
+            case DELETE_COMMENT -> CommentStatusEnum.NOT_COMMENT;
+            default -> null;
         };
     }
 

@@ -3,7 +3,7 @@ package top.harrylei.community.service.user.repository.dao;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Repository;
-import top.harrylei.community.api.enums.YesOrNoEnum;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 import top.harrylei.community.api.enums.user.UserFollowStatusEnum;
 import top.harrylei.community.api.model.user.req.UserFollowQueryParam;
 import top.harrylei.community.api.model.user.vo.UserFollowVO;
@@ -35,7 +35,7 @@ public class UserFollowDAO extends ServiceImpl<UserFollowMapper, UserFollowDO> {
         return lambdaQuery()
                 .eq(UserFollowDO::getUserId, userId)
                 .eq(UserFollowDO::getFollowUserId, followUserId)
-                .eq(UserFollowDO::getDeleted, YesOrNoEnum.NO.getCode())
+                .eq(UserFollowDO::getDeleted, DeleteStatusEnum.NOT_DELETED)
                 .one();
     }
 
@@ -77,8 +77,8 @@ public class UserFollowDAO extends ServiceImpl<UserFollowMapper, UserFollowDO> {
         return lambdaUpdate()
                 .eq(UserFollowDO::getUserId, userId)
                 .eq(UserFollowDO::getFollowUserId, followUserId)
-                .eq(UserFollowDO::getDeleted, YesOrNoEnum.NO.getCode())
-                .set(UserFollowDO::getFollowState, status.getCode())
+                .eq(UserFollowDO::getDeleted, DeleteStatusEnum.NOT_DELETED)
+                .set(UserFollowDO::getFollowState, status)
                 .update();
     }
 

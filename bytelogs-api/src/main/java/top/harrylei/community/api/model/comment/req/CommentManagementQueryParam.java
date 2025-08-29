@@ -4,9 +4,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.format.annotation.DateTimeFormat;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
+import top.harrylei.community.api.enums.article.ToppingStatusEnum;
 import top.harrylei.community.api.model.base.BasePage;
-import top.harrylei.community.api.enums.YesOrNoEnum;
-import top.harrylei.community.api.enums.comment.ToppingStatEnum;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -38,13 +38,13 @@ public class CommentManagementQueryParam extends BasePage {
      * 删除状态筛选
      */
     @Schema(description = "删除状态筛选：0-未删除，1-已删除，不传查询所有", example = "0")
-    private YesOrNoEnum deleted;
+    private DeleteStatusEnum deleted;
 
     /**
      * 是否为顶级评论筛选
      */
     @Schema(description = "是否为顶级评论：1-顶级评论（TOPPING），0-回复评论（NOT_TOPPING），不传查询所有", example = "1")
-    private ToppingStatEnum topComment;
+    private ToppingStatusEnum topComment;
 
     /**
      * 创建时间范围开始

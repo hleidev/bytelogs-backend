@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import top.harrylei.community.api.model.base.BaseVO;
-import top.harrylei.community.api.enums.YesOrNoEnum;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 
 /**
  * 评论管理VO
@@ -62,5 +62,5 @@ public class CommentManagementVO extends BaseVO {
      * 删除状态：0-未删除，1-已删除
      */
     @Schema(description = "删除状态：0-未删除，1-已删除")
-    private YesOrNoEnum deleted;
+    private DeleteStatusEnum deleted;
 }

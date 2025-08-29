@@ -3,7 +3,7 @@ package top.harrylei.community.service.ai.repository.dao;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Repository;
-import top.harrylei.community.api.enums.YesOrNoEnum;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 import top.harrylei.community.api.enums.ai.ChatConversationStatusEnum;
 import top.harrylei.community.service.ai.repository.entity.ChatConversationDO;
 import top.harrylei.community.service.ai.repository.mapper.ChatConversationMapper;
@@ -21,7 +21,7 @@ public class ChatConversationDAO extends ServiceImpl<ChatConversationMapper, Cha
     /**
      * 创建新对话
      */
-    public Long createConversation(Long userId, String title) {
+    public Long create(Long userId, String title) {
         ChatConversationDO conversation = new ChatConversationDO();
         conversation.setUserId(userId);
         conversation.setTitle(title);
@@ -40,7 +40,7 @@ public class ChatConversationDAO extends ServiceImpl<ChatConversationMapper, Cha
         return lambdaQuery()
                 .eq(ChatConversationDO::getId, id)
                 .eq(ChatConversationDO::getUserId, userId)
-                .eq(ChatConversationDO::getDeleted, YesOrNoEnum.NO)
+                .eq(ChatConversationDO::getDeleted, DeleteStatusEnum.NOT_DELETED)
                 .one();
     }
 
@@ -50,9 +50,9 @@ public class ChatConversationDAO extends ServiceImpl<ChatConversationMapper, Cha
     public IPage<ChatConversationDO> pageQueryConversations(Long userId, IPage<ChatConversationDO> page, ChatConversationStatusEnum status) {
         return lambdaQuery()
                 .eq(ChatConversationDO::getUserId, userId)
-                .eq(ChatConversationDO::getDeleted, YesOrNoEnum.NO)
-                .eq(ChatConversationDO::getStatus, status.getCode())
-                .orderByDesc(ChatConversationDO::getLastMessageTime)
+                .eq(ChatConversationDO::getStatus, status)
+                .eq(ChatConversationDO::getDeleted, DeleteStatusEnum.NOT_DELETED)
+                .orderByDesc(ChatConversationDO::getUpdateTime)
                 .page(page);
     }
 
@@ -71,23 +71,23 @@ public class ChatConversationDAO extends ServiceImpl<ChatConversationMapper, Cha
     /**
      * 软删除对话
      */
-    public boolean deleteConversation(Long conversationId, Long userId) {
+    public boolean delete(Long conversationId, Long userId) {
         return lambdaUpdate()
                 .eq(ChatConversationDO::getId, conversationId)
                 .eq(ChatConversationDO::getUserId, userId)
-                .eq(ChatConversationDO::getDeleted, YesOrNoEnum.NO)
-                .set(ChatConversationDO::getDeleted, YesOrNoEnum.YES)
+                .eq(ChatConversationDO::getDeleted, DeleteStatusEnum.NOT_DELETED)
+                .set(ChatConversationDO::getDeleted, DeleteStatusEnum.DELETED)
                 .update();
     }
 
     /**
      * 归档对话
      */
-    public boolean archiveConversation(Long conversationId, Long userId) {
+    public boolean archive(Long conversationId, Long userId) {
         return lambdaUpdate()
                 .eq(ChatConversationDO::getId, conversationId)
                 .eq(ChatConversationDO::getUserId, userId)
-                .ne(ChatConversationDO::getStatus, ChatConversationStatusEnum.ARCHIVED)
+                .eq(ChatConversationDO::getStatus, ChatConversationStatusEnum.ACTIVE)
                 .set(ChatConversationDO::getStatus, ChatConversationStatusEnum.ARCHIVED)
                 .update();
     }

@@ -1,5 +1,6 @@
 package top.harrylei.community.api.enums.user;
 
+import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AllArgsConstructor;
@@ -28,6 +29,7 @@ public enum UserStatusEnum {
      */
     ENABLED(1, "启动");
 
+    @EnumValue
     private final int code;
     private final String label;
 

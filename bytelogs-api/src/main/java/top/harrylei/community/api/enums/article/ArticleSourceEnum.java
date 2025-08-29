@@ -1,16 +1,15 @@
 package top.harrylei.community.api.enums.article;
 
+import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
 import java.util.Arrays;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import com.baomidou.mybatisplus.annotation.EnumValue;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 
 /**
  * 文章来源枚举
@@ -44,9 +43,6 @@ public enum ArticleSourceEnum {
     // 根据编码快速定位枚举实例
     private static final Map<Integer, ArticleSourceEnum> CODE_MAP =
             Arrays.stream(values()).collect(Collectors.toMap(ArticleSourceEnum::getCode, Function.identity()));
-    // 根据枚举名称（不区分大小写）快速定位枚举实例
-    private static final Map<String, ArticleSourceEnum> NAME_MAP =
-            Arrays.stream(values()).collect(Collectors.toMap(e -> e.name().toUpperCase(), Function.identity()));
 
     /**
      * 获取码

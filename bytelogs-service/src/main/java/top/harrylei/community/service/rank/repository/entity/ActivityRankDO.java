@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
+import top.harrylei.community.api.enums.rank.ActivityRankTypeEnum;
 import top.harrylei.community.api.model.base.BaseDO;
 
 /**
@@ -26,7 +28,7 @@ public class ActivityRankDO extends BaseDO {
     /**
      * 排行榜类型: 1-总榜,2-月榜,3-日榜
      */
-    private Integer rankType;
+    private ActivityRankTypeEnum rankType;
 
     /**
      * 排行榜周期: 日榜2025-01-15, 月榜2025-01, 总榜total
@@ -47,5 +49,5 @@ public class ActivityRankDO extends BaseDO {
     /**
      * 是否删除,0:未删除,1:已删除
      */
-    private Integer deleted;
+    private DeleteStatusEnum deleted;
 }

@@ -6,9 +6,9 @@ import top.harrylei.community.api.model.base.BaseDTO;
 import top.harrylei.community.api.enums.article.CollectionStatusEnum;
 import top.harrylei.community.api.enums.user.PraiseStatusEnum;
 import top.harrylei.community.api.enums.user.ReadStatusEnum;
-import top.harrylei.community.api.enums.YesOrNoEnum;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 import top.harrylei.community.api.enums.comment.CommentStatusEnum;
-import top.harrylei.community.api.enums.comment.ContentTypeEnum;
+import top.harrylei.community.api.enums.article.ContentTypeEnum;
 
 /**
  * 用户足迹DTO
@@ -62,5 +62,5 @@ public class UserFootDTO extends BaseDTO {
     /**
      * 是否删除：0-未删除，1-已删除
      */
-    private YesOrNoEnum deleted;
+    private DeleteStatusEnum deleted;
 }

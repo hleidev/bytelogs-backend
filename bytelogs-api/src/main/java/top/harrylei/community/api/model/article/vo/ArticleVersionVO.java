@@ -4,9 +4,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import top.harrylei.community.api.enums.article.LatestFlagEnum;
+import top.harrylei.community.api.enums.article.ArticlePublishStatusEnum;
+import top.harrylei.community.api.enums.article.PublishedFlagEnum;
 import top.harrylei.community.api.model.base.BaseVO;
-import top.harrylei.community.api.enums.YesOrNoEnum;
-import top.harrylei.community.api.enums.article.PublishStatusEnum;
 
 import java.time.LocalDateTime;
 
@@ -43,19 +44,19 @@ public class ArticleVersionVO extends BaseVO {
      * 版本状态
      */
     @Schema(description = "版本状态")
-    private PublishStatusEnum status;
+    private ArticlePublishStatusEnum status;
 
     /**
      * 是否为最新版本
      */
     @Schema(description = "是否为最新版本")
-    private YesOrNoEnum latest;
+    private LatestFlagEnum latest;
 
     /**
      * 是否为发布版本
      */
     @Schema(description = "是否为发布版本")
-    private YesOrNoEnum published;
+    private PublishedFlagEnum published;
 
     /**
      * 发布时间

@@ -5,7 +5,7 @@ import lombok.EqualsAndHashCode;
 import top.harrylei.community.api.model.base.BaseDTO;
 import top.harrylei.community.api.enums.notify.NotifyMsgStateEnum;
 import top.harrylei.community.api.enums.notify.NotifyTypeEnum;
-import top.harrylei.community.api.enums.comment.ContentTypeEnum;
+import top.harrylei.community.api.enums.article.ContentTypeEnum;
 
 /**
  * 通知消息数据传输对象

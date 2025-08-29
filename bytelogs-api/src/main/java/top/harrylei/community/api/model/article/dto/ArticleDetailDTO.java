@@ -3,7 +3,7 @@ package top.harrylei.community.api.model.article.dto;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import top.harrylei.community.api.model.base.BaseDTO;
-import top.harrylei.community.api.enums.YesOrNoEnum;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 
 /**
  * 文章历史版本/内容详情传输对象
@@ -33,5 +33,5 @@ public class ArticleDetailDTO extends BaseDTO {
     /**
      * 是否删除：0-未删除，1-已删除
      */
-    private YesOrNoEnum deleted;
+    private DeleteStatusEnum deleted;
 }

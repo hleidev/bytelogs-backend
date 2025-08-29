@@ -3,11 +3,15 @@ package top.harrylei.community.service.user.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import top.harrylei.community.api.enums.comment.ContentTypeEnum;
+import top.harrylei.community.api.enums.article.CollectionStatusEnum;
+import top.harrylei.community.api.enums.comment.CommentStatusEnum;
+import top.harrylei.community.api.enums.article.ContentTypeEnum;
 import top.harrylei.community.api.enums.notify.NotifyTypeEnum;
 import top.harrylei.community.api.enums.rank.ActivityActionEnum;
 import top.harrylei.community.api.enums.rank.ActivityTargetEnum;
 import top.harrylei.community.api.enums.user.OperateTypeEnum;
+import top.harrylei.community.api.enums.user.PraiseStatusEnum;
+import top.harrylei.community.api.enums.user.ReadStatusEnum;
 import top.harrylei.community.api.model.user.dto.ArticleFootCountDTO;
 import top.harrylei.community.api.model.user.dto.UserFootDTO;
 import top.harrylei.community.core.util.KafkaEventPublisher;
@@ -57,18 +61,18 @@ public class UserFootServiceImpl implements UserFootService {
     public void saveCommentFoot(CommentDO comment, Long articleAuthorId, Long parentCommentAuthorId) {
         // 保存对文章的评论足迹
         saveOrUpdateUserFoot(comment.getUserId(),
-                             OperateTypeEnum.COMMENT,
-                             articleAuthorId,
-                             comment.getArticleId(),
-                             ContentTypeEnum.ARTICLE);
+                OperateTypeEnum.COMMENT,
+                articleAuthorId,
+                comment.getArticleId(),
+                ContentTypeEnum.ARTICLE);
 
         // 如果是回复评论，保存对父评论的回复足迹
         if (!NumUtil.nullOrZero(comment.getParentCommentId()) && !NumUtil.nullOrZero(parentCommentAuthorId)) {
             saveOrUpdateUserFoot(comment.getUserId(),
-                                 OperateTypeEnum.COMMENT,
-                                 parentCommentAuthorId,
-                                 comment.getParentCommentId(),
-                                 ContentTypeEnum.COMMENT);
+                    OperateTypeEnum.COMMENT,
+                    parentCommentAuthorId,
+                    comment.getParentCommentId(),
+                    ContentTypeEnum.COMMENT);
         }
     }
 
@@ -83,18 +87,18 @@ public class UserFootServiceImpl implements UserFootService {
     public void deleteCommentFoot(CommentDO comment, Long articleAuthorId, Long parentCommentAuthorId) {
         // 删除对文章的评论足迹
         saveOrUpdateUserFoot(comment.getUserId(),
-                             OperateTypeEnum.DELETE_COMMENT,
-                             articleAuthorId,
-                             comment.getArticleId(),
-                             ContentTypeEnum.ARTICLE);
+                OperateTypeEnum.DELETE_COMMENT,
+                articleAuthorId,
+                comment.getArticleId(),
+                ContentTypeEnum.ARTICLE);
 
         // 如果是回复评论，删除对父评论的回复足迹
         if (!NumUtil.nullOrZero(comment.getParentCommentId()) && !NumUtil.nullOrZero(parentCommentAuthorId)) {
             saveOrUpdateUserFoot(comment.getUserId(),
-                                 OperateTypeEnum.DELETE_COMMENT,
-                                 parentCommentAuthorId,
-                                 comment.getParentCommentId(),
-                                 ContentTypeEnum.COMMENT);
+                    OperateTypeEnum.DELETE_COMMENT,
+                    parentCommentAuthorId,
+                    comment.getParentCommentId(),
+                    ContentTypeEnum.COMMENT);
         }
     }
 
@@ -111,7 +115,7 @@ public class UserFootServiceImpl implements UserFootService {
         if (NumUtil.nullOrZero(userId) || NumUtil.nullOrZero(contentId) || contentTypeEnum == null) {
             return null;
         }
-        UserFootDO userFoot = userFootDAO.getByContentAndUserId(userId, contentId, contentTypeEnum.getCode());
+        UserFootDO userFoot = userFootDAO.getByContentAndUserId(userId, contentId, contentTypeEnum);
         return userFootStructMapper.toDTO(userFoot);
     }
 
@@ -188,7 +192,7 @@ public class UserFootServiceImpl implements UserFootService {
             String duplicateKey = buildDuplicateKey(userId, type, contentId, contentType);
             if (!redisUtil.tryPreventDuplicate(duplicateKey, DUPLICATE_PREVENT_TIME)) {
                 log.warn("检测到重复提交: userId={} operateTypeEnum={} contentId={} contentType={}",
-                         userId, type, contentId, contentType.getLabel());
+                        userId, type, contentId, contentType.getLabel());
                 return false;
             }
         }
@@ -197,7 +201,7 @@ public class UserFootServiceImpl implements UserFootService {
 
         if (userFoot == null) {
             log.warn("保存或更新{}用户足迹失败: userId={} operateTypeEnum={} contentAuthorId={} contentId={}",
-                     contentType.getLabel(), userId, type, contentAuthorId, contentId);
+                    contentType.getLabel(), userId, type, contentAuthorId, contentId);
             return false;
         }
 
@@ -223,13 +227,13 @@ public class UserFootServiceImpl implements UserFootService {
                                            OperateTypeEnum operateTypeEnum,
                                            Long authorId,
                                            Long contentId, ContentTypeEnum contentTypeEnum) {
-        UserFootDO userFoot = userFootDAO.getByContentAndUserId(userId, contentId, contentTypeEnum.getCode());
+        UserFootDO userFoot = userFootDAO.getByContentAndUserId(userId, contentId, contentTypeEnum);
         if (userFoot == null) {
             userFoot = new UserFootDO()
                     .setUserId(userId)
                     .setContentId(contentId)
                     .setContentUserId(authorId)
-                    .setContentType(contentTypeEnum.getCode());
+                    .setContentType(contentTypeEnum);
             setUserFootState(userFoot, operateTypeEnum);
             userFootDAO.save(userFoot);
         } else if (setUserFootState(userFoot, operateTypeEnum)) {
@@ -242,23 +246,23 @@ public class UserFootServiceImpl implements UserFootService {
         switch (operateTypeEnum) {
             case READ -> {
                 return compareAndUpdate(userFoot::getReadState,
-                                        userFoot::setReadState,
-                                        operateTypeEnum.getStatusCode());
+                        userFoot::setReadState,
+                        (ReadStatusEnum) operateTypeEnum.getStatus());
             }
             case COMMENT, DELETE_COMMENT -> {
                 return compareAndUpdate(userFoot::getCommentState,
-                                        userFoot::setCommentState,
-                                        operateTypeEnum.getStatusCode());
+                        userFoot::setCommentState,
+                        (CommentStatusEnum) operateTypeEnum.getStatus());
             }
             case PRAISE, CANCEL_PRAISE -> {
                 return compareAndUpdate(userFoot::getPraiseState,
-                                        userFoot::setPraiseState,
-                                        operateTypeEnum.getStatusCode());
+                        userFoot::setPraiseState,
+                        (PraiseStatusEnum) operateTypeEnum.getStatus());
             }
             case COLLECTION, CANCEL_COLLECTION -> {
                 return compareAndUpdate(userFoot::getCollectionState,
-                                        userFoot::setCollectionState,
-                                        operateTypeEnum.getStatusCode());
+                        userFoot::setCollectionState,
+                        (CollectionStatusEnum) operateTypeEnum.getStatus());
             }
             default -> {
                 return false;
@@ -325,10 +329,10 @@ public class UserFootServiceImpl implements UserFootService {
             kafkaEventPublisher.publishUserBehaviorEvent(userId, contentAuthorId, contentId, contentType, notifyType);
 
             log.debug("发布{}通知事件成功: userId={}, targetUserId={}, contentId={}",
-                      notifyType.getLabel(),
-                      userId,
-                      contentAuthorId,
-                      contentId);
+                    notifyType.getLabel(),
+                    userId,
+                    contentAuthorId,
+                    contentId);
 
         } catch (Exception e) {
             // 事件发布失败不影响主业务流程
@@ -382,7 +386,7 @@ public class UserFootServiceImpl implements UserFootService {
             kafkaEventPublisher.publishUserActivityEvent(userId, contentId, activityTarget, activityAction);
 
             log.debug("发布{}活跃度事件成功: userId={}, targetId={}, targetType={}",
-                      activityAction.getLabel(), userId, contentId, activityTarget.getLabel());
+                    activityAction.getLabel(), userId, contentId, activityTarget.getLabel());
 
         } catch (Exception e) {
             // 事件发布失败不影响主业务流程

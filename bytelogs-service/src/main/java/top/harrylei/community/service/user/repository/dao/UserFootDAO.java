@@ -2,7 +2,10 @@ package top.harrylei.community.service.user.repository.dao;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Repository;
-import top.harrylei.community.api.enums.comment.ContentTypeEnum;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
+import top.harrylei.community.api.enums.article.CollectionStatusEnum;
+import top.harrylei.community.api.enums.article.ContentTypeEnum;
+import top.harrylei.community.api.enums.user.PraiseStatusEnum;
 import top.harrylei.community.service.user.repository.entity.UserFootDO;
 import top.harrylei.community.service.user.repository.mapper.UserFootMapper;
 
@@ -14,7 +17,7 @@ import top.harrylei.community.service.user.repository.mapper.UserFootMapper;
 @Repository
 public class UserFootDAO extends ServiceImpl<UserFootMapper, UserFootDO> {
 
-    public UserFootDO getByContentAndUserId(Long userId, Long contentId, Integer type) {
+    public UserFootDO getByContentAndUserId(Long userId, Long contentId, ContentTypeEnum type) {
         return lambdaQuery()
                 .eq(UserFootDO::getUserId, userId)
                 .eq(UserFootDO::getContentId, contentId)
@@ -31,9 +34,9 @@ public class UserFootDAO extends ServiceImpl<UserFootMapper, UserFootDO> {
     public Long countPraiseByArticleId(Long articleId) {
         return lambdaQuery()
                 .eq(UserFootDO::getContentId, articleId)
-                .eq(UserFootDO::getContentType, ContentTypeEnum.ARTICLE.getCode())
-                .eq(UserFootDO::getPraiseState, 1)
-                .eq(UserFootDO::getDeleted, 0)
+                .eq(UserFootDO::getContentType, ContentTypeEnum.ARTICLE)
+                .eq(UserFootDO::getPraiseState, PraiseStatusEnum.PRAISE)
+                .eq(UserFootDO::getDeleted, DeleteStatusEnum.NOT_DELETED)
                 .count();
     }
 
@@ -46,9 +49,9 @@ public class UserFootDAO extends ServiceImpl<UserFootMapper, UserFootDO> {
     public Long countCollectionByArticleId(Long articleId) {
         return lambdaQuery()
                 .eq(UserFootDO::getContentId, articleId)
-                .eq(UserFootDO::getContentType, ContentTypeEnum.ARTICLE.getCode())
-                .eq(UserFootDO::getCollectionState, 1)
-                .eq(UserFootDO::getDeleted, 0)
+                .eq(UserFootDO::getContentType, ContentTypeEnum.ARTICLE)
+                .eq(UserFootDO::getCollectionState, CollectionStatusEnum.COLLECTION)
+                .eq(UserFootDO::getDeleted, DeleteStatusEnum.DELETED)
                 .count();
     }
 

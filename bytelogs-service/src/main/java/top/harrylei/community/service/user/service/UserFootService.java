@@ -1,7 +1,7 @@
 package top.harrylei.community.service.user.service;
 
 import top.harrylei.community.api.enums.user.OperateTypeEnum;
-import top.harrylei.community.api.enums.comment.ContentTypeEnum;
+import top.harrylei.community.api.enums.article.ContentTypeEnum;
 import top.harrylei.community.api.model.user.dto.ArticleFootCountDTO;
 import top.harrylei.community.api.model.user.dto.UserFootDTO;
 import top.harrylei.community.service.comment.repository.entity.CommentDO;

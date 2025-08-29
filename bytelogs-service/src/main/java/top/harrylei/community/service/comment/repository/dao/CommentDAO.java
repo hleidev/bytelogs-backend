@@ -3,7 +3,7 @@ package top.harrylei.community.service.comment.repository.dao;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Repository;
-import top.harrylei.community.api.enums.YesOrNoEnum;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 import top.harrylei.community.api.model.comment.req.CommentManagementQueryParam;
 import top.harrylei.community.api.model.comment.vo.CommentManagementVO;
 import top.harrylei.community.service.comment.repository.entity.CommentDO;
@@ -25,14 +25,14 @@ public class CommentDAO extends ServiceImpl<CommentMapper, CommentDO> {
         return lambdaQuery()
                 .eq(CommentDO::getTopCommentId, 0L)
                 .eq(CommentDO::getArticleId, articleId)
-                .eq(CommentDO::getDeleted, YesOrNoEnum.NO.getCode())
+                .eq(CommentDO::getDeleted, DeleteStatusEnum.NOT_DELETED)
                 .page(page);
     }
 
     public IPage<CommentDO> pageQueryUserComments(Long userId, IPage<CommentDO> page) {
         return lambdaQuery()
                 .eq(CommentDO::getUserId, userId)
-                .eq(CommentDO::getDeleted, YesOrNoEnum.NO.getCode())
+                .eq(CommentDO::getDeleted, DeleteStatusEnum.NOT_DELETED)
                 .page(page);
     }
 
@@ -40,7 +40,7 @@ public class CommentDAO extends ServiceImpl<CommentMapper, CommentDO> {
         return lambdaQuery()
                 .in(CommentDO::getTopCommentId, topCommentIds)
                 .eq(CommentDO::getArticleId, articleId)
-                .eq(CommentDO::getDeleted, YesOrNoEnum.NO.getCode())
+                .eq(CommentDO::getDeleted, DeleteStatusEnum.NOT_DELETED)
                 .orderByDesc(CommentDO::getCreateTime)
                 .list();
     }

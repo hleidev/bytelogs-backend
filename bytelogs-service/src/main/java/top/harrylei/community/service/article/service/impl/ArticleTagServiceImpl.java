@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import top.harrylei.community.api.enums.YesOrNoEnum;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 import top.harrylei.community.api.model.article.vo.TagSimpleVO;
 import top.harrylei.community.service.article.repository.dao.ArticleTagDAO;
 import top.harrylei.community.service.article.repository.entity.ArticleTagDO;
@@ -96,7 +96,7 @@ public class ArticleTagServiceImpl implements ArticleTagService {
      */
     @Override
     public void deleteByArticleId(Long articleId) {
-        articleTagDAO.updateDeleted(articleId, YesOrNoEnum.YES.getCode());
+        articleTagDAO.updateDeleted(articleId, DeleteStatusEnum.DELETED);
     }
 
     /**
@@ -106,7 +106,7 @@ public class ArticleTagServiceImpl implements ArticleTagService {
      */
     @Override
     public void restoreByArticleId(Long articleId) {
-        articleTagDAO.updateDeleted(articleId, YesOrNoEnum.NO.getCode());
+        articleTagDAO.updateDeleted(articleId, DeleteStatusEnum.NOT_DELETED);
     }
 
     /**

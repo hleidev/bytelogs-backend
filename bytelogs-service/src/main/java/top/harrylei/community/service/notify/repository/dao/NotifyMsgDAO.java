@@ -39,7 +39,7 @@ public class NotifyMsgDAO extends ServiceImpl<NotifyMsgMapper, NotifyMsgDO> {
     public Long countUnreadByUserId(Long userId) {
         return lambdaQuery()
                 .eq(NotifyMsgDO::getNotifyUserId, userId)
-                .eq(NotifyMsgDO::getState, NotifyMsgStateEnum.UNREAD.getCode())
+                .eq(NotifyMsgDO::getState, NotifyMsgStateEnum.UNREAD)
                 .count();
     }
 
@@ -54,7 +54,7 @@ public class NotifyMsgDAO extends ServiceImpl<NotifyMsgMapper, NotifyMsgDO> {
         return lambdaUpdate()
                 .eq(NotifyMsgDO::getId, notifyId)
                 .eq(NotifyMsgDO::getNotifyUserId, userId)
-                .set(NotifyMsgDO::getState, NotifyMsgStateEnum.READ.getCode())
+                .set(NotifyMsgDO::getState, NotifyMsgStateEnum.READ)
                 .update();
     }
 
@@ -67,8 +67,8 @@ public class NotifyMsgDAO extends ServiceImpl<NotifyMsgMapper, NotifyMsgDO> {
     public boolean markAllAsRead(Long userId) {
         return lambdaUpdate()
                 .eq(NotifyMsgDO::getNotifyUserId, userId)
-                .eq(NotifyMsgDO::getState, NotifyMsgStateEnum.UNREAD.getCode())
-                .set(NotifyMsgDO::getState, NotifyMsgStateEnum.READ.getCode())
+                .eq(NotifyMsgDO::getState, NotifyMsgStateEnum.UNREAD)
+                .set(NotifyMsgDO::getState, NotifyMsgStateEnum.READ)
                 .update();
     }
 }

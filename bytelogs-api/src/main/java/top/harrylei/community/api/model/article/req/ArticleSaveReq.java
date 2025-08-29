@@ -8,7 +8,7 @@ import lombok.Data;
 import top.harrylei.community.api.validation.SecureContent.ContentSecurityType;
 import top.harrylei.community.api.enums.article.ArticleSourceEnum;
 import top.harrylei.community.api.enums.article.ArticleTypeEnum;
-import top.harrylei.community.api.enums.article.PublishStatusEnum;
+import top.harrylei.community.api.enums.article.ArticlePublishStatusEnum;
 import top.harrylei.community.api.validation.SecureContent;
 
 import java.util.List;
@@ -102,5 +102,5 @@ public class ArticleSaveReq {
      */
     @NotNull(message = "文章状态不能为空")
     @Schema(description = "文章状态，0-未发布，1-已发布", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
-    private PublishStatusEnum status;
+    private ArticlePublishStatusEnum status;
 }

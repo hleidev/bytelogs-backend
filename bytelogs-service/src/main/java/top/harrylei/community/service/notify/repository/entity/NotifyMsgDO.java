@@ -4,6 +4,9 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import top.harrylei.community.api.enums.article.ContentTypeEnum;
+import top.harrylei.community.api.enums.notify.NotifyMsgStateEnum;
+import top.harrylei.community.api.enums.notify.NotifyTypeEnum;
 import top.harrylei.community.api.model.base.BaseDO;
 
 import java.io.Serial;
@@ -45,15 +48,15 @@ public class NotifyMsgDO extends BaseDO {
     /**
      * 通知类型：1-评论，2-回复，3-点赞，4-收藏，5-关注，6-系统消息
      */
-    private Integer type;
+    private NotifyTypeEnum type;
 
     /**
      * 内容类型：0-不适用，1-文章，2-评论
      */
-    private Integer contentType;
+    private ContentTypeEnum contentType;
 
     /**
      * 阅读状态：0-未读，1-已读
      */
-    private Integer state;
+    private NotifyMsgStateEnum state;
 }

@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import top.harrylei.community.api.enums.base.CodeLabelEnum;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -19,7 +18,7 @@ import java.util.stream.Collectors;
  */
 @Getter
 @AllArgsConstructor
-public enum ActivityActionEnum implements CodeLabelEnum {
+public enum ActivityActionEnum {
 
     /**
      * 发文
@@ -96,7 +95,6 @@ public enum ActivityActionEnum implements CodeLabelEnum {
      * @return 行为编码
      */
     @JsonValue
-    @Override
     public Integer getCode() {
         return code;
     }

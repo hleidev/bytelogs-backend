@@ -3,7 +3,10 @@ package top.harrylei.community.service.article.repository.dao;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Repository;
-import top.harrylei.community.api.enums.YesOrNoEnum;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
+import top.harrylei.community.api.enums.article.CreamStatusEnum;
+import top.harrylei.community.api.enums.article.OfficialStatusEnum;
+import top.harrylei.community.api.enums.article.ToppingStatusEnum;
 import top.harrylei.community.api.model.article.req.ArticleQueryParam;
 import top.harrylei.community.api.model.article.vo.ArticleVO;
 import top.harrylei.community.service.article.repository.entity.ArticleDO;
@@ -22,7 +25,7 @@ public class ArticleDAO extends ServiceImpl<ArticleMapper, ArticleDO> {
         return article.getId();
     }
 
-    public void updateDeleted(Long articleId, Integer deleted) {
+    public void updateDeleted(Long articleId, DeleteStatusEnum deleted) {
         lambdaUpdate()
                 .eq(ArticleDO::getId, articleId)
                 .set(ArticleDO::getDeleted, deleted)
@@ -34,27 +37,24 @@ public class ArticleDAO extends ServiceImpl<ArticleMapper, ArticleDO> {
         return getBaseMapper().pageArticleVO(queryParam, page);
     }
 
-    public boolean updateTopping(Long articleId, Integer intValue) {
+    public boolean updateTopping(Long articleId, ToppingStatusEnum toppingStat) {
         return lambdaUpdate()
                 .eq(ArticleDO::getId, articleId)
-                .eq(ArticleDO::getDeleted, YesOrNoEnum.NO.getCode())
-                .set(ArticleDO::getTopping, intValue)
+                .set(ArticleDO::getTopping, toppingStat)
                 .update();
     }
 
-    public boolean updateCream(Long articleId, Integer intValue) {
+    public boolean updateCream(Long articleId, CreamStatusEnum creamStat) {
         return lambdaUpdate()
                 .eq(ArticleDO::getId, articleId)
-                .eq(ArticleDO::getDeleted, YesOrNoEnum.NO.getCode())
-                .set(ArticleDO::getCream, intValue)
+                .set(ArticleDO::getCream, creamStat)
                 .update();
     }
 
-    public boolean updateOfficial(Long articleId, Integer intValue) {
+    public boolean updateOfficial(Long articleId, OfficialStatusEnum officialStat) {
         return lambdaUpdate()
                 .eq(ArticleDO::getId, articleId)
-                .eq(ArticleDO::getDeleted, YesOrNoEnum.NO.getCode())
-                .set(ArticleDO::getOfficial, intValue)
+                .set(ArticleDO::getOfficial, officialStat)
                 .update();
     }
 }

@@ -5,9 +5,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import top.harrylei.community.api.enums.ResultCode;
-import top.harrylei.community.api.enums.YesOrNoEnum;
-import top.harrylei.community.api.enums.comment.ContentTypeEnum;
+import top.harrylei.community.api.enums.response.ResultCode;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
+import top.harrylei.community.api.enums.article.ContentTypeEnum;
 import top.harrylei.community.api.enums.notify.NotifyTypeEnum;
 import top.harrylei.community.api.enums.rank.ActivityActionEnum;
 import top.harrylei.community.api.enums.rank.ActivityTargetEnum;
@@ -119,7 +119,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteComment(Long commentId) {
-        updateCommentDeletedStatus(commentId, YesOrNoEnum.YES);
+        updateCommentDeletedStatus(commentId, DeleteStatusEnum.DELETED);
     }
 
     /**
@@ -130,7 +130,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void restoreComment(Long commentId) {
-        updateCommentDeletedStatus(commentId, YesOrNoEnum.NO);
+        updateCommentDeletedStatus(commentId, DeleteStatusEnum.NOT_DELETED);
     }
 
     /**
@@ -348,7 +348,7 @@ public class CommentServiceImpl implements CommentService {
      */
     private void validateCommentVisibility(CommentDO comment) {
         boolean isAdmin = ReqInfoContext.getContext().isAdmin();
-        boolean isDeleted = Objects.equals(comment.getDeleted(), YesOrNoEnum.YES.getCode());
+        boolean isDeleted = DeleteStatusEnum.DELETED.equals(comment.getDeleted());
 
         // 管理员可以操作已删除评论，普通用户不能操作已删除评论
         if (isDeleted && !isAdmin) {
@@ -392,10 +392,10 @@ public class CommentServiceImpl implements CommentService {
      * @param commentId    评论ID
      * @param targetStatus 目标删除状态
      */
-    private void updateCommentDeletedStatus(Long commentId, YesOrNoEnum targetStatus) {
+    private void updateCommentDeletedStatus(Long commentId, DeleteStatusEnum targetStatus) {
         // 1. 验证评论是否存在并获取
         CommentDO comment = getCommentById(commentId);
-        Integer oldStatus = comment.getDeleted();
+        DeleteStatusEnum oldStatus = comment.getDeleted();
 
         // 2. 验证权限
         validateCommentAuthorPermission(comment.getUserId());
@@ -403,7 +403,7 @@ public class CommentServiceImpl implements CommentService {
         // 3. 检查并更新状态
         if (checkAndUpdateCommentStatus(comment, targetStatus)) {
             // 4. 处理用户足迹
-            boolean isDelete = targetStatus == YesOrNoEnum.YES;
+            boolean isDelete = targetStatus == DeleteStatusEnum.DELETED;
             updateCommentFoot(comment, isDelete);
 
             // 5. 发布活跃度事件
@@ -423,14 +423,14 @@ public class CommentServiceImpl implements CommentService {
      * @param targetStatus 目标状态
      * @return 是否执行了更新操作
      */
-    private boolean checkAndUpdateCommentStatus(CommentDO comment, YesOrNoEnum targetStatus) {
+    private boolean checkAndUpdateCommentStatus(CommentDO comment, DeleteStatusEnum targetStatus) {
         // 检查状态是否需要更新
-        if (Objects.equals(comment.getDeleted(), targetStatus.getCode())) {
+        if (Objects.equals(comment.getDeleted(), targetStatus)) {
             return false;
         }
 
         // 执行状态更新
-        comment.setDeleted(targetStatus.getCode());
+        comment.setDeleted(targetStatus);
         commentDAO.updateById(comment);
         return true;
     }
@@ -471,8 +471,7 @@ public class CommentServiceImpl implements CommentService {
             if (!NumUtil.nullOrZero(comment.getParentCommentId())) {
                 try {
                     CommentDO parentComment = commentDAO.getById(comment.getParentCommentId());
-                    if (parentComment != null && !Objects.equals(parentComment.getDeleted(),
-                            YesOrNoEnum.YES.getCode())) {
+                    if (parentComment != null && !DeleteStatusEnum.DELETED.equals(parentComment.getDeleted())) {
                         commentMy.setParentContent(parentComment.getContent());
                     }
                     // 父评论已删除时，保持parentContent为null，由前端处理显示

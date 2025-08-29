@@ -5,14 +5,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import top.harrylei.community.api.enums.notify.NotifyMsgStateEnum;
-import top.harrylei.community.api.enums.notify.NotifyTypeEnum;
 import top.harrylei.community.api.event.NotificationEvent;
 import top.harrylei.community.api.model.notify.dto.NotifyMsgDTO;
 import top.harrylei.community.api.model.notify.req.NotifyMsgQueryParam;
 import top.harrylei.community.api.model.notify.vo.NotifyMsgVO;
-import top.harrylei.community.core.util.PageUtils;
 import top.harrylei.community.api.model.page.PageVO;
 import top.harrylei.community.api.model.user.dto.UserInfoDTO;
+import top.harrylei.community.core.util.PageUtils;
 import top.harrylei.community.service.notify.converted.NotifyMsgStructMapper;
 import top.harrylei.community.service.notify.repository.dao.NotifyMsgDAO;
 import top.harrylei.community.service.notify.repository.entity.NotifyMsgDO;
@@ -68,8 +67,7 @@ public class NotifyMsgServiceImpl implements NotifyMsgService {
         }
 
         // 2. 系统通知总是发送
-        NotifyTypeEnum notifyType = NotifyTypeEnum.fromCode(event.getNotifyType());
-        if (notifyType != null && notifyType.isSystemNotification()) {
+        if (event.getNotifyType() != null && event.getNotifyType().isSystemNotification()) {
             return true;
         }
 
@@ -100,7 +98,7 @@ public class NotifyMsgServiceImpl implements NotifyMsgService {
                 .setMsg(message)
                 .setType(event.getNotifyType())
                 .setContentType(event.getContentType())
-                .setState(NotifyMsgStateEnum.UNREAD.getCode());
+                .setState(NotifyMsgStateEnum.UNREAD);
     }
 
     /**
@@ -111,9 +109,8 @@ public class NotifyMsgServiceImpl implements NotifyMsgService {
      * @return 消息内容
      */
     private String buildMessageContent(NotificationEvent event, String operateUserName) {
-        NotifyTypeEnum notifyType = NotifyTypeEnum.fromCode(event.getNotifyType());
 
-        return switch (notifyType) {
+        return switch (event.getNotifyType()) {
             case PRAISE -> String.format("%s 赞了你的文章", operateUserName);
             case COMMENT -> String.format("%s 评论了你的文章", operateUserName);
             case REPLY -> String.format("%s 回复了你的评论", operateUserName);

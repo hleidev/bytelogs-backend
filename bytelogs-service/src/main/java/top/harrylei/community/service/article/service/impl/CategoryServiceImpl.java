@@ -4,8 +4,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import top.harrylei.community.api.enums.ResultCode;
-import top.harrylei.community.api.enums.YesOrNoEnum;
+import top.harrylei.community.api.enums.response.ResultCode;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 import top.harrylei.community.api.model.article.dto.CategoryDTO;
 import top.harrylei.community.api.model.article.req.CategoryReq;
 import top.harrylei.community.api.model.page.PageVO;
@@ -114,7 +114,7 @@ public class CategoryServiceImpl implements CategoryService {
      * @param status     删除状态
      */
     @Override
-    public void updateDeleted(Long categoryId, YesOrNoEnum status) {
+    public void updateDeleted(Long categoryId, DeleteStatusEnum status) {
         if (categoryId == null) {
             ResultCode.INVALID_PARAMETER.throwException("分类ID不能为空");
         }
@@ -127,7 +127,7 @@ public class CategoryServiceImpl implements CategoryService {
             ResultCode.CATEGORY_NOT_EXISTS.throwException();
         }
 
-        if (Objects.equals(status.getCode(), category.getDeleted())) {
+        if (Objects.equals(status, category.getDeleted())) {
             log.warn("分类删除状态未变更，无需更新");
             return;
         }
@@ -135,7 +135,7 @@ public class CategoryServiceImpl implements CategoryService {
         Long operatorId = ReqInfoContext.getContext().getUserId();
 
         try {
-            category.setDeleted(status.getCode());
+            category.setDeleted(status);
             categoryDAO.updateById(category);
             log.info("更新分类删除状态成功 category={} operatorId={}", category.getCategoryName(), operatorId);
         } catch (Exception e) {

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 import top.harrylei.community.api.model.base.BaseDO;
 
 import java.io.Serial;
@@ -35,5 +36,5 @@ public class CategoryDO extends BaseDO {
     /**
      * 是否删除：0-未删除，1-已删除
      */
-    private Integer deleted;
+    private DeleteStatusEnum deleted;
 }

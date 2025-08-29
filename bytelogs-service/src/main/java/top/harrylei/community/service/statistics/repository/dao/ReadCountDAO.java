@@ -2,6 +2,7 @@ package top.harrylei.community.service.statistics.repository.dao;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Repository;
+import top.harrylei.community.api.enums.article.ContentTypeEnum;
 import top.harrylei.community.service.statistics.repository.entity.ReadCountDO;
 import top.harrylei.community.service.statistics.repository.mapper.ReadCountMapper;
 
@@ -20,7 +21,7 @@ public class ReadCountDAO extends ServiceImpl<ReadCountMapper, ReadCountDO> {
      * @param contentType 内容类型
      * @return 访问计数记录
      */
-    public ReadCountDO getByContentIdAndType(Long contentId, Integer contentType) {
+    public ReadCountDO getByContentIdAndType(Long contentId, ContentTypeEnum contentType) {
         return lambdaQuery()
                 .eq(ReadCountDO::getContentId, contentId)
                 .eq(ReadCountDO::getContentType, contentType)
@@ -34,7 +35,7 @@ public class ReadCountDAO extends ServiceImpl<ReadCountMapper, ReadCountDO> {
      * @param contentType 内容类型
      * @return 是否成功
      */
-    public boolean incrementReadCount(Long contentId, Integer contentType) {
+    public boolean incrementReadCount(Long contentId, ContentTypeEnum contentType) {
         ReadCountDO existingRecord = getByContentIdAndType(contentId, contentType);
         if (existingRecord == null) {
             return initReadCount(contentId, contentType);
@@ -54,7 +55,7 @@ public class ReadCountDAO extends ServiceImpl<ReadCountMapper, ReadCountDO> {
      * @param contentType 内容类型
      * @return 是否成功
      */
-    private boolean initReadCount(Long contentId, Integer contentType) {
+    private boolean initReadCount(Long contentId, ContentTypeEnum contentType) {
         ReadCountDO readCount = new ReadCountDO()
                 .setContentId(contentId)
                 .setContentType(contentType)
@@ -69,7 +70,7 @@ public class ReadCountDAO extends ServiceImpl<ReadCountMapper, ReadCountDO> {
      * @param contentType 内容类型
      * @return 阅读量
      */
-    public Long getReadCount(Long contentId, Integer contentType) {
+    public Long getReadCount(Long contentId, ContentTypeEnum contentType) {
         ReadCountDO readCount = getByContentIdAndType(contentId, contentType);
         return readCount != null ? readCount.getCnt().longValue() : 0L;
     }

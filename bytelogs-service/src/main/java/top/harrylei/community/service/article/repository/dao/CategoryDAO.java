@@ -3,7 +3,7 @@ package top.harrylei.community.service.article.repository.dao;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Repository;
-import top.harrylei.community.api.enums.YesOrNoEnum;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 import top.harrylei.community.api.model.page.param.CategoryQueryParam;
 import top.harrylei.community.service.article.repository.entity.CategoryDO;
 import top.harrylei.community.service.article.repository.mapper.CategoryMapper;
@@ -22,7 +22,7 @@ public class CategoryDAO extends ServiceImpl<CategoryMapper, CategoryDO> {
     public CategoryDO getByCategoryId(Long categoryId) {
         return lambdaQuery()
                 .eq(CategoryDO::getId, categoryId)
-                .eq(CategoryDO::getDeleted, YesOrNoEnum.NO)
+                .eq(CategoryDO::getDeleted, DeleteStatusEnum.NOT_DELETED)
                 .one();
     }
 
@@ -33,14 +33,14 @@ public class CategoryDAO extends ServiceImpl<CategoryMapper, CategoryDO> {
                 .eq(queryParam.getSortWeight() != null, CategoryDO::getSort, queryParam.getSortWeight())
                 .ge(queryParam.getStartTime() != null, CategoryDO::getCreateTime, queryParam.getStartTime())
                 .le(queryParam.getEndTime() != null, CategoryDO::getCreateTime, queryParam.getEndTime())
-                .eq(CategoryDO::getDeleted, YesOrNoEnum.NO)
+                .eq(CategoryDO::getDeleted, DeleteStatusEnum.NOT_DELETED)
                 .page(page);
     }
 
     public List<CategoryDO> listCategory(boolean deleted) {
-        YesOrNoEnum yesOrNoEnum = deleted ? YesOrNoEnum.YES : YesOrNoEnum.NO;
+        DeleteStatusEnum deleteStatus = deleted ? DeleteStatusEnum.DELETED : DeleteStatusEnum.NOT_DELETED;
         return lambdaQuery()
-                .eq(CategoryDO::getDeleted, yesOrNoEnum)
+                .eq(CategoryDO::getDeleted, deleteStatus)
                 .list();
     }
 }

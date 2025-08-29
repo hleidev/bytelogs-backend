@@ -4,14 +4,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import top.harrylei.community.api.enums.ResultCode;
+import top.harrylei.community.api.enums.response.ResultCode;
+import top.harrylei.community.api.enums.article.*;
 import top.harrylei.community.api.enums.notify.NotifyTypeEnum;
 import top.harrylei.community.api.event.NotificationEvent;
-import top.harrylei.community.api.enums.comment.ContentTypeEnum;
+import top.harrylei.community.api.enums.article.ContentTypeEnum;
 import top.harrylei.community.api.enums.user.OperateTypeEnum;
-import top.harrylei.community.api.enums.YesOrNoEnum;
-import top.harrylei.community.api.enums.article.ArticleStatusTypeEnum;
-import top.harrylei.community.api.enums.article.PublishStatusEnum;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 import top.harrylei.community.api.model.article.dto.ArticleDTO;
 import top.harrylei.community.api.model.article.vo.ArticleVO;
 import top.harrylei.community.core.context.ReqInfoContext;
@@ -53,7 +52,7 @@ public class ArticleCommandServiceImpl implements ArticleCommandService {
     @Override
     public Long saveArticle(ArticleDTO articleDTO) {
         // 1. 处理审核逻辑
-        PublishStatusEnum finalStatus = determinePublishStatus(articleDTO.getStatus());
+        ArticlePublishStatusEnum finalStatus = determinePublishStatus(articleDTO.getStatus());
 
         // 2. 创建文章主记录
         ArticleDO article = articleStructMapper.toDO(articleDTO);
@@ -68,7 +67,7 @@ public class ArticleCommandServiceImpl implements ArticleCommandService {
         saveArticleTags(articleId, articleDTO.getTagIds());
 
         // 5. 如果是发布状态，发送文章发布通知给关注者
-        if (PublishStatusEnum.PUBLISHED.equals(finalStatus)) {
+        if (ArticlePublishStatusEnum.PUBLISHED.equals(finalStatus)) {
             publishArticleNotificationEvent(article);
         }
 
@@ -87,7 +86,7 @@ public class ArticleCommandServiceImpl implements ArticleCommandService {
         ArticleDO article = getArticleWithPermissionCheck(articleId);
 
         // 2. 处理审核逻辑，确定最终状态
-        PublishStatusEnum finalStatus = determinePublishStatus(articleDTO.getStatus());
+        ArticlePublishStatusEnum finalStatus = determinePublishStatus(articleDTO.getStatus());
 
         // 3. 创建新版本
         Integer newVersion = article.getVersionCount() + 1;
@@ -110,7 +109,7 @@ public class ArticleCommandServiceImpl implements ArticleCommandService {
     public void deleteArticle(Long articleId) {
         ArticleDO article = getArticleWithPermissionCheck(articleId);
 
-        if (checkAndUpdateDeleted(article, YesOrNoEnum.YES)) {
+        if (checkAndUpdateDeleted(article, DeleteStatusEnum.DELETED)) {
             log.info("删除文章成功 articleId={} operatorId={}", articleId, ReqInfoContext.getContext().getUserId());
         } else {
             log.info("文章已删除，无需重复删除 articleId={}", articleId);
@@ -121,7 +120,7 @@ public class ArticleCommandServiceImpl implements ArticleCommandService {
     public void restoreArticle(Long articleId) {
         ArticleDO article = getArticleWithPermissionCheck(articleId, true);
 
-        if (checkAndUpdateDeleted(article, YesOrNoEnum.NO)) {
+        if (checkAndUpdateDeleted(article, DeleteStatusEnum.NOT_DELETED)) {
             log.info("恢复文章成功 articleId={} operatorId={}", articleId, ReqInfoContext.getContext().getUserId());
         } else {
             log.info("文章未删除，无需恢复 articleId={}", articleId);
@@ -130,18 +129,18 @@ public class ArticleCommandServiceImpl implements ArticleCommandService {
 
     @Override
     public void publishArticle(Long articleId) {
-        updateArticleStatus(articleId, PublishStatusEnum.PUBLISHED);
+        updateArticleStatus(articleId, ArticlePublishStatusEnum.PUBLISHED);
     }
 
     @Override
     public void unpublishArticle(Long articleId) {
-        updateArticleStatus(articleId, PublishStatusEnum.DRAFT);
+        updateArticleStatus(articleId, ArticlePublishStatusEnum.DRAFT);
     }
 
     @Override
-    public void updateArticleStatus(Long articleId, PublishStatusEnum status) {
+    public void updateArticleStatus(Long articleId, ArticlePublishStatusEnum status) {
         ArticleDO article = getArticleWithPermissionCheck(articleId);
-        ArticleDetailDO targetDetail = PublishStatusEnum.PUBLISHED.equals(status) ?
+        ArticleDetailDO targetDetail = ArticlePublishStatusEnum.PUBLISHED.equals(status) ?
                 articleDetailDAO.getLatestVersion(articleId) :
                 articleDetailDAO.getPublishedVersion(articleId);
 
@@ -150,39 +149,25 @@ public class ArticleCommandServiceImpl implements ArticleCommandService {
         }
 
         // 处理状态变更逻辑
-        PublishStatusEnum finalStatus = determinePublishStatus(status);
-        if (Objects.equals(finalStatus.getCode(), targetDetail.getStatus())) {
+        ArticlePublishStatusEnum finalStatus = determinePublishStatus(status);
+        if (Objects.equals(finalStatus, targetDetail.getStatus())) {
             log.warn("文章状态已是目标状态，无需更新 articleId={} status={}", articleId, finalStatus);
             return;
         }
-        targetDetail.setStatus(finalStatus.getCode());
+        targetDetail.setStatus(finalStatus);
 
-        if (PublishStatusEnum.PUBLISHED.equals(finalStatus)) {
+        if (ArticlePublishStatusEnum.PUBLISHED.equals(finalStatus)) {
             // 清除旧的发布标记
             articleDetailDAO.clearPublishedFlag(articleId);
-            targetDetail.setPublished(YesOrNoEnum.YES.getCode());
+            targetDetail.setPublished(PublishedFlagEnum.YES);
             targetDetail.setPublishTime(LocalDateTime.now());
         } else {
-            targetDetail.setPublished(YesOrNoEnum.NO.getCode());
+            targetDetail.setPublished(PublishedFlagEnum.NO);
             targetDetail.setPublishTime(null);
         }
 
         articleDetailDAO.updateById(targetDetail);
         log.info("文章状态更新成功 articleId={} status={}", articleId, finalStatus);
-    }
-
-    @Override
-    public void updateArticleProperty(Long articleId, ArticleStatusTypeEnum statusType, YesOrNoEnum status) {
-        ArticleDO article = getArticleWithPermissionCheck(articleId);
-
-        switch (statusType) {
-            case TOPPING -> articleDAO.updateTopping(articleId, status.getCode());
-            case CREAM -> articleDAO.updateCream(articleId, status.getCode());
-            case OFFICIAL -> articleDAO.updateOfficial(articleId, status.getCode());
-            default -> throw new IllegalArgumentException("不支持的状态类型: " + statusType);
-        }
-
-        log.info("文章属性更新成功 articleId={} statusType={} status={}", articleId, statusType, status);
     }
 
     @Override
@@ -224,15 +209,15 @@ public class ArticleCommandServiceImpl implements ArticleCommandService {
 
     private void saveArticleDetail(Long articleId,
                                    ArticleDTO articleDTO,
-                                   PublishStatusEnum status) {
+                                   ArticlePublishStatusEnum status) {
         ArticleDetailDO detail = articleStructMapper.toDetailDO(articleDTO);
         detail.setArticleId(articleId);
         detail.setVersion(1);
-        detail.setLatest(YesOrNoEnum.YES.getCode());
-        detail.setStatus(status.getCode());
+        detail.setLatest(LatestFlagEnum.YES);
+        detail.setStatus(status);
 
-        if (PublishStatusEnum.PUBLISHED.equals(status)) {
-            detail.setPublished(YesOrNoEnum.YES.getCode());
+        if (ArticlePublishStatusEnum.PUBLISHED.equals(status)) {
+            detail.setPublished(PublishedFlagEnum.YES);
             detail.setPublishTime(LocalDateTime.now());
         }
 
@@ -242,17 +227,17 @@ public class ArticleCommandServiceImpl implements ArticleCommandService {
     private ArticleDetailDO createNewVersion(Long articleId,
                                              ArticleDTO articleDTO,
                                              Integer version,
-                                             PublishStatusEnum status) {
+                                             ArticlePublishStatusEnum status) {
         ArticleDetailDO newDetail = articleStructMapper.toDetailDO(articleDTO);
         newDetail.setArticleId(articleId);
         newDetail.setVersion(version);
-        newDetail.setLatest(YesOrNoEnum.YES.getCode());
-        newDetail.setStatus(status.getCode());
+        newDetail.setLatest(LatestFlagEnum.YES);
+        newDetail.setStatus(status);
 
         // 处理发布逻辑
-        if (PublishStatusEnum.PUBLISHED.equals(status)) {
+        if (ArticlePublishStatusEnum.PUBLISHED.equals(status)) {
             articleDetailDAO.clearPublishedFlag(articleId);
-            newDetail.setPublished(YesOrNoEnum.YES.getCode());
+            newDetail.setPublished(PublishedFlagEnum.YES);
             newDetail.setPublishTime(LocalDateTime.now());
         }
 
@@ -296,30 +281,30 @@ public class ArticleCommandServiceImpl implements ArticleCommandService {
         }
 
         // 删除状态校验
-        if (!allowDeleted && YesOrNoEnum.YES.getCode().equals(article.getDeleted())) {
+        if (!allowDeleted && DeleteStatusEnum.DELETED.equals(article.getDeleted())) {
             ResultCode.ARTICLE_NOT_EXISTS.throwException();
         }
 
         return article;
     }
 
-    private boolean checkAndUpdateDeleted(ArticleDO article, YesOrNoEnum targetDeleted) {
-        Integer currentDeleted = article.getDeleted();
-        if (Objects.equals(currentDeleted, targetDeleted.getCode())) {
+    private boolean checkAndUpdateDeleted(ArticleDO article, DeleteStatusEnum targetDeleted) {
+        DeleteStatusEnum currentDeleted = article.getDeleted();
+        if (Objects.equals(currentDeleted, targetDeleted)) {
             return false;
         }
 
         // 更新文章删除状态
-        articleDAO.updateDeleted(article.getId(), targetDeleted.getCode());
+        articleDAO.updateDeleted(article.getId(), targetDeleted);
         // 同步更新文章详情删除状态
-        articleDetailDAO.updateDeleted(article.getId(), targetDeleted.getCode());
+        articleDetailDAO.updateDeleted(article.getId(), targetDeleted);
         return true;
     }
 
-    private PublishStatusEnum determinePublishStatus(PublishStatusEnum requestStatus) {
+    private ArticlePublishStatusEnum determinePublishStatus(ArticlePublishStatusEnum requestStatus) {
         // 如果请求状态为空，默认为草稿
         if (requestStatus == null) {
-            return PublishStatusEnum.DRAFT;
+            return ArticlePublishStatusEnum.DRAFT;
         }
 
         // 获取当前用户信息
@@ -332,7 +317,7 @@ public class ArticleCommandServiceImpl implements ArticleCommandService {
         switch (requestStatus) {
             case PUBLISHED -> {
                 // 只有管理员可以直接发布，普通用户需要审核
-                return isAdmin ? PublishStatusEnum.PUBLISHED : PublishStatusEnum.REVIEW;
+                return isAdmin ? ArticlePublishStatusEnum.PUBLISHED : ArticlePublishStatusEnum.REVIEW;
             }
             case DRAFT, REJECTED, REVIEW -> {
                 // 草稿、已驳回、待审核状态保持原状
@@ -340,7 +325,7 @@ public class ArticleCommandServiceImpl implements ArticleCommandService {
             }
             default -> {
                 log.warn("未知的发布状态: {}, 默认设置为草稿", requestStatus);
-                return PublishStatusEnum.DRAFT;
+                return ArticlePublishStatusEnum.DRAFT;
             }
         }
     }
@@ -351,8 +336,8 @@ public class ArticleCommandServiceImpl implements ArticleCommandService {
                     .operateUserId(article.getUserId())
                     .targetUserId(article.getUserId())
                     .relatedId(article.getId())
-                    .notifyType(NotifyTypeEnum.ARTICLE_PUBLISH.getCode())
-                    .contentType(ContentTypeEnum.ARTICLE.getCode())
+                    .notifyType(NotifyTypeEnum.ARTICLE_PUBLISH)
+                    .contentType(ContentTypeEnum.ARTICLE)
                     .source("article-service")
                     .build();
             kafkaEventPublisher.publishNotificationEvent(event);
@@ -370,6 +355,30 @@ public class ArticleCommandServiceImpl implements ArticleCommandService {
         validateAuthorPermission(articleVO);
 
         return articleVO;
+    }
+
+    @Override
+    public void updateArticleTopping(Long articleId, ToppingStatusEnum toppingStat) {
+        ArticleDO article = getArticleWithPermissionCheck(articleId);
+
+        articleDAO.updateTopping(articleId, toppingStat);
+        log.info("文章置顶状态更新成功 articleId={} toppingStat={}", articleId, toppingStat);
+    }
+
+    @Override
+    public void updateArticleCream(Long articleId, CreamStatusEnum creamStat) {
+        ArticleDO article = getArticleWithPermissionCheck(articleId);
+
+        articleDAO.updateCream(articleId, creamStat);
+        log.info("文章加精状态更新成功 articleId={} creamStat={}", articleId, creamStat);
+    }
+
+    @Override
+    public void updateArticleOfficial(Long articleId, OfficialStatusEnum officialStat) {
+        ArticleDO article = getArticleWithPermissionCheck(articleId);
+
+        articleDAO.updateOfficial(articleId, officialStat);
+        log.info("文章官方状态更新成功 articleId={} officialStat={}", articleId, officialStat);
     }
 
     /**

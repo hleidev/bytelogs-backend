@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import top.harrylei.community.api.enums.base.CodeLabelEnum;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -19,7 +18,7 @@ import java.util.stream.Collectors;
  */
 @Getter
 @AllArgsConstructor
-public enum UserFollowStatusEnum implements CodeLabelEnum {
+public enum UserFollowStatusEnum {
 
     /**
      * 未关注
@@ -41,16 +40,12 @@ public enum UserFollowStatusEnum implements CodeLabelEnum {
     // 根据状态编码快速定位枚举实例
     private static final Map<Integer, UserFollowStatusEnum> CODE_MAP =
             Arrays.stream(values()).collect(Collectors.toMap(UserFollowStatusEnum::getCode, Function.identity()));
-    // 根据枚举名称（不区分大小写）快速定位枚举实例
-    private static final Map<String, UserFollowStatusEnum> NAME_MAP =
-            Arrays.stream(values()).collect(Collectors.toMap(e -> e.name().toUpperCase(), Function.identity()));
 
     /**
      * 获取状态码
      *
      * @return 状态码
      */
-    @Override
     @JsonValue
     public Integer getCode() {
         return code;
@@ -65,17 +60,5 @@ public enum UserFollowStatusEnum implements CodeLabelEnum {
     @JsonCreator
     public static UserFollowStatusEnum fromCode(Integer code) {
         return code == null ? null : CODE_MAP.get(code);
-    }
-
-    /**
-     * 根据状态编码获取状态标签，若未找到则返回默认值
-     *
-     * @param code         状态编码
-     * @param defaultLabel 默认值
-     * @return 状态描述，若无匹配则返回默认值
-     */
-    public static String getLabelByCode(Integer code, String defaultLabel) {
-        UserFollowStatusEnum status = fromCode(code);
-        return status == null ? defaultLabel : status.getLabel();
     }
 }

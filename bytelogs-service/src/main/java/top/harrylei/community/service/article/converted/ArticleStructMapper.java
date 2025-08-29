@@ -2,15 +2,11 @@ package top.harrylei.community.service.article.converted;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.Named;
-import top.harrylei.community.api.enums.article.ArticleSourceEnum;
-import top.harrylei.community.api.enums.article.ArticleTypeEnum;
 import top.harrylei.community.api.model.article.dto.ArticleDTO;
 import top.harrylei.community.api.model.article.req.ArticleSaveReq;
 import top.harrylei.community.api.model.article.req.ArticleUpdateReq;
 import top.harrylei.community.api.model.article.vo.ArticleVO;
 import top.harrylei.community.api.model.article.vo.ArticleVersionVO;
-import top.harrylei.community.core.common.converter.EnumConverter;
 import top.harrylei.community.service.article.repository.entity.ArticleDO;
 import top.harrylei.community.service.article.repository.entity.ArticleDetailDO;
 
@@ -20,28 +16,9 @@ import top.harrylei.community.service.article.repository.entity.ArticleDetailDO;
  *
  * @author harry
  */
-@Mapper(componentModel = "spring", uses = {EnumConverter.class})
+@Mapper(componentModel = "spring")
 public interface ArticleStructMapper {
 
-    @Named("ArticleTypeEnumToCode")
-    default Integer articleTypeEnumToCode(ArticleTypeEnum articleTypeEnum) {
-        return articleTypeEnum != null ? articleTypeEnum.getCode() : null;
-    }
-
-    @Named("ArticleSourceEnumToCode")
-    default Integer articleSourceEnumToCode(ArticleSourceEnum articleSourceEnum) {
-        return articleSourceEnum != null ? articleSourceEnum.getCode() : null;
-    }
-
-    @Named("CodeToArticleTypeEnum")
-    default ArticleTypeEnum codeToArticleTypeEnum(Integer code) {
-        return code != null ? ArticleTypeEnum.fromCode(code) : null;
-    }
-
-    @Named("CodeToArticleSourceEnum")
-    default ArticleSourceEnum codeToArticleSourceEnum(Integer code) {
-        return code != null ? ArticleSourceEnum.fromCode(code) : null;
-    }
 
     @Mapping(target = "versionCount", ignore = true)
     @Mapping(target = "userId", ignore = true)
@@ -54,11 +31,6 @@ public interface ArticleStructMapper {
     @Mapping(target = "cream", ignore = true)
     ArticleDTO toDTO(ArticleSaveReq articleSaveReq);
 
-    @Mapping(target = "articleType", source = "articleType", qualifiedByName = "ArticleTypeEnumToCode")
-    @Mapping(target = "official", source = "official", qualifiedByName = "YesOrNoEnumToCode")
-    @Mapping(target = "topping", source = "topping", qualifiedByName = "YesOrNoEnumToCode")
-    @Mapping(target = "cream", source = "cream", qualifiedByName = "YesOrNoEnumToCode")
-    @Mapping(target = "deleted", source = "deleted", qualifiedByName = "YesOrNoEnumToCode")
     @Mapping(target = "versionCount", ignore = true)
     ArticleDO toDO(ArticleDTO articleDTO);
 
@@ -72,11 +44,6 @@ public interface ArticleStructMapper {
     @Mapping(target = "source", ignore = true)
     @Mapping(target = "sourceUrl", ignore = true)
     @Mapping(target = "status", ignore = true)
-    @Mapping(target = "articleType", source = "articleType", qualifiedByName = "CodeToArticleTypeEnum")
-    @Mapping(target = "official", source = "official", qualifiedByName = "CodeToYesOrNoEnum")
-    @Mapping(target = "topping", source = "topping", qualifiedByName = "CodeToYesOrNoEnum")
-    @Mapping(target = "cream", source = "cream", qualifiedByName = "CodeToYesOrNoEnum")
-    @Mapping(target = "deleted", source = "deleted", qualifiedByName = "CodeToYesOrNoEnum")
     ArticleDTO toDTO(ArticleDO articleDO);
 
     @Mapping(target = "versionCount", ignore = true)
@@ -101,35 +68,25 @@ public interface ArticleStructMapper {
     @Mapping(target = "latest", ignore = true)
     @Mapping(target = "published", ignore = true)
     @Mapping(target = "publishTime", ignore = true)
-    @Mapping(target = "source", source = "source", qualifiedByName = "ArticleSourceEnumToCode")
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "deleted", ignore = true)
     ArticleDetailDO toDetailDO(ArticleDTO articleDTO);
 
     @Mapping(target = "id", source = "article.id")
     @Mapping(target = "userId", source = "article.userId")
-    @Mapping(target = "articleType", source = "article.articleType", qualifiedByName = "CodeToArticleTypeEnum")
-    @Mapping(target = "official", source = "article.official", qualifiedByName = "CodeToYesOrNoEnum")
-    @Mapping(target = "topping", source = "article.topping", qualifiedByName = "CodeToYesOrNoEnum")
-    @Mapping(target = "cream", source = "article.cream", qualifiedByName = "CodeToYesOrNoEnum")
-    @Mapping(target = "deleted", source = "article.deleted", qualifiedByName = "CodeToYesOrNoEnum")
+    @Mapping(target = "deleted", source = "article.deleted")
     @Mapping(target = "createTime", source = "article.createTime")
     @Mapping(target = "updateTime", source = "article.updateTime")
     @Mapping(target = "title", source = "detail.title")
     @Mapping(target = "shortTitle", source = "detail.shortTitle")
     @Mapping(target = "picture", source = "detail.picture")
     @Mapping(target = "summary", source = "detail.summary")
-    @Mapping(target = "source", source = "detail.source", qualifiedByName = "CodeToArticleSourceEnum")
     @Mapping(target = "sourceUrl", source = "detail.sourceUrl")
-    @Mapping(target = "status", source = "detail.status", qualifiedByName = "CodeToPublishStatusEnum")
     @Mapping(target = "content", source = "detail.content")
     @Mapping(target = "tags", ignore = true)
     @Mapping(target = "category", ignore = true)
     ArticleVO buildArticleVO(ArticleDO article, ArticleDetailDO detail);
 
-    @Mapping(target = "status", source = "status", qualifiedByName = "CodeToPublishStatusEnum")
-    @Mapping(target = "latest", source = "latest", qualifiedByName = "CodeToYesOrNoEnum")
-    @Mapping(target = "published", source = "published", qualifiedByName = "CodeToYesOrNoEnum")
     ArticleVersionVO toVersionVO(ArticleDetailDO detail);
 
     @Mapping(target = "id", ignore = true)
@@ -137,10 +94,10 @@ public interface ArticleStructMapper {
     @Mapping(target = "version", ignore = true)
     @Mapping(target = "createTime", ignore = true)
     @Mapping(target = "updateTime", ignore = true)
-    @Mapping(target = "latest", constant = "1")
-    @Mapping(target = "published", constant = "0")
-    @Mapping(target = "status", constant = "0")
+    @Mapping(target = "latest", constant = "YES")
+    @Mapping(target = "published", constant = "NO")
+    @Mapping(target = "status", constant = "DRAFT")
     @Mapping(target = "publishTime", ignore = true)
-    @Mapping(target = "deleted", constant = "0")
+    @Mapping(target = "deleted", constant = "NOT_DELETED")
     ArticleDetailDO copyForNewVersion(ArticleDetailDO source);
 }

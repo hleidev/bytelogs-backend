@@ -59,18 +59,18 @@ public enum ChatClientTypeEnum {
     /**
      * 根据配置key获取枚举
      */
-    public static ChatClientTypeEnum fromConfigKey(String configKey) {
+    public static ChatClientTypeEnum fromName(String provider) {
         try {
-            return valueOf(configKey.toUpperCase());
+            return valueOf(provider.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Unknown config key: " + configKey);
+            throw new IllegalArgumentException("Unknown config key: " + provider);
         }
     }
 
     /**
      * 获取配置key
      */
-    public String getConfigKey() {
+    public String getName() {
         return this.name().toLowerCase();
     }
 }
