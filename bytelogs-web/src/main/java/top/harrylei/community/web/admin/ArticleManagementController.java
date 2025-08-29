@@ -100,7 +100,7 @@ public class ArticleManagementController {
      * @param request 属性更新请求
      * @return 操作结果
      */
-    @Operation(summary = "更新属性", description = "管理员更新文章属性标识置顶，支持批量操作")
+    @Operation(summary = "更新置顶", description = "管理员更新文章属性标识置顶，支持批量操作")
     @PutMapping("/topping")
     public ResVO<Void> updateArticleTopping(@RequestBody @Valid ArticleToppingUpdateReq request) {
         articleManagementService.updateArticleTopping(request.getArticleIds(), request.getToppingStat());
@@ -113,7 +113,7 @@ public class ArticleManagementController {
      * @param request 属性更新请求
      * @return 操作结果
      */
-    @Operation(summary = "更新属性", description = "管理员更新文章属性标识加精，支持批量操作")
+    @Operation(summary = "更新加精", description = "管理员更新文章属性标识加精，支持批量操作")
     @PutMapping("/cream")
     public ResVO<Void> updateArticleCream(@RequestBody @Valid ArticleCreamUpdateReq request) {
         articleManagementService.updateArticleCream(request.getArticleIds(), request.getCreamStat());
@@ -126,7 +126,7 @@ public class ArticleManagementController {
      * @param request 属性更新请求
      * @return 操作结果
      */
-    @Operation(summary = "更新属性", description = "管理员更新文章属性标识官方，支持批量操作")
+    @Operation(summary = "更新官方", description = "管理员更新文章属性标识官方，支持批量操作")
     @PutMapping("/official")
     public ResVO<Void> updateArticleOfficial(@RequestBody @Valid ArticleOfficialUpdateReq request) {
         articleManagementService.updateArticleOfficial(request.getArticleIds(), request.getOfficialStat());
