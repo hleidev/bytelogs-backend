@@ -3,7 +3,7 @@ package top.harrylei.community.api.model.article.vo;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.experimental.Accessors;
-import top.harrylei.community.api.model.statistics.StatisticsVO;
+import top.harrylei.community.api.model.statistics.ArticleStatisticsVO;
 import top.harrylei.community.api.model.user.vo.UserInfoVO;
 
 /**
@@ -29,5 +29,5 @@ public class ArticleDetailVO {
     /**
      * 统计信息
      */
-    private StatisticsVO statistics;
+    private ArticleStatisticsVO statistics;
 }

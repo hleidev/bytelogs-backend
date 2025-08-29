@@ -5,16 +5,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import top.harrylei.community.api.enums.response.ResultCode;
-import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 import top.harrylei.community.api.enums.article.ArticlePublishStatusEnum;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
+import top.harrylei.community.api.enums.response.ResultCode;
 import top.harrylei.community.api.model.article.req.ArticleQueryParam;
 import top.harrylei.community.api.model.article.vo.ArticleDetailVO;
 import top.harrylei.community.api.model.article.vo.ArticleVO;
 import top.harrylei.community.api.model.article.vo.TagSimpleVO;
 import top.harrylei.community.api.model.page.PageVO;
-import top.harrylei.community.api.model.statistics.StatisticsVO;
-import top.harrylei.community.api.model.user.dto.ArticleFootCountDTO;
+import top.harrylei.community.api.model.statistics.dto.ArticleStatisticsDTO;
 import top.harrylei.community.api.model.user.dto.UserInfoDTO;
 import top.harrylei.community.core.context.ReqInfoContext;
 import top.harrylei.community.core.util.PageUtils;
@@ -25,6 +24,7 @@ import top.harrylei.community.service.article.repository.entity.ArticleDO;
 import top.harrylei.community.service.article.repository.entity.ArticleDetailDO;
 import top.harrylei.community.service.article.service.ArticleQueryService;
 import top.harrylei.community.service.article.service.ArticleTagService;
+import top.harrylei.community.service.statistics.converted.ArticleStatisticsStructMapper;
 import top.harrylei.community.service.statistics.service.ArticleStatisticsService;
 import top.harrylei.community.service.user.converted.UserStructMapper;
 import top.harrylei.community.service.user.service.UserFootService;
@@ -54,6 +54,7 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
     private final UserCacheService userCacheService;
     private final UserFootService userFootService;
     private final ArticleStatisticsService articleStatisticsService;
+    private final ArticleStatisticsStructMapper articleStatisticsStructMapper;
 
     @Override
     public ArticleDetailVO getArticleDetail(Long articleId) {
@@ -64,7 +65,7 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
         validatePublicViewPermission(articleVO);
 
         // 构建统计信息
-        StatisticsVO statistics = getStatistics(articleId);
+        ArticleStatisticsDTO articleStatistics = articleStatisticsService.getArticleStatistics(articleId);
 
         // 记录阅读行为
         recordReadBehavior(articleId, articleVO.getUserId());
@@ -75,7 +76,7 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
         ArticleDetailVO result = new ArticleDetailVO();
         result.setArticle(articleVO);
         result.setAuthor(userStructMapper.toVO(author));
-        result.setStatistics(statistics);
+        result.setStatistics(articleStatisticsStructMapper.toVO(articleStatistics));
         return result;
     }
 
@@ -129,19 +130,6 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
         if (!ArticlePublishStatusEnum.PUBLISHED.equals(articleVO.getStatus())) {
             ResultCode.ARTICLE_NOT_EXISTS.throwException();
         }
-    }
-
-    /**
-     * 构建统计信息
-     */
-    private StatisticsVO getStatistics(Long articleId) {
-        Long readCount = articleStatisticsService.getReadCount(articleId);
-        ArticleFootCountDTO footCount = userFootService.getArticleFootCount(articleId);
-
-        return new StatisticsVO()
-                .setReadCount(readCount)
-                .setPraiseCount(footCount.getPraiseCount())
-                .setCollectionCount(footCount.getCollectionCount());
     }
 
     /**

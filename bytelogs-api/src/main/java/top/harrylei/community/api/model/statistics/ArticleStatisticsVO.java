@@ -13,7 +13,7 @@ import java.io.Serializable;
  */
 @Data
 @Accessors(chain = true)
-public class StatisticsVO implements Serializable {
+public class ArticleStatisticsVO implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -31,5 +31,10 @@ public class StatisticsVO implements Serializable {
     /**
      * 收藏数
      */
-    private Long collectionCount;
+    private Long collectCount;
+
+    /**
+     * 评论数
+     */
+    private Long commentCount;
 }

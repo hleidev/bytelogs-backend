@@ -4,10 +4,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import top.harrylei.community.api.model.statistics.dto.ArticleStatisticsDTO;
 import top.harrylei.community.core.common.constans.RedisKeyConstants;
 import top.harrylei.community.core.context.ReqInfoContext;
 import top.harrylei.community.core.util.RedisUtil;
+import top.harrylei.community.service.statistics.converted.ArticleStatisticsStructMapper;
 import top.harrylei.community.service.statistics.repository.dao.ArticleStatisticsDAO;
+import top.harrylei.community.service.statistics.repository.entity.ArticleStatisticsDO;
 import top.harrylei.community.service.statistics.service.ArticleStatisticsService;
 
 import java.time.Duration;
@@ -24,6 +27,17 @@ public class ArticleStatisticsServiceImpl implements ArticleStatisticsService {
 
     private final ArticleStatisticsDAO articleStatisticsDAO;
     private final RedisUtil redisUtil;
+    private final ArticleStatisticsStructMapper articleStatisticsStructMapper;
+
+    @Override
+    public ArticleStatisticsDTO getArticleStatistics(Long articleId) {
+        ArticleStatisticsDO statistics = articleStatisticsDAO.getByArticleId(articleId);
+        if (statistics == null) {
+            return new ArticleStatisticsDTO();
+        }
+
+        return articleStatisticsStructMapper.toDTO(statistics);
+    }
 
     @Override
     @Async("statisticsExecutor")

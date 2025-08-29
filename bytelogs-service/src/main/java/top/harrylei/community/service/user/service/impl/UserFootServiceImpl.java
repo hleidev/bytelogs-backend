@@ -18,6 +18,7 @@ import top.harrylei.community.core.util.KafkaEventPublisher;
 import top.harrylei.community.core.util.NumUtil;
 import top.harrylei.community.core.util.RedisUtil;
 import top.harrylei.community.service.comment.repository.entity.CommentDO;
+import top.harrylei.community.service.statistics.service.ArticleStatisticsService;
 import top.harrylei.community.service.user.converted.UserFootStructMapper;
 import top.harrylei.community.service.user.repository.dao.UserFootDAO;
 import top.harrylei.community.service.user.repository.entity.UserFootDO;
@@ -42,6 +43,7 @@ public class UserFootServiceImpl implements UserFootService {
     private final UserFootStructMapper userFootStructMapper;
     private final RedisUtil redisUtil;
     private final KafkaEventPublisher kafkaEventPublisher;
+    private final ArticleStatisticsService articleStatisticsService;
 
 
     /**
@@ -191,8 +193,7 @@ public class UserFootServiceImpl implements UserFootService {
         boolean success = saveOrUpdateUserFoot(userId, type, contentAuthorId, contentId, contentType);
 
         if (!success) {
-            log.warn("保存或更新{}用户足迹失败: userId={} operateTypeEnum={} contentAuthorId={} contentId={}",
-                    contentType.getLabel(), userId, type, contentAuthorId, contentId);
+            // 状态未变化，无需后续处理
             return false;
         }
 
@@ -217,6 +218,8 @@ public class UserFootServiceImpl implements UserFootService {
     public boolean saveOrUpdateUserFoot(Long userId, OperateTypeEnum operateTypeEnum, Long authorId,
                                         Long contentId, ContentTypeEnum contentTypeEnum) {
         UserFootDO userFoot = userFootDAO.getByContentAndUserId(userId, contentId, contentTypeEnum);
+        boolean stateChanged = false;
+
         if (userFoot == null) {
             userFoot = new UserFootDO()
                     .setUserId(userId)
@@ -224,12 +227,42 @@ public class UserFootServiceImpl implements UserFootService {
                     .setContentUserId(authorId)
                     .setContentType(contentTypeEnum);
             setUserFootState(userFoot, operateTypeEnum);
-            return userFootDAO.save(userFoot);
+            stateChanged = userFootDAO.save(userFoot);
         } else if (setUserFootState(userFoot, operateTypeEnum)) {
-            return userFootDAO.updateById(userFoot);
+            stateChanged = userFootDAO.updateById(userFoot);
         } else {
             // 状态未变化，无需更新
             return false;
+        }
+
+        // 同步更新ArticleStatistics（仅文章类型且状态确实发生变化时）
+        if (stateChanged && ContentTypeEnum.ARTICLE.equals(contentTypeEnum)) {
+            try {
+                syncArticleStatistics(contentId, operateTypeEnum);
+            } catch (Exception e) {
+                log.error("同步文章统计数据失败: contentId={}, operateType={}", contentId, operateTypeEnum, e);
+                // 不影响主流程，继续返回成功
+            }
+        }
+
+        return stateChanged;
+    }
+
+    /**
+     * 同步更新ArticleStatistics表
+     */
+    private void syncArticleStatistics(Long articleId, OperateTypeEnum operateTypeEnum) {
+        switch (operateTypeEnum) {
+            case PRAISE -> articleStatisticsService.incrementPraiseCount(articleId);
+            case CANCEL_PRAISE -> articleStatisticsService.decrementPraiseCount(articleId);
+            case COLLECTION -> articleStatisticsService.incrementCollectCount(articleId);
+            case CANCEL_COLLECTION -> articleStatisticsService.decrementCollectCount(articleId);
+            case COMMENT -> articleStatisticsService.incrementCommentCount(articleId);
+            case DELETE_COMMENT -> articleStatisticsService.decrementCommentCount(articleId);
+            // READ操作已在ArticleStatisticsService中单独处理，无需在此同步
+            default -> {
+                // 其他操作类型不需要同步到ArticleStatistics
+            }
         }
     }
 
