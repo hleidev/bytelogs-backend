@@ -7,8 +7,8 @@ import org.springframework.stereotype.Service;
 import top.harrylei.community.core.common.constans.RedisKeyConstants;
 import top.harrylei.community.core.context.ReqInfoContext;
 import top.harrylei.community.core.util.RedisUtil;
-import top.harrylei.community.service.statistics.repository.dao.ReadCountDAO;
-import top.harrylei.community.service.statistics.service.ReadCountService;
+import top.harrylei.community.service.statistics.repository.dao.ArticleStatisticsDAO;
+import top.harrylei.community.service.statistics.service.ArticleStatisticsService;
 
 import java.time.Duration;
 
@@ -20,9 +20,9 @@ import java.time.Duration;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ReadCountServiceImpl implements ReadCountService {
+public class ArticleStatisticsServiceImpl implements ArticleStatisticsService {
 
-    private final ReadCountDAO readCountDAO;
+    private final ArticleStatisticsDAO articleStatisticsDAO;
     private final RedisUtil redisUtil;
 
     @Override
@@ -33,7 +33,7 @@ public class ReadCountServiceImpl implements ReadCountService {
 
         try {
             if (redisUtil.setIfAbsent(lockKey, "1", duration)) {
-                readCountDAO.incrementReadCount(articleId);
+                articleStatisticsDAO.incrementReadCount(articleId);
                 log.debug("文章阅读量统计成功: articleId={}", articleId);
             } else {
                 log.debug("重复访问，跳过统计: articleId={}", articleId);
@@ -45,58 +45,58 @@ public class ReadCountServiceImpl implements ReadCountService {
 
     @Override
     public Long getReadCount(Long articleId) {
-        return readCountDAO.getReadCount(articleId);
+        return articleStatisticsDAO.getReadCount(articleId);
     }
 
     @Override
     public void incrementPraiseCount(Long articleId) {
-        readCountDAO.incrementPraiseCount(articleId);
+        articleStatisticsDAO.incrementPraiseCount(articleId);
         log.debug("文章点赞量增加成功: articleId={}", articleId);
     }
 
     @Override
     public void decrementPraiseCount(Long articleId) {
-        readCountDAO.decrementPraiseCount(articleId);
+        articleStatisticsDAO.decrementPraiseCount(articleId);
         log.debug("文章点赞量减少成功: articleId={}", articleId);
     }
 
     @Override
     public Long getPraiseCount(Long articleId) {
-        return readCountDAO.getPraiseCount(articleId);
+        return articleStatisticsDAO.getPraiseCount(articleId);
     }
 
     @Override
     public void incrementCollectCount(Long articleId) {
-        readCountDAO.incrementCollectCount(articleId);
+        articleStatisticsDAO.incrementCollectCount(articleId);
         log.debug("文章收藏量增加成功: articleId={}", articleId);
     }
 
     @Override
     public void decrementCollectCount(Long articleId) {
-        readCountDAO.decrementCollectCount(articleId);
+        articleStatisticsDAO.decrementCollectCount(articleId);
         log.debug("文章收藏量减少成功: articleId={}", articleId);
     }
 
     @Override
     public Long getCollectCount(Long articleId) {
-        return readCountDAO.getCollectCount(articleId);
+        return articleStatisticsDAO.getCollectCount(articleId);
     }
 
     @Override
     public void incrementCommentCount(Long articleId) {
-        readCountDAO.incrementCommentCount(articleId);
+        articleStatisticsDAO.incrementCommentCount(articleId);
         log.debug("文章评论量增加成功: articleId={}", articleId);
     }
 
     @Override
     public void decrementCommentCount(Long articleId) {
-        readCountDAO.decrementCommentCount(articleId);
+        articleStatisticsDAO.decrementCommentCount(articleId);
         log.debug("文章评论量减少成功: articleId={}", articleId);
     }
 
     @Override
     public Long getCommentCount(Long articleId) {
-        return readCountDAO.getCommentCount(articleId);
+        return articleStatisticsDAO.getCommentCount(articleId);
     }
 
     /**

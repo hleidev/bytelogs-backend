@@ -8,7 +8,6 @@ import org.springframework.util.CollectionUtils;
 import top.harrylei.community.api.enums.response.ResultCode;
 import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 import top.harrylei.community.api.enums.article.ArticlePublishStatusEnum;
-import top.harrylei.community.api.enums.article.ContentTypeEnum;
 import top.harrylei.community.api.model.article.req.ArticleQueryParam;
 import top.harrylei.community.api.model.article.vo.ArticleDetailVO;
 import top.harrylei.community.api.model.article.vo.ArticleVO;
@@ -26,7 +25,7 @@ import top.harrylei.community.service.article.repository.entity.ArticleDO;
 import top.harrylei.community.service.article.repository.entity.ArticleDetailDO;
 import top.harrylei.community.service.article.service.ArticleQueryService;
 import top.harrylei.community.service.article.service.ArticleTagService;
-import top.harrylei.community.service.statistics.service.ReadCountService;
+import top.harrylei.community.service.statistics.service.ArticleStatisticsService;
 import top.harrylei.community.service.user.converted.UserStructMapper;
 import top.harrylei.community.service.user.service.UserFootService;
 import top.harrylei.community.service.user.service.cache.UserCacheService;
@@ -54,7 +53,7 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
     private final UserStructMapper userStructMapper;
     private final UserCacheService userCacheService;
     private final UserFootService userFootService;
-    private final ReadCountService readCountService;
+    private final ArticleStatisticsService articleStatisticsService;
 
     @Override
     public ArticleDetailVO getArticleDetail(Long articleId) {
@@ -136,7 +135,7 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
      * 构建统计信息
      */
     private StatisticsVO getStatistics(Long articleId) {
-        Long readCount = readCountService.getReadCount(articleId, ContentTypeEnum.ARTICLE);
+        Long readCount = articleStatisticsService.getReadCount(articleId);
         ArticleFootCountDTO footCount = userFootService.getArticleFootCount(articleId);
 
         return new StatisticsVO()
@@ -150,7 +149,7 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
      */
     private void recordReadBehavior(Long articleId, Long authorId) {
         // 所有用户都增加阅读计数
-        readCountService.incrementReadCount(articleId, ContentTypeEnum.ARTICLE);
+        articleStatisticsService.incrementReadCount(articleId);
 
         // 仅登录用户记录足迹
         if (ReqInfoContext.getContext().isLoggedIn()) {

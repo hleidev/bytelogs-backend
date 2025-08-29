@@ -2,8 +2,8 @@ package top.harrylei.community.service.statistics.repository.dao;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Repository;
-import top.harrylei.community.service.statistics.repository.entity.ReadCountDO;
-import top.harrylei.community.service.statistics.repository.mapper.ReadCountMapper;
+import top.harrylei.community.service.statistics.repository.entity.ArticleStatisticsDO;
+import top.harrylei.community.service.statistics.repository.mapper.ArticleStatisticsMapper;
 
 /**
  * 文章统计数据访问对象
@@ -11,7 +11,7 @@ import top.harrylei.community.service.statistics.repository.mapper.ReadCountMapp
  * @author harry
  */
 @Repository
-public class ReadCountDAO extends ServiceImpl<ReadCountMapper, ReadCountDO> {
+public class ArticleStatisticsDAO extends ServiceImpl<ArticleStatisticsMapper, ArticleStatisticsDO> {
 
     /**
      * 根据文章ID获取统计记录
@@ -19,9 +19,9 @@ public class ReadCountDAO extends ServiceImpl<ReadCountMapper, ReadCountDO> {
      * @param articleId 文章ID
      * @return 统计记录
      */
-    public ReadCountDO getByArticleId(Long articleId) {
+    public ArticleStatisticsDO getByArticleId(Long articleId) {
         return lambdaQuery()
-                .eq(ReadCountDO::getArticleId, articleId)
+                .eq(ArticleStatisticsDO::getArticleId, articleId)
                 .one();
     }
 
@@ -32,12 +32,12 @@ public class ReadCountDAO extends ServiceImpl<ReadCountMapper, ReadCountDO> {
      * @return 是否成功
      */
     public boolean incrementReadCount(Long articleId) {
-        ReadCountDO existingRecord = getByArticleId(articleId);
+        ArticleStatisticsDO existingRecord = getByArticleId(articleId);
         if (existingRecord == null) {
             return initArticleStatistics(articleId);
         } else {
             return lambdaUpdate()
-                    .eq(ReadCountDO::getArticleId, articleId)
+                    .eq(ArticleStatisticsDO::getArticleId, articleId)
                     .setSql("read_count = read_count + 1")
                     .update();
         }
@@ -50,7 +50,7 @@ public class ReadCountDAO extends ServiceImpl<ReadCountMapper, ReadCountDO> {
      * @return 阅读量
      */
     public Long getReadCount(Long articleId) {
-        ReadCountDO statistics = getByArticleId(articleId);
+        ArticleStatisticsDO statistics = getByArticleId(articleId);
         return statistics != null ? statistics.getReadCount().longValue() : 0L;
     }
 
@@ -63,7 +63,7 @@ public class ReadCountDAO extends ServiceImpl<ReadCountMapper, ReadCountDO> {
     public boolean incrementPraiseCount(Long articleId) {
         ensureStatisticsExists(articleId);
         return lambdaUpdate()
-                .eq(ReadCountDO::getArticleId, articleId)
+                .eq(ArticleStatisticsDO::getArticleId, articleId)
                 .setSql("praise_count = praise_count + 1")
                 .update();
     }
@@ -76,7 +76,7 @@ public class ReadCountDAO extends ServiceImpl<ReadCountMapper, ReadCountDO> {
      */
     public boolean decrementPraiseCount(Long articleId) {
         return lambdaUpdate()
-                .eq(ReadCountDO::getArticleId, articleId)
+                .eq(ArticleStatisticsDO::getArticleId, articleId)
                 .setSql("praise_count = GREATEST(praise_count - 1, 0)")
                 .update();
     }
@@ -88,7 +88,7 @@ public class ReadCountDAO extends ServiceImpl<ReadCountMapper, ReadCountDO> {
      * @return 点赞量
      */
     public Long getPraiseCount(Long articleId) {
-        ReadCountDO statistics = getByArticleId(articleId);
+        ArticleStatisticsDO statistics = getByArticleId(articleId);
         return statistics != null ? statistics.getPraiseCount().longValue() : 0L;
     }
 
@@ -101,7 +101,7 @@ public class ReadCountDAO extends ServiceImpl<ReadCountMapper, ReadCountDO> {
     public boolean incrementCollectCount(Long articleId) {
         ensureStatisticsExists(articleId);
         return lambdaUpdate()
-                .eq(ReadCountDO::getArticleId, articleId)
+                .eq(ArticleStatisticsDO::getArticleId, articleId)
                 .setSql("collect_count = collect_count + 1")
                 .update();
     }
@@ -114,7 +114,7 @@ public class ReadCountDAO extends ServiceImpl<ReadCountMapper, ReadCountDO> {
      */
     public boolean decrementCollectCount(Long articleId) {
         return lambdaUpdate()
-                .eq(ReadCountDO::getArticleId, articleId)
+                .eq(ArticleStatisticsDO::getArticleId, articleId)
                 .setSql("collect_count = GREATEST(collect_count - 1, 0)")
                 .update();
     }
@@ -126,7 +126,7 @@ public class ReadCountDAO extends ServiceImpl<ReadCountMapper, ReadCountDO> {
      * @return 收藏量
      */
     public Long getCollectCount(Long articleId) {
-        ReadCountDO statistics = getByArticleId(articleId);
+        ArticleStatisticsDO statistics = getByArticleId(articleId);
         return statistics != null ? statistics.getCollectCount().longValue() : 0L;
     }
 
@@ -139,7 +139,7 @@ public class ReadCountDAO extends ServiceImpl<ReadCountMapper, ReadCountDO> {
     public boolean incrementCommentCount(Long articleId) {
         ensureStatisticsExists(articleId);
         return lambdaUpdate()
-                .eq(ReadCountDO::getArticleId, articleId)
+                .eq(ArticleStatisticsDO::getArticleId, articleId)
                 .setSql("comment_count = comment_count + 1")
                 .update();
     }
@@ -152,7 +152,7 @@ public class ReadCountDAO extends ServiceImpl<ReadCountMapper, ReadCountDO> {
      */
     public boolean decrementCommentCount(Long articleId) {
         return lambdaUpdate()
-                .eq(ReadCountDO::getArticleId, articleId)
+                .eq(ArticleStatisticsDO::getArticleId, articleId)
                 .setSql("comment_count = GREATEST(comment_count - 1, 0)")
                 .update();
     }
@@ -164,7 +164,7 @@ public class ReadCountDAO extends ServiceImpl<ReadCountMapper, ReadCountDO> {
      * @return 评论量
      */
     public Long getCommentCount(Long articleId) {
-        ReadCountDO statistics = getByArticleId(articleId);
+        ArticleStatisticsDO statistics = getByArticleId(articleId);
         return statistics != null ? statistics.getCommentCount().longValue() : 0L;
     }
 
@@ -175,7 +175,7 @@ public class ReadCountDAO extends ServiceImpl<ReadCountMapper, ReadCountDO> {
      * @return 是否成功
      */
     private boolean initArticleStatistics(Long articleId) {
-        ReadCountDO statistics = new ReadCountDO()
+        ArticleStatisticsDO statistics = new ArticleStatisticsDO()
                 .setArticleId(articleId)
                 .setReadCount(1)
                 .setPraiseCount(0)
@@ -190,9 +190,9 @@ public class ReadCountDAO extends ServiceImpl<ReadCountMapper, ReadCountDO> {
      * @param articleId 文章ID
      */
     private void ensureStatisticsExists(Long articleId) {
-        ReadCountDO existing = getByArticleId(articleId);
+        ArticleStatisticsDO existing = getByArticleId(articleId);
         if (existing == null) {
-            ReadCountDO statistics = new ReadCountDO()
+            ArticleStatisticsDO statistics = new ArticleStatisticsDO()
                     .setArticleId(articleId)
                     .setReadCount(0)
                     .setPraiseCount(0)

@@ -5,7 +5,7 @@ package top.harrylei.community.service.statistics.service;
  *
  * @author harry
  */
-public interface ReadCountService {
+public interface ArticleStatisticsService {
 
     /**
      * 增加文章阅读量

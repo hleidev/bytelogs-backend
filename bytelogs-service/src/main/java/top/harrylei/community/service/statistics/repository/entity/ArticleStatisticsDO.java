@@ -17,7 +17,7 @@ import java.io.Serial;
 @EqualsAndHashCode(callSuper = true)
 @TableName("article_statistics")
 @Accessors(chain = true)
-public class ReadCountDO extends BaseDO {
+public class ArticleStatisticsDO extends BaseDO {
 
     @Serial
     private static final long serialVersionUID = 1L;
