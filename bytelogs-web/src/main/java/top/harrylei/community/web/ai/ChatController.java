@@ -6,10 +6,11 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import top.harrylei.community.api.enums.ResultCode;
 import top.harrylei.community.api.enums.ai.ChatConversationStatusEnum;
+import top.harrylei.community.api.enums.response.ResultCode;
 import top.harrylei.community.api.model.ai.dto.ChatConversationDTO;
 import top.harrylei.community.api.model.ai.dto.ChatMessageDTO;
+import top.harrylei.community.api.model.ai.dto.ChatUsageStatsDTO;
 import top.harrylei.community.api.model.ai.req.ChatReq;
 import top.harrylei.community.api.model.ai.req.ConversationsQueryParam;
 import top.harrylei.community.api.model.ai.req.MessagesQueryParam;
@@ -26,7 +27,6 @@ import top.harrylei.community.core.util.NumUtil;
 import top.harrylei.community.core.util.PageUtils;
 import top.harrylei.community.service.ai.converted.ChatConversationStructMapper;
 import top.harrylei.community.service.ai.converted.ChatMessageStructMapper;
-import top.harrylei.community.service.ai.repository.entity.ChatUsageStatsDO;
 import top.harrylei.community.service.ai.service.ChatService;
 import top.harrylei.community.service.ai.service.ChatUsageService;
 
@@ -74,18 +74,19 @@ public class ChatController {
         return ResVO.ok(PageUtils.map(conversationPage, chatConversationStructMapper::toVO));
     }
 
-    @GetMapping("/conversations/{id}")
+    @GetMapping("/conversations/{conversionId}")
     @Operation(summary = "获取对话详情", description = "获取指定对话的详细信息和消息历史")
-    public ResVO<ChatConversationDetailVO> getConversationDetail(@NotNull(message = "会话ID不能为空") @PathVariable Long id) {
+    public ResVO<ChatConversationDetailVO> getConversationDetail(@NotNull(message = "会话ID不能为空")
+                                                                 @PathVariable Long conversionId) {
 
         Long userId = getCurrentUserId();
-        ChatConversationDTO conversation = chatService.getConversationDetail(id, userId);
+        ChatConversationDTO conversation = chatService.getConversationDetail(conversionId, userId);
 
         // 获取最新的消息列表（首屏显示）
         MessagesQueryParam queryParam = new MessagesQueryParam();
         queryParam.setPageNum(1);
-        queryParam.setPageSize(1);
-        PageVO<ChatMessageDTO> messagePage = chatService.pageQueryMessages(id, userId, queryParam);
+        queryParam.setPageSize(20);
+        PageVO<ChatMessageDTO> messagePage = chatService.pageQueryMessages(conversionId, userId, queryParam);
 
         // 转换DTO为VO
         ChatConversationDetailVO pageResult = chatConversationStructMapper.toDetailVO(conversation);
@@ -137,7 +138,7 @@ public class ChatController {
         Long userId = getCurrentUserId();
         LocalDate today = LocalDate.now();
 
-        ChatUsageStatsDO todayUsage = chatUsageService.getDailyUsage(userId, today);
+        ChatUsageStatsDTO todayUsage = chatUsageService.getDailyUsage(userId, today);
 
         ChatUsageStatsVO result = new ChatUsageStatsVO();
         result.setDate(today);

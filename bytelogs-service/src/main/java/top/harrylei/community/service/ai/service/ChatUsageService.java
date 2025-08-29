@@ -1,7 +1,7 @@
 package top.harrylei.community.service.ai.service;
 
-import top.harrylei.community.service.ai.repository.entity.ChatUsageStatsDO;
 import top.harrylei.community.api.enums.ai.ChatClientTypeEnum;
+import top.harrylei.community.api.model.ai.dto.ChatUsageStatsDTO;
 
 import java.time.LocalDate;
 
@@ -51,7 +51,7 @@ public interface ChatUsageService {
      * @param date   日期
      * @return 使用统计
      */
-    ChatUsageStatsDO getDailyUsage(Long userId, LocalDate date);
+    ChatUsageStatsDTO getDailyUsage(Long userId, LocalDate date);
 
     /**
      * 获取用户今日剩余可用消息数量

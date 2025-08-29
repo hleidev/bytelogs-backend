@@ -4,13 +4,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import top.harrylei.community.api.enums.ai.ChatClientTypeEnum;
+import top.harrylei.community.api.model.ai.dto.ChatUsageStatsDTO;
 import top.harrylei.community.core.common.constans.RedisKeyConstants;
 import top.harrylei.community.core.config.AILimitConfig;
 import top.harrylei.community.core.util.RedisUtil;
 import top.harrylei.community.service.ai.repository.dao.ChatUsageStatsDAO;
 import top.harrylei.community.service.ai.repository.entity.ChatUsageStatsDO;
+import top.harrylei.community.service.ai.repository.mapper.ChatUsageStatsMapper;
 import top.harrylei.community.service.ai.service.ChatUsageService;
-import top.harrylei.community.api.enums.ai.ChatClientTypeEnum;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -29,6 +31,7 @@ public class ChatUsageServiceImpl implements ChatUsageService {
     private final AILimitConfig aiLimitConfig;
     private final ChatUsageStatsDAO chatUsageStatsDAO;
     private final RedisUtil redisUtil;
+    private final ChatUsageStatsMapper chatUsageStatsMapper;
 
     @Override
     public boolean checkDailyLimit(Long userId) {
@@ -37,7 +40,7 @@ public class ChatUsageServiceImpl implements ChatUsageService {
         }
 
         LocalDate today = LocalDate.now();
-        
+
         // 检查每日消息限制
         Integer totalMessages = chatUsageStatsDAO.getTotalMessagesByUserIdAndDate(userId, today);
         if (totalMessages >= aiLimitConfig.getDailyMessageLimit()) {
@@ -73,8 +76,8 @@ public class ChatUsageServiceImpl implements ChatUsageService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void recordUsage(Long userId, ChatClientTypeEnum provider, String modelName,
-                           Integer messageCount, Long promptTokens, Long completionTokens,
-                           Long totalTokens, Integer conversationCount) {
+                            Integer messageCount, Long promptTokens, Long completionTokens,
+                            Long totalTokens, Integer conversationCount) {
         LocalDate today = LocalDate.now();
 
         ChatUsageStatsDO usageStats = getDailyUsageFromDB(userId, today, provider, modelName);
@@ -114,30 +117,30 @@ public class ChatUsageServiceImpl implements ChatUsageService {
     }
 
     @Override
-    public ChatUsageStatsDO getDailyUsage(Long userId, LocalDate date) {
+    public ChatUsageStatsDTO getDailyUsage(Long userId, LocalDate date) {
         String cacheKey = RedisKeyConstants.getChatDailyUsageKey(userId, date.toString());
-        ChatUsageStatsDO cachedUsage = redisUtil.get(cacheKey, ChatUsageStatsDO.class);
+        ChatUsageStatsDTO cachedUsage = redisUtil.get(cacheKey, ChatUsageStatsDTO.class);
         if (cachedUsage != null) {
             return cachedUsage;
         }
 
         Long totalTokens = chatUsageStatsDAO.getTotalTokensByUserIdAndDate(userId, date);
         Integer totalMessages = chatUsageStatsDAO.getTotalMessagesByUserIdAndDate(userId, date);
-        
+
         if (totalTokens == 0 && totalMessages == 0) {
             return null;
         }
-        
-        ChatUsageStatsDO usage = new ChatUsageStatsDO();
-        usage.setUserId(userId);
-        usage.setDate(date);
-        usage.setTotalTokens(totalTokens);
-        usage.setMessageCount(totalMessages);
-        usage.setConversationCount(0);
-        
-        redisUtil.set(cacheKey, usage, Duration.ofMinutes(30));
 
-        return usage;
+        ChatUsageStatsDTO usageStats = new ChatUsageStatsDTO();
+        usageStats.setUserId(userId);
+        usageStats.setDate(date);
+        usageStats.setTotalTokens(totalTokens);
+        usageStats.setMessageCount(totalMessages);
+        usageStats.setConversationCount(0);
+
+        redisUtil.set(cacheKey, usageStats, Duration.ofMinutes(30));
+
+        return usageStats;
     }
 
     @Override
@@ -151,12 +154,12 @@ public class ChatUsageServiceImpl implements ChatUsageService {
         return Math.max(0, aiLimitConfig.getDailyMessageLimit() - used);
     }
 
-    
+
     /**
      * 根据用户ID、日期、提供商和模型获取统计数据
      */
-    private ChatUsageStatsDO getDailyUsageFromDB(Long userId, LocalDate date, 
-                                                ChatClientTypeEnum provider, String modelName) {
+    private ChatUsageStatsDO getDailyUsageFromDB(Long userId, LocalDate date,
+                                                 ChatClientTypeEnum provider, String modelName) {
         return chatUsageStatsDAO.getByUserIdDateProviderAndModel(userId, date, provider, modelName);
     }
 

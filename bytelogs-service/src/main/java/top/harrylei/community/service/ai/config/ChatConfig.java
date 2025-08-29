@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @Slf4j
 @Configuration
-public class MultiProviderChatConfig {
+public class ChatConfig {
 
     /**
      * DeepSeek
