@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import top.harrylei.community.api.enums.rank.ActivityRankTypeEnum;
-import top.harrylei.community.api.model.base.ResVO;
+import top.harrylei.community.api.model.base.Result;
 import top.harrylei.community.core.security.permission.RequiresAdmin;
 import top.harrylei.community.service.rank.service.ActivityService;
 
@@ -34,9 +34,9 @@ public class ActivityRankManagementController {
      */
     @Operation(summary = "备份所有排行榜", description = "手动触发备份所有类型的排行榜数据到数据库")
     @PostMapping("/backup")
-    public ResVO<Void> backupAllRankingData() {
+    public Result<Void> backupAllRankingData() {
         activityService.backupAllRankingData();
-        return ResVO.ok();
+        return Result.success();
     }
 
     /**
@@ -47,8 +47,8 @@ public class ActivityRankManagementController {
      */
     @Operation(summary = "备份指定排行榜", description = "手动触发备份指定类型的排行榜数据到数据库")
     @PostMapping("/backup/{rankType}")
-    public ResVO<Void> backupRankingData(@PathVariable ActivityRankTypeEnum rankType) {
+    public Result<Void> backupRankingData(@PathVariable ActivityRankTypeEnum rankType) {
         activityService.backupRankingData(rankType);
-        return ResVO.ok();
+        return Result.success();
     }
 }

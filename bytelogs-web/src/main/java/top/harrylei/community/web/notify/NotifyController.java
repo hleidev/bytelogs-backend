@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import top.harrylei.community.api.model.base.ResVO;
+import top.harrylei.community.api.model.base.Result;
 import top.harrylei.community.api.model.notify.req.NotifyMsgQueryParam;
 import top.harrylei.community.api.model.notify.vo.NotifyMsgVO;
 import top.harrylei.community.api.model.page.PageVO;
@@ -39,10 +39,10 @@ public class NotifyController {
      */
     @Operation(summary = "获取通知列表", description = "分页查询当前用户的通知消息")
     @GetMapping("/list")
-    public ResVO<PageVO<NotifyMsgVO>> getNotificationList(@Valid NotifyMsgQueryParam param) {
+    public Result<PageVO<NotifyMsgVO>> getNotificationList(@Valid NotifyMsgQueryParam param) {
         Long userId = ReqInfoContext.getContext().getUserId();
         PageVO<NotifyMsgVO> notifications = notifyMsgService.getMyNotifications(userId, param);
-        return ResVO.ok(notifications);
+        return Result.success(notifications);
     }
 
     /**
@@ -53,10 +53,10 @@ public class NotifyController {
      */
     @Operation(summary = "标记通知为已读", description = "将指定的通知消息标记为已读状态")
     @PostMapping("/read/{msgId}")
-    public ResVO<Void> markAsRead(@PathVariable Long msgId) {
+    public Result<Void> markAsRead(@PathVariable Long msgId) {
         Long userId = ReqInfoContext.getContext().getUserId();
         notifyMsgService.markAsRead(msgId, userId);
-        return ResVO.ok();
+        return Result.success();
     }
 
     /**
@@ -66,10 +66,10 @@ public class NotifyController {
      */
     @Operation(summary = "标记所有通知为已读", description = "将当前用户的所有通知消息标记为已读状态")
     @PostMapping("/read/all")
-    public ResVO<Void> markAllAsRead() {
+    public Result<Void> markAllAsRead() {
         Long userId = ReqInfoContext.getContext().getUserId();
         notifyMsgService.markAllAsRead(userId);
-        return ResVO.ok();
+        return Result.success();
     }
 
     /**
@@ -79,9 +79,9 @@ public class NotifyController {
      */
     @Operation(summary = "获取未读通知数量", description = "获取当前用户的未读通知消息数量")
     @GetMapping("/unread/count")
-    public ResVO<Long> getUnreadCount() {
+    public Result<Long> getUnreadCount() {
         Long userId = ReqInfoContext.getContext().getUserId();
         Long count = notifyMsgService.getUnreadCount(userId);
-        return ResVO.ok(count);
+        return Result.success(count);
     }
 }

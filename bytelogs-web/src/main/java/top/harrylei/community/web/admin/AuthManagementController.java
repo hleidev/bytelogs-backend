@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import top.harrylei.community.api.enums.user.UserRoleEnum;
 import top.harrylei.community.api.model.auth.AuthReq;
-import top.harrylei.community.api.model.base.ResVO;
+import top.harrylei.community.api.model.base.Result;
 import top.harrylei.community.core.context.ReqInfoContext;
 import top.harrylei.community.core.security.permission.RequiresAdmin;
 import top.harrylei.community.service.auth.service.AuthService;
@@ -42,7 +42,7 @@ public class AuthManagementController {
      */
     @Operation(summary = "登录账号", description = "校验管理员密码，成功后返回JWT令牌")
     @PostMapping("/login")
-    public ResVO<Void> login(@Valid @RequestBody AuthReq authReq, HttpServletResponse response) {
+    public Result<Void> login(@Valid @RequestBody AuthReq authReq, HttpServletResponse response) {
         String token = authService.login(authReq.getUsername(),
                                          authReq.getPassword(),
                                          authReq.getKeepLogin(),
@@ -50,7 +50,7 @@ public class AuthManagementController {
 
         response.setHeader("Authorization", "Bearer " + token);
         response.setHeader("Access-Control-Expose-Headers", "Authorization");
-        return ResVO.ok();
+        return Result.success();
     }
 
     /**
@@ -61,9 +61,9 @@ public class AuthManagementController {
     @Operation(summary = "退出登录", description = "通过JWT令牌注销当前登录状态")
     @RequiresAdmin
     @PostMapping("/logout")
-    public ResVO<Void> logout() {
+    public Result<Void> logout() {
         Long userId = ReqInfoContext.getContext().getUserId();
         authService.logout(userId);
-        return ResVO.ok();
+        return Result.success();
     }
 }

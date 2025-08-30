@@ -10,7 +10,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 import top.harrylei.community.api.enums.response.ResultCode;
-import top.harrylei.community.api.model.base.ResVO;
+import top.harrylei.community.api.model.base.Result;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -35,7 +35,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
         response.setCharacterEncoding("UTF-8");
 
         // 创建标准错误响应
-        ResVO<Void> errorResponse = ResVO.fail(ResultCode.FORBIDDEN.getCode(), "权限不足，无法访问");
+        Result<Void> errorResponse = Result.fail(ResultCode.FORBIDDEN.getCode(), "权限不足，无法访问");
 
         // 或者如果想保持Spring Boot的错误格式，可以用下面的代码
         // Map<String, Object> errorResponse = new HashMap<>();

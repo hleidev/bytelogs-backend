@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import top.harrylei.community.api.enums.response.ResultCode;
 import top.harrylei.community.api.enums.rank.ActivityRankTypeEnum;
-import top.harrylei.community.api.model.base.ResVO;
+import top.harrylei.community.api.model.base.Result;
 import top.harrylei.community.api.model.rank.dto.ActivityRankDTO;
 import top.harrylei.community.api.model.rank.vo.ActivityRankListVO;
 import top.harrylei.community.api.model.rank.vo.ActivityRankVO;
@@ -44,7 +44,7 @@ public class ActivityController {
      */
     @Operation(summary = "获取活跃度排行榜", description = "获取活跃度排行榜，登录用户会额外返回个人排名信息")
     @GetMapping
-    public ResVO<ActivityRankListVO> getRank(@NotNull(message = "排行榜类型不能为空") Integer rankType) {
+    public Result<ActivityRankListVO> getRank(@NotNull(message = "排行榜类型不能为空") Integer rankType) {
         // 获取排行榜列表
         ActivityRankTypeEnum rankTypeEnum = ActivityRankTypeEnum.fromCode(rankType);
         List<ActivityRankDTO> rankList = activityService.listRank(rankTypeEnum);
@@ -59,7 +59,7 @@ public class ActivityController {
             result.setCurrentUserRank(userRank);
         }
 
-        return ResVO.ok(result);
+        return Result.success(result);
     }
 
     /**
@@ -69,14 +69,14 @@ public class ActivityController {
      */
     @Operation(summary = "获取用户积分", description = "获取当前登录用户在日榜、月榜、总榜的排名和积分信息")
     @GetMapping("/stats")
-    public ResVO<ActivityStatsVO> getActivityStats() {
+    public Result<ActivityStatsVO> getActivityStats() {
         Long currentUserId = ReqInfoContext.getContext().getUserId();
         if (currentUserId == null) {
             ResultCode.AUTHENTICATION_FAILED.throwException();
         }
 
         ActivityStatsVO stats = activityService.getUserStats(currentUserId);
-        return ResVO.ok(stats);
+        return Result.success(stats);
     }
 
     /**
@@ -88,8 +88,8 @@ public class ActivityController {
      */
     @Operation(summary = "获取历史排行榜", description = "获取指定期间的历史排行榜，登录用户会额外返回个人排名信息")
     @GetMapping("/history")
-    public ResVO<ActivityRankListVO> getHistoryRank(@NotNull(message = "排行榜类型不能为空") Integer rankType,
-                                                    @NotNull(message = "排行榜期间不能为空") String period) {
+    public Result<ActivityRankListVO> getHistoryRank(@NotNull(message = "排行榜类型不能为空") Integer rankType,
+                                                     @NotNull(message = "排行榜期间不能为空") String period) {
         // 获取历史排行榜列表
         ActivityRankTypeEnum rankTypeEnum = ActivityRankTypeEnum.fromCode(rankType);
         List<ActivityRankDTO> rankList = activityService.listRank(rankTypeEnum, period);
@@ -104,6 +104,6 @@ public class ActivityController {
             result.setCurrentUserRank(userRank);
         }
 
-        return ResVO.ok(result);
+        return Result.success(result);
     }
 }

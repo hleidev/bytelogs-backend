@@ -10,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import top.harrylei.community.api.enums.response.ResultCode;
-import top.harrylei.community.api.model.base.ResVO;
+import top.harrylei.community.api.model.base.Result;
 import top.harrylei.community.api.model.page.PageVO;
 import top.harrylei.community.api.model.user.dto.UserInfoDTO;
 import top.harrylei.community.api.model.user.req.PasswordUpdateReq;
@@ -49,12 +49,12 @@ public class UserController {
      */
     @Operation(summary = "查询用户信息", description = "获取当前登录用户的个人基本信息")
     @GetMapping("/profile")
-    public ResVO<UserInfoVO> getUserInfo() {
+    public Result<UserInfoVO> getUserInfo() {
         UserInfoDTO userInfo = ReqInfoContext.getContext().getUser();
         if (userInfo == null) {
             ResultCode.INTERNAL_ERROR.throwException();
         }
-        return ResVO.ok(userStructMapper.toVO(userInfo));
+        return Result.success(userStructMapper.toVO(userInfo));
     }
 
     /**
@@ -65,7 +65,7 @@ public class UserController {
      */
     @Operation(summary = "更新用户信息", description = "更新当前登录用户的个人基本信息")
     @PutMapping("/info")
-    public ResVO<Void> updateUserInfo(@Valid @RequestBody UserInfoUpdateReq userInfoUpdateReq) {
+    public Result<Void> updateUserInfo(@Valid @RequestBody UserInfoUpdateReq userInfoUpdateReq) {
         // 获取当前上下文中的用户信息
         UserInfoDTO userInfo = ReqInfoContext.getContext().getUser();
         if (userInfo == null) {
@@ -78,7 +78,7 @@ public class UserController {
         // 调用服务层处理更新逻辑
         userService.updateUserInfo(userInfo);
 
-        return ResVO.ok();
+        return Result.success();
     }
 
     /**
@@ -89,7 +89,7 @@ public class UserController {
      */
     @Operation(summary = "修改用户密码", description = "修改当前登录用户的个人密码")
     @PutMapping("/password")
-    public ResVO<Void> updatePassword(@Valid @RequestBody PasswordUpdateReq passwordUpdateReq) {
+    public Result<Void> updatePassword(@Valid @RequestBody PasswordUpdateReq passwordUpdateReq) {
         Long userId = ReqInfoContext.getContext().getUserId();
         if (userId == null) {
             ResultCode.INTERNAL_ERROR.throwException();
@@ -97,7 +97,7 @@ public class UserController {
 
         userService.updatePassword(userId, passwordUpdateReq.getOldPassword(), passwordUpdateReq.getNewPassword());
         log.info("用户密码修改成功: userId={}", userId);
-        return ResVO.ok();
+        return Result.success();
     }
 
     /**
@@ -108,7 +108,7 @@ public class UserController {
      */
     @Operation(summary = "修改用户头像", description = "修改当前登录用户的个人头像")
     @PutMapping("/avatar")
-    public ResVO<Void> updateAvatar(@RequestParam @NotBlank(message = "用户头像不能为空") String avatar) {
+    public Result<Void> updateAvatar(@RequestParam @NotBlank(message = "用户头像不能为空") String avatar) {
         Long userId = ReqInfoContext.getContext().getUserId();
         if (userId == null) {
             ResultCode.INTERNAL_ERROR.throwException();
@@ -116,7 +116,7 @@ public class UserController {
 
         userService.updateAvatar(userId, avatar);
         log.info("用户头像更新成功: userId={}", userId);
-        return ResVO.ok();
+        return Result.success();
     }
 
     /**
@@ -127,10 +127,10 @@ public class UserController {
      */
     @Operation(summary = "关注用户", description = "关注指定用户")
     @PostMapping("/{followUserId}/follow")
-    public ResVO<Void> follow(@NotNull(message = "用户ID不能为空") @PathVariable Long followUserId) {
+    public Result<Void> follow(@NotNull(message = "用户ID不能为空") @PathVariable Long followUserId) {
         userFollowService.followUser(followUserId);
         log.info("用户关注操作: followUserId={}", followUserId);
-        return ResVO.ok();
+        return Result.success();
     }
 
     /**
@@ -141,10 +141,10 @@ public class UserController {
      */
     @Operation(summary = "取消关注用户", description = "取消关注指定用户")
     @DeleteMapping("/{followUserId}/follow")
-    public ResVO<Void> unfollow(@NotNull(message = "用户ID不能为空") @PathVariable Long followUserId) {
+    public Result<Void> unfollow(@NotNull(message = "用户ID不能为空") @PathVariable Long followUserId) {
         userFollowService.unfollowUser(followUserId);
         log.info("用户取消关注操作: followUserId={}", followUserId);
-        return ResVO.ok();
+        return Result.success();
     }
 
     /**
@@ -155,7 +155,7 @@ public class UserController {
      */
     @Operation(summary = "获取关注列表", description = "分页获取用户的关注列表，userId为空时查询当前用户")
     @GetMapping("/following")
-    public ResVO<PageVO<UserFollowVO>> getFollowingList(@Valid UserFollowQueryParam queryParam) {
+    public Result<PageVO<UserFollowVO>> getFollowingList(@Valid UserFollowQueryParam queryParam) {
         // 如果没传userId，使用当前用户ID
         if (queryParam.getUserId() == null) {
             if (ReqInfoContext.getContext().getUserId() == null) {
@@ -165,7 +165,7 @@ public class UserController {
         }
 
         PageVO<UserFollowVO> followingList = userFollowService.pageFollowingList(queryParam);
-        return ResVO.ok(followingList);
+        return Result.success(followingList);
     }
 
     /**
@@ -176,7 +176,7 @@ public class UserController {
      */
     @Operation(summary = "获取粉丝列表", description = "分页获取用户的粉丝列表，userId为空时查询当前用户")
     @GetMapping("/followers")
-    public ResVO<PageVO<UserFollowVO>> getFollowersList(@Valid UserFollowQueryParam queryParam) {
+    public Result<PageVO<UserFollowVO>> getFollowersList(@Valid UserFollowQueryParam queryParam) {
         if (queryParam.getFollowUserId() == null) {
             if (ReqInfoContext.getContext().getUserId() == null) {
                 ResultCode.INTERNAL_ERROR.throwException();
@@ -185,6 +185,6 @@ public class UserController {
         }
 
         PageVO<UserFollowVO> followersList = userFollowService.pageFollowersList(queryParam);
-        return ResVO.ok(followersList);
+        return Result.success(followersList);
     }
 }

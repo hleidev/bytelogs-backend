@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import top.harrylei.community.api.enums.user.UserRoleEnum;
 import top.harrylei.community.api.model.auth.AuthReq;
-import top.harrylei.community.api.model.base.ResVO;
+import top.harrylei.community.api.model.base.Result;
 import top.harrylei.community.core.context.ReqInfoContext;
 import top.harrylei.community.core.security.permission.RequiresLogin;
 import top.harrylei.community.service.auth.service.AuthService;
@@ -41,9 +41,9 @@ public class AuthController {
      */
     @Operation(summary = "用户注册", description = "通过用户名和密码进行注册")
     @PostMapping("/register")
-    public ResVO<Void> register(@Valid @RequestBody AuthReq authReq) {
+    public Result<Void> register(@Valid @RequestBody AuthReq authReq) {
         authService.register(authReq.getUsername(), authReq.getPassword(), UserRoleEnum.NORMAL);
-        return ResVO.ok();
+        return Result.success();
     }
 
     /**
@@ -55,13 +55,13 @@ public class AuthController {
      */
     @Operation(summary = "用户登录", description = "校验用户名密码，成功后返回JWT令牌")
     @PostMapping("/login")
-    public ResVO<Void> login(@Valid @RequestBody AuthReq authReq, HttpServletResponse response) {
+    public Result<Void> login(@Valid @RequestBody AuthReq authReq, HttpServletResponse response) {
         String token = authService.login(authReq.getUsername(), authReq.getPassword(), authReq.getKeepLogin());
 
         response.setHeader("Authorization", "Bearer " + token);
         response.setHeader("Access-Control-Expose-Headers", "Authorization");
 
-        return ResVO.ok();
+        return Result.success();
     }
 
     /**
@@ -72,9 +72,9 @@ public class AuthController {
     @Operation(summary = "退出登录", description = "退出当前登录状态")
     @RequiresLogin
     @PostMapping("/logout")
-    public ResVO<Void> logout() {
+    public Result<Void> logout() {
         Long userId = ReqInfoContext.getContext().getUserId();
         authService.logout(userId);
-        return ResVO.ok();
+        return Result.success();
     }
 }

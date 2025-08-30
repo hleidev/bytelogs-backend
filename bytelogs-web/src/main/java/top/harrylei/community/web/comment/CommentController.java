@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import top.harrylei.community.api.enums.response.ResultCode;
-import top.harrylei.community.api.model.base.ResVO;
+import top.harrylei.community.api.model.base.Result;
 import top.harrylei.community.api.model.comment.dto.CommentDTO;
 import top.harrylei.community.api.model.comment.req.CommentQueryParam;
 import top.harrylei.community.api.model.comment.req.CommentMyQueryParam;
@@ -50,11 +50,11 @@ public class CommentController {
     @Operation(summary = "保存评论", description = "用户保存评论信息")
     @RequiresLogin
     @PostMapping
-    public ResVO<Long> save(@Valid @RequestBody CommentSaveReq req) {
+    public Result<Long> save(@Valid @RequestBody CommentSaveReq req) {
         CommentDTO dto = commentStructMapper.toDTO(req);
         dto.setUserId(ReqInfoContext.getContext().getUserId());
         Long commentId = commentService.saveComment(dto);
-        return ResVO.ok(commentId);
+        return Result.success(commentId);
     }
 
     /**
@@ -65,12 +65,12 @@ public class CommentController {
      */
     @Operation(summary = "分页查询", description = "查询指定文章的评论列表")
     @GetMapping("/page")
-    public ResVO<PageVO<TopCommentVO>> page(@Valid CommentQueryParam param) {
+    public Result<PageVO<TopCommentVO>> page(@Valid CommentQueryParam param) {
         if (param.getArticleId() == null) {
             ResultCode.INVALID_PARAMETER.throwException();
         }
         PageVO<TopCommentVO> result = commentService.pageQuery(param);
-        return ResVO.ok(result);
+        return Result.success(result);
     }
 
     /**
@@ -82,11 +82,11 @@ public class CommentController {
     @Operation(summary = "我的评论", description = "查询当前用户的评论列表（扁平化）")
     @RequiresLogin
     @GetMapping("/my")
-    public ResVO<PageVO<CommentMyVO>> myComments(@Valid CommentMyQueryParam param) {
+    public Result<PageVO<CommentMyVO>> myComments(@Valid CommentMyQueryParam param) {
         // 从登录上下文获取当前用户ID
         Long userId = ReqInfoContext.getContext().getUserId();
         PageVO<CommentMyVO> result = commentService.pageQueryUserComments(userId, param);
-        return ResVO.ok(result);
+        return Result.success(result);
     }
 
     /**
@@ -99,15 +99,15 @@ public class CommentController {
     @Operation(summary = "编辑评论", description = "编辑自己的评论内容（限制编辑时间窗口）")
     @RequiresLogin
     @PutMapping("/{commentId}")
-    public ResVO<Void> update(@NotNull(message = "评论ID不能为空") @PathVariable Long commentId,
-                              @NotBlank(message = "评论内容不能为空")
+    public Result<Void> update(@NotNull(message = "评论ID不能为空") @PathVariable Long commentId,
+                               @NotBlank(message = "评论内容不能为空")
                               @Size(min = 1, max = 500, message = "评论内容长度必须在1-500字符之间")
                               @RequestBody String commentContent) {
         CommentDTO dto = new CommentDTO();
         dto.setId(commentId);
         dto.setContent(commentContent);
         commentService.updateComment(dto);
-        return ResVO.ok();
+        return Result.success();
     }
 
     /**
@@ -119,9 +119,9 @@ public class CommentController {
     @Operation(summary = "删除评论", description = "删除用户自己的评论")
     @RequiresLogin
     @DeleteMapping("/{commentId}")
-    public ResVO<Void> delete(@NotNull(message = "评论ID不能为空") @PathVariable Long commentId) {
+    public Result<Void> delete(@NotNull(message = "评论ID不能为空") @PathVariable Long commentId) {
         commentService.deleteComment(commentId);
-        return ResVO.ok();
+        return Result.success();
     }
 
     /**
@@ -133,13 +133,13 @@ public class CommentController {
     @Operation(summary = "评论操作", description = "对评论进行点赞或取消点赞操作")
     @RequiresLogin
     @PutMapping("/action")
-    public ResVO<Void> action(@Valid @RequestBody CommentActionReq req) {
+    public Result<Void> action(@Valid @RequestBody CommentActionReq req) {
         // 验证操作类型，评论只允许点赞操作，不支持收藏
         if (!req.getType().isPraise()) {
             ResultCode.INVALID_PARAMETER.throwException();
         }
 
         commentService.actionComment(req.getCommentId(), req.getType());
-        return ResVO.ok();
+        return Result.success();
     }
 }

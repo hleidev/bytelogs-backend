@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import top.harrylei.community.api.model.base.ResVO;
+import top.harrylei.community.api.model.base.Result;
 
 @Slf4j
 @RestController
@@ -12,8 +12,8 @@ import top.harrylei.community.api.model.base.ResVO;
 public class TestController {
 
     @GetMapping("/ping")
-    public ResVO<Boolean> test() {
+    public Result<Boolean> test() {
         log.info("测试基本连通性");
-        return ResVO.ok(true);
+        return Result.success(true);
     }
 }

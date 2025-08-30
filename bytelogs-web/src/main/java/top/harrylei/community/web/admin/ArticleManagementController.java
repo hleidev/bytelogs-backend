@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import top.harrylei.community.api.model.article.req.*;
 import top.harrylei.community.api.model.article.vo.ArticleDetailVO;
 import top.harrylei.community.api.model.article.vo.ArticleVO;
-import top.harrylei.community.api.model.base.ResVO;
+import top.harrylei.community.api.model.base.Result;
 import top.harrylei.community.api.model.page.PageVO;
 import top.harrylei.community.core.security.permission.RequiresAdmin;
 import top.harrylei.community.service.article.service.ArticleManagementService;
@@ -44,9 +44,9 @@ public class ArticleManagementController {
      */
     @Operation(summary = "分页查询", description = "管理端分页查询")
     @GetMapping("/page")
-    public ResVO<PageVO<ArticleVO>> pageQuery(@Valid ArticleQueryParam queryParam) {
+    public Result<PageVO<ArticleVO>> pageQuery(@Valid ArticleQueryParam queryParam) {
         PageVO<ArticleVO> page = articleQueryService.pageQuery(queryParam);
-        return ResVO.ok(page);
+        return Result.success(page);
     }
 
     /**
@@ -56,9 +56,9 @@ public class ArticleManagementController {
      */
     @Operation(summary = "文章详细", description = "管理端文章详细信息")
     @GetMapping("/{articleId}")
-    public ResVO<ArticleDetailVO> detail(@NotNull(message = "文章ID不能为空") @PathVariable Long articleId) {
+    public Result<ArticleDetailVO> detail(@NotNull(message = "文章ID不能为空") @PathVariable Long articleId) {
         ArticleDetailVO articleDetail = articleQueryService.getArticleDetail(articleId);
-        return ResVO.ok(articleDetail);
+        return Result.success(articleDetail);
     }
 
     /**
@@ -69,9 +69,9 @@ public class ArticleManagementController {
      */
     @Operation(summary = "审核文章", description = "管理员审核文章，支持单个和批量操作")
     @PutMapping("/audit")
-    public ResVO<Void> auditArticles(@RequestBody @Valid ArticleAuditReq request) {
+    public Result<Void> auditArticles(@RequestBody @Valid ArticleAuditReq request) {
         articleManagementService.auditArticles(request.getArticleIds(), request.getStatus());
-        return ResVO.ok();
+        return Result.success();
     }
 
     /**
@@ -82,16 +82,16 @@ public class ArticleManagementController {
      */
     @Operation(summary = "删除文章", description = "管理员删除文章，支持单个和批量操作")
     @DeleteMapping
-    public ResVO<Void> deleteArticles(@NotNull(message = "文章ID列表不能为空") @RequestBody List<Long> articleIds) {
+    public Result<Void> deleteArticles(@NotNull(message = "文章ID列表不能为空") @RequestBody List<Long> articleIds) {
         articleManagementService.deleteArticles(articleIds);
-        return ResVO.ok();
+        return Result.success();
     }
 
     @Operation(summary = "恢复文章", description = "管理员恢复已删除文章，支持单个和批量操作")
     @PutMapping("/restore")
-    public ResVO<Void> restoreArticles(@NotNull(message = "文章ID列表不能为空") @RequestBody List<Long> articleIds) {
+    public Result<Void> restoreArticles(@NotNull(message = "文章ID列表不能为空") @RequestBody List<Long> articleIds) {
         articleManagementService.restoreArticles(articleIds);
-        return ResVO.ok();
+        return Result.success();
     }
 
     /**
@@ -102,9 +102,9 @@ public class ArticleManagementController {
      */
     @Operation(summary = "更新置顶", description = "管理员更新文章属性标识置顶，支持批量操作")
     @PutMapping("/topping")
-    public ResVO<Void> updateArticleTopping(@RequestBody @Valid ArticleToppingUpdateReq request) {
+    public Result<Void> updateArticleTopping(@RequestBody @Valid ArticleToppingUpdateReq request) {
         articleManagementService.updateArticleTopping(request.getArticleIds(), request.getToppingStat());
-        return ResVO.ok();
+        return Result.success();
     }
 
     /**
@@ -115,9 +115,9 @@ public class ArticleManagementController {
      */
     @Operation(summary = "更新加精", description = "管理员更新文章属性标识加精，支持批量操作")
     @PutMapping("/cream")
-    public ResVO<Void> updateArticleCream(@RequestBody @Valid ArticleCreamUpdateReq request) {
+    public Result<Void> updateArticleCream(@RequestBody @Valid ArticleCreamUpdateReq request) {
         articleManagementService.updateArticleCream(request.getArticleIds(), request.getCreamStat());
-        return ResVO.ok();
+        return Result.success();
     }
 
     /**
@@ -128,8 +128,8 @@ public class ArticleManagementController {
      */
     @Operation(summary = "更新官方", description = "管理员更新文章属性标识官方，支持批量操作")
     @PutMapping("/official")
-    public ResVO<Void> updateArticleOfficial(@RequestBody @Valid ArticleOfficialUpdateReq request) {
+    public Result<Void> updateArticleOfficial(@RequestBody @Valid ArticleOfficialUpdateReq request) {
         articleManagementService.updateArticleOfficial(request.getArticleIds(), request.getOfficialStat());
-        return ResVO.ok();
+        return Result.success();
     }
 }

@@ -18,7 +18,7 @@ import top.harrylei.community.api.model.ai.vo.ChatConversationDetailVO;
 import top.harrylei.community.api.model.ai.vo.ChatConversationVO;
 import top.harrylei.community.api.model.ai.vo.ChatMessageVO;
 import top.harrylei.community.api.model.ai.vo.ChatUsageStatsVO;
-import top.harrylei.community.api.model.base.ResVO;
+import top.harrylei.community.api.model.base.Result;
 import top.harrylei.community.api.model.page.PageVO;
 import top.harrylei.community.core.config.AILimitConfig;
 import top.harrylei.community.core.context.ReqInfoContext;
@@ -52,31 +52,31 @@ public class ChatController {
 
     @PostMapping
     @Operation(summary = "发起AI对话", description = "发送消息给AI并获取回复")
-    public ResVO<ChatMessageVO> chat(@Valid @RequestBody ChatReq req) {
+    public Result<ChatMessageVO> chat(@Valid @RequestBody ChatReq req) {
         ChatMessageDTO aiMessage = chatService.chat(req);
         ChatMessageVO messageVO = chatMessageStructMapper.toVO(aiMessage);
-        return ResVO.ok(messageVO);
+        return Result.success(messageVO);
     }
 
     @GetMapping("/conversations/page")
     @Operation(summary = "获取对话列表", description = "获取当前用户的对话列表（进行中）")
-    public ResVO<PageVO<ChatConversationVO>> pageQuery(@Valid ConversationsQueryParam queryParam) {
+    public Result<PageVO<ChatConversationVO>> pageQuery(@Valid ConversationsQueryParam queryParam) {
         Long userId = getCurrentUserId();
         PageVO<ChatConversationDTO> conversationPage = chatService.pageQueryConversations(userId, queryParam, ChatConversationStatusEnum.ACTIVE);
-        return ResVO.ok(PageUtils.map(conversationPage, chatConversationStructMapper::toVO));
+        return Result.success(PageUtils.map(conversationPage, chatConversationStructMapper::toVO));
     }
 
     @GetMapping("/conversations/archived/page")
     @Operation(summary = "获取归档对话列表", description = "获取当前用户的归档对话列表")
-    public ResVO<PageVO<ChatConversationVO>> pageQueryArchived(@Valid ConversationsQueryParam queryParam) {
+    public Result<PageVO<ChatConversationVO>> pageQueryArchived(@Valid ConversationsQueryParam queryParam) {
         Long userId = getCurrentUserId();
         PageVO<ChatConversationDTO> conversationPage = chatService.pageQueryConversations(userId, queryParam, ChatConversationStatusEnum.ARCHIVED);
-        return ResVO.ok(PageUtils.map(conversationPage, chatConversationStructMapper::toVO));
+        return Result.success(PageUtils.map(conversationPage, chatConversationStructMapper::toVO));
     }
 
     @GetMapping("/conversations/{conversionId}")
     @Operation(summary = "获取对话详情", description = "获取指定对话的详细信息和消息历史")
-    public ResVO<ChatConversationDetailVO> getConversationDetail(@NotNull(message = "会话ID不能为空")
+    public Result<ChatConversationDetailVO> getConversationDetail(@NotNull(message = "会话ID不能为空")
                                                                  @PathVariable Long conversionId) {
 
         Long userId = getCurrentUserId();
@@ -92,36 +92,36 @@ public class ChatController {
         ChatConversationDetailVO pageResult = chatConversationStructMapper.toDetailVO(conversation);
         pageResult.setMessages(PageUtils.map(messagePage, chatMessageStructMapper::toVO).getContent());
 
-        return ResVO.ok(pageResult);
+        return Result.success(pageResult);
     }
 
     @GetMapping("/conversations/{id}/messages")
     @Operation(summary = "获取对话消息", description = "支持基于时间游标的滚动加载")
-    public ResVO<PageVO<ChatMessageVO>> pageQueryMessages(@NotNull(message = "会话ID不能为空") @PathVariable Long id,
-                                                          @Valid MessagesQueryParam queryParam) {
+    public Result<PageVO<ChatMessageVO>> pageQueryMessages(@NotNull(message = "会话ID不能为空") @PathVariable Long id,
+                                                           @Valid MessagesQueryParam queryParam) {
         Long userId = getCurrentUserId();
         PageVO<ChatMessageDTO> messagePage = chatService.pageQueryMessages(id, userId, queryParam);
 
         // 使用PageUtils进行DTO到VO的转换
-        return ResVO.ok(PageUtils.map(messagePage, chatMessageStructMapper::toVO));
+        return Result.success(PageUtils.map(messagePage, chatMessageStructMapper::toVO));
     }
 
     @DeleteMapping("/conversations/{id}")
     @Operation(summary = "删除对话", description = "删除指定的对话")
-    public ResVO<Void> deleteConversation(@NotNull(message = "对话ID不能为空") @PathVariable Long id) {
+    public Result<Void> deleteConversation(@NotNull(message = "对话ID不能为空") @PathVariable Long id) {
         Long userId = getCurrentUserId();
         chatService.deleteConversation(id, userId);
 
-        return ResVO.ok();
+        return Result.success();
     }
 
     @PutMapping("/conversations/{id}/archive")
     @Operation(summary = "归档对话", description = "归档指定的对话")
-    public ResVO<Void> archiveConversation(@NotNull(message = "对话ID不能为空") @PathVariable Long id) {
+    public Result<Void> archiveConversation(@NotNull(message = "对话ID不能为空") @PathVariable Long id) {
         Long userId = getCurrentUserId();
         chatService.archiveConversation(id, userId);
 
-        return ResVO.ok();
+        return Result.success();
     }
 
     private static Long getCurrentUserId() {
@@ -134,7 +134,7 @@ public class ChatController {
 
     @GetMapping("/usage")
     @Operation(summary = "获取使用量统计", description = "获取当前用户的AI使用量统计")
-    public ResVO<ChatUsageStatsVO> getUsageStats() {
+    public Result<ChatUsageStatsVO> getUsageStats() {
         Long userId = getCurrentUserId();
         LocalDate today = LocalDate.now();
 
@@ -162,7 +162,7 @@ public class ChatController {
         long remainingTokens = Math.max(0, aiLimitConfig.getDailyTokenLimit() - result.getTokensUsed());
         result.setRemainingTokens(remainingTokens);
 
-        return ResVO.ok(result);
+        return Result.success(result);
     }
 
 

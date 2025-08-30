@@ -15,7 +15,7 @@ import top.harrylei.community.api.model.article.vo.ArticleDetailVO;
 import top.harrylei.community.api.model.article.vo.ArticleVO;
 import top.harrylei.community.api.model.article.vo.ArticleVersionVO;
 import top.harrylei.community.api.model.article.vo.VersionDiffVO;
-import top.harrylei.community.api.model.base.ResVO;
+import top.harrylei.community.api.model.base.Result;
 import top.harrylei.community.api.model.page.PageVO;
 import top.harrylei.community.core.context.ReqInfoContext;
 import top.harrylei.community.core.security.permission.RequiresLogin;
@@ -53,11 +53,11 @@ public class ArticleController {
     @RequiresLogin
     @Operation(summary = "新建文章", description = "用户保存文章（支持草稿/提交审核）")
     @PostMapping
-    public ResVO<Long> save(@Valid @RequestBody ArticleSaveReq articleSaveReq) {
+    public Result<Long> save(@Valid @RequestBody ArticleSaveReq articleSaveReq) {
         ArticleDTO articleDTO = articleStructMapper.toDTO(articleSaveReq);
         articleDTO.setUserId(ReqInfoContext.getContext().getUserId());
         Long articleId = articleCommandService.saveArticle(articleDTO);
-        return ResVO.ok(articleId);
+        return Result.success(articleId);
     }
 
     /**
@@ -69,10 +69,10 @@ public class ArticleController {
     @RequiresLogin
     @Operation(summary = "编辑文章", description = "用户编辑文章（支持保存草稿和发布）")
     @PutMapping
-    public ResVO<ArticleVO> update(@Valid @RequestBody ArticleUpdateReq articleUpdateReq) {
+    public Result<ArticleVO> update(@Valid @RequestBody ArticleUpdateReq articleUpdateReq) {
         ArticleDTO articleDTO = articleStructMapper.toDTO(articleUpdateReq);
         ArticleVO article = articleCommandService.updateArticle(articleDTO);
-        return ResVO.ok(article);
+        return Result.success(article);
     }
 
     /**
@@ -84,9 +84,9 @@ public class ArticleController {
     @RequiresLogin
     @Operation(summary = "删除文章", description = "用户删除文章")
     @DeleteMapping("/{articleId}")
-    public ResVO<Void> delete(@PathVariable Long articleId) {
+    public Result<Void> delete(@PathVariable Long articleId) {
         articleCommandService.deleteArticle(articleId);
-        return ResVO.ok();
+        return Result.success();
     }
 
     /**
@@ -98,9 +98,9 @@ public class ArticleController {
     @RequiresLogin
     @Operation(summary = "恢复文章", description = "用户恢复文章")
     @PutMapping("/{articleId}/restore")
-    public ResVO<Void> restore(@PathVariable Long articleId) {
+    public Result<Void> restore(@PathVariable Long articleId) {
         articleCommandService.restoreArticle(articleId);
-        return ResVO.ok();
+        return Result.success();
     }
 
     /**
@@ -111,9 +111,9 @@ public class ArticleController {
      */
     @Operation(summary = "文章详细", description = "查询文章详细（支持未登录用户访问已发布文章）")
     @GetMapping("/{articleId}")
-    public ResVO<ArticleDetailVO> detail(@PathVariable Long articleId) {
+    public Result<ArticleDetailVO> detail(@PathVariable Long articleId) {
         ArticleDetailVO vo = articleQueryService.getArticleDetail(articleId);
-        return ResVO.ok(vo);
+        return Result.success(vo);
     }
 
     /**
@@ -125,9 +125,9 @@ public class ArticleController {
     @RequiresLogin
     @Operation(summary = "文章草稿", description = "获取文章草稿内容（用于编辑，仅作者可访问）")
     @GetMapping("/{articleId}/draft")
-    public ResVO<ArticleVO> draft(@NotNull(message = "文章ID不能为空") @PathVariable Long articleId) {
+    public Result<ArticleVO> draft(@NotNull(message = "文章ID不能为空") @PathVariable Long articleId) {
         ArticleVO vo = articleCommandService.getArticleDraft(articleId);
-        return ResVO.ok(vo);
+        return Result.success(vo);
     }
 
     /**
@@ -139,9 +139,9 @@ public class ArticleController {
     @RequiresLogin
     @Operation(summary = "发布文章", description = "用户发布文章")
     @PostMapping("/{articleId}/publish")
-    public ResVO<Void> publish(@NotNull(message = "文章ID不能为空") @PathVariable Long articleId) {
+    public Result<Void> publish(@NotNull(message = "文章ID不能为空") @PathVariable Long articleId) {
         articleCommandService.publishArticle(articleId);
-        return ResVO.ok();
+        return Result.success();
     }
 
     /**
@@ -153,9 +153,9 @@ public class ArticleController {
     @RequiresLogin
     @Operation(summary = "撤销发布", description = "用户撤销文章发布")
     @PostMapping("/{articleId}/unpublish")
-    public ResVO<Void> unpublish(@NotNull(message = "文章ID不能为空") @PathVariable Long articleId) {
+    public Result<Void> unpublish(@NotNull(message = "文章ID不能为空") @PathVariable Long articleId) {
         articleCommandService.unpublishArticle(articleId);
-        return ResVO.ok();
+        return Result.success();
     }
 
 
@@ -173,9 +173,9 @@ public class ArticleController {
      */
     @Operation(summary = "分页查询", description = "智能分页查询，支持公开查询、我的文章、指定用户文章等多种模式")
     @GetMapping("/page")
-    public ResVO<PageVO<ArticleVO>> pageQuery(@Valid ArticleQueryParam queryParam) {
+    public Result<PageVO<ArticleVO>> pageQuery(@Valid ArticleQueryParam queryParam) {
         PageVO<ArticleVO> page = articleQueryService.pageQuery(queryParam);
-        return ResVO.ok(page);
+        return Result.success(page);
     }
 
     /**
@@ -187,7 +187,7 @@ public class ArticleController {
     @Operation(summary = "文章操作", description = "对文章进行点赞、收藏等操作")
     @RequiresLogin
     @PutMapping("/action")
-    public ResVO<Void> action(@Valid @RequestBody ArticleActionReq req) {
+    public Result<Void> action(@Valid @RequestBody ArticleActionReq req) {
         // 验证操作类型，只允许点赞收藏相关操作
         if (!req.getType().isPraiseOrCollection()) {
             ResultCode.INVALID_PARAMETER.throwException();
@@ -195,7 +195,7 @@ public class ArticleController {
 
         Long userId = ReqInfoContext.getContext().getUserId();
         articleCommandService.actionArticle(userId, req.getArticleId(), req.getType());
-        return ResVO.ok();
+        return Result.success();
     }
 
     /**
@@ -207,9 +207,9 @@ public class ArticleController {
     @Operation(summary = "版本历史", description = "获取文章的版本历史记录")
     @RequiresLogin
     @GetMapping("/{articleId}/versions")
-    public ResVO<List<ArticleVersionVO>> getVersionHistory(@NotNull(message = "文章ID不能为空") @PathVariable Long articleId) {
+    public Result<List<ArticleVersionVO>> getVersionHistory(@NotNull(message = "文章ID不能为空") @PathVariable Long articleId) {
         List<ArticleVersionVO> versions = articleVersionService.getVersionHistory(articleId);
-        return ResVO.ok(versions);
+        return Result.success(versions);
     }
 
     /**
@@ -222,11 +222,11 @@ public class ArticleController {
     @Operation(summary = "版本详情", description = "获取文章指定版本的完整内容")
     @RequiresLogin
     @GetMapping("/{articleId}/versions/{version}")
-    public ResVO<ArticleVO> getVersionDetail(
+    public Result<ArticleVO> getVersionDetail(
             @NotNull(message = "文章ID不能为空") @PathVariable Long articleId,
             @NotNull(message = "版本号不能为空") @PathVariable Integer version) {
         ArticleVO detail = articleVersionService.getVersionDetail(articleId, version);
-        return ResVO.ok(detail);
+        return Result.success(detail);
     }
 
     /**
@@ -239,12 +239,12 @@ public class ArticleController {
     @Operation(summary = "版本对比", description = "对比文章的两个版本，显示差异内容")
     @RequiresLogin
     @GetMapping("/{articleId}/versions/compare")
-    public ResVO<VersionDiffVO> compareVersions(
+    public Result<VersionDiffVO> compareVersions(
             @NotNull(message = "文章ID不能为空") @PathVariable Long articleId, @Valid VersionCompareReq compareReq) {
         VersionDiffVO diff = articleVersionService.compareVersions(articleId,
                                                                    compareReq.getVersion1(),
                                                                    compareReq.getVersion2());
-        return ResVO.ok(diff);
+        return Result.success(diff);
     }
 
     /**
@@ -257,10 +257,10 @@ public class ArticleController {
     @Operation(summary = "版本回滚", description = "将文章回滚到指定历史版本作为新的草稿")
     @RequiresLogin
     @PostMapping("/{articleId}/versions/{version}/rollback")
-    public ResVO<ArticleVO> rollbackVersion(
+    public Result<ArticleVO> rollbackVersion(
             @NotNull(message = "文章ID不能为空") @PathVariable Long articleId,
             @NotNull(message = "版本号不能为空") @PathVariable Integer version) {
         ArticleVO result = articleCommandService.rollbackToVersion(articleId, version);
-        return ResVO.ok(result);
+        return Result.success(result);
     }
 }
