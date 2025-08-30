@@ -53,7 +53,7 @@ spring:
         # 拉取最大等待时间 - 5秒
         fetch.max.wait.ms: 5000
         # JSON反序列化安全包配置 - 只信任指定包的类
-        spring.json.trusted.packages: "top.harrylei.forum.api.event"
+        spring.json.trusted.packages: "top.harrylei.community.api.event"
         # 不使用类型信息头 - 使用默认类型推断
         spring.json.use.type.info.headers: false
 

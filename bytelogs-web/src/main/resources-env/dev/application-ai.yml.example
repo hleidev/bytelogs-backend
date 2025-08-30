@@ -1,44 +1,28 @@
-# AI服务配置
-ai:
-  # 默认使用的模型类型 (deepseek 或 qwen)
-  default-client: deepseek
-  
-  # 各模型配置
-  clients:
-    # DeepSeek配置
+# Spring AI配置
+spring:
+  ai:
+    # 禁用所有自动配置，使用自定义配置
+    chat:
+      client:
+        enabled: false
+    # OpenAI
+    openai:
+      api-key: "disabled"
+      base-url: "disabled"
+    # DeepSeek
     deepseek:
-      # DeepSeek API密钥，请在 https://platform.deepseek.com/api_keys 获取
-      api-key: sk-your-deepseek-api-key
-      # API基础URL，一般不需要修改
+      api-key: ${DEEPSEEK_API_KEY:your-deepseek-api-key}
       base-url: https://api.deepseek.com
-      # 默认使用的模型
-      model: deepseek-chat
-      # 请求超时时间（毫秒）
-      timeout: 30000
-      # 最大token数
-      max-tokens: 4000
-      # 温度参数，控制回复的随机性 (0.0-1.0)
-      temperature: 0.7
-    
-    # 通义千问配置
+    # Qwen
     qwen:
-      # 阿里云API密钥，请在阿里云控制台获取
-      api-key: sk-your-qwen-api-key
-      # API基础URL
-      base-url: https://dashscope.aliyuncs.com/api/v1
-      # 默认使用的模型
-      model: qwen-turbo
-      # 请求超时时间（毫秒）
-      timeout: 30000
-      # 最大token数
-      max-tokens: 4000
-      # 温度参数，控制回复的随机性 (0.0-1.0)
-      temperature: 0.7
-  
-  # 使用量限制配置
+      api-key: ${QWEN_API_KEY:your-qwen-api-key}
+      base-url: https://dashscope.aliyuncs.com/compatible-mode
+
+# 业务限制配置
+ai:
   limit:
     # 是否启用使用量限制
-    enabled: true
+    enabled: false
     # 每日最大消息数量
     daily-message-limit: 50
     # 每日最大Token消耗量
