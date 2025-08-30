@@ -11,7 +11,7 @@ import top.harrylei.community.api.exception.BusinessException;
 @Getter
 public enum ResultCode {
     // ========== 成功状态 ==========
-    SUCCESS(0, "操作成功"),
+    SUCCESS(0, "success"),
 
     // ========== 通用错误 4xxxx ==========
     INVALID_PARAMETER(40000, "参数错误"),
@@ -86,9 +86,7 @@ public enum ResultCode {
             // 无参数，使用原始消息
             formattedMessage = this.message;
         }
-        BusinessException exception = new BusinessException(this.code, formattedMessage);
-        exception.setResultCode(this);
-        throw exception;
+        throw new BusinessException(this.code, formattedMessage);
     }
 
 
