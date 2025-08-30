@@ -15,7 +15,7 @@ import java.io.Serializable;
  */
 @Data
 @Schema(description = "统一响应结构")
-public class ResVO<T> implements Serializable {
+public class Result<T> implements Serializable {
     @Serial
     private static final long serialVersionUID = -510306209659393854L;
 
@@ -28,7 +28,7 @@ public class ResVO<T> implements Serializable {
     /**
      * 响应消息
      */
-    @Schema(description = "响应消息，成功时为'OK'，失败时为具体错误信息", requiredMode = Schema.RequiredMode.REQUIRED, example = "OK")
+    @Schema(description = "响应消息，成功时为'success'，失败时为具体错误信息", requiredMode = Schema.RequiredMode.REQUIRED, example = "success")
     private String message;
 
     /**
@@ -40,13 +40,13 @@ public class ResVO<T> implements Serializable {
     /**
      * 默认构造函数
      */
-    public ResVO() {
+    public Result() {
     }
 
     /**
      * 完整构造函数
      */
-    public ResVO(int code, String message, T data) {
+    public Result(int code, String message, T data) {
         this.code = code;
         this.message = message;
         this.data = data;
@@ -55,7 +55,7 @@ public class ResVO<T> implements Serializable {
     /**
      * 构造成功响应，仅包含数据
      */
-    public ResVO(T data) {
+    public Result(T data) {
         this.code = ResultCode.SUCCESS.getCode();
         this.message = ResultCode.SUCCESS.getMessage();
         this.data = data;
@@ -68,8 +68,8 @@ public class ResVO<T> implements Serializable {
      * @param <T>  数据类型
      * @return 成功响应
      */
-    public static <T> ResVO<T> ok(T data) {
-        return new ResVO<>(data);
+    public static <T> Result<T> success(T data) {
+        return new Result<>(data);
     }
 
     /**
@@ -77,8 +77,8 @@ public class ResVO<T> implements Serializable {
      *
      * @return 成功响应，无数据
      */
-    public static ResVO<Void> ok() {
-        return new ResVO<>(ResultCode.SUCCESS.getCode(), ResultCode.SUCCESS.getMessage(), null);
+    public static Result<Void> success() {
+        return new Result<>(ResultCode.SUCCESS.getCode(), ResultCode.SUCCESS.getMessage(), null);
     }
 
     /**
@@ -89,8 +89,8 @@ public class ResVO<T> implements Serializable {
      * @param <T>     数据类型
      * @return 失败响应
      */
-    public static <T> ResVO<T> fail(int code, String message) {
-        return new ResVO<>(code, message, null);
+    public static <T> Result<T> fail(int code, String message) {
+        return new Result<>(code, message, null);
     }
 
 
@@ -101,7 +101,7 @@ public class ResVO<T> implements Serializable {
      * @param args   参数列表
      * @return 失败响应
      */
-    public static <T> ResVO<T> fail(ResultCode status, Object... args) {
+    public static <T> Result<T> fail(ResultCode status, Object... args) {
         String message = formatMessage(status.getMessage(), args);
         return fail(status.getCode(), message);
     }
