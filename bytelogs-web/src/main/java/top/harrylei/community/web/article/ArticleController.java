@@ -17,12 +17,21 @@ import top.harrylei.community.api.model.article.vo.ArticleVersionVO;
 import top.harrylei.community.api.model.article.vo.VersionDiffVO;
 import top.harrylei.community.api.model.base.Result;
 import top.harrylei.community.api.model.page.PageVO;
+import top.harrylei.community.api.model.statistics.dto.ArticleStatisticsDTO;
+import top.harrylei.community.api.model.user.dto.UserInfoDTO;
 import top.harrylei.community.core.context.ReqInfoContext;
 import top.harrylei.community.core.security.permission.RequiresLogin;
 import top.harrylei.community.service.article.converted.ArticleStructMapper;
 import top.harrylei.community.service.article.service.ArticleCommandService;
 import top.harrylei.community.service.article.service.ArticleQueryService;
 import top.harrylei.community.service.article.service.ArticleVersionService;
+import top.harrylei.community.service.statistics.converted.ArticleStatisticsStructMapper;
+import top.harrylei.community.service.statistics.service.ArticleStatisticsService;
+import top.harrylei.community.service.user.converted.UserStructMapper;
+import top.harrylei.community.service.user.service.UserFootService;
+import top.harrylei.community.service.user.service.cache.UserCacheService;
+import top.harrylei.community.service.article.service.ArticleTagService;
+import top.harrylei.community.api.model.article.vo.TagSimpleVO;
 
 import java.util.List;
 
@@ -43,6 +52,12 @@ public class ArticleController {
     private final ArticleQueryService articleQueryService;
     private final ArticleStructMapper articleStructMapper;
     private final ArticleVersionService articleVersionService;
+    private final ArticleStatisticsService articleStatisticsService;
+    private final ArticleStatisticsStructMapper articleStatisticsStructMapper;
+    private final UserCacheService userCacheService;
+    private final UserStructMapper userStructMapper;
+    private final UserFootService userFootService;
+    private final ArticleTagService articleTagService;
 
     /**
      * 用户新建文章
@@ -54,9 +69,9 @@ public class ArticleController {
     @Operation(summary = "新建文章", description = "用户保存文章（支持草稿/提交审核）")
     @PostMapping
     public Result<Long> save(@Valid @RequestBody ArticleSaveReq articleSaveReq) {
-        ArticleDTO articleDTO = articleStructMapper.toDTO(articleSaveReq);
-        articleDTO.setUserId(ReqInfoContext.getContext().getUserId());
-        Long articleId = articleCommandService.saveArticle(articleDTO);
+        ArticleDTO article = articleStructMapper.toDTO(articleSaveReq);
+        article.setUserId(ReqInfoContext.getContext().getUserId());
+        Long articleId = articleCommandService.saveArticle(article);
         return Result.success(articleId);
     }
 
@@ -71,7 +86,8 @@ public class ArticleController {
     @PutMapping
     public Result<ArticleVO> update(@Valid @RequestBody ArticleUpdateReq articleUpdateReq) {
         ArticleDTO articleDTO = articleStructMapper.toDTO(articleUpdateReq);
-        ArticleVO article = articleCommandService.updateArticle(articleDTO);
+        ArticleDTO updatedDTO = articleCommandService.updateArticle(articleDTO);
+        ArticleVO article = articleStructMapper.toVO(updatedDTO);
         return Result.success(article);
     }
 
@@ -112,8 +128,26 @@ public class ArticleController {
     @Operation(summary = "文章详细", description = "查询文章详细（支持未登录用户访问已发布文章）")
     @GetMapping("/{articleId}")
     public Result<ArticleDetailVO> detail(@PathVariable Long articleId) {
-        ArticleDetailVO vo = articleQueryService.getArticleDetail(articleId);
-        return Result.success(vo);
+        // 查询文章基础信息
+        ArticleDTO articleDTO = articleQueryService.getArticle(articleId, false);
+        // 查询文章统计信息
+        ArticleStatisticsDTO statistics = articleStatisticsService.getArticleStatistics(articleId);
+        // 查询作者信息
+        UserInfoDTO author = userCacheService.getUserInfo(articleDTO.getUserId());
+
+        // 记录阅读行为
+        articleStatisticsService.incrementReadCount(articleId);
+        if (ReqInfoContext.getContext().isLoggedIn()) {
+            userFootService.recordRead(ReqInfoContext.getContext().getUserId(), articleDTO.getUserId(), articleId);
+        }
+
+        // 组装VO
+        ArticleDetailVO result = new ArticleDetailVO()
+                .setArticle(articleStructMapper.toVO(articleDTO))
+                .setAuthor(userStructMapper.toVO(author))
+                .setStatistics(articleStatisticsStructMapper.toVO(statistics));
+
+        return Result.success(result);
     }
 
     /**
@@ -126,8 +160,8 @@ public class ArticleController {
     @Operation(summary = "文章草稿", description = "获取文章草稿内容（用于编辑，仅作者可访问）")
     @GetMapping("/{articleId}/draft")
     public Result<ArticleVO> draft(@NotNull(message = "文章ID不能为空") @PathVariable Long articleId) {
-        ArticleVO vo = articleCommandService.getArticleDraft(articleId);
-        return Result.success(vo);
+        ArticleDTO article = articleQueryService.getArticle(articleId, true);
+        return Result.success(articleStructMapper.toVO(article));
     }
 
     /**
@@ -225,7 +259,12 @@ public class ArticleController {
     public Result<ArticleVO> getVersionDetail(
             @NotNull(message = "文章ID不能为空") @PathVariable Long articleId,
             @NotNull(message = "版本号不能为空") @PathVariable Integer version) {
-        ArticleVO detail = articleVersionService.getVersionDetail(articleId, version);
+        // Service返回DTO，转换为VO
+        ArticleDTO articleDTO = articleVersionService.getVersionDetail(articleId, version);
+        ArticleVO detail = articleStructMapper.toVO(articleDTO);
+        // 填充标签信息
+        List<TagSimpleVO> tags = articleTagService.listTagSimpleVoByArticleIds(List.of(detail.getId()));
+        detail.setTags(tags);
         return Result.success(detail);
     }
 
@@ -242,8 +281,8 @@ public class ArticleController {
     public Result<VersionDiffVO> compareVersions(
             @NotNull(message = "文章ID不能为空") @PathVariable Long articleId, @Valid VersionCompareReq compareReq) {
         VersionDiffVO diff = articleVersionService.compareVersions(articleId,
-                                                                   compareReq.getVersion1(),
-                                                                   compareReq.getVersion2());
+                compareReq.getVersion1(),
+                compareReq.getVersion2());
         return Result.success(diff);
     }
 
@@ -260,7 +299,12 @@ public class ArticleController {
     public Result<ArticleVO> rollbackVersion(
             @NotNull(message = "文章ID不能为空") @PathVariable Long articleId,
             @NotNull(message = "版本号不能为空") @PathVariable Integer version) {
-        ArticleVO result = articleCommandService.rollbackToVersion(articleId, version);
+        // Service返回DTO，转换为VO
+        ArticleDTO articleDTO = articleCommandService.rollbackToVersion(articleId, version);
+        ArticleVO result = articleStructMapper.toVO(articleDTO);
+        // 填充标签信息
+        List<TagSimpleVO> tags = articleTagService.listTagSimpleVoByArticleIds(List.of(result.getId()));
+        result.setTags(tags);
         return Result.success(result);
     }
 }

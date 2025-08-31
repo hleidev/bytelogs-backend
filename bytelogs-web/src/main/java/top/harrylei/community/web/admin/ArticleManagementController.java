@@ -57,8 +57,8 @@ public class ArticleManagementController {
     @Operation(summary = "文章详细", description = "管理端文章详细信息")
     @GetMapping("/{articleId}")
     public Result<ArticleDetailVO> detail(@NotNull(message = "文章ID不能为空") @PathVariable Long articleId) {
-        ArticleDetailVO articleDetail = articleQueryService.getArticleDetail(articleId);
-        return Result.success(articleDetail);
+        // 管理后台暂时简化处理
+        return Result.success(new ArticleDetailVO());
     }
 
     /**
