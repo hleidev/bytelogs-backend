@@ -49,5 +49,5 @@ public interface UserFollowService {
      * @param userId 用户ID
      * @return 关注者ID列表
      */
-    List<Long> getFollowerIds(Long userId);
+    List<Long> listFollowerIds(Long userId);
 }

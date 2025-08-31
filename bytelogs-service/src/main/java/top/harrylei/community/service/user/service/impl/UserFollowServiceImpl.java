@@ -228,10 +228,10 @@ public class UserFollowServiceImpl implements UserFollowService {
     private void publishFollowNotificationEvent(Long currentUserId, Long followUserId) {
         try {
             kafkaEventPublisher.publishUserBehaviorEvent(currentUserId,
-                                                         followUserId,
-                                                         followUserId,
-                                                         ContentTypeEnum.EMPTY,
-                                                         NotifyTypeEnum.FOLLOW);
+                    followUserId,
+                    followUserId,
+                    ContentTypeEnum.EMPTY,
+                    NotifyTypeEnum.FOLLOW);
 
             log.debug("发布关注通知事件成功: currentUserId={}, followUserId={}", currentUserId, followUserId);
 
@@ -250,21 +250,24 @@ public class UserFollowServiceImpl implements UserFollowService {
     private void publishFollowActivityEvent(Long currentUserId, Long followUserId, ActivityActionEnum activityAction) {
         try {
             kafkaEventPublisher.publishUserActivityEvent(currentUserId,
-                                                         followUserId,
-                                                         ActivityTargetEnum.USER,
-                                                         activityAction);
+                    followUserId,
+                    ActivityTargetEnum.USER,
+                    activityAction);
 
             log.debug("发布{}活跃度事件成功: currentUserId={}, followUserId={}",
-                      activityAction.getLabel(), currentUserId, followUserId);
+                    activityAction.getLabel(), currentUserId, followUserId);
 
         } catch (Exception e) {
             log.error("发布{}活跃度事件失败: currentUserId={}, followUserId={}",
-                      activityAction.getLabel(), currentUserId, followUserId, e);
+                    activityAction.getLabel(), currentUserId, followUserId, e);
         }
     }
 
     @Override
-    public List<Long> getFollowerIds(Long userId) {
-        return userFollowDAO.getFollowerIds(userId);
+    public List<Long> listFollowerIds(Long userId) {
+        if (userId == null) {
+            return List.of();
+        }
+        return userFollowDAO.listFollowerIds(userId);
     }
 }

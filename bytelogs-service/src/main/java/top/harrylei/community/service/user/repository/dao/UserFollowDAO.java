@@ -88,10 +88,18 @@ public class UserFollowDAO extends ServiceImpl<UserFollowMapper, UserFollowDO> {
      * @param userId 用户ID
      * @return 关注者ID列表
      */
-    public List<Long> getFollowerIds(Long userId) {
+    public List<Long> listFollowerIds(Long userId) {
         if (userId == null) {
             return List.of();
         }
-        return getBaseMapper().getFollowerIds(userId);
+        return lambdaQuery()
+                .select(UserFollowDO::getUserId)
+                .eq(UserFollowDO::getFollowUserId, userId)
+                .eq(UserFollowDO::getFollowState, UserFollowStatusEnum.FOLLOWED)
+                .eq(UserFollowDO::getDeleted, DeleteStatusEnum.NOT_DELETED)
+                .list()
+                .stream()
+                .map(UserFollowDO::getUserId)
+                .toList();
     }
 }

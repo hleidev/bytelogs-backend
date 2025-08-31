@@ -4,15 +4,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import top.harrylei.community.api.enums.article.CollectionStatusEnum;
-import top.harrylei.community.api.enums.comment.CommentStatusEnum;
 import top.harrylei.community.api.enums.article.ContentTypeEnum;
+import top.harrylei.community.api.enums.comment.CommentStatusEnum;
 import top.harrylei.community.api.enums.notify.NotifyTypeEnum;
 import top.harrylei.community.api.enums.rank.ActivityActionEnum;
 import top.harrylei.community.api.enums.rank.ActivityTargetEnum;
 import top.harrylei.community.api.enums.user.OperateTypeEnum;
 import top.harrylei.community.api.enums.user.PraiseStatusEnum;
 import top.harrylei.community.api.enums.user.ReadStatusEnum;
-import top.harrylei.community.api.model.user.dto.ArticleFootCountDTO;
 import top.harrylei.community.api.model.user.dto.UserFootDTO;
 import top.harrylei.community.core.util.KafkaEventPublisher;
 import top.harrylei.community.core.util.NumUtil;
@@ -218,7 +217,7 @@ public class UserFootServiceImpl implements UserFootService {
     public boolean saveOrUpdateUserFoot(Long userId, OperateTypeEnum operateTypeEnum, Long authorId,
                                         Long contentId, ContentTypeEnum contentTypeEnum) {
         UserFootDO userFoot = userFootDAO.getByContentAndUserId(userId, contentId, contentTypeEnum);
-        boolean stateChanged = false;
+        boolean stateChanged;
 
         if (userFoot == null) {
             userFoot = new UserFootDO()
@@ -444,13 +443,5 @@ public class UserFootServiceImpl implements UserFootService {
             case COMMENT -> ActivityTargetEnum.COMMENT;
             default -> null;
         };
-    }
-
-    @Override
-    public ArticleFootCountDTO getArticleFootCount(Long articleId) {
-        ArticleFootCountDTO countDTO = new ArticleFootCountDTO();
-        countDTO.setPraiseCount(userFootDAO.countPraiseByArticleId(articleId));
-        countDTO.setCollectionCount(userFootDAO.countCollectionByArticleId(articleId));
-        return countDTO;
     }
 }

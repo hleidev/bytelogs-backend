@@ -1,8 +1,7 @@
 package top.harrylei.community.service.user.service;
 
-import top.harrylei.community.api.enums.user.OperateTypeEnum;
 import top.harrylei.community.api.enums.article.ContentTypeEnum;
-import top.harrylei.community.api.model.user.dto.ArticleFootCountDTO;
+import top.harrylei.community.api.enums.user.OperateTypeEnum;
 import top.harrylei.community.api.model.user.dto.UserFootDTO;
 import top.harrylei.community.service.comment.repository.entity.CommentDO;
 
@@ -72,12 +71,4 @@ public interface UserFootService {
      * @return 是否成功操作
      */
     Boolean recordRead(Long userId, Long articleAuthorId, Long articleId);
-
-    /**
-     * 获取文章足迹统计
-     *
-     * @param articleId 文章ID
-     * @return 文章足迹统计信息
-     */
-    ArticleFootCountDTO getArticleFootCount(Long articleId);
 }
