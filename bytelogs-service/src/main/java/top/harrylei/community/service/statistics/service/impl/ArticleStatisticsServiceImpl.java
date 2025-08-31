@@ -31,11 +31,13 @@ public class ArticleStatisticsServiceImpl implements ArticleStatisticsService {
 
     @Override
     public ArticleStatisticsDTO getArticleStatistics(Long articleId) {
+        if (articleId == null) {
+            return new ArticleStatisticsDTO();
+        }
         ArticleStatisticsDO statistics = articleStatisticsDAO.getByArticleId(articleId);
         if (statistics == null) {
             return new ArticleStatisticsDTO();
         }
-
         return articleStatisticsStructMapper.toDTO(statistics);
     }
 
@@ -58,11 +60,6 @@ public class ArticleStatisticsServiceImpl implements ArticleStatisticsService {
     }
 
     @Override
-    public Long getReadCount(Long articleId) {
-        return articleStatisticsDAO.getReadCount(articleId);
-    }
-
-    @Override
     public void incrementPraiseCount(Long articleId) {
         articleStatisticsDAO.incrementPraiseCount(articleId);
         log.debug("文章点赞量增加成功: articleId={}", articleId);
@@ -72,11 +69,6 @@ public class ArticleStatisticsServiceImpl implements ArticleStatisticsService {
     public void decrementPraiseCount(Long articleId) {
         articleStatisticsDAO.decrementPraiseCount(articleId);
         log.debug("文章点赞量减少成功: articleId={}", articleId);
-    }
-
-    @Override
-    public Long getPraiseCount(Long articleId) {
-        return articleStatisticsDAO.getPraiseCount(articleId);
     }
 
     @Override
@@ -92,11 +84,6 @@ public class ArticleStatisticsServiceImpl implements ArticleStatisticsService {
     }
 
     @Override
-    public Long getCollectCount(Long articleId) {
-        return articleStatisticsDAO.getCollectCount(articleId);
-    }
-
-    @Override
     public void incrementCommentCount(Long articleId) {
         articleStatisticsDAO.incrementCommentCount(articleId);
         log.debug("文章评论量增加成功: articleId={}", articleId);
@@ -106,11 +93,6 @@ public class ArticleStatisticsServiceImpl implements ArticleStatisticsService {
     public void decrementCommentCount(Long articleId) {
         articleStatisticsDAO.decrementCommentCount(articleId);
         log.debug("文章评论量减少成功: articleId={}", articleId);
-    }
-
-    @Override
-    public Long getCommentCount(Long articleId) {
-        return articleStatisticsDAO.getCommentCount(articleId);
     }
 
     /**

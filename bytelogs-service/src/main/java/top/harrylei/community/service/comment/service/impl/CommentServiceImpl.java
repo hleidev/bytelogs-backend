@@ -14,6 +14,7 @@ import top.harrylei.community.api.enums.rank.ActivityTargetEnum;
 import top.harrylei.community.api.enums.user.OperateTypeEnum;
 import top.harrylei.community.api.enums.user.PraiseStatusEnum;
 import top.harrylei.community.api.model.comment.dto.CommentDTO;
+import top.harrylei.community.api.model.article.dto.ArticleDTO;
 import top.harrylei.community.api.model.comment.req.CommentMyQueryParam;
 import top.harrylei.community.api.model.comment.req.CommentQueryParam;
 import top.harrylei.community.api.model.comment.vo.BaseCommentVO;
@@ -254,8 +255,8 @@ public class CommentServiceImpl implements CommentService {
      */
     private CommentDO insertComment(CommentDTO dto) {
         // 验证文章是否存在
-        ArticleDO article = articleQueryService.getArticleById(dto.getArticleId());
-        if (article == null) {
+        ArticleDTO articleDTO = articleQueryService.getArticle(dto.getArticleId(), false);
+        if (articleDTO == null) {
             ResultCode.ARTICLE_NOT_EXISTS.throwException();
         }
 
@@ -284,10 +285,10 @@ public class CommentServiceImpl implements CommentService {
 
         // 保存用户足迹
         Long parentUserId = parent != null ? parent.getUserId() : null;
-        userFootService.saveCommentFoot(comment, article.getUserId(), parentUserId);
+        userFootService.saveCommentFoot(comment, articleDTO.getUserId(), parentUserId);
 
         // 发布通知事件
-        publishCommentNotificationEvent(comment, article, parent);
+        publishCommentNotificationEvent(comment, articleDTO, parent);
 
         // 发布活跃度事件
         publishCommentActivityEvent(comment, ActivityActionEnum.COMMENT);
@@ -304,7 +305,7 @@ public class CommentServiceImpl implements CommentService {
     private void updateCommentFoot(CommentDO comment, boolean isDelete) {
         try {
             // 获取文章信息
-            ArticleDO article = articleQueryService.getArticleById(comment.getArticleId());
+            ArticleDTO articleDTO = articleQueryService.getArticle(comment.getArticleId(), false);
 
             // 获取父评论作者ID
             Long parentUserId = null;
@@ -317,9 +318,9 @@ public class CommentServiceImpl implements CommentService {
 
             // 执行足迹操作
             if (isDelete) {
-                userFootService.deleteCommentFoot(comment, article.getUserId(), parentUserId);
+                userFootService.deleteCommentFoot(comment, articleDTO.getUserId(), parentUserId);
             } else {
-                userFootService.saveCommentFoot(comment, article.getUserId(), parentUserId);
+                userFootService.saveCommentFoot(comment, articleDTO.getUserId(), parentUserId);
             }
         } catch (Exception e) {
             String action = isDelete ? "删除" : "恢复";
@@ -494,7 +495,7 @@ public class CommentServiceImpl implements CommentService {
      * @param article 文章对象
      * @param parent  父评论对象（如果是回复）
      */
-    private void publishCommentNotificationEvent(CommentDO comment, ArticleDO article, CommentDO parent) {
+    private void publishCommentNotificationEvent(CommentDO comment, ArticleDTO article, CommentDO parent) {
         try {
             // 1. 对文章的评论通知
             if (!comment.getUserId().equals(article.getUserId())) {
