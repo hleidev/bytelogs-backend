@@ -6,15 +6,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import top.harrylei.community.api.enums.article.ArticlePublishStatusEnum;
+import top.harrylei.community.api.enums.article.PublishedFlagEnum;
 import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 import top.harrylei.community.api.enums.response.ResultCode;
+import top.harrylei.community.api.model.article.dto.ArticleDTO;
 import top.harrylei.community.api.model.article.req.ArticleQueryParam;
-import top.harrylei.community.api.model.article.vo.ArticleDetailVO;
 import top.harrylei.community.api.model.article.vo.ArticleVO;
 import top.harrylei.community.api.model.article.vo.TagSimpleVO;
 import top.harrylei.community.api.model.page.PageVO;
-import top.harrylei.community.api.model.statistics.dto.ArticleStatisticsDTO;
-import top.harrylei.community.api.model.user.dto.UserInfoDTO;
 import top.harrylei.community.core.context.ReqInfoContext;
 import top.harrylei.community.core.util.PageUtils;
 import top.harrylei.community.service.article.converted.ArticleStructMapper;
@@ -24,11 +23,6 @@ import top.harrylei.community.service.article.repository.entity.ArticleDO;
 import top.harrylei.community.service.article.repository.entity.ArticleDetailDO;
 import top.harrylei.community.service.article.service.ArticleQueryService;
 import top.harrylei.community.service.article.service.ArticleTagService;
-import top.harrylei.community.service.statistics.converted.ArticleStatisticsStructMapper;
-import top.harrylei.community.service.statistics.service.ArticleStatisticsService;
-import top.harrylei.community.service.user.converted.UserStructMapper;
-import top.harrylei.community.service.user.service.UserFootService;
-import top.harrylei.community.service.user.service.cache.UserCacheService;
 
 import java.util.List;
 import java.util.Map;
@@ -50,35 +44,6 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
     private final ArticleDetailDAO articleDetailDAO;
     private final ArticleStructMapper articleStructMapper;
     private final ArticleTagService articleTagService;
-    private final UserStructMapper userStructMapper;
-    private final UserCacheService userCacheService;
-    private final UserFootService userFootService;
-    private final ArticleStatisticsService articleStatisticsService;
-    private final ArticleStatisticsStructMapper articleStatisticsStructMapper;
-
-    @Override
-    public ArticleDetailVO getArticleDetail(Long articleId) {
-        // 构建基础ArticleVO
-        ArticleVO articleVO = getArticleVO(articleId, false);
-
-        // 详情接口特有的权限校验
-        validatePublicViewPermission(articleVO);
-
-        // 构建统计信息
-        ArticleStatisticsDTO articleStatistics = articleStatisticsService.getArticleStatistics(articleId);
-
-        // 记录阅读行为
-        recordReadBehavior(articleId, articleVO.getUserId());
-
-        // 获取作者信息
-        UserInfoDTO author = userCacheService.getUserInfo(articleVO.getUserId());
-
-        ArticleDetailVO result = new ArticleDetailVO();
-        result.setArticle(articleVO);
-        result.setAuthor(userStructMapper.toVO(author));
-        result.setStatistics(articleStatisticsStructMapper.toVO(articleStatistics));
-        return result;
-    }
 
     @Override
     public PageVO<ArticleVO> pageQuery(ArticleQueryParam queryParam) {
@@ -98,14 +63,6 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
         return PageUtils.from(articlePage);
     }
 
-    @Override
-    public ArticleDO getArticleById(Long articleId) {
-        ArticleDO article = articleDAO.getById(articleId);
-        if (article == null) {
-            ResultCode.ARTICLE_NOT_EXISTS.throwException();
-        }
-        return article;
-    }
 
     /**
      * 获取文章发布版本
@@ -118,33 +75,6 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
         return publishedVersion;
     }
 
-    /**
-     * 校验公开访问权限
-     */
-    private void validatePublicViewPermission(ArticleVO articleVO) {
-        // 只校验已发布且未删除的文章
-        if (DeleteStatusEnum.DELETED.equals(articleVO.getDeleted())) {
-            ResultCode.ARTICLE_NOT_EXISTS.throwException();
-        }
-
-        if (!ArticlePublishStatusEnum.PUBLISHED.equals(articleVO.getStatus())) {
-            ResultCode.ARTICLE_NOT_EXISTS.throwException();
-        }
-    }
-
-    /**
-     * 记录阅读行为
-     */
-    private void recordReadBehavior(Long articleId, Long authorId) {
-        // 所有用户都增加阅读计数
-        articleStatisticsService.incrementReadCount(articleId);
-
-        // 仅登录用户记录足迹
-        if (ReqInfoContext.getContext().isLoggedIn()) {
-            Long currentUserId = ReqInfoContext.getContext().getUserId();
-            userFootService.recordRead(currentUserId, authorId, articleId);
-        }
-    }
 
     /**
      * 处理查询权限
@@ -183,26 +113,34 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
     }
 
     /**
-     * 构建基础ArticleVO
+     * 构建基础Article
      *
      * @param articleId        文章ID
-     * @param useLatestVersion 是否使用最新版本
+     * @param isLatestVersion 是否使用最新版本
      * @return 文章VO
      */
     @Override
-    public ArticleVO getArticleVO(Long articleId, boolean useLatestVersion) {
-        ArticleDO article = getArticleById(articleId);
+    public ArticleDTO getArticle(Long articleId, boolean isLatestVersion) {
+        ArticleDO article = articleDAO.getById(articleId);
+        if (article == null) {
+            ResultCode.ARTICLE_NOT_EXISTS.throwException();
+        }
 
         // 根据参数选择版本
-        ArticleDetailDO detail = useLatestVersion
-                ? getLatestVersion(articleId)
-                : getPublishedVersion(articleId);
+        ArticleDetailDO detail = isLatestVersion ? getLatestVersion(articleId) : getPublishedVersion(articleId);
 
-        // 构建VO和填充标签
-        ArticleVO articleVO = articleStructMapper.buildArticleVO(article, detail);
-        fillArticleTags(List.of(articleVO));
+        if (isLatestVersion) {
+            // 最新版本只能作者或管理员查看
+            Long currentUserId = ReqInfoContext.getContext().getUserId();
+            boolean isAuthor = Objects.equals(article.getUserId(), currentUserId);
+            boolean isAdmin = ReqInfoContext.getContext().isAdmin();
+            if (PublishedFlagEnum.NO.equals(detail.getPublished()) && !isAuthor  && !isAdmin) {
+                ResultCode.OPERATION_NOT_ALLOWED.throwException();
+            }
+        }
 
-        return articleVO;
+        // 构建DTO
+        return articleStructMapper.buildArticleDTO(article, detail);
     }
 
     /**

@@ -72,6 +72,7 @@ public interface ArticleStructMapper {
     @Mapping(target = "deleted", ignore = true)
     ArticleDetailDO toDetailDO(ArticleDTO articleDTO);
 
+    @Mapping(target = "tagIds", ignore = true)
     @Mapping(target = "id", source = "article.id")
     @Mapping(target = "userId", source = "article.userId")
     @Mapping(target = "deleted", source = "article.deleted")
@@ -83,9 +84,7 @@ public interface ArticleStructMapper {
     @Mapping(target = "summary", source = "detail.summary")
     @Mapping(target = "sourceUrl", source = "detail.sourceUrl")
     @Mapping(target = "content", source = "detail.content")
-    @Mapping(target = "tags", ignore = true)
-    @Mapping(target = "category", ignore = true)
-    ArticleVO buildArticleVO(ArticleDO article, ArticleDetailDO detail);
+    ArticleDTO buildArticleDTO(ArticleDO article, ArticleDetailDO detail);
 
     ArticleVersionVO toVersionVO(ArticleDetailDO detail);
 

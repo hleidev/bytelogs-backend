@@ -2,6 +2,8 @@ package top.harrylei.community.service.article.repository.dao;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Repository;
+import top.harrylei.community.api.enums.article.LatestFlagEnum;
+import top.harrylei.community.api.enums.article.PublishedFlagEnum;
 import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 import top.harrylei.community.service.article.repository.entity.ArticleDetailDO;
 import top.harrylei.community.service.article.repository.mapper.ArticleDetailMapper;
@@ -33,7 +35,7 @@ public class ArticleDetailDAO extends ServiceImpl<ArticleDetailMapper, ArticleDe
     public ArticleDetailDO getLatestVersion(Long articleId) {
         return lambdaQuery()
                 .eq(ArticleDetailDO::getArticleId, articleId)
-                .eq(ArticleDetailDO::getLatest, DeleteStatusEnum.DELETED)
+                .eq(ArticleDetailDO::getLatest, LatestFlagEnum.YES)
                 .eq(ArticleDetailDO::getDeleted, DeleteStatusEnum.NOT_DELETED)
                 .one();
     }
@@ -44,7 +46,7 @@ public class ArticleDetailDAO extends ServiceImpl<ArticleDetailMapper, ArticleDe
     public ArticleDetailDO getPublishedVersion(Long articleId) {
         return lambdaQuery()
                 .eq(ArticleDetailDO::getArticleId, articleId)
-                .eq(ArticleDetailDO::getPublished, DeleteStatusEnum.DELETED)
+                .eq(ArticleDetailDO::getPublished, PublishedFlagEnum.YES)
                 .eq(ArticleDetailDO::getDeleted, DeleteStatusEnum.NOT_DELETED)
                 .one();
     }
@@ -55,9 +57,9 @@ public class ArticleDetailDAO extends ServiceImpl<ArticleDetailMapper, ArticleDe
     public void clearLatestFlag(Long articleId) {
         lambdaUpdate()
                 .eq(ArticleDetailDO::getArticleId, articleId)
-                .eq(ArticleDetailDO::getLatest, DeleteStatusEnum.DELETED)
+                .eq(ArticleDetailDO::getLatest, LatestFlagEnum.YES)
                 .eq(ArticleDetailDO::getDeleted, DeleteStatusEnum.NOT_DELETED)
-                .set(ArticleDetailDO::getLatest, DeleteStatusEnum.NOT_DELETED)
+                .set(ArticleDetailDO::getLatest, LatestFlagEnum.NO)
                 .update();
     }
 
@@ -67,9 +69,9 @@ public class ArticleDetailDAO extends ServiceImpl<ArticleDetailMapper, ArticleDe
     public void clearPublishedFlag(Long articleId) {
         lambdaUpdate()
                 .eq(ArticleDetailDO::getArticleId, articleId)
-                .eq(ArticleDetailDO::getPublished, DeleteStatusEnum.DELETED)
+                .eq(ArticleDetailDO::getPublished, PublishedFlagEnum.YES)
                 .eq(ArticleDetailDO::getDeleted, DeleteStatusEnum.NOT_DELETED)
-                .set(ArticleDetailDO::getPublished, DeleteStatusEnum.NOT_DELETED)
+                .set(ArticleDetailDO::getPublished, PublishedFlagEnum.NO)
                 .update();
     }
 

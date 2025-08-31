@@ -1,6 +1,7 @@
 package top.harrylei.community.service.article.service;
 
 import top.harrylei.community.api.model.article.vo.ArticleVO;
+import top.harrylei.community.api.model.article.dto.ArticleDTO;
 import top.harrylei.community.api.model.article.vo.ArticleVersionVO;
 import top.harrylei.community.api.model.article.vo.VersionDiffVO;
 
@@ -28,7 +29,7 @@ public interface ArticleVersionService {
      * @param version   版本号
      * @return 版本详情
      */
-    ArticleVO getVersionDetail(Long articleId, Integer version);
+    ArticleDTO getVersionDetail(Long articleId, Integer version);
 
     /**
      * 对比两个版本

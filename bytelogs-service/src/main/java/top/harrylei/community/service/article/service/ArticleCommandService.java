@@ -6,7 +6,6 @@ import top.harrylei.community.api.enums.article.OfficialStatusEnum;
 import top.harrylei.community.api.enums.article.ToppingStatusEnum;
 import top.harrylei.community.api.enums.user.OperateTypeEnum;
 import top.harrylei.community.api.model.article.dto.ArticleDTO;
-import top.harrylei.community.api.model.article.vo.ArticleVO;
 
 /**
  * 文章命令服务接口
@@ -28,9 +27,9 @@ public interface ArticleCommandService {
      * 更新文章
      *
      * @param articleDTO 文章传输对象
-     * @return 文章VO
+     * @return 文章DTO
      */
-    ArticleVO updateArticle(ArticleDTO articleDTO);
+    ArticleDTO updateArticle(ArticleDTO articleDTO);
 
     /**
      * 删除文章
@@ -82,17 +81,9 @@ public interface ArticleCommandService {
      *
      * @param articleId 文章ID
      * @param version   目标版本号
-     * @return 回滚后的文章VO
+     * @return 回滚后的文章DTO
      */
-    ArticleVO rollbackToVersion(Long articleId, Integer version);
-
-    /**
-     * 获取文章草稿（用于编辑）
-     *
-     * @param articleId 文章ID
-     * @return 文章VO
-     */
-    ArticleVO getArticleDraft(Long articleId);
+    ArticleDTO rollbackToVersion(Long articleId, Integer version);
 
     /**
      * 更新文章置顶状态

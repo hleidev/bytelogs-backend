@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import top.harrylei.community.api.enums.response.ResultCode;
 import top.harrylei.community.api.model.article.vo.ArticleVO;
+import top.harrylei.community.api.model.article.dto.ArticleDTO;
 import top.harrylei.community.api.model.article.vo.ArticleVersionVO;
 import top.harrylei.community.api.model.article.vo.TagSimpleVO;
 import top.harrylei.community.api.model.article.vo.VersionDiffVO;
@@ -40,10 +41,10 @@ public class ArticleVersionServiceImpl implements ArticleVersionService {
     @Override
     public List<ArticleVersionVO> getVersionHistory(Long articleId) {
         // 1. 验证文章存在性
-        ArticleDO article = articleQueryService.getArticleById(articleId);
+        ArticleDTO articleDTO = articleQueryService.getArticle(articleId, false);
 
         // 2. 权限校验：只有作者和管理员可以访问版本管理功能
-        validateAuthorPermission(article.getUserId());
+        validateAuthorPermission(articleDTO.getUserId());
 
         // 3. 获取所有版本（作者和管理员可以看到所有版本）
         List<ArticleDetailDO> allVersions = articleDetailDAO.getVersionHistory(articleId);
@@ -65,23 +66,21 @@ public class ArticleVersionServiceImpl implements ArticleVersionService {
     }
 
     @Override
-    public ArticleVO getVersionDetail(Long articleId, Integer version) {
+    public ArticleDTO getVersionDetail(Long articleId, Integer version) {
         // 1. 验证文章存在性
-        ArticleDO article = articleQueryService.getArticleById(articleId);
+        ArticleDTO articleDTO = articleQueryService.getArticle(articleId, false);
 
         // 2. 权限校验：只有作者和管理员可以查看版本详情
-        validateAuthorPermission(article.getUserId());
+        validateAuthorPermission(articleDTO.getUserId());
 
         // 3. 获取指定版本详情
         ArticleDetailDO detail = getArticleVersion(articleId, version);
 
-        // 4. 构建完整的文章VO
-        ArticleVO articleVO = articleStructMapper.buildArticleVO(article, detail);
+        // 4. 构建完整的文章DTO，重新获取文章基础信息
+        ArticleDTO baseArticle = articleQueryService.getArticle(articleId, false);
+        ArticleDTO result = articleStructMapper.buildArticleDTO(articleStructMapper.toDO(baseArticle), detail);
 
-        // 5. 填充标签信息
-        fillSingleArticleTags(articleVO);
-
-        return articleVO;
+        return result;
     }
 
     /**
@@ -109,10 +108,10 @@ public class ArticleVersionServiceImpl implements ArticleVersionService {
     @Override
     public VersionDiffVO compareVersions(Long articleId, Integer version1, Integer version2) {
         // 1. 验证文章存在性
-        ArticleDO article = articleQueryService.getArticleById(articleId);
+        ArticleDTO articleDTO = articleQueryService.getArticle(articleId, false);
 
         // 2. 权限校验
-        validateAuthorPermission(article.getUserId());
+        validateAuthorPermission(articleDTO.getUserId());
 
         // 3. 获取两个版本的详情
         ArticleDetailDO detail1 = getArticleVersion(articleId, version1);
