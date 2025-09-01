@@ -4,6 +4,7 @@ import top.harrylei.community.api.enums.article.ArticlePublishStatusEnum;
 import top.harrylei.community.api.enums.article.CreamStatusEnum;
 import top.harrylei.community.api.enums.article.OfficialStatusEnum;
 import top.harrylei.community.api.enums.article.ToppingStatusEnum;
+import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 import top.harrylei.community.api.enums.user.OperateTypeEnum;
 import top.harrylei.community.api.model.article.dto.ArticleDTO;
 

@@ -57,4 +57,11 @@ public class ArticleDAO extends ServiceImpl<ArticleMapper, ArticleDO> {
                 .set(ArticleDO::getOfficial, officialStat)
                 .update();
     }
+
+    public ArticleDO getArticle(Long articleId, DeleteStatusEnum status) {
+        return lambdaQuery()
+                .eq(ArticleDO::getId, articleId)
+                .eq(ArticleDO::getDeleted, status)
+                .one();
+    }
 }

@@ -48,7 +48,6 @@ public class ArticleCommandServiceImpl implements ArticleCommandService {
     private final KafkaEventPublisher kafkaEventPublisher;
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Long saveArticle(ArticleDTO articleDTO) {
         // 1. 处理审核逻辑
         ArticlePublishStatusEnum status = changeStatus(articleDTO.getStatus());
@@ -77,7 +76,6 @@ public class ArticleCommandServiceImpl implements ArticleCommandService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public ArticleDTO updateArticle(ArticleDTO articleDTO) {
         Long articleId = articleDTO.getId();
         if (articleId == null) {
@@ -113,26 +111,12 @@ public class ArticleCommandServiceImpl implements ArticleCommandService {
 
     @Override
     public void deleteArticle(Long articleId) {
-        ArticleDO article = getArticleBasicInfo(articleId);
-        checkArticlePermission(article.getUserId());
-
-        if (checkAndUpdateDeleted(article, DeleteStatusEnum.DELETED)) {
-            log.info("删除文章成功 articleId={} operatorId={}", articleId, ReqInfoContext.getContext().getUserId());
-        } else {
-            log.info("文章已删除，无需重复删除 articleId={}", articleId);
-        }
+        updateArticleDeleteStatus(articleId, DeleteStatusEnum.DELETED);
     }
 
     @Override
     public void restoreArticle(Long articleId) {
-        ArticleDO article = getDeletedArticle(articleId);
-        checkArticlePermission(article.getUserId());
-
-        if (checkAndUpdateDeleted(article, DeleteStatusEnum.NOT_DELETED)) {
-            log.info("恢复文章成功 articleId={} operatorId={}", articleId, ReqInfoContext.getContext().getUserId());
-        } else {
-            log.info("文章未删除，无需恢复 articleId={}", articleId);
-        }
+        updateArticleDeleteStatus(articleId, DeleteStatusEnum.NOT_DELETED);
     }
 
     @Override
@@ -258,12 +242,13 @@ public class ArticleCommandServiceImpl implements ArticleCommandService {
         }
     }
 
+
     /**
-     * 获取已删除的文章（仅用于恢复操作）
+     * 获取文章基础信息
      */
-    private ArticleDO getDeletedArticle(Long articleId) {
-        ArticleDO article = articleDAO.getById(articleId);
-        if (article == null || !DeleteStatusEnum.DELETED.equals(article.getDeleted())) {
+    private ArticleDO getArticleBasicInfo(Long articleId, DeleteStatusEnum status) {
+        ArticleDO article = articleDAO.getArticle(articleId, status);
+        if (article == null) {
             ResultCode.ARTICLE_NOT_EXISTS.throwException();
         }
         return article;
@@ -273,11 +258,7 @@ public class ArticleCommandServiceImpl implements ArticleCommandService {
      * 获取文章基础信息
      */
     private ArticleDO getArticleBasicInfo(Long articleId) {
-        ArticleDO article = articleDAO.getById(articleId);
-        if (article == null) {
-            ResultCode.ARTICLE_NOT_EXISTS.throwException();
-        }
-        return article;
+        return getArticleBasicInfo(articleId, null);
     }
 
     /**
@@ -294,17 +275,28 @@ public class ArticleCommandServiceImpl implements ArticleCommandService {
         }
     }
 
-    private boolean checkAndUpdateDeleted(ArticleDO article, DeleteStatusEnum targetDeleted) {
-        DeleteStatusEnum currentDeleted = article.getDeleted();
-        if (Objects.equals(currentDeleted, targetDeleted)) {
-            return false;
-        }
+    /**
+     * 统一的文章删除状态更新方法
+     *
+     * @param articleId 文章ID
+     * @param status    目标删除状态
+     */
+    private void updateArticleDeleteStatus(Long articleId, DeleteStatusEnum status) {
+        // 1. 根据目标状态获取文章
+        DeleteStatusEnum targetStatus = DeleteStatusEnum.DELETED.equals(status) ?
+                DeleteStatusEnum.NOT_DELETED : DeleteStatusEnum.DELETED;
+        ArticleDO article = getArticleBasicInfo(articleId, targetStatus);
 
-        // 更新文章删除状态
-        articleDAO.updateDeleted(article.getId(), targetDeleted);
-        // 同步更新文章详情删除状态
-        articleDetailDAO.updateDeleted(article.getId(), targetDeleted);
-        return true;
+        // 2. 权限校验
+        checkArticlePermission(article.getUserId());
+
+        // 3. 执行状态更新
+        articleDAO.updateDeleted(articleId, status);
+        articleDetailDAO.updateDeleted(articleId, status);
+
+        // 4. 记录日志
+        String operation = DeleteStatusEnum.DELETED.equals(status) ? "删除" : "恢复";
+        log.info("{}文章成功 articleId={} operatorId={}", operation, articleId, ReqInfoContext.getContext().getUserId());
     }
 
     private ArticlePublishStatusEnum changeStatus(ArticlePublishStatusEnum status) {
