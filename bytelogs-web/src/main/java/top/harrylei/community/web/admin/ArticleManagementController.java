@@ -8,12 +8,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import top.harrylei.community.api.model.article.dto.ArticleDTO;
 import top.harrylei.community.api.model.article.req.*;
-import top.harrylei.community.api.model.article.vo.ArticleDetailVO;
 import top.harrylei.community.api.model.article.vo.ArticleVO;
 import top.harrylei.community.api.model.base.Result;
 import top.harrylei.community.api.model.page.PageVO;
 import top.harrylei.community.core.security.permission.RequiresAdmin;
+import top.harrylei.community.service.article.converted.ArticleStructMapper;
 import top.harrylei.community.service.article.service.ArticleManagementService;
 import top.harrylei.community.service.article.service.ArticleQueryService;
 
@@ -35,6 +36,7 @@ public class ArticleManagementController {
 
     private final ArticleQueryService articleQueryService;
     private final ArticleManagementService articleManagementService;
+    private final ArticleStructMapper articleStructMapper;
 
     /**
      * 文章分页查询
@@ -56,9 +58,9 @@ public class ArticleManagementController {
      */
     @Operation(summary = "文章详细", description = "管理端文章详细信息")
     @GetMapping("/{articleId}")
-    public Result<ArticleDetailVO> detail(@NotNull(message = "文章ID不能为空") @PathVariable Long articleId) {
-        // 管理后台暂时简化处理
-        return Result.success(new ArticleDetailVO());
+    public Result<ArticleVO> detail(@NotNull(message = "文章ID不能为空") @PathVariable Long articleId) {
+        ArticleDTO article = articleQueryService.getLatestArticle(articleId);
+        return Result.success(articleStructMapper.toVO(article));
     }
 
     /**

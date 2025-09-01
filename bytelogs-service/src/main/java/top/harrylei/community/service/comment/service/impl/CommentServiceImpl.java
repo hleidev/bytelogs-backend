@@ -255,7 +255,7 @@ public class CommentServiceImpl implements CommentService {
      */
     private CommentDO insertComment(CommentDTO dto) {
         // 验证文章是否存在
-        ArticleDTO articleDTO = articleQueryService.getArticle(dto.getArticleId(), false);
+        ArticleDTO articleDTO = articleQueryService.getPublishedArticle(dto.getArticleId());
         if (articleDTO == null) {
             ResultCode.ARTICLE_NOT_EXISTS.throwException();
         }
@@ -305,7 +305,7 @@ public class CommentServiceImpl implements CommentService {
     private void updateCommentFoot(CommentDO comment, boolean isDelete) {
         try {
             // 获取文章信息
-            ArticleDTO articleDTO = articleQueryService.getArticle(comment.getArticleId(), false);
+            ArticleDTO articleDTO = articleQueryService.getPublishedArticle(comment.getArticleId());
 
             // 获取父评论作者ID
             Long parentUserId = null;

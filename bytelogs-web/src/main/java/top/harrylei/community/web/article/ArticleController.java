@@ -129,7 +129,7 @@ public class ArticleController {
     @GetMapping("/{articleId}")
     public Result<ArticleDetailVO> detail(@PathVariable Long articleId) {
         // 查询文章基础信息
-        ArticleDTO articleDTO = articleQueryService.getArticle(articleId, false);
+        ArticleDTO articleDTO = articleQueryService.getPublishedArticle(articleId);
         // 查询文章统计信息
         ArticleStatisticsDTO statistics = articleStatisticsService.getArticleStatistics(articleId);
         // 查询作者信息
@@ -160,7 +160,7 @@ public class ArticleController {
     @Operation(summary = "文章草稿", description = "获取文章草稿内容（用于编辑，仅作者可访问）")
     @GetMapping("/{articleId}/draft")
     public Result<ArticleVO> draft(@NotNull(message = "文章ID不能为空") @PathVariable Long articleId) {
-        ArticleDTO article = articleQueryService.getArticle(articleId, true);
+        ArticleDTO article = articleQueryService.getLatestArticle(articleId);
         return Result.success(articleStructMapper.toVO(article));
     }
 

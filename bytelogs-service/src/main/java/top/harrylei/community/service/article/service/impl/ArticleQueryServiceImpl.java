@@ -115,12 +115,23 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
     /**
      * 构建基础Article
      *
-     * @param articleId        文章ID
-     * @param isLatestVersion 是否使用最新版本
+     * @param articleId 文章ID
      * @return 文章VO
      */
     @Override
-    public ArticleDTO getArticle(Long articleId, boolean isLatestVersion) {
+    public ArticleDTO getPublishedArticle(Long articleId) {
+        return getArticle(articleId, false);
+    }
+
+    @Override
+    public ArticleDTO getLatestArticle(Long articleId) {
+        return getArticle(articleId, true);
+    }
+
+    /**
+     * 获取文章的通用方法
+     */
+    private ArticleDTO getArticle(Long articleId, boolean isLatestVersion) {
         ArticleDO article = articleDAO.getById(articleId);
         if (article == null) {
             ResultCode.ARTICLE_NOT_EXISTS.throwException();
@@ -134,7 +145,7 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
             Long currentUserId = ReqInfoContext.getContext().getUserId();
             boolean isAuthor = Objects.equals(article.getUserId(), currentUserId);
             boolean isAdmin = ReqInfoContext.getContext().isAdmin();
-            if (PublishedFlagEnum.NO.equals(detail.getPublished()) && !isAuthor  && !isAdmin) {
+            if (PublishedFlagEnum.NO.equals(detail.getPublished()) && !isAuthor && !isAdmin) {
                 ResultCode.OPERATION_NOT_ALLOWED.throwException();
             }
         }

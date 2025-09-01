@@ -23,11 +23,18 @@ public interface ArticleQueryService {
     PageVO<ArticleVO> pageQuery(ArticleQueryParam queryParam);
 
     /**
-     * 构建基础ArticleDTO
+     * 获取文章发布版本
      *
-     * @param articleId       文章ID
-     * @param isLatestVersion 是否使用最新版本
+     * @param articleId 文章ID
      * @return 文章DTO
      */
-    ArticleDTO getArticle(Long articleId, boolean isLatestVersion);
+    ArticleDTO getPublishedArticle(Long articleId);
+
+    /**
+     * 获取文章最新版本
+     *
+     * @param articleId 文章ID
+     * @return 文章DTO
+     */
+    ArticleDTO getLatestArticle(Long articleId);
 }

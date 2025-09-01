@@ -41,7 +41,7 @@ public class ArticleVersionServiceImpl implements ArticleVersionService {
     @Override
     public List<ArticleVersionVO> getVersionHistory(Long articleId) {
         // 1. 验证文章存在性
-        ArticleDTO articleDTO = articleQueryService.getArticle(articleId, false);
+        ArticleDTO articleDTO = articleQueryService.getPublishedArticle(articleId);
 
         // 2. 权限校验：只有作者和管理员可以访问版本管理功能
         validateAuthorPermission(articleDTO.getUserId());
@@ -68,7 +68,7 @@ public class ArticleVersionServiceImpl implements ArticleVersionService {
     @Override
     public ArticleDTO getVersionDetail(Long articleId, Integer version) {
         // 1. 验证文章存在性
-        ArticleDTO articleDTO = articleQueryService.getArticle(articleId, false);
+        ArticleDTO articleDTO = articleQueryService.getPublishedArticle(articleId);
 
         // 2. 权限校验：只有作者和管理员可以查看版本详情
         validateAuthorPermission(articleDTO.getUserId());
@@ -77,7 +77,7 @@ public class ArticleVersionServiceImpl implements ArticleVersionService {
         ArticleDetailDO detail = getArticleVersion(articleId, version);
 
         // 4. 构建完整的文章DTO，重新获取文章基础信息
-        ArticleDTO baseArticle = articleQueryService.getArticle(articleId, false);
+        ArticleDTO baseArticle = articleQueryService.getPublishedArticle(articleId);
         ArticleDTO result = articleStructMapper.buildArticleDTO(articleStructMapper.toDO(baseArticle), detail);
 
         return result;
@@ -108,7 +108,7 @@ public class ArticleVersionServiceImpl implements ArticleVersionService {
     @Override
     public VersionDiffVO compareVersions(Long articleId, Integer version1, Integer version2) {
         // 1. 验证文章存在性
-        ArticleDTO articleDTO = articleQueryService.getArticle(articleId, false);
+        ArticleDTO articleDTO = articleQueryService.getPublishedArticle(articleId);
 
         // 2. 权限校验
         validateAuthorPermission(articleDTO.getUserId());
