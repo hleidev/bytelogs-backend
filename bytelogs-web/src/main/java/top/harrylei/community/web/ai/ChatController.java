@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import top.harrylei.community.api.enums.ai.ChatClientTypeEnum;
 import top.harrylei.community.api.enums.ai.ChatConversationStatusEnum;
 import top.harrylei.community.api.enums.response.ResultCode;
 import top.harrylei.community.api.model.ai.dto.ChatConversationDTO;
@@ -14,10 +15,7 @@ import top.harrylei.community.api.model.ai.dto.ChatUsageStatsDTO;
 import top.harrylei.community.api.model.ai.req.ChatReq;
 import top.harrylei.community.api.model.ai.req.ConversationsQueryParam;
 import top.harrylei.community.api.model.ai.req.MessagesQueryParam;
-import top.harrylei.community.api.model.ai.vo.ChatConversationDetailVO;
-import top.harrylei.community.api.model.ai.vo.ChatConversationVO;
-import top.harrylei.community.api.model.ai.vo.ChatMessageVO;
-import top.harrylei.community.api.model.ai.vo.ChatUsageStatsVO;
+import top.harrylei.community.api.model.ai.vo.*;
 import top.harrylei.community.api.model.base.Result;
 import top.harrylei.community.api.model.page.PageVO;
 import top.harrylei.community.core.config.AILimitConfig;
@@ -25,12 +23,15 @@ import top.harrylei.community.core.context.ReqInfoContext;
 import top.harrylei.community.core.security.permission.RequiresLogin;
 import top.harrylei.community.core.util.NumUtil;
 import top.harrylei.community.core.util.PageUtils;
+import top.harrylei.community.service.ai.config.AiProviderConfig;
 import top.harrylei.community.service.ai.converted.ChatConversationStructMapper;
 import top.harrylei.community.service.ai.converted.ChatMessageStructMapper;
 import top.harrylei.community.service.ai.service.ChatService;
 import top.harrylei.community.service.ai.service.ChatUsageService;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * AI对话控制器
@@ -40,16 +41,17 @@ import java.time.LocalDate;
 @RestController
 @RequestMapping("/v1/ai/chat")
 @Tag(name = "AI对话模块", description = "AI对话相关接口")
-@RequiresLogin
 @RequiredArgsConstructor
 public class ChatController {
 
     private final ChatService chatService;
     private final ChatUsageService chatUsageService;
     private final AILimitConfig aiLimitConfig;
+    private final AiProviderConfig aiProviderConfig;
     private final ChatConversationStructMapper chatConversationStructMapper;
     private final ChatMessageStructMapper chatMessageStructMapper;
 
+    @RequiresLogin
     @PostMapping
     @Operation(summary = "发起AI对话", description = "发送消息给AI并获取回复")
     public Result<ChatMessageVO> chat(@Valid @RequestBody ChatReq req) {
@@ -58,6 +60,7 @@ public class ChatController {
         return Result.success(messageVO);
     }
 
+    @RequiresLogin
     @GetMapping("/conversations/page")
     @Operation(summary = "获取对话列表", description = "获取当前用户的对话列表（进行中）")
     public Result<PageVO<ChatConversationVO>> pageQuery(@Valid ConversationsQueryParam queryParam) {
@@ -66,6 +69,7 @@ public class ChatController {
         return Result.success(PageUtils.map(conversationPage, chatConversationStructMapper::toVO));
     }
 
+    @RequiresLogin
     @GetMapping("/conversations/archived/page")
     @Operation(summary = "获取归档对话列表", description = "获取当前用户的归档对话列表")
     public Result<PageVO<ChatConversationVO>> pageQueryArchived(@Valid ConversationsQueryParam queryParam) {
@@ -74,11 +78,11 @@ public class ChatController {
         return Result.success(PageUtils.map(conversationPage, chatConversationStructMapper::toVO));
     }
 
+    @RequiresLogin
     @GetMapping("/conversations/{conversionId}")
     @Operation(summary = "获取对话详情", description = "获取指定对话的详细信息和消息历史")
     public Result<ChatConversationDetailVO> getConversationDetail(@NotNull(message = "会话ID不能为空")
-                                                                 @PathVariable Long conversionId) {
-
+                                                                  @PathVariable Long conversionId) {
         Long userId = getCurrentUserId();
         ChatConversationDTO conversation = chatService.getConversationDetail(conversionId, userId);
 
@@ -95,6 +99,7 @@ public class ChatController {
         return Result.success(pageResult);
     }
 
+    @RequiresLogin
     @GetMapping("/conversations/{id}/messages")
     @Operation(summary = "获取对话消息", description = "支持基于时间游标的滚动加载")
     public Result<PageVO<ChatMessageVO>> pageQueryMessages(@NotNull(message = "会话ID不能为空") @PathVariable Long id,
@@ -106,6 +111,7 @@ public class ChatController {
         return Result.success(PageUtils.map(messagePage, chatMessageStructMapper::toVO));
     }
 
+    @RequiresLogin
     @DeleteMapping("/conversations/{id}")
     @Operation(summary = "删除对话", description = "删除指定的对话")
     public Result<Void> deleteConversation(@NotNull(message = "对话ID不能为空") @PathVariable Long id) {
@@ -115,6 +121,7 @@ public class ChatController {
         return Result.success();
     }
 
+    @RequiresLogin
     @PutMapping("/conversations/{id}/archive")
     @Operation(summary = "归档对话", description = "归档指定的对话")
     public Result<Void> archiveConversation(@NotNull(message = "对话ID不能为空") @PathVariable Long id) {
@@ -132,6 +139,7 @@ public class ChatController {
         return userId;
     }
 
+    @RequiresLogin
     @GetMapping("/usage")
     @Operation(summary = "获取使用量统计", description = "获取当前用户的AI使用量统计")
     public Result<ChatUsageStatsVO> getUsageStats() {
@@ -165,5 +173,26 @@ public class ChatController {
         return Result.success(result);
     }
 
+    @GetMapping("/providers")
+    @Operation(summary = "获取AI提供商信息", description = "获取所有可用的AI提供商及其支持的模型信息")
+    public Result<List<AiProviderInfoVO>> getProviders() {
+        List<AiProviderInfoVO> providers = new ArrayList<>();
 
+        // 遍历所有支持的提供商类型
+        for (ChatClientTypeEnum provider : ChatClientTypeEnum.values()) {
+            if (aiProviderConfig.isProviderEnabled(provider)) {
+                AiProviderInfoVO providerInfo = AiProviderInfoVO.builder()
+                        .provider(provider)
+                        .enabled(true)
+                        .defaultModel(aiProviderConfig.getDefaultModel(provider))
+                        .supportedModels(aiProviderConfig.getSupportedModels(provider))
+                        .temperatureRange(aiProviderConfig.getTemperatureRange(provider))
+                        .maxTokens(aiProviderConfig.getMaxTokens(provider))
+                        .build();
+                providers.add(providerInfo);
+            }
+        }
+
+        return Result.success(providers);
+    }
 }

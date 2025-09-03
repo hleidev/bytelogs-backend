@@ -55,6 +55,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 公共接口，无需认证
                         .requestMatchers("/v1/auth/login").permitAll()
+                        .requestMatchers("/v1/ai/chat/providers").permitAll()
                         .requestMatchers("/v1/auth/register").permitAll()
                         .requestMatchers("/v1/admin/auth/login").permitAll()
                         .requestMatchers("/v1/tag/**").permitAll()
