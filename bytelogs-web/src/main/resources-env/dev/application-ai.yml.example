@@ -20,8 +20,11 @@ spring:
 
 # AI提供商配置
 ai:
-  # 默认提供商（当用户未指定时使用）
-  default-provider: "qwen"
+  # 默认配置
+  defaults:
+    provider: "qwen"          # 默认提供商（当用户未指定时使用）
+    temperature-range: [0.0, 2.0]  # 默认温度范围
+    max-tokens: 4000          # 默认最大Token数
   
   providers:
     deepseek:

@@ -28,25 +28,26 @@ public class AiProviderConfig {
     private Map<String, ProviderInfo> providers = new HashMap<>();
 
     /**
-     * 默认提供商
+     * 默认配置 - 包括默认提供商和参数
      */
-    private String defaultProvider;
+    private DefaultSettings defaults = new DefaultSettings();
 
     /**
      * 获取默认提供商枚举
      */
     public ChatClientTypeEnum getDefaultProvider() {
-        if (defaultProvider == null || defaultProvider.isBlank()) {
-            throw new IllegalStateException("默认提供商未配置，请在配置文件中设置 ai.default-provider");
+        String provider = defaults.getProvider();
+        if (provider == null || provider.isBlank()) {
+            throw new IllegalStateException("默认提供商未配置，请在配置文件中设置 ai.defaults.provider");
         }
 
         try {
-            return ChatClientTypeEnum.valueOf(defaultProvider.toUpperCase());
+            return ChatClientTypeEnum.valueOf(provider.toUpperCase());
         } catch (IllegalArgumentException e) {
             throw new IllegalStateException(
-                String.format("默认提供商配置'%s'无效，支持的提供商: %s", 
-                    defaultProvider, 
-                    Arrays.toString(ChatClientTypeEnum.values()))
+                    String.format("默认提供商配置'%s'无效，支持的提供商: %s",
+                            provider,
+                            Arrays.toString(ChatClientTypeEnum.values()))
             );
         }
     }
@@ -111,7 +112,7 @@ public class AiProviderConfig {
      */
     public float[] getTemperatureRange(ChatClientTypeEnum provider) {
         if (provider == null) {
-            return new float[]{0.0f, 2.0f};
+            return getValidDefaultTemperatureRange();
         }
 
         String providerKey = provider.getName();
@@ -122,8 +123,10 @@ public class AiProviderConfig {
             return providerInfo.getTemperatureRange();
         }
 
-        // 默认范围
-        return new float[]{0.0f, 2.0f};
+        // 配置缺失时使用配置化默认值
+        float[] defaultRange = getValidDefaultTemperatureRange();
+        log.warn("提供商{}的温度范围配置缺失，使用默认值{}", provider.getLabel(), Arrays.toString(defaultRange));
+        return defaultRange;
     }
 
     /**
@@ -131,7 +134,7 @@ public class AiProviderConfig {
      */
     public int getMaxTokens(ChatClientTypeEnum provider) {
         if (provider == null) {
-            return 4000;
+            return getValidDefaultMaxTokens();
         }
 
         String providerKey = provider.getName();
@@ -141,9 +144,33 @@ public class AiProviderConfig {
             return providerInfo.getMaxTokens();
         }
 
-        // 配置缺失时使用通用默认值并记录警告
-        log.warn("提供商{}的最大Token配置缺失，使用默认值4000", provider.getLabel());
-        return 4000;
+        // 配置缺失时使用配置化默认值并记录警告
+        int defaultTokens = getValidDefaultMaxTokens();
+        log.warn("提供商{}的最大Token配置缺失，使用默认值{}", provider.getLabel(), defaultTokens);
+        return defaultTokens;
+    }
+
+
+    /**
+     * 获取有效的默认温度范围
+     */
+    private float[] getValidDefaultTemperatureRange() {
+        float[] defaultRange = defaults.getTemperatureRange();
+        if (defaultRange == null || defaultRange.length != 2) {
+            throw new IllegalStateException("默认温度范围配置无效，请在配置文件中设置 ai.defaults.temperature-range");
+        }
+        return defaultRange;
+    }
+
+    /**
+     * 获取有效的默认最大Token数
+     */
+    private int getValidDefaultMaxTokens() {
+        Integer defaultTokens = defaults.getMaxTokens();
+        if (defaultTokens == null || defaultTokens <= 0) {
+            throw new IllegalStateException("默认最大Token配置无效，请在配置文件中设置 ai.defaults.max-tokens");
+        }
+        return defaultTokens;
     }
 
     /**
@@ -180,5 +207,26 @@ public class AiProviderConfig {
          * 其他扩展配置
          */
         private Map<String, Object> extra = new HashMap<>();
+    }
+
+    /**
+     * 默认配置设置
+     */
+    @Data
+    public static class DefaultSettings {
+        /**
+         * 默认提供商
+         */
+        private String provider;
+
+        /**
+         * 默认温度范围
+         */
+        private float[] temperatureRange;
+
+        /**
+         * 默认最大Token数
+         */
+        private Integer maxTokens;
     }
 }

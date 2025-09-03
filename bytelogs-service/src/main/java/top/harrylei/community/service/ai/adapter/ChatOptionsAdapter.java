@@ -104,7 +104,9 @@ public class ChatOptionsAdapter {
      */
     private float validateTemperature(Float temperature, ChatClientTypeEnum provider) {
         if (temperature == null) {
-            return 0.7f;
+            // 使用配置化的默认温度值
+            float[] range = aiProviderConfig.getTemperatureRange(provider);
+            return (range[0] + range[1]) / 2;
         }
 
         // 从配置中获取温度范围
@@ -126,7 +128,8 @@ public class ChatOptionsAdapter {
      */
     private int validateMaxTokens(Integer maxTokens, ChatClientTypeEnum provider) {
         if (maxTokens == null || maxTokens <= 0) {
-            return 4000;
+            // 使用配置化的默认最大Token值
+            return aiProviderConfig.getMaxTokens(provider);
         }
 
         // 从配置中获取最大Token限制
