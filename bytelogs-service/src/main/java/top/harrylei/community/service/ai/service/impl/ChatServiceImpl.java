@@ -30,6 +30,8 @@ import top.harrylei.community.api.model.page.PageVO;
 import top.harrylei.community.core.config.AILimitConfig;
 import top.harrylei.community.core.context.ReqInfoContext;
 import top.harrylei.community.core.util.PageUtils;
+import top.harrylei.community.service.ai.adapter.ChatOptionsAdapter;
+import top.harrylei.community.service.ai.config.AiProviderConfig;
 import top.harrylei.community.service.ai.converted.ChatConversationStructMapper;
 import top.harrylei.community.service.ai.converted.ChatMessageStructMapper;
 import top.harrylei.community.service.ai.repository.dao.ChatConversationDAO;
@@ -63,6 +65,8 @@ public class ChatServiceImpl implements ChatService {
     private final AILimitConfig aiLimitConfig;
     private final ChatMessageStructMapper chatMessageStructMapper;
     private final ChatConversationStructMapper chatConversationStructMapper;
+    private final ChatOptionsAdapter chatOptionsAdapter;
+    private final AiProviderConfig aiProviderConfig;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -194,13 +198,33 @@ public class ChatServiceImpl implements ChatService {
      */
     private String generateConversationTitle(String message) {
         try {
-            // 生成标题
-            String title = deepseekChatClient.prompt()
-                    .system("你是一个标题生成助手，请为用户问题生成一个简洁的标题。要求：1）不超过20个字符 2）不包含引号 3）直接返回标题内容")
-                    .user("请为以下问题生成标题：" + message)
-                    .options(OpenAiChatOptions.builder().withModel("deepseek-chat").build())
-                    .call()
-                    .content();
+            // 使用配置化的方式生成标题，避免硬编码
+            ChatReq titleReq = new ChatReq();
+            ChatClientTypeEnum titleProvider = aiProviderConfig.getDefaultProvider();
+            titleReq.setProvider(titleProvider);
+            titleReq.setTemperature(0.3f);
+            titleReq.setMaxTokens(50);
+
+            Object titleOptions = chatOptionsAdapter.buildChatOptions(titleReq, titleProvider);
+
+            // 根据配置的默认提供商选择ChatClient生成标题
+            ChatClient titleClient = selectChatClient(titleProvider);
+            
+            String title;
+            if (titleOptions instanceof OpenAiChatOptions options) {
+                title = titleClient.prompt()
+                        .system("你是一个标题生成助手，请为用户问题生成一个简洁的标题。要求：1）不超过20个字符 2）不包含引号 3）直接返回标题内容")
+                        .user("请为以下问题生成标题：" + message)
+                        .options(options)
+                        .call()
+                        .content();
+            } else {
+                title = titleClient.prompt()
+                        .system("你是一个标题生成助手，请为用户问题生成一个简洁的标题。要求：1）不超过20个字符 2）不包含引号 3）直接返回标题内容")
+                        .user("请为以下问题生成标题：" + message)
+                        .call()
+                        .content();
+            }
 
             if (StringUtils.hasText(title)) {
                 // 清理AI返回的标题（去除可能的引号、换行等）
@@ -244,8 +268,8 @@ public class ChatServiceImpl implements ChatService {
         // 1. 根据前端参数选择ChatClient
         ChatClient selectedClient = selectChatClient(chatReq.getProvider());
 
-        // 2. 构建ChatOptions
-        OpenAiChatOptions chatOptions = buildChatOptions(chatReq);
+        // 2. 构建ChatOptions - 使用适配器解决硬编码问题
+        Object chatOptions = chatOptionsAdapter.buildChatOptions(chatReq, chatReq.getProvider());
 
         // 3. 获取最近10条消息作为上下文
         List<ChatMessageDO> recentMessages = chatMessageDAO.getRecentMessages(conversationId, 10);
@@ -273,7 +297,12 @@ public class ChatServiceImpl implements ChatService {
             messages.add(new UserMessage(userMessage));
 
             // 7. 构建 Prompt 并应用配置选项
-            Prompt prompt = new Prompt(messages, chatOptions);
+            Prompt prompt;
+            if (chatOptions instanceof OpenAiChatOptions options) {
+                prompt = new Prompt(messages, options);
+            } else {
+                prompt = new Prompt(messages);
+            }
 
             // 8. 执行调用并获取完整响应
             ChatResponse response = selectedClient.prompt(prompt).call().chatResponse();
@@ -326,38 +355,14 @@ public class ChatServiceImpl implements ChatService {
      */
     private ChatClient selectChatClient(ChatClientTypeEnum provider) {
         if (provider == null) {
-            return qwenChatClient;
+            provider = aiProviderConfig.getDefaultProvider();
         }
 
         return switch (provider) {
-            case ChatClientTypeEnum.DEEPSEEK -> deepseekChatClient;
-            default -> qwenChatClient;
+            case DEEPSEEK -> deepseekChatClient;
+            case QWEN -> qwenChatClient;
+            case OPENAI -> throw new IllegalStateException("OpenAI ChatClient未配置，请完成相关配置");
         };
-    }
-
-    /**
-     * 根据前端参数构建ChatOptions
-     */
-    private OpenAiChatOptions buildChatOptions(ChatReq chatReq) {
-        OpenAiChatOptions.Builder builder = OpenAiChatOptions.builder();
-        boolean hasOptions = false;
-
-        if (StringUtils.hasText(chatReq.getModel())) {
-            builder.withModel(chatReq.getModel());
-            hasOptions = true;
-        }
-
-        if (chatReq.getTemperature() != null) {
-            builder.withTemperature(chatReq.getTemperature().doubleValue());
-            hasOptions = true;
-        }
-
-        if (chatReq.getMaxTokens() != null) {
-            builder.withMaxTokens(chatReq.getMaxTokens());
-            hasOptions = true;
-        }
-
-        return hasOptions ? builder.build() : null;
     }
 
     /**
