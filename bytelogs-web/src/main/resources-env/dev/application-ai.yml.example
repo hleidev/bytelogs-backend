@@ -18,8 +18,44 @@ spring:
       api-key: ${QWEN_API_KEY:your-qwen-api-key}
       base-url: https://dashscope.aliyuncs.com/compatible-mode
 
-# 业务限制配置
+# AI提供商配置
 ai:
+  # 默认提供商（当用户未指定时使用）
+  default-provider: "qwen"
+  
+  providers:
+    deepseek:
+      enabled: true
+      default-model: "deepseek-chat"
+      supported-models: 
+        - "deepseek-chat"
+        - "deepseek-coder"
+      temperature-range: [0.0, 2.0]
+      max-tokens: 8192
+    
+    qwen:
+      enabled: true
+      default-model: "qwen-turbo"
+      supported-models:
+        - "qwen-turbo"
+        - "qwen-plus"
+        - "qwen-max"
+        - "qwen-max-longcontext"
+      temperature-range: [0.1, 1.99]
+      max-tokens: 8000
+    
+    openai:
+      enabled: false
+      default-model: "gpt-3.5-turbo"
+      supported-models:
+        - "gpt-3.5-turbo"
+        - "gpt-4"
+        - "gpt-4-turbo"
+        - "gpt-4o"
+      temperature-range: [0.0, 2.0]
+      max-tokens: 4096
+
+  # 业务限制配置
   limit:
     # 是否启用使用量限制
     enabled: false
