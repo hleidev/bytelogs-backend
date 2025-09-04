@@ -56,6 +56,7 @@ public class SecurityConfig {
                         // 公共接口，无需认证
                         .requestMatchers("/v1/auth/login").permitAll()
                         .requestMatchers("/v1/ai/chat/providers").permitAll()
+                        .requestMatchers("/v1/websocket/online-count").permitAll()
                         .requestMatchers("/v1/auth/register").permitAll()
                         .requestMatchers("/v1/admin/auth/login").permitAll()
                         .requestMatchers("/v1/tag/**").permitAll()
@@ -72,6 +73,8 @@ public class SecurityConfig {
                         .requestMatchers("/static/**").permitAll()
                         // OPTIONS请求放行
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        // WebSocket端点需要认证
+                        .requestMatchers("/ws/**").authenticated()
                         // 需要管理员权限的接口
                         .requestMatchers("/v1/admin/**").hasRole("ADMIN")
                         // 其他请求需要认证
