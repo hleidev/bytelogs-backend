@@ -104,7 +104,7 @@ public class WebSocketSessionManager {
         
         try {
             // 使用 Spring STOMP 的用户目的地，会自动路由到对应用户的会话
-            String destination = "/queue/messages";
+            String destination = "/v1/queue/messages";
             Object message = createMessage(type, data);
 
             messagingTemplate.convertAndSendToUser(userId.toString(), destination, message);

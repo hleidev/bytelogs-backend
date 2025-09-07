@@ -40,6 +40,10 @@ public class WebSocketEventListener {
 
         Optional.ofNullable(headerAccessor.getSessionAttributes())
                 .ifPresent(attrs -> attrs.put("userId", userId));
+
+        // 将用户添加到会话管理器
+        sessionManager.addUser(userId, sessionId);
+
         log.info("WebSocket connected, userId: {}, sessionId: {}", userId, sessionId);
     }
 

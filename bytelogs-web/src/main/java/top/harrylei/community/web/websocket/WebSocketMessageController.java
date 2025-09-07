@@ -23,7 +23,7 @@ public class WebSocketMessageController {
 
     /**
      * 处理心跳消息
-     * 客户端发送到 /app/heartbeat
+     * 客户端发送到 /v1/app/heartbeat
      */
     @MessageMapping("/heartbeat")
     public void handleHeartbeat(@Payload String message, SimpMessageHeaderAccessor headerAccessor) {
@@ -36,7 +36,7 @@ public class WebSocketMessageController {
 
     /**
      * 处理系统消息订阅确认
-     * 客户端发送到 /app/subscribe
+     * 客户端发送到 /v1/app/subscribe
      */
     @MessageMapping("/subscribe")
     public void handleSubscribe(@Payload String destination, SimpMessageHeaderAccessor headerAccessor) {
@@ -49,7 +49,7 @@ public class WebSocketMessageController {
 
     /**
      * 处理客户端状态报告
-     * 客户端发送到 /app/status
+     * 客户端发送到 /v1/app/status
      */
     @MessageMapping("/status")
     public void handleStatus(@Payload String status, SimpMessageHeaderAccessor headerAccessor) {
