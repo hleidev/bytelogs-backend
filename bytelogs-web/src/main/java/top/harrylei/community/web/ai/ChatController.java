@@ -28,6 +28,8 @@ import top.harrylei.community.service.ai.converted.ChatConversationStructMapper;
 import top.harrylei.community.service.ai.converted.ChatMessageStructMapper;
 import top.harrylei.community.service.ai.service.ChatService;
 import top.harrylei.community.service.ai.service.ChatUsageService;
+import top.harrylei.community.web.websocket.WebSocketSessionManager;
+import top.harrylei.community.api.model.websocket.message.AiStreamMessage;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -50,6 +52,7 @@ public class ChatController {
     private final AiProviderConfig aiProviderConfig;
     private final ChatConversationStructMapper chatConversationStructMapper;
     private final ChatMessageStructMapper chatMessageStructMapper;
+    private final WebSocketSessionManager webSocketSessionManager;
 
     @RequiresLogin
     @PostMapping
@@ -58,6 +61,44 @@ public class ChatController {
         ChatMessageDTO aiMessage = chatService.chat(req);
         ChatMessageVO messageVO = chatMessageStructMapper.toVO(aiMessage);
         return Result.success(messageVO);
+    }
+
+    @RequiresLogin
+    @PostMapping("/stream")
+    @Operation(summary = "发起AI流式对话", description = "通过WebSocket发送流式AI响应")
+    public Result<Void> chatStream(@Valid @RequestBody ChatReq req) {
+        Long userId = getCurrentUserId();
+
+        // 检查用户是否在线
+        if (!webSocketSessionManager.isUserOnline(userId)) {
+            ResultCode.INVALID_PARAMETER.throwException("用户未连接WebSocket，无法进行流式对话");
+        }
+
+        // 使用回调接口处理流式响应
+        chatService.chatStream(req, new ChatService.StreamCallback() {
+            @Override
+            public void onContent(Long conversationId, Long messageId, String content) {
+                // 发送流式内容片段到WebSocket
+                AiStreamMessage message = AiStreamMessage.chunk(conversationId, messageId, content);
+                webSocketSessionManager.sendAiStream(userId, message);
+            }
+
+            @Override
+            public void onComplete(Long conversationId, Long messageId, Integer totalTokens) {
+                // 发送完成消息
+                AiStreamMessage message = AiStreamMessage.finish(conversationId, messageId, totalTokens);
+                webSocketSessionManager.sendAiStream(userId, message);
+            }
+
+            @Override
+            public void onError(Long conversationId, String error) {
+                // 发送错误消息
+                AiStreamMessage message = AiStreamMessage.error(conversationId, error);
+                webSocketSessionManager.sendAiStream(userId, message);
+            }
+        });
+
+        return Result.success();
     }
 
     @RequiresLogin

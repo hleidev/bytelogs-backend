@@ -24,6 +24,45 @@ public interface ChatService {
     ChatMessageDTO chat(ChatReq chatReq);
 
     /**
+     * 发送流式聊天消息
+     *
+     * @param chatReq        聊天请求参数
+     * @param streamCallback 流式响应回调接口
+     */
+    void chatStream(ChatReq chatReq, StreamCallback streamCallback);
+
+    /**
+     * 流式响应回调接口
+     */
+    interface StreamCallback {
+        /**
+         * 接收流式内容片段
+         *
+         * @param conversationId 对话ID
+         * @param messageId      消息ID
+         * @param content        内容片段
+         */
+        void onContent(Long conversationId, Long messageId, String content);
+
+        /**
+         * 流式响应完成
+         *
+         * @param conversationId 对话ID
+         * @param messageId      消息ID
+         * @param totalTokens    总Token数
+         */
+        void onComplete(Long conversationId, Long messageId, Integer totalTokens);
+
+        /**
+         * 流式响应出错
+         *
+         * @param conversationId 对话ID
+         * @param error          错误信息
+         */
+        void onError(Long conversationId, String error);
+    }
+
+    /**
      * 获取用户的对话列表
      *
      * @param userId 用户ID

@@ -40,9 +40,9 @@ public interface ChatUsageService {
      * @param totalTokens       总Token消耗增量
      * @param conversationCount 对话数量增量
      */
-    void recordUsage(Long userId, ChatClientTypeEnum provider, String modelName, 
-                    Integer messageCount, Long promptTokens, Long completionTokens,
-                    Long totalTokens, Integer conversationCount);
+    void recordUsage(Long userId, ChatClientTypeEnum provider, String modelName,
+                     Integer messageCount, Long promptTokens, Long completionTokens,
+                     Long totalTokens, Integer conversationCount);
 
     /**
      * 获取用户今日使用统计

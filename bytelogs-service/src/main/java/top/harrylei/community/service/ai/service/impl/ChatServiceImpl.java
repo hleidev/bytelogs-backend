@@ -16,10 +16,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-import top.harrylei.community.api.enums.response.ResultCode;
 import top.harrylei.community.api.enums.ai.ChatClientTypeEnum;
 import top.harrylei.community.api.enums.ai.ChatConversationStatusEnum;
 import top.harrylei.community.api.enums.ai.ChatMessageRoleEnum;
+import top.harrylei.community.api.enums.response.ResultCode;
 import top.harrylei.community.api.model.ai.dto.ChatConversationDTO;
 import top.harrylei.community.api.model.ai.dto.ChatMessageDTO;
 import top.harrylei.community.api.model.ai.req.ChatReq;
@@ -43,6 +43,7 @@ import top.harrylei.community.service.ai.service.ChatUsageService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * AI服务实现 - 基于Spring AI
@@ -67,6 +68,35 @@ public class ChatServiceImpl implements ChatService {
     private final ChatConversationStructMapper chatConversationStructMapper;
     private final ChatOptionsAdapter chatOptionsAdapter;
     private final AiProviderConfig aiProviderConfig;
+
+    @Override
+    public void chatStream(ChatReq chatReq, StreamCallback streamCallback) {
+        Long userId = getCurrentUserId();
+        String userMessage = chatReq.getMessage();
+
+        log.info("用户发起AI流式对话，userId: {}, conversationId: {}, message长度: {}",
+                userId, chatReq.getConversationId(), userMessage.length());
+
+        try {
+            // 1. 验证请求
+            validateChatRequest(userMessage, userId);
+
+            // 2. 准备对话
+            boolean isNewConversation = (chatReq.getConversationId() == null);
+            Long conversationId = prepareConversation(chatReq.getConversationId(), userId, userMessage);
+
+            // 3. 保存用户消息
+            saveUserMessage(conversationId, userId, userMessage);
+
+            // 4. 执行流式聊天
+            executeChatStream(conversationId, userMessage, chatReq, streamCallback, userId, isNewConversation);
+
+        } catch (Exception e) {
+            log.error("AI流式对话失败，userId: {}, error: {}", userId, e.getMessage(), e);
+            Long conversationId = chatReq.getConversationId();
+            streamCallback.onError(conversationId, e.getMessage());
+        }
+    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -209,7 +239,7 @@ public class ChatServiceImpl implements ChatService {
 
             // 根据配置的默认提供商选择ChatClient生成标题
             ChatClient titleClient = selectChatClient(titleProvider);
-            
+
             String title;
             if (titleOptions instanceof OpenAiChatOptions options) {
                 title = titleClient.prompt()
@@ -276,33 +306,7 @@ public class ChatServiceImpl implements ChatService {
 
         try {
             // 4. 使用Spring AI推荐的方式构建消息列表，包含历史上下文
-            List<Message> messages = new ArrayList<>();
-
-            // 添加系统消息
-            messages.add(new SystemMessage("你是一个牛逼的AI助手，请用中文回答问题。"));
-
-            // 5. 添加历史消息作为上下文
-            if (!CollectionUtils.isEmpty(recentMessages)) {
-                for (int i = recentMessages.size() - 1; i >= 0; i--) {
-                    ChatMessageDO msg = recentMessages.get(i);
-                    if (msg.getMessageType() == ChatMessageRoleEnum.USER) {
-                        messages.add(new UserMessage(msg.getContent()));
-                    } else if (msg.getMessageType() == ChatMessageRoleEnum.ASSISTANT) {
-                        messages.add(new AssistantMessage(msg.getContent()));
-                    }
-                }
-            }
-
-            // 6. 添加当前用户消息
-            messages.add(new UserMessage(userMessage));
-
-            // 7. 构建 Prompt 并应用配置选项
-            Prompt prompt;
-            if (chatOptions instanceof OpenAiChatOptions options) {
-                prompt = new Prompt(messages, options);
-            } else {
-                prompt = new Prompt(messages);
-            }
+            Prompt prompt = buildPrompt(userMessage, recentMessages, chatOptions);
 
             // 8. 执行调用并获取完整响应
             ChatResponse response = selectedClient.prompt(prompt).call().chatResponse();
@@ -370,7 +374,7 @@ public class ChatServiceImpl implements ChatService {
      */
     private ChatMessageDTO saveChatResponse(Long conversationId, Long userId, ChatResult chatResult, boolean isNewConversation) {
         // 保存AI消息，使用从Spring AI获取的真实信息
-        ChatMessageDO chatMessage = getChatMessageDO(conversationId, userId, chatResult);
+        ChatMessageDO chatMessage = buildChatMessageDO(conversationId, userId, chatResult);
 
         chatMessageDAO.save(chatMessage);
 
@@ -385,7 +389,7 @@ public class ChatServiceImpl implements ChatService {
         return chatMessageStructMapper.toDTO(chatMessage);
     }
 
-    private static ChatMessageDO getChatMessageDO(Long conversationId, Long userId, ChatResult chatResult) {
+    private static ChatMessageDO buildChatMessageDO(Long conversationId, Long userId, ChatResult chatResult) {
         ChatMessageDO chatMessage = new ChatMessageDO();
         chatMessage.setConversationId(conversationId);
         chatMessage.setUserId(userId);
@@ -397,5 +401,119 @@ public class ChatServiceImpl implements ChatService {
         chatMessage.setCompletionTokens(chatResult.getCompletionTokens());
         chatMessage.setTotalTokens(chatResult.getTotalTokens());
         return chatMessage;
+    }
+
+    /**
+     * 执行流式AI聊天
+     */
+    private void executeChatStream(Long conversationId, String userMessage, ChatReq chatReq,
+                                   StreamCallback streamCallback, Long userId, boolean isNewConversation) {
+        // 1. 根据前端参数选择ChatClient
+        ChatClient chatClient = selectChatClient(chatReq.getProvider());
+
+        // 2. 构建ChatOptions
+        Object chatOptions = chatOptionsAdapter.buildChatOptions(chatReq, chatReq.getProvider());
+
+        // 3. 获取最近10条消息作为上下文
+        List<ChatMessageDO> recentMessages = chatMessageDAO.getRecentMessages(conversationId, 10);
+
+        try {
+            // 4. 构建消息列表
+            Prompt prompt = buildPrompt(userMessage, recentMessages, chatOptions);
+
+            // 5. 准备保存消息的ID（预分配，避免流式过程中的数据库操作）
+            // 使用时间戳作为临时ID，后续保存时会获取真实ID
+            Long messageId = System.currentTimeMillis();
+            StringBuilder fullContent = new StringBuilder();
+            // 用于存储从响应中提取的模型名称
+            final String[] modelName = {null};
+            final AtomicReference<Long> totalTokens = new AtomicReference<>(0L);
+            final long[] startTimeRef = {System.currentTimeMillis()};
+
+            // 6. 执行流式调用（添加背压处理）
+            chatClient.prompt(prompt).stream().chatResponse()
+                    // 缓冲最多100个响应片段
+                    .onBackpressureBuffer(100)
+                    .doOnNext(chatResponse -> {
+                        // 处理每个流式响应片段
+                        String content = chatResponse.getResult().getOutput().getContent();
+                        if (StringUtils.hasText(content)) {
+                            fullContent.append(content);
+                            streamCallback.onContent(conversationId, messageId, content);
+                        }
+
+                        // 提取模型信息和Token统计（首次响应时）
+                        if (modelName[0] == null && chatResponse.getMetadata() != null) {
+                            modelName[0] = chatResponse.getMetadata().getModel();
+                            // 提取Token使用量
+                            if (chatResponse.getMetadata().getUsage() != null) {
+                                totalTokens.set(chatResponse.getMetadata().getUsage().getTotalTokens());
+                            }
+                        }
+                    })
+                    .doOnComplete(() -> {
+                        // 流式响应完成，保存完整消息到数据库
+                        ChatResult chatResult = new ChatResult();
+                        chatResult.setContent(fullContent.toString());
+                        chatResult.setProvider(chatReq.getProvider());
+                        chatResult.setModel(modelName[0] != null ? modelName[0] : "undefined");
+
+                        // 保存AI回复到数据库
+                        ChatMessageDO chatMessage = buildChatMessageDO(conversationId, userId, chatResult);
+                        chatMessageDAO.save(chatMessage);
+
+                        // 记录使用量统计
+                        Integer conversationIncrement = isNewConversation ? 1 : 0;
+                        chatUsageService.recordUsage(userId, chatResult.getProvider(), chatResult.getModel(),
+                                2, 0L, 0L,
+                                totalTokens.get() > 0 ? totalTokens.get() : (long) fullContent.length(),
+                                conversationIncrement);
+
+                        // 通知完成
+                        streamCallback.onComplete(conversationId, chatMessage.getId(), fullContent.length());
+
+                        long endTime = System.currentTimeMillis();
+                        log.info("AI流式对话完成，conversationId: {}, messageId: {}, contentLength: {}, 耗时: {}ms",
+                                conversationId, chatMessage.getId(), fullContent.length(), endTime - startTimeRef[0]);
+                    })
+                    .doOnError(error -> {
+                        log.error("AI流式调用失败，conversationId: {}, error: {}", conversationId, error.getMessage(), error);
+                        streamCallback.onError(conversationId, "AI服务暂时不可用: " + error.getMessage());
+                    })
+                    .subscribe(); // 订阅开始流式处理
+
+        } catch (Exception e) {
+            log.error("AI流式对话执行失败，conversationId: {}, error: {}", conversationId, e.getMessage(), e);
+            streamCallback.onError(conversationId, "AI服务异常: " + e.getMessage());
+        }
+    }
+
+    private static Prompt buildPrompt(String userMessage, List<ChatMessageDO> recentMessages, Object chatOptions) {
+        List<Message> messages = new ArrayList<>();
+        messages.add(new SystemMessage("你是一个牛逼的AI助手，请用中文回答问题。"));
+
+        // 5. 添加历史消息作为上下文
+        if (!CollectionUtils.isEmpty(recentMessages)) {
+            for (int i = recentMessages.size() - 1; i >= 0; i--) {
+                ChatMessageDO msg = recentMessages.get(i);
+                if (msg.getMessageType() == ChatMessageRoleEnum.USER) {
+                    messages.add(new UserMessage(msg.getContent()));
+                } else if (msg.getMessageType() == ChatMessageRoleEnum.ASSISTANT) {
+                    messages.add(new AssistantMessage(msg.getContent()));
+                }
+            }
+        }
+
+        // 6. 添加当前用户消息
+        messages.add(new UserMessage(userMessage));
+
+        // 7. 构建Prompt并应用配置选项
+        Prompt prompt;
+        if (chatOptions instanceof OpenAiChatOptions options) {
+            prompt = new Prompt(messages, options);
+        } else {
+            prompt = new Prompt(messages);
+        }
+        return prompt;
     }
 }
