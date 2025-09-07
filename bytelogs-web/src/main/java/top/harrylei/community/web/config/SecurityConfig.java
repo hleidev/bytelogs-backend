@@ -73,8 +73,8 @@ public class SecurityConfig {
                         .requestMatchers("/static/**").permitAll()
                         // OPTIONS请求放行
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        // WebSocket端点需要认证
-                        .requestMatchers("/ws/**").authenticated()
+                        // WebSocket端点（SockJS会生成多个子路径，先允许访问）
+                        .requestMatchers("/v1/ws/**").permitAll()
                         // 需要管理员权限的接口
                         .requestMatchers("/v1/admin/**").hasRole("ADMIN")
                         // 其他请求需要认证
@@ -98,12 +98,14 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // 允许所有来源（生产环境可能需要限制特定域名）
-        configuration.setAllowedOrigins(List.of("*"));
+        // 允许所有来源（开发环境用，生产环境需要限制具体域名）
+        configuration.setAllowedOriginPatterns(List.of("*"));
+        // 允许携带认证信息（cookies, authorization headers）
+        configuration.setAllowCredentials(true);
         // 允许的HTTP方法
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         // 允许的请求头
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With"));
+        configuration.setAllowedHeaders(List.of("*"));
         // 暴露的响应头（允许前端JS代码访问的响应头）
         configuration.setExposedHeaders(List.of("Authorization"));
         // 预检请求结果缓存时间（秒）
