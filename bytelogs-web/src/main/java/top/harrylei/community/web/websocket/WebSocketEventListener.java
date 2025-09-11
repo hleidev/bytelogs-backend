@@ -31,15 +31,15 @@ public class WebSocketEventListener {
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
         String sessionId = headerAccessor.getSessionId();
 
-        // WebSocket握手已经通过JWT过滤器验证，直接从ReqInfoContext获取用户ID
-        Long userId = ReqInfoContext.getContext().getUserId();
+        // 从会话属性中获取用户ID（由ChannelInterceptor设置）
+        Long userId = Optional.ofNullable(headerAccessor.getSessionAttributes())
+                .map(attrs -> (Long) attrs.get("userId"))
+                .orElse(null);
+
         if (userId == null) {
             log.warn("WebSocket connection without valid user, sessionId: {}", sessionId);
             return;
         }
-
-        Optional.ofNullable(headerAccessor.getSessionAttributes())
-                .ifPresent(attrs -> attrs.put("userId", userId));
 
         // 将用户添加到会话管理器
         sessionManager.addUser(userId, sessionId);
