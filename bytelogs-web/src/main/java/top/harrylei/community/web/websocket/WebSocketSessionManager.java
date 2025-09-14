@@ -37,7 +37,7 @@ public class WebSocketSessionManager {
             log.warn("Invalid parameters for addUser: userId={}, sessionId={}", userId, sessionId);
             return;
         }
-        
+
         userSessions.put(userId, sessionId);
         int currentCount = onlineUsers.incrementAndGet();
         log.info("User {} connected, session: {}, total online users: {}", userId, sessionId, currentCount);
@@ -54,7 +54,7 @@ public class WebSocketSessionManager {
             log.warn("Cannot remove user: userId is null");
             return;
         }
-        
+
         String sessionId = userSessions.remove(userId);
         if (sessionId != null) {
             int currentCount = onlineUsers.decrementAndGet();
@@ -68,10 +68,10 @@ public class WebSocketSessionManager {
      * 发送AI流式响应消息
      */
     public void sendAiStream(Long userId, AiStreamMessage message) {
-        log.info("发送AI流式消息到用户 {}: conversationId={}, messageId={}, content={}, finished={}", 
-                 userId, message.getConversationId(), message.getMessageId(), 
-                 message.getContent() != null ? message.getContent().substring(0, Math.min(50, message.getContent().length())) : null, 
-                 message.getFinished());
+        log.info("发送AI流式消息到用户 {}: conversationId={}, messageId={}, content={}, finished={}",
+                userId, message.getConversationId(), message.getMessageId(),
+                message.getContent() != null ? message.getContent().substring(0, Math.min(50, message.getContent().length())) : null,
+                message.getFinished());
         sendToUser(userId, WebSocketMessageType.AI_STREAM, message);
     }
 
@@ -105,10 +105,10 @@ public class WebSocketSessionManager {
             log.warn("Invalid parameters for sendToUser: userId={}, type={}", userId, type);
             return;
         }
-        
+
         try {
             // 使用 Spring STOMP 的用户目的地，会自动路由到对应用户的会话
-            String destination = "/v1/queue/messages";
+            String destination = "/queue/messages";
             Object message = createMessage(type, data);
 
             messagingTemplate.convertAndSendToUser(userId.toString(), destination, message);

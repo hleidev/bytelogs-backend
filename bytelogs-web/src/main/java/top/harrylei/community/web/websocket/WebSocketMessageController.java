@@ -29,7 +29,7 @@ public class WebSocketMessageController {
     public void handleHeartbeat(@Payload String message, SimpMessageHeaderAccessor headerAccessor) {
         Long userId = getUserIdFromHeader(headerAccessor);
         if (userId != null) {
-            log.debug("Received heartbeat from user: {}", userId);
+            log.debug("Received heartbeat from user {}: {}", userId, message);
             // 可以在这里更新用户的最后活跃时间
         }
     }
