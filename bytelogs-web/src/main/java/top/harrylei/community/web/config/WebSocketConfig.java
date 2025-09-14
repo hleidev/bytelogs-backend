@@ -28,7 +28,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         // 启用简单消息代理，处理以"/v1/topic"和"/v1/queue"为前缀的消息
         // /v1/topic - 广播消息（一对多，如系统通知）
         // /v1/queue - 点对点消息（一对一，如个人通知、AI回复）
-        registry.enableSimpleBroker("/v1/topic", "/v1/queue");
+        registry.enableSimpleBroker("topic", "queue");
 
         // 设置应用程序目的地前缀，客户端发送消息的目的地前缀
         registry.setApplicationDestinationPrefixes("/v1/app");
