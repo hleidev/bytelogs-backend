@@ -437,86 +437,12 @@ public class ChatServiceImpl implements ChatService {
             chatClient.prompt(prompt).stream().chatResponse()
                     // 缓冲最多100个响应片段
                     .onBackpressureBuffer(100)
-                    .doOnNext(chatResponse -> {
-                        // 处理每个流式响应片段
-                        String content = chatResponse.getResult().getOutput().getContent();
-                        if (StringUtils.hasText(content)) {
-                            fullContent.append(content);
-                            streamCallback.onContent(conversationId, messageId, content);
-                        }
-
-                        // 提取模型信息（首次响应时）
-                        if (modelName[0] == null && chatResponse.getMetadata() != null) {
-                            modelName[0] = chatResponse.getMetadata().getModel();
-                        }
-
-                        // 持续更新metadata，以获取最终的token统计
-                        if (chatResponse.getMetadata() != null) {
-                            finalMetadata.set(chatResponse.getMetadata());
-                        }
-                    })
+                    .doOnNext(chatResponse -> handleStreamingChunk(conversationId, streamCallback,
+                            chatResponse, fullContent, messageId, modelName, finalMetadata))
                     .doOnComplete(() -> {
-                        // 流式响应完成，从最终metadata中获取准确的token统计
-                        Object metadata = finalMetadata.get();
-                        if (metadata != null) {
-                            try {
-                                // 通过反射获取usage统计信息，避免强类型依赖
-                                Object usage = metadata.getClass().getMethod("getUsage").invoke(metadata);
-                                if (usage != null) {
-                                    // 获取各类token统计
-                                    Long totalTokens = (Long) usage.getClass().getMethod("getTotalTokens").invoke(usage);
-                                    Long promptTokens = (Long) usage.getClass().getMethod("getPromptTokens").invoke(usage);
-                                    Long completionTokens = (Long) usage.getClass().getMethod("getGenerationTokens").invoke(usage);
-
-                                    log.info("流式响应完成时的token统计 - total: {}, prompt: {}, completion: {}",
-                                            totalTokens, promptTokens, completionTokens);
-
-                                    if (totalTokens != null && totalTokens > 0) {
-                                        finalTokens.set(totalTokens);
-                                    }
-                                    if (promptTokens != null && promptTokens > 0) {
-                                        finalPromptTokens.set(promptTokens);
-                                    }
-                                    if (completionTokens != null && completionTokens > 0) {
-                                        finalCompletionTokens.set(completionTokens);
-                                    }
-                                }
-                            } catch (Exception e) {
-                                log.debug("无法获取token统计详情: {}, 使用内容长度作为近似值", e.getMessage());
-                            }
-                        }
-
-                        // 直接使用从API返回的token统计，不进行估算
-                        Long actualTotalTokens = finalTokens.get();
-                        Long actualPromptTokens = finalPromptTokens.get();
-                        Long actualCompletionTokens = finalCompletionTokens.get();
-
-                        // 构建包含token信息的ChatResult
-                        ChatResult chatResult = new ChatResult();
-                        chatResult.setContent(fullContent.toString());
-                        chatResult.setProvider(chatReq.getProvider());
-                        chatResult.setModel(modelName[0] != null ? modelName[0] : "undefined");
-                        chatResult.setPromptTokens(actualPromptTokens);
-                        chatResult.setCompletionTokens(actualCompletionTokens);
-                        chatResult.setTotalTokens(actualTotalTokens);
-
-                        // 保存AI回复到数据库（现在包含正确的token信息）
-                        ChatMessageDO chatMessage = buildChatMessageDO(conversationId, userId, chatResult);
-                        chatMessageDAO.save(chatMessage);
-
-                        // 记录使用量统计
-                        Integer conversationIncrement = isNewConversation ? 1 : 0;
-
-                        chatUsageService.recordUsage(userId, chatResult.getProvider(), chatResult.getModel(),
-                                2, actualPromptTokens, actualCompletionTokens, actualTotalTokens, conversationIncrement);
-
-                        // 通知完成 - 传递实际token数给前端
-                        Integer tokenCountForCallback = actualTotalTokens > 0 ? actualTotalTokens.intValue() : 0;
-                        streamCallback.onComplete(conversationId, chatMessage.getId(), tokenCountForCallback);
-
-                        long endTime = System.currentTimeMillis();
-                        log.info("AI流式对话完成，conversationId: {}, messageId: {}, contentLength: {}, totalTokens: {}, promptTokens: {}, completionTokens: {}, 耗时: {}ms",
-                                conversationId, chatMessage.getId(), fullContent.length(), actualTotalTokens, actualPromptTokens, actualCompletionTokens, endTime - startTimeRef[0]);
+                        handleStreamComplete(conversationId, chatReq, streamCallback, userId, isNewConversation,
+                                finalMetadata, finalTokens, finalPromptTokens, finalCompletionTokens,
+                                fullContent, modelName, startTimeRef);
                     })
                     .doOnError(error -> {
                         log.error("AI流式调用失败，conversationId: {}, error: {}", conversationId, error.getMessage(), error);
@@ -527,6 +453,95 @@ public class ChatServiceImpl implements ChatService {
         } catch (Exception e) {
             log.error("AI流式对话执行失败，conversationId: {}, error: {}", conversationId, e.getMessage(), e);
             streamCallback.onError(conversationId, "AI服务异常: " + e.getMessage());
+        }
+    }
+
+    private void handleStreamComplete(Long conversationId, ChatReq chatReq, StreamCallback streamCallback, Long userId,
+                                      boolean isNewConversation, AtomicReference<Object> finalMetadata,
+                                      AtomicReference<Long> finalTokens, AtomicReference<Long> finalPromptTokens,
+                                      AtomicReference<Long> finalCompletionTokens, StringBuilder fullContent,
+                                      String[] modelName, long[] startTimeRef) {
+        // 流式响应完成，从最终metadata中获取准确的token统计
+        Object metadata = finalMetadata.get();
+        if (metadata != null) {
+            try {
+                // 通过反射获取usage统计信息，避免强类型依赖
+                Object usage = metadata.getClass().getMethod("getUsage").invoke(metadata);
+                if (usage != null) {
+                    // 获取各类token统计
+                    Long totalTokens = (Long) usage.getClass().getMethod("getTotalTokens").invoke(usage);
+                    Long promptTokens = (Long) usage.getClass().getMethod("getPromptTokens").invoke(usage);
+                    Long completionTokens = (Long) usage.getClass().getMethod("getGenerationTokens").invoke(usage);
+
+                    log.info("流式响应完成时的token统计 - total: {}, prompt: {}, completion: {}",
+                            totalTokens, promptTokens, completionTokens);
+
+                    if (totalTokens != null && totalTokens > 0) {
+                        finalTokens.set(totalTokens);
+                    }
+                    if (promptTokens != null && promptTokens > 0) {
+                        finalPromptTokens.set(promptTokens);
+                    }
+                    if (completionTokens != null && completionTokens > 0) {
+                        finalCompletionTokens.set(completionTokens);
+                    }
+                }
+            } catch (Exception e) {
+                log.debug("无法获取token统计详情: {}, 使用内容长度作为近似值", e.getMessage());
+            }
+        }
+
+        // 直接使用从API返回的token统计
+        Long actualTotalTokens = finalTokens.get();
+        Long actualPromptTokens = finalPromptTokens.get();
+        Long actualCompletionTokens = finalCompletionTokens.get();
+
+        // 构建包含token信息的ChatResult
+        ChatResult chatResult = ChatResult.builder()
+                .content(fullContent.toString())
+                .provider(chatReq.getProvider())
+                .model(modelName[0] != null ? modelName[0] : "undefined")
+                .promptTokens(actualPromptTokens)
+                .completionTokens(actualCompletionTokens)
+                .totalTokens(actualTotalTokens)
+                .build();
+        // 保存AI回复到数据库
+        ChatMessageDO chatMessage = buildChatMessageDO(conversationId, userId, chatResult);
+        chatMessageDAO.save(chatMessage);
+
+        // 记录使用量统计
+        Integer conversationIncrement = isNewConversation ? 1 : 0;
+
+        chatUsageService.recordUsage(userId, chatResult.getProvider(), chatResult.getModel(),
+                2, actualPromptTokens, actualCompletionTokens, actualTotalTokens, conversationIncrement);
+
+        // 通知完成 - 传递实际token数给前端
+        Integer tokenCountForCallback = actualTotalTokens > 0 ? actualTotalTokens.intValue() : 0;
+        streamCallback.onComplete(conversationId, chatMessage.getId(), tokenCountForCallback);
+
+        long endTime = System.currentTimeMillis();
+        log.info("AI流式对话完成，conversationId: {}, messageId: {}, contentLength: {}, totalTokens: {}, promptTokens: {}, completionTokens: {}, 耗时: {}ms",
+                conversationId, chatMessage.getId(), fullContent.length(), actualTotalTokens, actualPromptTokens, actualCompletionTokens, endTime - startTimeRef[0]);
+    }
+
+    private static void handleStreamingChunk(Long conversationId, StreamCallback streamCallback,
+                                             ChatResponse chatResponse, StringBuilder fullContent,
+                                             Long messageId, String[] modelName, AtomicReference<Object> finalMetadata) {
+        // 处理每个流式响应片段
+        String content = chatResponse.getResult().getOutput().getContent();
+        if (StringUtils.hasText(content)) {
+            fullContent.append(content);
+            streamCallback.onContent(conversationId, messageId, content);
+        }
+
+        // 提取模型信息（首次响应时）
+        if (modelName[0] == null && chatResponse.getMetadata() != null) {
+            modelName[0] = chatResponse.getMetadata().getModel();
+        }
+
+        // 持续更新metadata，以获取最终的token统计
+        if (chatResponse.getMetadata() != null) {
+            finalMetadata.set(chatResponse.getMetadata());
         }
     }
 
