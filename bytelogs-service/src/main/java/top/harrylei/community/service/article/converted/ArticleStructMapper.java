@@ -84,6 +84,7 @@ public interface ArticleStructMapper {
     @Mapping(target = "summary", source = "detail.summary")
     @Mapping(target = "sourceUrl", source = "detail.sourceUrl")
     @Mapping(target = "content", source = "detail.content")
+    @Mapping(target = "categoryId", source = "detail.categoryId")
     ArticleDTO buildArticleDTO(ArticleDO article, ArticleDetailDO detail);
 
     ArticleVersionVO toVersionVO(ArticleDetailDO detail);
