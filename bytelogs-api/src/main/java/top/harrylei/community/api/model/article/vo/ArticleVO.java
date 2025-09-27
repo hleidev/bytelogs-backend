@@ -57,17 +57,16 @@ public class ArticleVO extends BaseVO {
     private String summary;
 
     /**
-     * 文章分类
+     * 文章分类ID
      */
-    @Schema(description = "文章分类", example = "{\"categoryId\":1,\"categoryName\":\"后端\"}")
-    private CategorySimpleVO category;
+    @Schema(description = "文章分类ID", example = "1")
+    private Long categoryId;
 
     /**
-     * 标签列表
+     * 标签ID列表
      */
-    @Schema(description = "标签列表",
-            example = "[{\"tagId\":1,\"tagName\":\"Java\",\"tagType\":{\"code\":1,\"label\":\"系统标签\"}}]")
-    private List<TagSimpleVO> tags;
+    @Schema(description = "标签ID列表", example = "[1, 2, 3]")
+    private List<Long> tagIds;
 
     /**
      * 文章来源：1-转载，2-原创，3-翻译

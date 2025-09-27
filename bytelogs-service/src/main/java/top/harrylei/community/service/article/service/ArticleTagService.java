@@ -1,7 +1,5 @@
 package top.harrylei.community.service.article.service;
 
-import top.harrylei.community.api.model.article.vo.TagSimpleVO;
-
 import java.util.List;
 
 /**
@@ -36,6 +34,14 @@ public interface ArticleTagService {
     List<Long> listTagIdsByArticleId(Long articleId);
 
     /**
+     * 通过文章ID列表查询标签ID列表
+     *
+     * @param articleIds 文章ID列表
+     * @return 标签ID列表
+     */
+    List<Long> listTagIdsByArticleIds(List<Long> articleIds);
+
+    /**
      * 删除绑定
      *
      * @param articleId 文章ID
@@ -49,11 +55,4 @@ public interface ArticleTagService {
      */
     void restoreByArticleId(Long articleId);
 
-    /**
-     * 通过文章ID列表插叙标签简单展示对象
-     *
-     * @param articleIds 文章ID列表
-     * @return 标签简单展示对象
-     */
-    List<TagSimpleVO> listTagSimpleVoByArticleIds(List<Long> articleIds);
 }

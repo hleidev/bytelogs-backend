@@ -12,7 +12,6 @@ import top.harrylei.community.api.enums.response.ResultCode;
 import top.harrylei.community.api.model.article.dto.ArticleDTO;
 import top.harrylei.community.api.model.article.req.ArticleQueryParam;
 import top.harrylei.community.api.model.article.vo.ArticleVO;
-import top.harrylei.community.api.model.article.vo.TagSimpleVO;
 import top.harrylei.community.api.model.page.PageVO;
 import top.harrylei.community.core.context.ReqInfoContext;
 import top.harrylei.community.core.util.PageUtils;
@@ -22,12 +21,7 @@ import top.harrylei.community.service.article.repository.dao.ArticleDetailDAO;
 import top.harrylei.community.service.article.repository.entity.ArticleDO;
 import top.harrylei.community.service.article.repository.entity.ArticleDetailDO;
 import top.harrylei.community.service.article.service.ArticleQueryService;
-import top.harrylei.community.service.article.service.ArticleTagService;
-
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * 文章查询服务实现类
@@ -43,7 +37,6 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
     private final ArticleDAO articleDAO;
     private final ArticleDetailDAO articleDetailDAO;
     private final ArticleStructMapper articleStructMapper;
-    private final ArticleTagService articleTagService;
 
     @Override
     public PageVO<ArticleVO> pageQuery(ArticleQueryParam queryParam) {
@@ -56,8 +49,6 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
         // 第一步：分页查询文章基础信息
         IPage<ArticleVO> articlePage = articleDAO.pageArticleVO(queryParam, page);
 
-        // 第二步：批量查询标签信息并填充到结果中
-        fillArticleTags(articlePage.getRecords());
 
         // 构建分页结果
         return PageUtils.from(articlePage);
@@ -165,28 +156,4 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
         return latestVersion;
     }
 
-    /**
-     * 批量填充文章标签信息
-     */
-    private void fillArticleTags(List<ArticleVO> articles) {
-        if (CollectionUtils.isEmpty(articles)) {
-            return;
-        }
-
-        List<Long> articleIds = articles.stream()
-                .map(ArticleVO::getId)
-                .toList();
-
-        // 一次查询所有标签
-        Map<Long, List<TagSimpleVO>> tagsMap = articleTagService
-                .listTagSimpleVoByArticleIds(articleIds)
-                .stream()
-                .collect(Collectors.groupingBy(TagSimpleVO::getArticleId));
-
-        // 填充到各个文章
-        articles.forEach(article -> {
-            List<TagSimpleVO> tags = tagsMap.getOrDefault(article.getId(), List.of());
-            article.setTags(tags);
-        });
-    }
 }

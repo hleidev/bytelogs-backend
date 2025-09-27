@@ -7,7 +7,6 @@ import top.harrylei.community.api.enums.response.ResultCode;
 import top.harrylei.community.api.model.article.vo.ArticleVO;
 import top.harrylei.community.api.model.article.dto.ArticleDTO;
 import top.harrylei.community.api.model.article.vo.ArticleVersionVO;
-import top.harrylei.community.api.model.article.vo.TagSimpleVO;
 import top.harrylei.community.api.model.article.vo.VersionDiffVO;
 import top.harrylei.community.core.context.ReqInfoContext;
 import top.harrylei.community.core.util.DiffUtil;
@@ -16,10 +15,8 @@ import top.harrylei.community.service.article.repository.dao.ArticleDetailDAO;
 import top.harrylei.community.service.article.repository.entity.ArticleDO;
 import top.harrylei.community.service.article.repository.entity.ArticleDetailDO;
 import top.harrylei.community.service.article.service.ArticleQueryService;
-import top.harrylei.community.service.article.service.ArticleTagService;
 import top.harrylei.community.service.article.service.ArticleVersionService;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -36,7 +33,6 @@ public class ArticleVersionServiceImpl implements ArticleVersionService {
     private final ArticleQueryService articleQueryService;
     private final ArticleDetailDAO articleDetailDAO;
     private final ArticleStructMapper articleStructMapper;
-    private final ArticleTagService articleTagService;
 
     @Override
     public List<ArticleVersionVO> getVersionHistory(Long articleId) {
@@ -83,27 +79,6 @@ public class ArticleVersionServiceImpl implements ArticleVersionService {
         return result;
     }
 
-    /**
-     * 填充单个文章标签信息
-     */
-    private void fillSingleArticleTags(ArticleVO article) {
-        if (article == null) {
-            return;
-        }
-
-        try {
-            // 查询单个文章的标签信息
-            List<TagSimpleVO> tags = articleTagService.listTagSimpleVoByArticleIds(List.of(article.getId()));
-
-            // 清理标签中的articleId字段
-            tags.forEach(tag -> tag.setArticleId(null));
-            article.setTags(tags);
-        } catch (Exception e) {
-            log.error("填充文章标签信息失败", e);
-            // 标签填充失败不应该影响主要数据的返回
-            article.setTags(Collections.emptyList());
-        }
-    }
 
     @Override
     public VersionDiffVO compareVersions(Long articleId, Integer version1, Integer version2) {

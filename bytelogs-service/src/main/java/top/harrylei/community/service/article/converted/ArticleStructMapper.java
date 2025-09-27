@@ -56,8 +56,6 @@ public interface ArticleStructMapper {
     @Mapping(target = "cream", ignore = true)
     ArticleDTO toDTO(ArticleUpdateReq articleUpdateReq);
 
-    @Mapping(target = "tags", ignore = true)
-    @Mapping(target = "category", ignore = true)
     ArticleVO toVO(ArticleDTO article);
 
     @Mapping(target = "id", ignore = true)

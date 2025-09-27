@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import top.harrylei.community.api.enums.common.DeleteStatusEnum;
-import top.harrylei.community.api.model.article.vo.TagSimpleVO;
 import top.harrylei.community.service.article.repository.dao.ArticleTagDAO;
 import top.harrylei.community.service.article.repository.entity.ArticleTagDO;
 import top.harrylei.community.service.article.service.ArticleTagService;
@@ -90,6 +89,25 @@ public class ArticleTagServiceImpl implements ArticleTagService {
     }
 
     /**
+     * 通过文章ID列表查询标签ID列表
+     *
+     * @param articleIds 文章ID列表
+     * @return 标签ID列表
+     */
+    @Override
+    public List<Long> listTagIdsByArticleIds(List<Long> articleIds) {
+        if (CollectionUtils.isEmpty(articleIds)) {
+            return List.of();
+        }
+        
+        if (articleIds.size() == 1) {
+            return listTagIdsByArticleId(articleIds.get(0));
+        }
+        
+        return articleTagDAO.listTagIdsByArticleIds(articleIds);
+    }
+
+    /**
      * 删除绑定
      *
      * @param articleId 文章ID
@@ -109,18 +127,4 @@ public class ArticleTagServiceImpl implements ArticleTagService {
         articleTagDAO.updateDeleted(articleId, DeleteStatusEnum.NOT_DELETED);
     }
 
-    /**
-     * 通过文章ID列表查询标签简单展示对象
-     *
-     * @param articleIds 文章ID列表
-     * @return 标签简单展示对象列表
-     */
-    @Override
-    public List<TagSimpleVO> listTagSimpleVoByArticleIds(List<Long> articleIds) {
-        if (CollectionUtils.isEmpty(articleIds)) {
-            return List.of();
-        }
-
-        return articleTagDAO.listTagSimpleVoByArticleIds(articleIds);
-    }
 }

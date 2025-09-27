@@ -258,9 +258,9 @@ public class ArticleController {
         // Service返回DTO，转换为VO
         ArticleDTO articleDTO = articleVersionService.getVersionDetail(articleId, version);
         ArticleVO detail = articleStructMapper.toVO(articleDTO);
-        // 填充标签信息
-        List<TagSimpleVO> tags = articleTagService.listTagSimpleVoByArticleIds(List.of(detail.getId()));
-        detail.setTags(tags);
+        // 填充标签ID信息
+        List<Long> tagIds = articleTagService.listTagIdsByArticleIds(List.of(detail.getId()));
+        detail.setTagIds(tagIds);
         return Result.success(detail);
     }
 
@@ -298,9 +298,9 @@ public class ArticleController {
         // Service返回DTO，转换为VO
         ArticleDTO articleDTO = articleCommandService.rollbackToVersion(articleId, version);
         ArticleVO result = articleStructMapper.toVO(articleDTO);
-        // 填充标签信息
-        List<TagSimpleVO> tags = articleTagService.listTagSimpleVoByArticleIds(List.of(result.getId()));
-        result.setTags(tags);
+        // 填充标签ID信息
+        List<Long> tagIds = articleTagService.listTagIdsByArticleIds(List.of(result.getId()));
+        result.setTagIds(tagIds);
         return Result.success(result);
     }
 }

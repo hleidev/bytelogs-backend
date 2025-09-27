@@ -3,7 +3,6 @@ package top.harrylei.community.service.article.repository.dao;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Repository;
 import top.harrylei.community.api.enums.common.DeleteStatusEnum;
-import top.harrylei.community.api.model.article.vo.TagSimpleVO;
 import top.harrylei.community.service.article.repository.entity.ArticleTagDO;
 import top.harrylei.community.service.article.repository.mapper.ArticleTagMapper;
 
@@ -21,6 +20,10 @@ public class ArticleTagDAO extends ServiceImpl<ArticleTagMapper, ArticleTagDO> {
         return getBaseMapper().getTagIdsByArticleId(articleId);
     }
 
+    public List<Long> listTagIdsByArticleIds(List<Long> articleIds) {
+        return getBaseMapper().getTagIdsByArticleIds(articleIds);
+    }
+
     public List<ArticleTagDO> listIdAndTagIdByArticleId(Long articleId) {
         return getBaseMapper().listIdAndTagIdByArticleId(articleId);
     }
@@ -32,7 +35,4 @@ public class ArticleTagDAO extends ServiceImpl<ArticleTagMapper, ArticleTagDO> {
                 .update();
     }
 
-    public List<TagSimpleVO> listTagSimpleVoByArticleIds(List<Long> articleIds) {
-        return getBaseMapper().listTagSimpleVoByArticleIds(articleIds);
-    }
 }
