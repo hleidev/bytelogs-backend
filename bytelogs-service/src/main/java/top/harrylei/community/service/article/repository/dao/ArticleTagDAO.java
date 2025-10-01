@@ -27,14 +27,6 @@ public class ArticleTagDAO extends ServiceImpl<ArticleTagMapper, ArticleTagDO> {
                 .toList();
     }
 
-    public List<ArticleTagDO> listIdAndTagIdByArticleId(Long articleId) {
-        return lambdaQuery()
-                .select(ArticleTagDO::getId, ArticleTagDO::getTagId)
-                .eq(ArticleTagDO::getArticleId, articleId)
-                .eq(ArticleTagDO::getDeleted, DeleteStatusEnum.NOT_DELETED)
-                .list();
-    }
-
     public boolean updateDeleted(Long articleId, DeleteStatusEnum deleted) {
         return lambdaUpdate()
                 .eq(ArticleTagDO::getArticleId, articleId)

@@ -3,13 +3,14 @@ package top.harrylei.community.service.article.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 import top.harrylei.community.service.article.repository.dao.ArticleTagDAO;
 import top.harrylei.community.service.article.repository.entity.ArticleTagDO;
 import top.harrylei.community.service.article.service.ArticleTagService;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 文章标签绑定实现类
@@ -47,32 +48,12 @@ public class ArticleTagServiceImpl implements ArticleTagService {
      */
     @Override
     public void updateTags(Long articleId, List<Long> tagIds) {
-        List<ArticleTagDO> dbTagIds = articleTagDAO.listIdAndTagIdByArticleId(articleId);
+        // 1. 删除现有的所有标签关联
+        deleteByArticleId(articleId);
 
-        Map<Long, Long> tagIdToId = dbTagIds.stream()
-                .collect(Collectors.toMap(ArticleTagDO::getTagId, ArticleTagDO::getId));
-
-        Set<Long> dbTagIdSet = tagIdToId.keySet();
-        if (tagIds.isEmpty()) {
-            articleTagDAO.removeBatchByIds(new ArrayList<>(tagIdToId.values()));
-            return;
-        }
-
-        Set<Long> newTagIdSet = new HashSet<>(tagIds);
-        Set<Long> toDeleteIds = dbTagIdSet.stream()
-                .filter(id -> !newTagIdSet.contains(id))
-                .map(tagIdToId::get)
-                .collect(Collectors.toSet());
-
-        Set<Long> toAddTagIds = newTagIdSet.stream()
-                .filter(id -> !dbTagIdSet.contains(id))
-                .collect(Collectors.toSet());
-
-        if (!toDeleteIds.isEmpty()) {
-            articleTagDAO.removeBatchByIds(new ArrayList<>(toDeleteIds));
-        }
-        if (!toAddTagIds.isEmpty()) {
-            saveBatch(articleId, new ArrayList<>(toAddTagIds));
+        // 2. 如果有新标签，批量添加
+        if (!CollectionUtils.isEmpty(tagIds)) {
+            saveBatch(articleId, tagIds);
         }
     }
 
@@ -92,19 +73,7 @@ public class ArticleTagServiceImpl implements ArticleTagService {
      *
      * @param articleId 文章ID
      */
-    @Override
-    public void deleteByArticleId(Long articleId) {
+    private void deleteByArticleId(Long articleId) {
         articleTagDAO.updateDeleted(articleId, DeleteStatusEnum.DELETED);
     }
-
-    /**
-     * 恢复绑定
-     *
-     * @param articleId 文章ID
-     */
-    @Override
-    public void restoreByArticleId(Long articleId) {
-        articleTagDAO.updateDeleted(articleId, DeleteStatusEnum.NOT_DELETED);
-    }
-
 }

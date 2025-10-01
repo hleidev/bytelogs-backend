@@ -11,7 +11,10 @@ import org.springframework.web.bind.annotation.*;
 import top.harrylei.community.api.enums.response.ResultCode;
 import top.harrylei.community.api.model.article.dto.ArticleDTO;
 import top.harrylei.community.api.model.article.req.*;
-import top.harrylei.community.api.model.article.vo.*;
+import top.harrylei.community.api.model.article.vo.ArticleDetailVO;
+import top.harrylei.community.api.model.article.vo.ArticleVO;
+import top.harrylei.community.api.model.article.vo.ArticleVersionVO;
+import top.harrylei.community.api.model.article.vo.VersionDiffVO;
 import top.harrylei.community.api.model.base.Result;
 import top.harrylei.community.api.model.page.PageVO;
 import top.harrylei.community.api.model.statistics.dto.ArticleStatisticsDTO;
@@ -19,8 +22,9 @@ import top.harrylei.community.api.model.user.dto.UserInfoDTO;
 import top.harrylei.community.core.context.ReqInfoContext;
 import top.harrylei.community.core.security.permission.RequiresLogin;
 import top.harrylei.community.service.article.converted.ArticleStructMapper;
-import top.harrylei.community.service.article.converted.CategoryStructMapper;
-import top.harrylei.community.service.article.service.*;
+import top.harrylei.community.service.article.service.ArticleCommandService;
+import top.harrylei.community.service.article.service.ArticleQueryService;
+import top.harrylei.community.service.article.service.ArticleVersionService;
 import top.harrylei.community.service.statistics.converted.ArticleStatisticsStructMapper;
 import top.harrylei.community.service.statistics.service.ArticleStatisticsService;
 import top.harrylei.community.service.user.converted.UserStructMapper;
@@ -51,10 +55,6 @@ public class ArticleController {
     private final UserCacheService userCacheService;
     private final UserStructMapper userStructMapper;
     private final UserFootService userFootService;
-    private final ArticleTagService articleTagService;
-    private final CategoryService categoryService;
-    private final CategoryStructMapper categoryStructMapper;
-
     /**
      * 用户新建文章
      *
