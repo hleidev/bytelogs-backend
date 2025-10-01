@@ -1,5 +1,6 @@
 package top.harrylei.community.core.util;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
@@ -143,6 +144,28 @@ public class RedisUtil {
     }
 
     /**
+     * 将字节数组反序列化为泛型对象（支持复杂泛型）
+     *
+     * @param <T>           对象类型
+     * @param bytes         字节数组
+     * @param typeReference 泛型类型引用
+     * @return 反序列化后的对象，反序列化失败或bytes为null时返回null
+     */
+    private <T> T bytesToObject(byte[] bytes, TypeReference<T> typeReference) {
+        if (bytes == null) {
+            return null;
+        }
+
+        try {
+            // 使用统一的JsonUtil进行反序列化
+            return JsonUtil.fromBytes(bytes, typeReference);
+        } catch (Exception e) {
+            log.error("泛型对象反序列化失败: targetType={}, error={}", typeReference.getType(), e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
      * 设置值（不过期）
      *
      * @param <T>   值类型
@@ -235,6 +258,28 @@ public class RedisUtil {
             return redisTemplate.execute((RedisCallback<T>) connection -> {
                 byte[] valueBytes = connection.stringCommands().get(keyToBytes(key));
                 return bytesToObject(valueBytes, clazz);
+            });
+        } catch (Exception e) {
+            log.error("获取值失败: key={}, error={}", key, e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * 获取值（支持复杂泛型）
+     *
+     * @param <T>           值类型
+     * @param key           键
+     * @param typeReference 泛型类型引用
+     * @return 值，键不存在或操作异常时返回null
+     */
+    public <T> T get(String key, TypeReference<T> typeReference) {
+        validateNotNull(key, typeReference);
+
+        try {
+            return redisTemplate.execute((RedisCallback<T>) connection -> {
+                byte[] valueBytes = connection.stringCommands().get(keyToBytes(key));
+                return bytesToObject(valueBytes, typeReference);
             });
         } catch (Exception e) {
             log.error("获取值失败: key={}, error={}", key, e.getMessage(), e);

@@ -1,5 +1,6 @@
 package top.harrylei.community.core.util;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -75,7 +76,29 @@ public class JsonUtil {
             return MAPPER.readValue(jsonStr, clazz);
         } catch (Exception e) {
             log.error("JSON转对象失败: JSON={}, 目标类型={}, 错误信息={}",
-                      jsonStr, clazz.getSimpleName(), e.getMessage(), e);
+                    jsonStr, clazz.getSimpleName(), e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * 将JSON字符串转换为指定泛型类型的对象（支持复杂泛型）
+     *
+     * @param jsonStr       JSON字符串
+     * @param typeReference 泛型类型引用
+     * @param <T>           泛型类型
+     * @return 转换后的对象，失败返回null
+     */
+    public static <T> T fromJson(String jsonStr, TypeReference<T> typeReference) {
+        if (StringUtils.isBlank(jsonStr) || typeReference == null) {
+            return null;
+        }
+
+        try {
+            return MAPPER.readValue(jsonStr, typeReference);
+        } catch (Exception e) {
+            log.error("JSON转泛型对象失败: JSON={}, 目标类型={}, 错误信息={}",
+                    jsonStr, typeReference.getType(), e.getMessage(), e);
             return null;
         }
     }
@@ -112,6 +135,28 @@ public class JsonUtil {
             return fromJson(jsonStr, clazz);
         } catch (Exception e) {
             log.error("字节数组转对象失败: 目标类型={}, 错误信息={}", clazz.getSimpleName(), e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * 从字节数组转换为指定泛型类型对象（支持复杂泛型）
+     *
+     * @param bytes         字节数组
+     * @param typeReference 泛型类型引用
+     * @param <T>           泛型类型
+     * @return 转换后的对象，失败返回null
+     */
+    public static <T> T fromBytes(byte[] bytes, TypeReference<T> typeReference) {
+        if (bytes == null || bytes.length == 0 || typeReference == null) {
+            return null;
+        }
+
+        try {
+            String jsonStr = new String(bytes, StandardCharsets.UTF_8);
+            return fromJson(jsonStr, typeReference);
+        } catch (Exception e) {
+            log.error("字节数组转泛型对象失败: 目标类型={}, 错误信息={}", typeReference.getType(), e.getMessage(), e);
             return null;
         }
     }

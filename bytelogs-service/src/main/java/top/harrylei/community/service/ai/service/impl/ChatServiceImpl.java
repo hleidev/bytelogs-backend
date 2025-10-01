@@ -1,6 +1,7 @@
 package top.harrylei.community.service.ai.service.impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -27,9 +28,11 @@ import top.harrylei.community.api.model.ai.req.ConversationsQueryParam;
 import top.harrylei.community.api.model.ai.req.MessagesQueryParam;
 import top.harrylei.community.api.model.ai.vo.ChatResult;
 import top.harrylei.community.api.model.page.PageVO;
+import top.harrylei.community.core.common.constans.RedisKeyConstants;
 import top.harrylei.community.core.config.AILimitConfig;
 import top.harrylei.community.core.context.ReqInfoContext;
 import top.harrylei.community.core.util.PageUtils;
+import top.harrylei.community.core.util.RedisUtil;
 import top.harrylei.community.service.ai.adapter.ChatOptionsAdapter;
 import top.harrylei.community.service.ai.config.AiProviderConfig;
 import top.harrylei.community.service.ai.converted.ChatConversationStructMapper;
@@ -41,7 +44,9 @@ import top.harrylei.community.service.ai.repository.entity.ChatMessageDO;
 import top.harrylei.community.service.ai.service.ChatService;
 import top.harrylei.community.service.ai.service.ChatUsageService;
 
+import java.time.Duration;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -68,6 +73,7 @@ public class ChatServiceImpl implements ChatService {
     private final ChatConversationStructMapper chatConversationStructMapper;
     private final ChatOptionsAdapter chatOptionsAdapter;
     private final AiProviderConfig aiProviderConfig;
+    private final RedisUtil redisUtil;
 
     @Override
     public void chatStream(ChatReq chatReq, StreamCallback streamCallback) {
@@ -288,7 +294,14 @@ public class ChatServiceImpl implements ChatService {
         userMessage.setProvider(null);
         userMessage.setModelName("");
 
-        return chatMessageDAO.save(userMessage);
+        boolean saved = chatMessageDAO.save(userMessage);
+
+        // 保存用户消息后立即更新缓存
+        if (saved) {
+            updateMessagesContext(conversationId, userMessage);
+        }
+
+        return saved;
     }
 
     /**
@@ -301,8 +314,8 @@ public class ChatServiceImpl implements ChatService {
         // 2. 构建ChatOptions - 使用适配器解决硬编码问题
         Object chatOptions = chatOptionsAdapter.buildChatOptions(chatReq, chatReq.getProvider());
 
-        // 3. 获取最近10条消息作为上下文
-        List<ChatMessageDO> recentMessages = chatMessageDAO.getRecentMessages(conversationId, 10);
+        // 3. 获取最近10条消息作为上下文（带缓存）
+        List<ChatMessageDO> recentMessages = getMessagesContext(conversationId, 10);
 
         try {
             // 4. 使用Spring AI推荐的方式构建消息列表，包含历史上下文
@@ -319,8 +332,9 @@ public class ChatServiceImpl implements ChatService {
             // 9. 构建结果对象
             return getChatResult(chatReq, response);
         } catch (Exception e) {
-            log.error("AI调用失败，Provider: {}, Error: {} - {}",
-                    chatReq.getProvider(), e.getClass().getSimpleName(), e.getMessage(), e);
+            log.error("AI调用失败，Provider: {}, ConversationId: {}, Error: {} - {}, Cause: {}",
+                    chatReq.getProvider(), conversationId, e.getClass().getSimpleName(), e.getMessage(),
+                    e.getCause() != null ? e.getCause().getMessage() : "无具体原因", e);
 
             // 根据异常类型提供不同的错误信息
             if (e.getMessage() != null && e.getMessage().contains("rate limit")) {
@@ -328,7 +342,7 @@ public class ChatServiceImpl implements ChatService {
             } else if (e.getMessage() != null && e.getMessage().contains("timeout")) {
                 ResultCode.AI_RESPONSE_EMPTY.throwException("AI服务响应超时，请稍后重试");
             } else {
-                ResultCode.AI_RESPONSE_EMPTY.throwException("AI服务暂时不可用");
+                ResultCode.AI_RESPONSE_EMPTY.throwException("AI服务暂时不可用: " + e.getMessage());
             }
             return null;
         }
@@ -378,6 +392,9 @@ public class ChatServiceImpl implements ChatService {
 
         chatMessageDAO.save(chatMessage);
 
+        // 更新上下文缓存
+        updateMessagesContext(conversationId, chatMessage);
+
         // 记录使用量统计
         Integer conversationIncrement = isNewConversation ? 1 : 0;
         chatUsageService.recordUsage(userId, chatResult.getProvider(), chatResult.getModel(),
@@ -414,8 +431,8 @@ public class ChatServiceImpl implements ChatService {
         // 2. 构建ChatOptions
         Object chatOptions = chatOptionsAdapter.buildChatOptions(chatReq, chatReq.getProvider());
 
-        // 3. 获取最近10条消息作为上下文
-        List<ChatMessageDO> recentMessages = chatMessageDAO.getRecentMessages(conversationId, 10);
+        // 3. 获取最近10条消息作为上下文（带缓存）
+        List<ChatMessageDO> recentMessages = getMessagesContext(conversationId, 10);
 
         try {
             // 4. 构建消息列表
@@ -509,6 +526,9 @@ public class ChatServiceImpl implements ChatService {
         ChatMessageDO chatMessage = buildChatMessageDO(conversationId, userId, chatResult);
         chatMessageDAO.save(chatMessage);
 
+        // 更新上下文缓存
+        updateMessagesContext(conversationId, chatMessage);
+
         // 记录使用量统计
         Integer conversationIncrement = isNewConversation ? 1 : 0;
 
@@ -549,10 +569,9 @@ public class ChatServiceImpl implements ChatService {
         List<Message> messages = new ArrayList<>();
         messages.add(new SystemMessage("你是一个牛逼的AI助手，请用中文回答问题。"));
 
-        // 5. 添加历史消息作为上下文
+        // 5. 添加历史消息作为上下文（recentMessages已经是时间正序）
         if (!CollectionUtils.isEmpty(recentMessages)) {
-            for (int i = recentMessages.size() - 1; i >= 0; i--) {
-                ChatMessageDO msg = recentMessages.get(i);
+            for (ChatMessageDO msg : recentMessages) {
                 if (msg.getMessageType() == ChatMessageRoleEnum.USER) {
                     messages.add(new UserMessage(msg.getContent()));
                 } else if (msg.getMessageType() == ChatMessageRoleEnum.ASSISTANT) {
@@ -572,5 +591,96 @@ public class ChatServiceImpl implements ChatService {
             prompt = new Prompt(messages);
         }
         return prompt;
+    }
+
+    /**
+     * 获取最近消息（带缓存）
+     */
+    private List<ChatMessageDO> getMessagesContext(Long conversationId, Integer limit) {
+        String cacheKey = RedisKeyConstants.getChatContextKey(conversationId);
+
+        try {
+            LinkedList<ChatMessageDO> messageQueue = redisUtil.get(cacheKey, new TypeReference<>() {
+            });
+            if (messageQueue != null && !messageQueue.isEmpty()) {
+                return new ArrayList<>(messageQueue);
+            }
+        } catch (Exception e) {
+            log.warn("读取上下文缓存失败: conversationId={}, error={}", conversationId, e.getMessage());
+            try {
+                redisUtil.del(cacheKey);
+            } catch (Exception deleteException) {
+                log.warn("删除损坏缓存失败: {}", deleteException.getMessage());
+            }
+        }
+
+        // 缓存未命中，重建缓存队列
+        rebuildMessageQueue(conversationId, limit);
+
+        // 重新获取
+        try {
+            LinkedList<ChatMessageDO> messageQueue = redisUtil.get(cacheKey, new TypeReference<>() {
+            });
+            return messageQueue != null ? new ArrayList<>(messageQueue) : new ArrayList<>();
+        } catch (Exception e) {
+            log.warn("重新获取缓存失败: conversationId={}, error={}", conversationId, e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * 增量更新对话上下文缓存
+     */
+    private void updateMessagesContext(Long conversationId, ChatMessageDO newMessage) {
+        String cacheKey = RedisKeyConstants.getChatContextKey(conversationId);
+
+        try {
+            LinkedList<ChatMessageDO> messageQueue = redisUtil.get(cacheKey, new TypeReference<>() {
+            });
+
+            if (messageQueue == null) {
+                messageQueue = new LinkedList<>();
+            }
+
+            // 直接添加到队尾（保持时间顺序）
+            messageQueue.addLast(newMessage);
+
+            // 保持队列大小限制：超出10条时移除队头
+            while (messageQueue.size() > 10) {
+                messageQueue.removeFirst();
+            }
+
+            // 更新缓存
+            redisUtil.set(cacheKey, messageQueue, Duration.ofMinutes(30));
+
+        } catch (Exception e) {
+            log.warn("更新上下文缓存失败: conversationId={}, error={}", conversationId, e.getMessage());
+        }
+    }
+
+    /**
+     * 重建消息队列缓存
+     */
+    private void rebuildMessageQueue(Long conversationId, Integer limit) {
+        String cacheKey = RedisKeyConstants.getChatContextKey(conversationId);
+
+        try {
+            // 查询数据库获取最近消息
+            List<ChatMessageDO> dbMessages = chatMessageDAO.getRecentMessages(conversationId, limit);
+
+            // 构建有序队列：DAO返回倒序，需要转为正序队列
+            LinkedList<ChatMessageDO> messageQueue = new LinkedList<>();
+            for (int i = dbMessages.size() - 1; i >= 0; i--) {
+                messageQueue.addLast(dbMessages.get(i));
+            }
+
+            // 写入缓存
+            if (!messageQueue.isEmpty()) {
+                redisUtil.set(cacheKey, messageQueue, Duration.ofMinutes(30));
+            }
+
+        } catch (Exception e) {
+            log.warn("重建上下文缓存失败: conversationId={}, error={}", conversationId, e.getMessage());
+        }
     }
 }

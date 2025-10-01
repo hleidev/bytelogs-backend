@@ -29,6 +29,7 @@ public class RedisKeyConstants {
     public static final String HEALTH_CHECK = GLOBAL_PREFIX + "health:check";
     public static final String AI_HOURLY_LIMIT = AI + "hourly_limit:";
     public static final String AI_DAILY_USAGE = AI + "daily_usage:";
+    public static final String AI_CHAT_CONTEXT = AI + "chat_context:";
     public static final String ARTICLE_READ_COUNT_LOCK = ARTICLE + "read_count_lock:";
 
 
@@ -120,6 +121,16 @@ public class RedisKeyConstants {
      */
     public static String getChatDailyUsageKey(Long userId, String date) {
         return AI_DAILY_USAGE + userId + ":" + date;
+    }
+
+    /**
+     * 构建AI对话上下文缓存key
+     *
+     * @param conversationId 对话ID
+     * @return AI对话上下文缓存key
+     */
+    public static String getChatContextKey(Long conversationId) {
+        return AI_CHAT_CONTEXT + conversationId;
     }
 
     /**
