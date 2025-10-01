@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import top.harrylei.community.api.enums.response.ResultCode;
-import top.harrylei.community.api.model.article.vo.ArticleVO;
 import top.harrylei.community.api.model.article.dto.ArticleDTO;
 import top.harrylei.community.api.model.article.vo.ArticleVersionVO;
 import top.harrylei.community.api.model.article.vo.VersionDiffVO;
@@ -12,9 +11,9 @@ import top.harrylei.community.core.context.ReqInfoContext;
 import top.harrylei.community.core.util.DiffUtil;
 import top.harrylei.community.service.article.converted.ArticleStructMapper;
 import top.harrylei.community.service.article.repository.dao.ArticleDetailDAO;
-import top.harrylei.community.service.article.repository.entity.ArticleDO;
 import top.harrylei.community.service.article.repository.entity.ArticleDetailDO;
 import top.harrylei.community.service.article.service.ArticleQueryService;
+import top.harrylei.community.service.article.service.ArticleTagService;
 import top.harrylei.community.service.article.service.ArticleVersionService;
 
 import java.util.List;
@@ -33,6 +32,7 @@ public class ArticleVersionServiceImpl implements ArticleVersionService {
     private final ArticleQueryService articleQueryService;
     private final ArticleDetailDAO articleDetailDAO;
     private final ArticleStructMapper articleStructMapper;
+    private final ArticleTagService articleTagService;
 
     @Override
     public List<ArticleVersionVO> getVersionHistory(Long articleId) {
@@ -75,6 +75,10 @@ public class ArticleVersionServiceImpl implements ArticleVersionService {
         // 4. 构建完整的文章DTO，重新获取文章基础信息
         ArticleDTO baseArticle = articleQueryService.getPublishedArticle(articleId);
         ArticleDTO result = articleStructMapper.buildArticleDTO(articleStructMapper.toDO(baseArticle), detail);
+
+        // 5. 填充标签ID信息
+        List<Long> tagIds = articleTagService.listTagIdsByArticleId(articleId);
+        result.setTagIds(tagIds);
 
         return result;
     }

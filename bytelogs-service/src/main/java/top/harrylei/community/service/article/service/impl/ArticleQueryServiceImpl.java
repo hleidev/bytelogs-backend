@@ -150,7 +150,13 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
         }
 
         // 构建DTO
-        return articleStructMapper.buildArticleDTO(article, detail);
+        ArticleDTO articleDTO = articleStructMapper.buildArticleDTO(article, detail);
+        
+        // 填充标签ID信息
+        List<Long> tagIds = articleTagService.listTagIdsByArticleId(articleId);
+        articleDTO.setTagIds(tagIds);
+        
+        return articleDTO;
     }
 
     /**

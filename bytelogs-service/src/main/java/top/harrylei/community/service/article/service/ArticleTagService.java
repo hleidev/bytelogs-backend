@@ -46,5 +46,4 @@ public interface ArticleTagService {
      * @param articleId 文章ID
      */
     void restoreByArticleId(Long articleId);
-
 }

@@ -137,15 +137,9 @@ public class ArticleController {
             userFootService.recordRead(ReqInfoContext.getContext().getUserId(), articleDTO.getUserId(), articleId);
         }
 
-        // 转换为VO
-        ArticleVO articleVO = articleStructMapper.toVO(articleDTO);
-        // 填充标签ID信息
-        List<Long> tagIds = articleTagService.listTagIdsByArticleId(articleVO.getId());
-        articleVO.setTagIds(tagIds);
-
         // 组装VO
         ArticleDetailVO result = new ArticleDetailVO()
-                .setArticle(articleVO)
+                .setArticle(articleStructMapper.toVO(articleDTO))
                 .setAuthor(userStructMapper.toVO(author))
                 .setStatistics(articleStatisticsStructMapper.toVO(statistics));
 
@@ -163,11 +157,7 @@ public class ArticleController {
     @GetMapping("/{articleId}/draft")
     public Result<ArticleVO> draft(@NotNull(message = "文章ID不能为空") @PathVariable Long articleId) {
         ArticleDTO article = articleQueryService.getLatestArticle(articleId);
-        ArticleVO articleVO = articleStructMapper.toVO(article);
-        // 填充标签ID信息
-        List<Long> tagIds = articleTagService.listTagIdsByArticleId(articleVO.getId());
-        articleVO.setTagIds(tagIds);
-        return Result.success(articleVO);
+        return Result.success(articleStructMapper.toVO(article));
     }
 
     /**
@@ -267,11 +257,7 @@ public class ArticleController {
             @NotNull(message = "版本号不能为空") @PathVariable Integer version) {
         // Service返回DTO，转换为VO
         ArticleDTO articleDTO = articleVersionService.getVersionDetail(articleId, version);
-        ArticleVO detail = articleStructMapper.toVO(articleDTO);
-        // 填充标签ID信息
-        List<Long> tagIds = articleTagService.listTagIdsByArticleId(detail.getId());
-        detail.setTagIds(tagIds);
-        return Result.success(detail);
+        return Result.success(articleStructMapper.toVO(articleDTO));
     }
 
     /**
@@ -307,10 +293,6 @@ public class ArticleController {
             @NotNull(message = "版本号不能为空") @PathVariable Integer version) {
         // Service返回DTO，转换为VO
         ArticleDTO articleDTO = articleCommandService.rollbackToVersion(articleId, version);
-        ArticleVO result = articleStructMapper.toVO(articleDTO);
-        // 填充标签ID信息
-        List<Long> tagIds = articleTagService.listTagIdsByArticleId(result.getId());
-        result.setTagIds(tagIds);
-        return Result.success(result);
+        return Result.success(articleStructMapper.toVO(articleDTO));
     }
 }

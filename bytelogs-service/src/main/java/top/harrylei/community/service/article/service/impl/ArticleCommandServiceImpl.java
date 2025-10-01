@@ -189,6 +189,11 @@ public class ArticleCommandServiceImpl implements ArticleCommandService {
         articleDAO.updateById(article);
 
         ArticleDTO result = articleStructMapper.buildArticleDTO(article, newDetail);
+
+        // 填充标签ID信息
+        List<Long> tagIds = articleTagService.listTagIdsByArticleId(articleId);
+        result.setTagIds(tagIds);
+
         log.info("文章版本回滚成功 articleId={} fromVersion={} toVersion={}", articleId, version, newVersion);
         return result;
     }
