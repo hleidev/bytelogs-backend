@@ -34,14 +34,6 @@ public interface ArticleTagService {
     List<Long> listTagIdsByArticleId(Long articleId);
 
     /**
-     * 通过文章ID列表查询标签ID列表
-     *
-     * @param articleIds 文章ID列表
-     * @return 标签ID列表
-     */
-    List<Long> listTagIdsByArticleIds(List<Long> articleIds);
-
-    /**
      * 删除绑定
      *
      * @param articleId 文章ID

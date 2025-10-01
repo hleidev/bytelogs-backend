@@ -3,7 +3,6 @@ package top.harrylei.community.service.article.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 import top.harrylei.community.service.article.repository.dao.ArticleTagDAO;
 import top.harrylei.community.service.article.repository.entity.ArticleTagDO;
@@ -86,25 +85,6 @@ public class ArticleTagServiceImpl implements ArticleTagService {
     @Override
     public List<Long> listTagIdsByArticleId(Long articleId) {
         return articleTagDAO.listTagIdsByArticleId(articleId);
-    }
-
-    /**
-     * 通过文章ID列表查询标签ID列表
-     *
-     * @param articleIds 文章ID列表
-     * @return 标签ID列表
-     */
-    @Override
-    public List<Long> listTagIdsByArticleIds(List<Long> articleIds) {
-        if (CollectionUtils.isEmpty(articleIds)) {
-            return List.of();
-        }
-        
-        if (articleIds.size() == 1) {
-            return listTagIdsByArticleId(articleIds.get(0));
-        }
-        
-        return articleTagDAO.listTagIdsByArticleIds(articleIds);
     }
 
     /**

@@ -137,9 +137,15 @@ public class ArticleController {
             userFootService.recordRead(ReqInfoContext.getContext().getUserId(), articleDTO.getUserId(), articleId);
         }
 
+        // 转换为VO
+        ArticleVO articleVO = articleStructMapper.toVO(articleDTO);
+        // 填充标签ID信息
+        List<Long> tagIds = articleTagService.listTagIdsByArticleId(articleVO.getId());
+        articleVO.setTagIds(tagIds);
+
         // 组装VO
         ArticleDetailVO result = new ArticleDetailVO()
-                .setArticle(articleStructMapper.toVO(articleDTO))
+                .setArticle(articleVO)
                 .setAuthor(userStructMapper.toVO(author))
                 .setStatistics(articleStatisticsStructMapper.toVO(statistics));
 
@@ -157,7 +163,11 @@ public class ArticleController {
     @GetMapping("/{articleId}/draft")
     public Result<ArticleVO> draft(@NotNull(message = "文章ID不能为空") @PathVariable Long articleId) {
         ArticleDTO article = articleQueryService.getLatestArticle(articleId);
-        return Result.success(articleStructMapper.toVO(article));
+        ArticleVO articleVO = articleStructMapper.toVO(article);
+        // 填充标签ID信息
+        List<Long> tagIds = articleTagService.listTagIdsByArticleId(articleVO.getId());
+        articleVO.setTagIds(tagIds);
+        return Result.success(articleVO);
     }
 
     /**
@@ -259,7 +269,7 @@ public class ArticleController {
         ArticleDTO articleDTO = articleVersionService.getVersionDetail(articleId, version);
         ArticleVO detail = articleStructMapper.toVO(articleDTO);
         // 填充标签ID信息
-        List<Long> tagIds = articleTagService.listTagIdsByArticleIds(List.of(detail.getId()));
+        List<Long> tagIds = articleTagService.listTagIdsByArticleId(detail.getId());
         detail.setTagIds(tagIds);
         return Result.success(detail);
     }
@@ -299,7 +309,7 @@ public class ArticleController {
         ArticleDTO articleDTO = articleCommandService.rollbackToVersion(articleId, version);
         ArticleVO result = articleStructMapper.toVO(articleDTO);
         // 填充标签ID信息
-        List<Long> tagIds = articleTagService.listTagIdsByArticleIds(List.of(result.getId()));
+        List<Long> tagIds = articleTagService.listTagIdsByArticleId(result.getId());
         result.setTagIds(tagIds);
         return Result.success(result);
     }

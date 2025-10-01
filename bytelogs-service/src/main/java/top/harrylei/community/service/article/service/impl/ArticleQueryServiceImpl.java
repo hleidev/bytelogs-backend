@@ -21,6 +21,9 @@ import top.harrylei.community.service.article.repository.dao.ArticleDetailDAO;
 import top.harrylei.community.service.article.repository.entity.ArticleDO;
 import top.harrylei.community.service.article.repository.entity.ArticleDetailDO;
 import top.harrylei.community.service.article.service.ArticleQueryService;
+import top.harrylei.community.service.article.service.ArticleTagService;
+
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -37,6 +40,7 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
     private final ArticleDAO articleDAO;
     private final ArticleDetailDAO articleDetailDAO;
     private final ArticleStructMapper articleStructMapper;
+    private final ArticleTagService articleTagService;
 
     @Override
     public PageVO<ArticleVO> pageQuery(ArticleQueryParam queryParam) {
@@ -49,6 +53,10 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
         // 第一步：分页查询文章基础信息
         IPage<ArticleVO> articlePage = articleDAO.pageArticleVO(queryParam, page);
 
+        // 第二步：批量填充标签ID信息
+        if (!CollectionUtils.isEmpty(articlePage.getRecords())) {
+            fillArticleTagIds(articlePage.getRecords());
+        }
 
         // 构建分页结果
         return PageUtils.from(articlePage);
@@ -154,6 +162,21 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
             ResultCode.ARTICLE_NOT_EXISTS.throwException();
         }
         return latestVersion;
+    }
+
+    /**
+     * 批量填充文章标签ID信息
+     */
+    private void fillArticleTagIds(List<ArticleVO> articles) {
+        if (CollectionUtils.isEmpty(articles)) {
+            return;
+        }
+
+        // 为每个文章单独查询标签ID（后续可优化为一次查询+分组）
+        for (ArticleVO article : articles) {
+            List<Long> tagIds = articleTagService.listTagIdsByArticleId(article.getId());
+            article.setTagIds(tagIds != null ? tagIds : List.of());
+        }
     }
 
 }

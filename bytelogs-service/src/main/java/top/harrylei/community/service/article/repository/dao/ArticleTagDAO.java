@@ -17,15 +17,22 @@ import java.util.List;
 public class ArticleTagDAO extends ServiceImpl<ArticleTagMapper, ArticleTagDO> {
 
     public List<Long> listTagIdsByArticleId(Long articleId) {
-        return getBaseMapper().getTagIdsByArticleId(articleId);
-    }
-
-    public List<Long> listTagIdsByArticleIds(List<Long> articleIds) {
-        return getBaseMapper().getTagIdsByArticleIds(articleIds);
+        return lambdaQuery()
+                .select(ArticleTagDO::getTagId)
+                .eq(ArticleTagDO::getArticleId, articleId)
+                .eq(ArticleTagDO::getDeleted, DeleteStatusEnum.NOT_DELETED)
+                .list()
+                .stream()
+                .map(ArticleTagDO::getTagId)
+                .toList();
     }
 
     public List<ArticleTagDO> listIdAndTagIdByArticleId(Long articleId) {
-        return getBaseMapper().listIdAndTagIdByArticleId(articleId);
+        return lambdaQuery()
+                .select(ArticleTagDO::getId, ArticleTagDO::getTagId)
+                .eq(ArticleTagDO::getArticleId, articleId)
+                .eq(ArticleTagDO::getDeleted, DeleteStatusEnum.NOT_DELETED)
+                .list();
     }
 
     public boolean updateDeleted(Long articleId, DeleteStatusEnum deleted) {
