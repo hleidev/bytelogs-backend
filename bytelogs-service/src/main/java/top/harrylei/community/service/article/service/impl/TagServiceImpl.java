@@ -9,7 +9,7 @@ import top.harrylei.community.api.enums.response.ResultCode;
 import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 import top.harrylei.community.api.enums.article.TagTypeEnum;
 import top.harrylei.community.api.model.article.dto.TagDTO;
-import top.harrylei.community.api.model.article.vo.TagSimpleVO;
+import top.harrylei.community.api.model.article.dto.TagSimpleDTO;
 import top.harrylei.community.api.model.page.PageVO;
 import top.harrylei.community.api.model.page.param.TagQueryParam;
 import top.harrylei.community.core.util.PageUtils;
@@ -131,13 +131,13 @@ public class TagServiceImpl implements TagService {
      * @return 标签简单展示对象列表
      */
     @Override
-    public List<TagSimpleVO> listSimpleTags() {
+    public List<TagSimpleDTO> listSimpleTags() {
         List<TagDO> tags = tagDAO.listSimpleTag();
         return convertToSimpleVOList(tags);
     }
 
     @Override
-    public List<TagSimpleVO> searchTags(String keyword) {
+    public List<TagSimpleDTO> searchTags(String keyword) {
         if (StringUtils.isBlank(keyword)) {
             return List.of();
         }
@@ -164,13 +164,22 @@ public class TagServiceImpl implements TagService {
         return newTag.getId();
     }
 
+    @Override
+    public List<TagSimpleDTO> listSimpleTagsByIds(List<Long> tagIds) {
+        if (tagIds == null || tagIds.isEmpty()) {
+            return List.of();
+        }
+        List<TagDO> tags = tagDAO.listByIds(tagIds);
+        return convertToSimpleVOList(tags);
+    }
+
     /**
      * 转换标签DO列表为简单VO列表
      *
      * @param tags 标签DO列表
      * @return 标签简单VO列表
      */
-    private List<TagSimpleVO> convertToSimpleVOList(List<TagDO> tags) {
+    private List<TagSimpleDTO> convertToSimpleVOList(List<TagDO> tags) {
         if (tags == null || tags.isEmpty()) {
             return List.of();
         }

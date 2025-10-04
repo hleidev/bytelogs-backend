@@ -4,7 +4,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import top.harrylei.community.api.model.article.dto.TagDTO;
 import top.harrylei.community.api.model.article.req.TagReq;
-import top.harrylei.community.api.model.article.vo.TagSimpleVO;
+import top.harrylei.community.api.model.article.dto.TagSimpleDTO;
 import top.harrylei.community.api.model.article.vo.TagVO;
 import top.harrylei.community.service.article.repository.entity.TagDO;
 
@@ -31,5 +31,5 @@ public interface TagStructMapper {
 
     @Mapping(target = "articleId", ignore = true)
     @Mapping(target = "tagId", source = "id")
-    TagSimpleVO toSimpleVO(TagDO tagDO);
+    TagSimpleDTO toSimpleVO(TagDO tagDO);
 }

@@ -4,7 +4,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import top.harrylei.community.api.model.article.dto.CategoryDTO;
 import top.harrylei.community.api.model.article.req.CategoryReq;
-import top.harrylei.community.api.model.article.vo.CategorySimpleVO;
+import top.harrylei.community.api.model.article.dto.CategorySimpleDTO;
 import top.harrylei.community.api.model.article.vo.CategoryVO;
 import top.harrylei.community.service.article.repository.entity.CategoryDO;
 
@@ -29,5 +29,8 @@ public interface CategoryStructMapper {
     CategoryDTO toDTO(CategoryReq categoryReq);
 
     @Mapping(target = "categoryId", source = "id")
-    CategorySimpleVO toSimpleVO(CategoryDTO category);
+    CategorySimpleDTO toSimpleVO(CategoryDO category);
+
+    @Mapping(target = "categoryId", source = "id")
+    CategorySimpleDTO toSimpleVO(CategoryDTO category);
 }

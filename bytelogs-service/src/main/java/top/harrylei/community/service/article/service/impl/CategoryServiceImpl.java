@@ -8,6 +8,7 @@ import top.harrylei.community.api.enums.response.ResultCode;
 import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 import top.harrylei.community.api.model.article.dto.CategoryDTO;
 import top.harrylei.community.api.model.article.req.CategoryReq;
+import top.harrylei.community.api.model.article.dto.CategorySimpleDTO;
 import top.harrylei.community.api.model.page.PageVO;
 import top.harrylei.community.api.model.page.param.CategoryQueryParam;
 import top.harrylei.community.core.context.ReqInfoContext;
@@ -157,5 +158,23 @@ public class CategoryServiceImpl implements CategoryService {
                 .map(categoryStructMapper::toDTO)
                 .sorted(Comparator.comparingInt(CategoryDTO::getSort).reversed())
                 .toList();
+    }
+
+    /**
+     * 根据分类ID获取分类简单对象
+     *
+     * @param categoryId 分类ID
+     * @return 分类简单对象
+     */
+    @Override
+    public CategorySimpleDTO getSimpleCategoryById(Long categoryId) {
+        if (categoryId == null) {
+            return null;
+        }
+        CategoryDO category = categoryDAO.getByCategoryId(categoryId);
+        if (category == null) {
+            return null;
+        }
+        return categoryStructMapper.toSimpleVO(category);
     }
 }

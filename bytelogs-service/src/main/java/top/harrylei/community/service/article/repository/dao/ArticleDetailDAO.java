@@ -9,6 +9,8 @@ import top.harrylei.community.service.article.repository.entity.ArticleDetailDO;
 import top.harrylei.community.service.article.repository.mapper.ArticleDetailMapper;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 文章详细访问对象
@@ -99,5 +101,32 @@ public class ArticleDetailDAO extends ServiceImpl<ArticleDetailMapper, ArticleDe
                 .eq(ArticleDetailDO::getVersion, version)
                 .eq(ArticleDetailDO::getDeleted, DeleteStatusEnum.NOT_DELETED)
                 .one();
+    }
+
+    /**
+     * 批量获取文章的分类ID
+     *
+     * @param articleIds 文章ID列表
+     * @return 文章ID和分类ID的映射
+     */
+    public Map<Long, Long> batchGetCategoryIds(List<Long> articleIds) {
+        if (articleIds == null || articleIds.isEmpty()) {
+            return Map.of();
+        }
+        
+        List<ArticleDetailDO> details = lambdaQuery()
+                .in(ArticleDetailDO::getArticleId, articleIds)
+                .eq(ArticleDetailDO::getPublished, PublishedFlagEnum.YES)
+                .eq(ArticleDetailDO::getDeleted, DeleteStatusEnum.NOT_DELETED)
+                .select(ArticleDetailDO::getArticleId, ArticleDetailDO::getCategoryId)
+                .list();
+                
+        return details.stream()
+                .filter(detail -> detail.getCategoryId() != null)
+                .collect(Collectors.toMap(
+                    ArticleDetailDO::getArticleId,
+                    ArticleDetailDO::getCategoryId,
+                    (existing, replacement) -> existing // 如果有重复，保留第一个
+                ));
     }
 }

@@ -12,6 +12,8 @@ import top.harrylei.community.api.enums.response.ResultCode;
 import top.harrylei.community.api.model.article.dto.ArticleDTO;
 import top.harrylei.community.api.model.article.req.ArticleQueryParam;
 import top.harrylei.community.api.model.article.vo.ArticleVO;
+import top.harrylei.community.api.model.article.dto.CategorySimpleDTO;
+import top.harrylei.community.api.model.article.dto.TagSimpleDTO;
 import top.harrylei.community.api.model.page.PageVO;
 import top.harrylei.community.core.context.ReqInfoContext;
 import top.harrylei.community.core.util.PageUtils;
@@ -22,6 +24,8 @@ import top.harrylei.community.service.article.repository.entity.ArticleDO;
 import top.harrylei.community.service.article.repository.entity.ArticleDetailDO;
 import top.harrylei.community.service.article.service.ArticleQueryService;
 import top.harrylei.community.service.article.service.ArticleTagService;
+import top.harrylei.community.service.article.service.CategoryService;
+import top.harrylei.community.service.article.service.TagService;
 
 import java.util.List;
 import java.util.Objects;
@@ -41,6 +45,8 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
     private final ArticleDetailDAO articleDetailDAO;
     private final ArticleStructMapper articleStructMapper;
     private final ArticleTagService articleTagService;
+    private final TagService tagService;
+    private final CategoryService categoryService;
 
     @Override
     public PageVO<ArticleVO> pageQuery(ArticleQueryParam queryParam) {
@@ -53,9 +59,9 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
         // 第一步：分页查询文章基础信息
         IPage<ArticleVO> articlePage = articleDAO.pageArticleVO(queryParam, page);
 
-        // 第二步：批量填充标签ID信息
+        // 第二步：批量填充标签和分类信息
         if (!CollectionUtils.isEmpty(articlePage.getRecords())) {
-            fillArticleTagIds(articlePage.getRecords());
+            fillArticleTagsAndCategories(articlePage.getRecords());
         }
 
         // 构建分页结果
@@ -156,6 +162,9 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
         List<Long> tagIds = articleTagService.listTagIdsByArticleId(articleId);
         articleDTO.setTagIds(tagIds);
         
+        // 填充SimpleDTO对象
+        fillArticleDTOTagsAndCategory(articleDTO);
+        
         return articleDTO;
     }
 
@@ -171,17 +180,48 @@ public class ArticleQueryServiceImpl implements ArticleQueryService {
     }
 
     /**
-     * 批量填充文章标签ID信息
+     * 填充ArticleDTO的标签和分类信息
      */
-    private void fillArticleTagIds(List<ArticleVO> articles) {
+    private void fillArticleDTOTagsAndCategory(ArticleDTO articleDTO) {
+        // 填充标签信息
+        if (articleDTO.getTagIds() != null && !articleDTO.getTagIds().isEmpty()) {
+            List<TagSimpleDTO> tags = tagService.listSimpleTagsByIds(articleDTO.getTagIds());
+            articleDTO.setTags(tags);
+        } else {
+            articleDTO.setTags(List.of());
+        }
+        
+        // 填充分类信息
+        if (articleDTO.getCategoryId() != null) {
+            CategorySimpleDTO category = categoryService.getSimpleCategoryById(articleDTO.getCategoryId());
+            articleDTO.setCategory(category);
+        }
+    }
+
+    /**
+     * 批量填充文章标签和分类信息
+     */
+    private void fillArticleTagsAndCategories(List<ArticleVO> articles) {
         if (CollectionUtils.isEmpty(articles)) {
             return;
         }
 
-        // 为每个文章单独查询标签ID（后续可优化为一次查询+分组）
+        // 为每个文章填充标签和分类信息
         for (ArticleVO article : articles) {
+            // 填充标签信息
             List<Long> tagIds = articleTagService.listTagIdsByArticleId(article.getId());
-            article.setTagIds(tagIds != null ? tagIds : List.of());
+            if (tagIds != null && !tagIds.isEmpty()) {
+                List<TagSimpleDTO> tags = tagService.listSimpleTagsByIds(tagIds);
+                article.setTags(tags);
+            } else {
+                article.setTags(List.of());
+            }
+            
+            // 填充分类信息
+            if (article.getCategoryId() != null) {
+                CategorySimpleDTO category = categoryService.getSimpleCategoryById(article.getCategoryId());
+                article.setCategory(category);
+            }
         }
     }
 

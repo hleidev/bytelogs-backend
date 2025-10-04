@@ -78,4 +78,20 @@ public class TagDAO extends ServiceImpl<TagMapper, TagDO> {
                 .eq(TagDO::getDeleted, DeleteStatusEnum.NOT_DELETED)
                 .one();
     }
+
+    /**
+     * 根据标签ID列表获取标签
+     *
+     * @param tagIds 标签ID列表
+     * @return 标签列表
+     */
+    public List<TagDO> listByIds(List<Long> tagIds) {
+        if (tagIds == null || tagIds.isEmpty()) {
+            return List.of();
+        }
+        return lambdaQuery()
+                .in(TagDO::getId, tagIds)
+                .eq(TagDO::getDeleted, DeleteStatusEnum.NOT_DELETED)
+                .list();
+    }
 }

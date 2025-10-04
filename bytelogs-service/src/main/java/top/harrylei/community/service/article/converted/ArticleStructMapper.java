@@ -20,6 +20,8 @@ import top.harrylei.community.service.article.repository.entity.ArticleDetailDO;
 public interface ArticleStructMapper {
 
 
+    @Mapping(target = "tags", ignore = true)
+    @Mapping(target = "category", ignore = true)
     @Mapping(target = "versionCount", ignore = true)
     @Mapping(target = "userId", ignore = true)
     @Mapping(target = "updateTime", ignore = true)
@@ -34,6 +36,8 @@ public interface ArticleStructMapper {
     @Mapping(target = "versionCount", ignore = true)
     ArticleDO toDO(ArticleDTO articleDTO);
 
+    @Mapping(target = "tags", ignore = true)
+    @Mapping(target = "category", ignore = true)
     @Mapping(target = "tagIds", ignore = true)
     @Mapping(target = "content", ignore = true)
     @Mapping(target = "title", ignore = true)
@@ -46,6 +50,8 @@ public interface ArticleStructMapper {
     @Mapping(target = "status", ignore = true)
     ArticleDTO toDTO(ArticleDO articleDO);
 
+    @Mapping(target = "tags", ignore = true)
+    @Mapping(target = "category", ignore = true)
     @Mapping(target = "versionCount", ignore = true)
     @Mapping(target = "userId", ignore = true)
     @Mapping(target = "updateTime", ignore = true)
@@ -70,6 +76,8 @@ public interface ArticleStructMapper {
     @Mapping(target = "deleted", ignore = true)
     ArticleDetailDO toDetailDO(ArticleDTO articleDTO);
 
+    @Mapping(target = "tags", ignore = true)
+    @Mapping(target = "category", ignore = true)
     @Mapping(target = "tagIds", ignore = true)
     @Mapping(target = "id", source = "article.id")
     @Mapping(target = "userId", source = "article.userId")

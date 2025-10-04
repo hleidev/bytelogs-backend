@@ -2,7 +2,7 @@ package top.harrylei.community.service.article.service;
 
 import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 import top.harrylei.community.api.model.article.dto.TagDTO;
-import top.harrylei.community.api.model.article.vo.TagSimpleVO;
+import top.harrylei.community.api.model.article.dto.TagSimpleDTO;
 import top.harrylei.community.api.model.page.PageVO;
 import top.harrylei.community.api.model.page.param.TagQueryParam;
 
@@ -52,7 +52,7 @@ public interface TagService {
      *
      * @return 返回标签简单展示对象
      */
-    List<TagSimpleVO> listSimpleTags();
+    List<TagSimpleDTO> listSimpleTags();
 
     /**
      * 标签搜索
@@ -60,7 +60,7 @@ public interface TagService {
      * @param keyword 搜索关键词
      * @return 匹配的标签列表
      */
-    List<TagSimpleVO> searchTags(String keyword);
+    List<TagSimpleDTO> searchTags(String keyword);
 
     /**
      * 创建或获取标签
@@ -70,4 +70,12 @@ public interface TagService {
      * @return 标签ID
      */
     Long createIfAbsent(String tagName, Long userId);
+
+    /**
+     * 根据标签ID列表获取标签简单对象
+     *
+     * @param tagIds 标签ID列表
+     * @return 标签简单对象列表
+     */
+    List<TagSimpleDTO> listSimpleTagsByIds(List<Long> tagIds);
 }

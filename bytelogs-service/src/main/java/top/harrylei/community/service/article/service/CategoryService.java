@@ -3,6 +3,7 @@ package top.harrylei.community.service.article.service;
 import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 import top.harrylei.community.api.model.article.dto.CategoryDTO;
 import top.harrylei.community.api.model.article.req.CategoryReq;
+import top.harrylei.community.api.model.article.dto.CategorySimpleDTO;
 import top.harrylei.community.api.model.page.PageVO;
 import top.harrylei.community.api.model.page.param.CategoryQueryParam;
 
@@ -53,4 +54,12 @@ public interface CategoryService {
      * @return 分类列表
      */
     List<CategoryDTO> listCategory(boolean deleted);
+
+    /**
+     * 根据分类ID获取分类简单对象
+     *
+     * @param categoryId 分类ID
+     * @return 分类简单对象
+     */
+    CategorySimpleDTO getSimpleCategoryById(Long categoryId);
 }
