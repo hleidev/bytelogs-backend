@@ -1,4 +1,4 @@
-package top.harrylei.community.api.model.article.vo;
+package top.harrylei.community.api.model.article.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -6,13 +6,13 @@ import lombok.Data;
 import top.harrylei.community.api.enums.article.TagTypeEnum;
 
 /**
- * 标签展示对象
+ * 标签简单传输对象
  *
  * @author harry
  */
 @Data
-@Schema(description = "标签展示对象")
-public class TagSimpleVO {
+@Schema(description = "标签简单传输对象")
+public class TagSimpleDTO {
 
     /**
      * 文章ID（用于批量查询时的关联，前端不显示）
