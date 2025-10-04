@@ -1,9 +1,12 @@
 package top.harrylei.community.api.model.article.vo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import top.harrylei.community.api.enums.article.*;
+import top.harrylei.community.api.model.article.dto.CategorySimpleDTO;
+import top.harrylei.community.api.model.article.dto.TagSimpleDTO;
 import top.harrylei.community.api.model.base.BaseVO;
 import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 import top.harrylei.community.api.enums.article.ArticlePublishStatusEnum;
@@ -57,16 +60,16 @@ public class ArticleVO extends BaseVO {
     private String summary;
 
     /**
-     * 文章分类ID
+     * 文章分类
      */
-    @Schema(description = "文章分类ID", example = "1")
-    private Long categoryId;
+    @Schema(description = "文章分类")
+    private CategorySimpleDTO category;
 
     /**
-     * 标签ID列表
+     * 标签列表
      */
-    @Schema(description = "标签ID列表", example = "[1, 2, 3]")
-    private List<Long> tagIds;
+    @Schema(description = "标签列表")
+    private List<TagSimpleDTO> tags;
 
     /**
      * 文章来源：1-转载，2-原创，3-翻译
@@ -121,4 +124,10 @@ public class ArticleVO extends BaseVO {
      */
     @Schema(description = "是否删除：0-未删除，1-已删除", example = "{\"code\":0,\"label\":\"未删除\"}")
     private DeleteStatusEnum deleted;
+
+    /**
+     * 分类ID（内部使用，MyBatis映射用）
+     */
+    @JsonIgnore
+    private Long categoryId;
 }

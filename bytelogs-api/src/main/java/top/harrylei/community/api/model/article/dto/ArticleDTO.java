@@ -53,9 +53,19 @@ public class ArticleDTO extends BaseDTO {
     private Long categoryId;
 
     /**
+     * 文章分类
+     */
+    private CategorySimpleDTO category;
+
+    /**
      * 标签列表
      */
     private List<Long> tagIds;
+
+    /**
+     * 标签列表
+     */
+    private List<TagSimpleDTO> tags;
 
     /**
      * 用户ID
