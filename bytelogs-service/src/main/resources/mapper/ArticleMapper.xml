@@ -23,39 +23,11 @@
         <result column="create_time" property="createTime"/>
         <result column="update_time" property="updateTime"/>
         <result column="content" property="content"/>
-
-        <!-- 分类ID -->
         <result column="category_id" property="categoryId"/>
 
-        <!-- 标签ID集合 - 通过代码填充 -->
-        <!-- tagIds 字段将在服务层单独填充 -->
+        <!-- 标签和分类信息将在服务层填充为SimpleVO对象 -->
     </resultMap>
 
-    <!-- 联表查询完整文章VO -->
-    <select id="getArticleVoById" resultMap="ArticleVOMap">
-        select a.id,
-               a.user_id,
-               a.article_type,
-               a.version_count,
-               ad.title,
-               ad.short_title,
-               ad.picture,
-               ad.summary,
-               ad.source,
-               ad.source_url,
-               a.official,
-               a.topping,
-               a.cream,
-               ad.status,
-               a.deleted,
-               a.create_time,
-               a.update_time,
-               ad.content,
-               ad.category_id
-        from article a
-                 left join article_detail ad on a.id = ad.article_id and ad.latest = 1 and ad.deleted = 0
-        where a.id = #{articleId}
-    </select>
 
     <!-- 分页查询文章基础信息  -->
     <select id="pageArticleVO" resultMap="ArticleVOMap">

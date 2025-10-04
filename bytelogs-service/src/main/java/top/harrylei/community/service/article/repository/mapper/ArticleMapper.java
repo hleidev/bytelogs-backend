@@ -14,7 +14,5 @@ import top.harrylei.community.service.article.repository.entity.ArticleDO;
  */
 public interface ArticleMapper extends BaseMapper<ArticleDO> {
 
-    ArticleVO getArticleVoById(Long articleId);
-
     IPage<ArticleVO> pageArticleVO(@Param("query") ArticleQueryParam query, IPage<ArticleVO> page);
 }

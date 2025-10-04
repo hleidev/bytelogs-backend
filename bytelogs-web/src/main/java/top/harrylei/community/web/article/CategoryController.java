@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import top.harrylei.community.api.model.article.dto.CategoryDTO;
-import top.harrylei.community.api.model.article.vo.CategorySimpleVO;
+import top.harrylei.community.api.model.article.dto.CategorySimpleDTO;
 import top.harrylei.community.api.model.base.Result;
 import top.harrylei.community.service.article.converted.CategoryStructMapper;
 import top.harrylei.community.service.article.service.CategoryService;
@@ -37,9 +37,9 @@ public class CategoryController {
      */
     @Operation(summary = "分类列表", description = "返回已排序的分类列表")
     @GetMapping("/list")
-    public Result<List<CategorySimpleVO>> list() {
+    public Result<List<CategorySimpleDTO>> list() {
         List<CategoryDTO> category = categoryService.listCategory(false);
-        List<CategorySimpleVO> result = category.stream().map(categoryStructMapper::toSimpleVO).toList();
+        List<CategorySimpleDTO> result = category.stream().map(categoryStructMapper::toSimpleVO).toList();
         return Result.success(result);
     }
 }

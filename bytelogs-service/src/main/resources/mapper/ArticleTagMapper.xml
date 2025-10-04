@@ -2,18 +2,4 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="top.harrylei.community.service.article.repository.mapper.ArticleTagMapper">
 
-    <select id="listTagSimpleVoByArticleIds" resultType="top.harrylei.community.api.model.article.vo.TagSimpleVO">
-        select at.article_id as articleId,
-               t.id as tagId,
-               t.tag_name as tagName,
-               t.tag_type as tagType
-        from article_tag at
-        inner join tag t on at.tag_id = t.id and t.deleted = 0
-        where at.deleted = 0
-        and at.article_id in
-        <foreach collection="articleIds" item="articleId" open="(" separator="," close=")">
-            #{articleId}
-        </foreach>
-        order by at.article_id, t.id
-    </select>
 </mapper>
