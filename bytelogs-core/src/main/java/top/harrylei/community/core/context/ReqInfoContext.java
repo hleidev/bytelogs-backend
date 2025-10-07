@@ -1,20 +1,20 @@
 package top.harrylei.community.core.context;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-
 import com.alibaba.ttl.TransmittableThreadLocal;
-
 import lombok.Data;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import top.harrylei.community.api.model.user.dto.UserInfoDTO;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 请求上下文管理类
  * 使用 TransmittableThreadLocal 存储请求上下文信息，支持异步线程传递
+ *
+ * @author harry
  */
 @Slf4j
 public class ReqInfoContext {
@@ -24,7 +24,7 @@ public class ReqInfoContext {
 
     /**
      * 设置当前线程的用户上下文
-     * 
+     *
      * @param reqInfo 请求信息对象
      */
     public static void setContext(ReqInfo reqInfo) {
@@ -34,7 +34,7 @@ public class ReqInfoContext {
     /**
      * 获取当前线程的用户上下文
      * 如果上下文不存在，会自动创建一个新的上下文对象
-     * 
+     *
      * @return 请求信息对象，不会为 null
      */
     public static ReqInfo getContext() {
@@ -103,17 +103,17 @@ public class ReqInfoContext {
 
         /**
          * 判断当前用户是否为管理员
-         * 
+         *
          * @return true 如果用户具有管理员权限，否则 false
          */
         public boolean isAdmin() {
             return authorities != null && authorities.stream()
                     .anyMatch(authority -> ADMIN.equals(authority.getAuthority()));
         }
-        
+
         /**
          * 判断当前用户是否已登录
-         * 
+         *
          * @return true 如果用户已登录，否则 false
          */
         public boolean isLoggedIn() {

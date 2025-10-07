@@ -9,7 +9,6 @@ import top.harrylei.community.api.enums.common.DeleteStatusEnum;
 import top.harrylei.community.api.enums.notify.NotifyTypeEnum;
 import top.harrylei.community.api.enums.response.ResultCode;
 import top.harrylei.community.api.enums.user.OperateTypeEnum;
-import top.harrylei.community.api.event.NotificationEvent;
 import top.harrylei.community.api.model.article.dto.ArticleDTO;
 import top.harrylei.community.core.context.ReqInfoContext;
 import top.harrylei.community.core.util.KafkaEventPublisher;
@@ -329,15 +328,13 @@ public class ArticleCommandServiceImpl implements ArticleCommandService {
         List<Long> followerIds = userFollowService.listFollowerIds(authorUserId);
         for (Long followerId : followerIds) {
             try {
-                NotificationEvent event = NotificationEvent.builder()
-                        .operateUserId(authorUserId)
-                        .targetUserId(followerId)
-                        .relatedId(articleId)
-                        .notifyType(NotifyTypeEnum.ARTICLE_PUBLISH)
-                        .contentType(ContentTypeEnum.ARTICLE)
-                        .source("article-service")
-                        .build();
-                kafkaEventPublisher.publishNotificationEvent(event);
+                kafkaEventPublisher.publishUserBehaviorEvent(
+                        authorUserId, 
+                        followerId, 
+                        articleId, 
+                        ContentTypeEnum.ARTICLE, 
+                        NotifyTypeEnum.ARTICLE_PUBLISH
+                );
             } catch (Exception e) {
                 log.warn("发送文章发布通知失败 articleId={} followerId={}", articleId, followerId, e);
             }

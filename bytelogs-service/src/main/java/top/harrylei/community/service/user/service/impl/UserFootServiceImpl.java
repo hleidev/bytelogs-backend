@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import top.harrylei.community.api.enums.article.CollectionStatusEnum;
 import top.harrylei.community.api.enums.article.ContentTypeEnum;
+import top.harrylei.community.api.enums.article.ArticleStatisticsEnum;
 import top.harrylei.community.api.enums.comment.CommentStatusEnum;
 import top.harrylei.community.api.enums.notify.NotifyTypeEnum;
 import top.harrylei.community.api.enums.rank.ActivityActionEnum;
@@ -17,7 +18,6 @@ import top.harrylei.community.core.util.KafkaEventPublisher;
 import top.harrylei.community.core.util.NumUtil;
 import top.harrylei.community.core.util.RedisUtil;
 import top.harrylei.community.service.comment.repository.entity.CommentDO;
-import top.harrylei.community.service.statistics.service.ArticleStatisticsService;
 import top.harrylei.community.service.user.converted.UserFootStructMapper;
 import top.harrylei.community.service.user.repository.dao.UserFootDAO;
 import top.harrylei.community.service.user.repository.entity.UserFootDO;
@@ -42,7 +42,6 @@ public class UserFootServiceImpl implements UserFootService {
     private final UserFootStructMapper userFootStructMapper;
     private final RedisUtil redisUtil;
     private final KafkaEventPublisher kafkaEventPublisher;
-    private final ArticleStatisticsService articleStatisticsService;
 
 
     /**
@@ -234,12 +233,12 @@ public class UserFootServiceImpl implements UserFootService {
             return false;
         }
 
-        // 同步更新ArticleStatistics（仅文章类型且状态确实发生变化时）
+        // 发布ArticleStatistics（仅文章类型且状态确实发生变化时）
         if (stateChanged && ContentTypeEnum.ARTICLE.equals(contentTypeEnum)) {
             try {
-                syncArticleStatistics(contentId, operateTypeEnum);
+                publishArticleStatistics(contentId, operateTypeEnum);
             } catch (Exception e) {
-                log.error("同步文章统计数据失败: contentId={}, operateType={}", contentId, operateTypeEnum, e);
+                log.error("发布文章统计数据失败: contentId={}, operateType={}", contentId, operateTypeEnum, e);
                 // 不影响主流程，继续返回成功
             }
         }
@@ -248,17 +247,23 @@ public class UserFootServiceImpl implements UserFootService {
     }
 
     /**
-     * 同步更新ArticleStatistics表
+     * 发布文章统计更新事件
      */
-    private void syncArticleStatistics(Long articleId, OperateTypeEnum operateTypeEnum) {
+    private void publishArticleStatistics(Long articleId, OperateTypeEnum operateTypeEnum) {
         switch (operateTypeEnum) {
-            case PRAISE -> articleStatisticsService.incrementPraiseCount(articleId);
-            case CANCEL_PRAISE -> articleStatisticsService.decrementPraiseCount(articleId);
-            case COLLECTION -> articleStatisticsService.incrementCollectCount(articleId);
-            case CANCEL_COLLECTION -> articleStatisticsService.decrementCollectCount(articleId);
-            case COMMENT -> articleStatisticsService.incrementCommentCount(articleId);
-            case DELETE_COMMENT -> articleStatisticsService.decrementCommentCount(articleId);
-            // READ操作已在ArticleStatisticsService中单独处理，无需在此同步
+            case PRAISE ->
+                    kafkaEventPublisher.publishArticleStatisticsEvent(articleId, ArticleStatisticsEnum.INCREMENT_PRAISE);
+            case CANCEL_PRAISE ->
+                    kafkaEventPublisher.publishArticleStatisticsEvent(articleId, ArticleStatisticsEnum.DECREMENT_PRAISE);
+            case COLLECTION ->
+                    kafkaEventPublisher.publishArticleStatisticsEvent(articleId, ArticleStatisticsEnum.INCREMENT_COLLECT);
+            case CANCEL_COLLECTION ->
+                    kafkaEventPublisher.publishArticleStatisticsEvent(articleId, ArticleStatisticsEnum.DECREMENT_COLLECT);
+            case COMMENT ->
+                    kafkaEventPublisher.publishArticleStatisticsEvent(articleId, ArticleStatisticsEnum.INCREMENT_COMMENT);
+            case DELETE_COMMENT ->
+                    kafkaEventPublisher.publishArticleStatisticsEvent(articleId, ArticleStatisticsEnum.DECREMENT_COMMENT);
+            // READ操作已在ArticleController中单独处理，无需在此同步
             default -> {
                 // 其他操作类型不需要同步到ArticleStatistics
             }

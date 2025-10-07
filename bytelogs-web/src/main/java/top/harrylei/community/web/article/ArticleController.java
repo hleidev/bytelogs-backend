@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import top.harrylei.community.api.enums.article.ArticleStatisticsEnum;
 import top.harrylei.community.api.enums.response.ResultCode;
 import top.harrylei.community.api.model.article.dto.ArticleDTO;
 import top.harrylei.community.api.model.article.req.*;
@@ -21,6 +22,7 @@ import top.harrylei.community.api.model.statistics.dto.ArticleStatisticsDTO;
 import top.harrylei.community.api.model.user.dto.UserInfoDTO;
 import top.harrylei.community.core.context.ReqInfoContext;
 import top.harrylei.community.core.security.permission.RequiresLogin;
+import top.harrylei.community.core.util.KafkaEventPublisher;
 import top.harrylei.community.service.article.converted.ArticleStructMapper;
 import top.harrylei.community.service.article.service.ArticleCommandService;
 import top.harrylei.community.service.article.service.ArticleQueryService;
@@ -55,6 +57,7 @@ public class ArticleController {
     private final UserCacheService userCacheService;
     private final UserStructMapper userStructMapper;
     private final UserFootService userFootService;
+    private final KafkaEventPublisher kafkaEventPublisher;
     /**
      * 用户新建文章
      *
@@ -132,7 +135,7 @@ public class ArticleController {
         UserInfoDTO author = userCacheService.getUserInfo(articleDTO.getUserId());
 
         // 记录阅读行为
-        articleStatisticsService.incrementReadCount(articleId);
+        kafkaEventPublisher.publishArticleStatisticsEvent(articleId, ArticleStatisticsEnum.INCREMENT_READ);
         if (ReqInfoContext.getContext().isLoggedIn()) {
             userFootService.recordRead(ReqInfoContext.getContext().getUserId(), articleDTO.getUserId(), articleId);
         }
