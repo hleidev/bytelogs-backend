@@ -15,6 +15,7 @@ import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.util.backoff.ExponentialBackOff;
 import top.harrylei.community.api.event.ActivityRankEvent;
+import top.harrylei.community.api.event.ArticleStatisticsEvent;
 import top.harrylei.community.api.event.NotificationEvent;
 import top.harrylei.community.core.common.constans.KafkaTopics;
 import top.harrylei.community.api.exception.NonRetryableException;
@@ -35,6 +36,9 @@ public class KafkaConfig {
 
     @Value("${spring.kafka.consumer.activity-group-id}")
     private String activityGroupId;
+
+    @Value("${spring.kafka.consumer.article-statistics-group-id}")
+    private String articleStatisticsGroupId;
 
     @Value("${kafka.concurrency:3}")
     private Integer concurrency;
@@ -77,6 +81,17 @@ public class KafkaConfig {
         // 覆盖消费者组ID
         props.put(ConsumerConfig.GROUP_ID_CONFIG, activityGroupId);
         return new DefaultKafkaConsumerFactory<>(props, null, new JsonDeserializer<>(ActivityRankEvent.class));
+    }
+
+    /**
+     * 文章统计事件消费者配置
+     */
+    @Bean
+    public ConsumerFactory<String, ArticleStatisticsEvent> articleStatisticsConsumerFactory(KafkaProperties kafkaProperties) {
+        Map<String, Object> props = kafkaProperties.buildConsumerProperties();
+        // 覆盖消费者组ID
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, articleStatisticsGroupId);
+        return new DefaultKafkaConsumerFactory<>(props, null, new JsonDeserializer<>(ArticleStatisticsEvent.class));
     }
 
     /**
@@ -139,6 +154,24 @@ public class KafkaConfig {
     }
 
     /**
+     * 文章统计事件监听器容器工厂
+     */
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, ArticleStatisticsEvent> articleStatisticsKafkaListenerContainerFactory(
+            ConsumerFactory<String, ArticleStatisticsEvent> articleStatisticsConsumerFactory,
+            DefaultErrorHandler errorHandler) {
+        ConcurrentKafkaListenerContainerFactory<String, ArticleStatisticsEvent> factory = new ConcurrentKafkaListenerContainerFactory<>();
+
+        factory.setConsumerFactory(articleStatisticsConsumerFactory);
+        factory.setCommonErrorHandler(errorHandler);
+        factory.setConcurrency(concurrency);
+        // 文章统计事件使用自动确认模式，因为不需要手动控制确认
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.BATCH);
+
+        return factory;
+    }
+
+    /**
      * 用户活跃度事件Topic
      */
     @Bean
@@ -166,6 +199,17 @@ public class KafkaConfig {
     @Bean
     public NewTopic systemTopic() {
         return TopicBuilder.name(KafkaTopics.SYSTEM_EVENTS)
+                .partitions(partitions)
+                .replicas(replicas)
+                .build();
+    }
+
+    /**
+     * 文章统计事件Topic
+     */
+    @Bean
+    public NewTopic articleStatisticsEventsTopic() {
+        return TopicBuilder.name(KafkaTopics.ARTICLE_STATISTICS_EVENTS)
                 .partitions(partitions)
                 .replicas(replicas)
                 .build();

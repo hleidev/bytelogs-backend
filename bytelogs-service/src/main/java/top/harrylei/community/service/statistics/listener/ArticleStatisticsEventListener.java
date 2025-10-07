@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 import top.harrylei.community.api.event.ArticleStatisticsEvent;
+import top.harrylei.community.core.common.constans.KafkaTopics;
 import top.harrylei.community.core.common.constans.RedisKeyConstants;
 import top.harrylei.community.core.util.RedisUtil;
 import top.harrylei.community.service.statistics.repository.dao.ArticleStatisticsDAO;
@@ -29,7 +30,7 @@ public class ArticleStatisticsEventListener {
      *
      * @param event 文章统计事件
      */
-    @KafkaListener(topics = "bytelogs-article-statistics-events", containerFactory = "kafkaListenerContainerFactory")
+    @KafkaListener(topics = KafkaTopics.ARTICLE_STATISTICS_EVENTS, containerFactory = "articleStatisticsKafkaListenerContainerFactory")
     public void handleArticleStatisticsEvent(ArticleStatisticsEvent event) {
         try {
             log.debug("收到文章统计事件: eventId={}, articleId={}, actionType={}",
