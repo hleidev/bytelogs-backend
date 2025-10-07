@@ -31,4 +31,10 @@ public class KafkaTopics {
      * 用于处理系统级事件（注册、登录等）
      */
     public static final String SYSTEM_EVENTS = "bytelogs-system-events";
+
+    /**
+     * 文章统计事件 Topic
+     * 用于处理文章统计相关事件（阅读量、点赞量、收藏量、评论量等）
+     */
+    public static final String ARTICLE_STATISTICS_EVENTS = "bytelogs-article-statistics-events";
 }
