@@ -329,10 +329,10 @@ public class ArticleCommandServiceImpl implements ArticleCommandService {
         for (Long followerId : followerIds) {
             try {
                 kafkaEventPublisher.publishUserBehaviorEvent(
-                        authorUserId, 
-                        followerId, 
-                        articleId, 
-                        ContentTypeEnum.ARTICLE, 
+                        authorUserId,
+                        followerId,
+                        articleId,
+                        ContentTypeEnum.ARTICLE,
                         NotifyTypeEnum.ARTICLE_PUBLISH
                 );
             } catch (Exception e) {
