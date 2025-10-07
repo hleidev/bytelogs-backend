@@ -5,13 +5,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Component;
+import top.harrylei.community.api.enums.article.ArticleStatisticsEnum;
 import top.harrylei.community.api.enums.article.ContentTypeEnum;
 import top.harrylei.community.api.enums.notify.NotifyTypeEnum;
 import top.harrylei.community.api.enums.rank.ActivityActionEnum;
 import top.harrylei.community.api.enums.rank.ActivityTargetEnum;
 import top.harrylei.community.api.event.ActivityRankEvent;
+import top.harrylei.community.api.event.ArticleStatisticsEvent;
+import top.harrylei.community.api.event.BaseEvent;
 import top.harrylei.community.api.event.NotificationEvent;
 import top.harrylei.community.core.common.constans.KafkaTopics;
+import top.harrylei.community.core.context.ReqInfoContext;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -30,12 +34,9 @@ public class KafkaEventPublisher {
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     /**
-     * 发布通知事件
-     *
-     * @param event 通知事件
+     * 通用Kafka事件发送
      */
-    public void publishNotificationEvent(NotificationEvent event) {
-        // 设置事件基础信息
+    private void sendEventToKafka(String topic, BaseEvent event, String eventType) {
         if (event.getEventId() == null) {
             event.setEventId(UUID.randomUUID().toString());
         }
@@ -44,18 +45,17 @@ public class KafkaEventPublisher {
         }
 
         try {
-            CompletableFuture<SendResult<String, Object>> future =
-                    kafkaTemplate.send(KafkaTopics.NOTIFICATION_EVENTS, event.getEventId(), event);
-
+            CompletableFuture<SendResult<String, Object>> future = kafkaTemplate.send(topic, event.getEventId(), event);
             future.whenComplete((result, ex) -> {
                 if (ex != null) {
-                    log.error("通知事件发送失败: eventId={}, event={}", event.getEventId(), event, ex);
+                    log.error("{}事件发送失败: eventId={}, event={}", eventType, event.getEventId(), event, ex);
                 }
             });
         } catch (Exception e) {
-            log.error("发送通知事件异常: event={}", event, e);
+            log.error("发送{}事件异常: event={}", eventType, event, e);
         }
     }
+
 
     /**
      * 便捷方法：发布用户行为通知事件
@@ -95,7 +95,7 @@ public class KafkaEventPublisher {
                 .source("user-behavior")
                 .build();
 
-        publishNotificationEvent(event);
+        sendEventToKafka(KafkaTopics.NOTIFICATION_EVENTS, event, "通知");
     }
 
     /**
@@ -136,65 +136,49 @@ public class KafkaEventPublisher {
                 .source("activity-rank")
                 .build();
 
-        publishActivityEvent(event);
+        sendEventToKafka(KafkaTopics.ACTIVITY_RANK_EVENTS, event, "活跃度");
     }
+
 
     /**
-     * 发布活跃度事件
+     * 发布文章统计事件
      *
-     * @param event 活跃度事件
+     * @param articleId  文章ID
+     * @param actionType 统计操作类型
      */
-    public void publishActivityEvent(ActivityRankEvent event) {
-        // 设置事件基础信息
-        if (event.getEventId() == null) {
-            event.setEventId(UUID.randomUUID().toString());
-        }
-        if (event.getTimestamp() == null) {
-            event.setTimestamp(LocalDateTime.now());
-        }
-
+    public void publishArticleStatisticsEvent(Long articleId, ArticleStatisticsEnum actionType) {
         try {
-            CompletableFuture<SendResult<String, Object>> future =
-                    kafkaTemplate.send(KafkaTopics.ACTIVITY_RANK_EVENTS, event.getEventId(), event);
+            // 从上下文获取用户信息
+            Long userId = null;
+            String extra = null;
 
-            future.whenComplete((result, ex) -> {
-                if (ex != null) {
-                    log.error("活跃度事件发送失败: eventId={}, event={}", event.getEventId(), event, ex);
+            ReqInfoContext.ReqInfo context = ReqInfoContext.getContext();
+
+            if (context.isLoggedIn()) {
+                userId = context.getUserId();
+                if (actionType == ArticleStatisticsEnum.INCREMENT_READ) {
+                    extra = "user:" + userId;
                 }
-            });
+            } else if (actionType == ArticleStatisticsEnum.INCREMENT_READ) {
+                // 未登录用户的阅读统计，使用IP地址
+                extra = "ip:" + context.getClientIp();
+            }
+
+            ArticleStatisticsEvent event = ArticleStatisticsEvent.builder()
+                    .articleId(articleId)
+                    .userId(userId)
+                    .actionType(actionType)
+                    .extra(extra)
+                    .source("article-statistics")
+                    .build();
+
+            sendEventToKafka(KafkaTopics.ARTICLE_STATISTICS_EVENTS, event, "文章统计");
+
+            log.debug("发布文章统计事件成功: articleId={}, actionType={}", articleId, actionType.getLabel());
+
         } catch (Exception e) {
-            log.error("发送活跃度事件异常: event={}", event, e);
+            log.error("发布文章统计事件失败: articleId={}, actionType={}", articleId, actionType, e);
         }
     }
 
-    /**
-     * 发布系统事件
-     *
-     * @param event 系统事件
-     */
-    public void publishSystemEvent(NotificationEvent event) {
-        // 设置事件基础信息
-        if (event.getEventId() == null) {
-            event.setEventId(UUID.randomUUID().toString());
-        }
-        if (event.getTimestamp() == null) {
-            event.setTimestamp(LocalDateTime.now());
-        }
-        if (event.getSource() == null) {
-            event.setSource("system");
-        }
-
-        try {
-            CompletableFuture<SendResult<String, Object>> future =
-                    kafkaTemplate.send(KafkaTopics.SYSTEM_EVENTS, event.getEventId(), event);
-
-            future.whenComplete((result, ex) -> {
-                if (ex != null) {
-                    log.error("系统事件发送失败: eventId={}, event={}", event.getEventId(), event, ex);
-                }
-            });
-        } catch (Exception e) {
-            log.error("发送系统事件异常: event={}", event, e);
-        }
-    }
 }

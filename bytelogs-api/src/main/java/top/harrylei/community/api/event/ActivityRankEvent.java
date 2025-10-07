@@ -1,14 +1,14 @@
 package top.harrylei.community.api.event;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import top.harrylei.community.api.enums.rank.ActivityActionEnum;
 import top.harrylei.community.api.enums.rank.ActivityTargetEnum;
 
-import java.time.LocalDateTime;
+import java.io.Serial;
 
 /**
  * 用户活跃度事件
@@ -16,15 +16,14 @@ import java.time.LocalDateTime;
  * @author harry
  */
 @Data
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ActivityRankEvent {
+@EqualsAndHashCode(callSuper = true)
+public class ActivityRankEvent extends BaseEvent {
 
-    /**
-     * 事件ID
-     */
-    private String eventId;
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     /**
      * 用户ID
@@ -45,20 +44,4 @@ public class ActivityRankEvent {
      * 目标ID
      */
     private Long targetId;
-
-    /**
-     * 事件时间戳
-     */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime timestamp;
-
-    /**
-     * 事件来源
-     */
-    private String source;
-
-    /**
-     * 扩展信息
-     */
-    private String extra;
 }
