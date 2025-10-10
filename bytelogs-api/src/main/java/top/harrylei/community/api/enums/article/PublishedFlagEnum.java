@@ -35,14 +35,26 @@ public enum PublishedFlagEnum {
 
     private final String label;
 
+    // 根据编码快速定位枚举实例
     private static final Map<Integer, PublishedFlagEnum> CODE_MAP =
             Arrays.stream(values()).collect(Collectors.toMap(PublishedFlagEnum::getCode, Function.identity()));
 
+    /**
+     * 获取码
+     *
+     * @return 编码
+     */
     @JsonValue
     public Integer getCode() {
         return code;
     }
 
+    /**
+     * 根据编码获取枚举对象
+     *
+     * @param code 编码
+     * @return 对应的枚举，若无匹配则返回 null
+     */
     @JsonCreator
     public static PublishedFlagEnum fromCode(Integer code) {
         return code == null ? null : CODE_MAP.get(code);
