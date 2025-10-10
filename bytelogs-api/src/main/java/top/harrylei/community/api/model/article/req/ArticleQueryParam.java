@@ -5,8 +5,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.util.StringUtils;
-import top.harrylei.community.api.enums.common.DeleteStatusEnum;
-import top.harrylei.community.api.enums.article.ArticlePublishStatusEnum;
 import top.harrylei.community.api.model.base.BasePage;
 
 import java.time.LocalDateTime;
@@ -63,19 +61,25 @@ public class ArticleQueryParam extends BasePage {
      * 文章状态
      */
     @Schema(description = "文章状态", example = "1")
-    private ArticlePublishStatusEnum status;
+    private Integer status;
 
     /**
      * 删除标识（管理员功能）
      */
     @Schema(description = "删除标识", example = "0")
-    private DeleteStatusEnum deleted;
+    private Integer deleted;
 
     /**
      * 是否只查询我的文章
      */
     @Schema(description = "是否只查询我的文章", example = "false")
     private Boolean onlyMine;
+
+    /**
+     * 是否查询最新版本：1-最新版本（包括草稿），0或null-已发布版本
+     */
+    @Schema(description = "是否查询最新版本：1-最新版本（包括草稿），0或null-已发布版本", example = "1")
+    private Integer latest;
 
     /**
      * 创建时间开始

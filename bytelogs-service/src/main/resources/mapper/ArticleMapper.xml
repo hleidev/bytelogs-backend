@@ -32,49 +32,70 @@
     <!-- 分页查询文章基础信息  -->
     <select id="pageArticleVO" resultMap="ArticleVOMap">
         SELECT a.id, a.user_id, a.article_type, a.version_count, ad.title, ad.short_title, ad.picture,
-               ad.summary, ad.source, ad.source_url, a.official, a.topping, a.cream,
-               ad.status, a.deleted, a.create_time, a.update_time,
-               ad.category_id
+        ad.summary, ad.source, ad.source_url, a.official, a.topping, a.cream,
+        ad.status, a.deleted, a.create_time, a.update_time,
+        ad.category_id
         FROM article a
-        LEFT JOIN article_detail ad ON a.id = ad.article_id AND ad.published = 1
+        <choose>
+            <when test="query.latest != null and query.latest == 1">
+                <!-- 查询最新版本（个人创作中心：包括草稿） -->
+                LEFT JOIN article_detail ad ON a.id = ad.article_id AND ad.latest = 1 AND ad.deleted = 0
+            </when>
+            <otherwise>
+                <!-- 查询已发布版本（默认行为：向后兼容） -->
+                LEFT JOIN article_detail ad ON a.id = ad.article_id AND ad.published = 1 AND ad.deleted = 0
+            </otherwise>
+        </choose>
         <if test="query.userName != null and query.userName != ''">
             INNER JOIN user_info ui ON a.user_id = ui.user_id AND ui.deleted = 0
         </if>
         <where>
             <if test="query.title != null and query.title != ''">
-                AND ad.title LIKE CONCAT('%', #{query.title}, '%')
+                AND ad.title LIKE CONCAT('%',
+                #{query.title},
+                '%'
+                )
             </if>
             <if test="query.userId != null">
-                AND a.user_id = #{query.userId}
+                AND a.user_id =
+                #{query.userId}
             </if>
             <if test="query.userName != null and query.userName != ''">
-                AND ui.user_name LIKE CONCAT('%', #{query.userName}, '%')
+                AND ui.user_name LIKE CONCAT('%',
+                #{query.userName},
+                '%'
+                )
             </if>
             <if test="query.categoryId != null">
-                AND ad.category_id = #{query.categoryId}
+                AND ad.category_id =
+                #{query.categoryId}
             </if>
             <if test="query.tagIdList != null and query.tagIdList.size() > 0">
                 AND EXISTS (
-                    SELECT 1 FROM article_tag at 
-                    WHERE at.article_id = a.id 
-                    AND at.deleted = 0 
-                    AND at.tag_id IN
-                    <foreach collection="query.tagIdList" item="tagId" open="(" separator="," close=")">
-                        #{tagId}
-                    </foreach>
+                SELECT 1 FROM article_tag at
+                WHERE at.article_id = a.id
+                AND at.deleted = 0
+                AND at.tag_id IN
+                <foreach collection="query.tagIdList" item="tagId" open="(" separator="," close=")">
+                    #{tagId}
+                </foreach>
                 )
             </if>
             <if test="query.status != null">
-                AND ad.status = #{query.status}
+                AND ad.status =
+                #{query.status}
             </if>
             <if test="query.deleted != null">
-                AND a.deleted = #{query.deleted}
+                AND a.deleted =
+                #{query.deleted}
             </if>
             <if test="query.createTimeStart != null">
-                AND a.create_time &gt;= #{query.createTimeStart}
+                AND a.create_time &gt;=
+                #{query.createTimeStart}
             </if>
             <if test="query.createTimeEnd != null">
-                AND a.create_time &lt;= #{query.createTimeEnd}
+                AND a.create_time &lt;=
+                #{query.createTimeEnd}
             </if>
         </where>
     </select>
