@@ -68,10 +68,6 @@ public class WebSocketSessionManager {
      * 发送AI流式响应消息
      */
     public void sendAiStream(Long userId, AiStreamMessage message) {
-        log.info("发送AI流式消息到用户 {}: conversationId={}, messageId={}, content={}, finished={}",
-                userId, message.getConversationId(), message.getMessageId(),
-                message.getContent() != null ? message.getContent().substring(0, Math.min(50, message.getContent().length())) : null,
-                message.getFinished());
         sendToUser(userId, WebSocketMessageType.AI_STREAM, message);
     }
 

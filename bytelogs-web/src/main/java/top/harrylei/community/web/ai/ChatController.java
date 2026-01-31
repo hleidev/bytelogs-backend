@@ -84,9 +84,9 @@ public class ChatController {
             }
 
             @Override
-            public void onComplete(Long conversationId, Long messageId, Integer totalTokens) {
-                // 发送完成消息
-                AiStreamMessage message = AiStreamMessage.finish(conversationId, messageId, totalTokens);
+            public void onComplete(Long conversationId, Long messageId, Long promptTokens, Long completionTokens, Long totalTokens) {
+                // 发送完成消息（包含完整的 token 统计）
+                AiStreamMessage message = AiStreamMessage.finish(conversationId, messageId, promptTokens, completionTokens, totalTokens);
                 webSocketSessionManager.sendAiStream(userId, message);
             }
 

@@ -490,9 +490,6 @@ public class ChatServiceImpl implements ChatService {
                     Long promptTokens = (Long) usage.getClass().getMethod("getPromptTokens").invoke(usage);
                     Long completionTokens = (Long) usage.getClass().getMethod("getGenerationTokens").invoke(usage);
 
-                    log.info("流式响应完成时的token统计 - total: {}, prompt: {}, completion: {}",
-                            totalTokens, promptTokens, completionTokens);
-
                     if (totalTokens != null && totalTokens > 0) {
                         finalTokens.set(totalTokens);
                     }
@@ -535,9 +532,8 @@ public class ChatServiceImpl implements ChatService {
         chatUsageService.recordUsage(userId, chatResult.getProvider(), chatResult.getModel(),
                 2, actualPromptTokens, actualCompletionTokens, actualTotalTokens, conversationIncrement);
 
-        // 通知完成 - 传递实际token数给前端
-        Integer tokenCountForCallback = actualTotalTokens > 0 ? actualTotalTokens.intValue() : 0;
-        streamCallback.onComplete(conversationId, chatMessage.getId(), tokenCountForCallback);
+        // 通知完成 - 传递完整的 token 统计给前端
+        streamCallback.onComplete(conversationId, chatMessage.getId(), actualPromptTokens, actualCompletionTokens, actualTotalTokens);
 
         long endTime = System.currentTimeMillis();
         log.info("AI流式对话完成，conversationId: {}, messageId: {}, contentLength: {}, totalTokens: {}, promptTokens: {}, completionTokens: {}, 耗时: {}ms",

@@ -35,8 +35,14 @@ public class AiStreamMessage implements Serializable {
     @Schema(description = "是否完成", example = "false")
     private Boolean finished;
 
+    @Schema(description = "输入Token数", example = "50")
+    private Long promptTokens;
+
+    @Schema(description = "输出Token数", example = "100")
+    private Long completionTokens;
+
     @Schema(description = "累计Token数", example = "150")
-    private Integer totalTokens;
+    private Long totalTokens;
 
     @Schema(description = "错误信息")
     private String error;
@@ -56,11 +62,13 @@ public class AiStreamMessage implements Serializable {
     /**
      * 创建完成消息
      */
-    public static AiStreamMessage finish(Long conversationId, Long messageId, Integer totalTokens) {
+    public static AiStreamMessage finish(Long conversationId, Long messageId, Long promptTokens, Long completionTokens, Long totalTokens) {
         return AiStreamMessage.builder()
                 .conversationId(conversationId)
                 .messageId(messageId)
                 .finished(true)
+                .promptTokens(promptTokens)
+                .completionTokens(completionTokens)
                 .totalTokens(totalTokens)
                 .build();
     }

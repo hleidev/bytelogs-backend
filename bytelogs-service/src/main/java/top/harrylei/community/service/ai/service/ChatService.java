@@ -47,11 +47,13 @@ public interface ChatService {
         /**
          * 流式响应完成
          *
-         * @param conversationId 对话ID
-         * @param messageId      消息ID
-         * @param totalTokens    总Token数
+         * @param conversationId   对话ID
+         * @param messageId        消息ID
+         * @param promptTokens     输入Token数
+         * @param completionTokens 输出Token数
+         * @param totalTokens      总Token数
          */
-        void onComplete(Long conversationId, Long messageId, Integer totalTokens);
+        void onComplete(Long conversationId, Long messageId, Long promptTokens, Long completionTokens, Long totalTokens);
 
         /**
          * 流式响应出错
